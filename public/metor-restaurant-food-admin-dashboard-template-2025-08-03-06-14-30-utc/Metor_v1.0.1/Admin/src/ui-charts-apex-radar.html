@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    @@include("partials/title-meta.html", {"sub-title": "Apex Radar Charts"})
+
+    @@include("partials/head-css.html')
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div class="wrapper">
+
+        @@include("partials/components-nav.html')
+
+        @@include("partials/topbar.html")
+
+        <div class="page-container">
+
+            <!-- Start Content-->
+            <div class="page-content">
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Basic Radar Chart</h4>
+                            </div>
+                            <div class="card-body">
+                                <div dir="ltr">
+                                    <div id="basic-radar" class="apex-charts"></div>
+                                </div>
+                            </div>
+                            <!-- end card body-->
+                        </div>
+                        <!-- end card -->
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Radar with Polygon-fill</h4>
+                            </div>
+                            <div class="card-body">
+                                <div dir="ltr">
+                                    <div id="radar-polygon" class="apex-charts"></div>
+                                </div>
+                            </div>
+                            <!-- end card body-->
+                        </div>
+                        <!-- end card -->
+                    </div>
+
+
+
+                    <div class="col-lg-6">                       
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Radar – Multiple Series</h4>
+                            </div>
+                            <div class="card-body">
+                                <div dir="ltr">
+                                    <div id="radar-multiple-series" class="apex-charts"></div>
+                                    <div class="text-center mt-2">
+                                        <button onclick="update()" class="btn btn-sm btn-primary">Update</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end card body-->
+                        </div>
+                        <!-- end card -->
+                    </div> <!-- end col -->
+                </div> <!-- end row -->
+            </div> <!-- container -->
+
+            @@include("partials/footer.html')
+
+        </div>
+
+        <!-- End Page content -->
+
+    </div>
+    <!-- END wrapper -->
+
+    @@include("partials/vendor-scripts.html')
+
+    <!-- Apex Chart Radar Demo js -->
+    <script src="assets/js/components/apexchart-radar.js"></script>
+
+</body>
+
+</html>

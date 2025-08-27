@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     @@include("partials/title-meta.html", {"sub-title": "Report"})
+
+     @@include("partials/head-css.html")
+</head>
+
+<body>
+
+     <!-- START Wrapper -->
+     <div class="wrapper">
+
+          @@include("partials/main-nav.html")
+
+          @@include("partials/topbar.html")
+
+          <div class="page-container">
+
+               <!-- Start Container Fluid -->
+               <div class="page-content">
+
+                    <div class="row">
+                         <div class="col-md-6 col-xl-3">
+                              <div class="card">
+                                   <div class="card-body ">
+                                        <div class="d-flex align-items-center gap-3">
+                                             <img src="assets/images/food-icon/sup-1.png" alt="" class="img-fluid">
+                                             <div>
+                                                  <p class="text-dark fw-semibold fs-26 mb-1">234</p>
+                                                  <p class="card-title mb-0">Total Supplier</p>
+                                             </div>
+                                             <div class="ms-auto">
+                                                  <a href="#!" class="btn btn-primary avatar-sm rounded-circle d-flex align-items-center justify-content-center"><i class="ri-eye-line align-middle fs-16 text-white"></i></a>
+                                             </div>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class="col-md-6 col-xl-3">
+                              <div class="card">
+                                   <div class="card-body ">
+                                        <div class="d-flex align-items-center gap-3">
+                                             <img src="assets/images/food-icon/sup-2.png" alt="" class="img-fluid">
+                                             <div>
+                                                  <p class="text-dark fw-semibold fs-26 mb-1">$36,837</p>
+                                                  <p class="card-title mb-0">Total Supply</p>
+                                             </div>
+                                             <div class="ms-auto">
+                                                  <a href="#!" class="btn btn-primary avatar-sm rounded-circle d-flex align-items-center justify-content-center"><i class="ri-eye-line align-middle fs-16 text-white"></i></a>
+                                             </div>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class="col-md-6 col-xl-3">
+                              <div class="card">
+                                   <div class="card-body ">
+                                        <div class="d-flex align-items-center gap-3">
+                                             <img src="assets/images/food-icon/sup-3.png" alt="" class="img-fluid">
+                                             <div>
+                                                  <p class="text-dark fw-semibold fs-26 mb-1">3,476</p>
+                                                  <p class="card-title mb-0">In Stock</p>
+                                             </div>
+                                             <div class="ms-auto">
+                                                  <a href="#!" class="btn btn-primary avatar-sm rounded-circle d-flex align-items-center justify-content-center"><i class="ri-eye-line align-middle fs-16 text-white"></i></a>
+                                             </div>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+
+                         <div class="col-md-6 col-xl-3">
+                              <div class="card">
+                                   <div class="card-body ">
+                                        <div class="d-flex align-items-center gap-3">
+                                             <img src="assets/images/food-icon/sup-4.png" alt="" class="img-fluid">
+                                             <div>
+                                                  <p class="text-dark fw-semibold fs-26 mb-1">1,235</p>
+                                                  <p class="card-title mb-0">Out Of Stock</p>
+                                             </div>
+                                             <div class="ms-auto">
+                                                  <a href="#!" class="btn btn-primary avatar-sm rounded-circle d-flex align-items-center justify-content-center"><i class="ri-eye-line align-middle fs-16 text-white"></i></a>
+                                             </div>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                    </div>
+
+                    <div class="row">
+                         <div class="col-xl-12">
+                              <div class="card">
+                                   <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div>
+                                             <p class="card-title">All Reports</p>
+                                        </div>
+                                        <div class="dropdown">
+                                             <a href="#" class="dropdown-toggle btn btn-sm btn-outline-light rounded" data-bs-toggle="dropdown" aria-expanded="false">
+                                                  Reports
+                                             </a>
+                                             <div class="dropdown-menu dropdown-menu-end">
+                                                  <!-- item-->
+                                                  <a href="#!" class="dropdown-item">Export</a>
+                                                  <!-- item-->
+                                                  <a href="#!" class="dropdown-item">Import</a>
+                                             </div>
+                                        </div>
+                                   </div>
+                                   <div class="">
+                                        <div class="table-responsive">
+                                             <table class="table align-middle mb-0 table-hover table-centered">
+                                                  <thead class="bg-light-subtle">
+                                                       <tr>
+                                                            <th>Item Name</th>
+                                                            <th>Category</th>
+                                                            <th>Quantity in Stock</th>
+                                                            <th>Reorder Level</th>
+                                                            <th>Supplier</th>
+                                                            <th>Last Restocked Date</th>
+                                                            <th>Action</th>
+                                                       </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                       <tr>
+                                                            <td>Chicken Breast</td>
+                                                            <td>Meat</td>
+                                                            <td>50 kg</td>
+                                                            <td>20 kg</td>
+                                                            <td>Fresh Farms Co.</td>
+                                                            <td>15-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Salmon Fillet</td>
+                                                            <td>Seafood</td>
+                                                            <td>30 kg</td>
+                                                            <td>10 kg</td>
+                                                            <td>Oceanic Supplies</td>
+                                                            <td>20-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Broccoli</td>
+                                                            <td>Vegetables</td>
+                                                            <td> 40 kg</td>
+                                                            <td>15 kg</td>
+                                                            <td>Green Fields</td>
+                                                            <td>25-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Olive Oil</td>
+                                                            <td>Condiments</td>
+                                                            <td>25 liters </td>
+                                                            <td>10 liters</td>
+                                                            <td>Mediterranean Oils</td>
+                                                            <td>02-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Flour</td>
+                                                            <td>Baking</td>
+                                                            <td>100 kg</td>
+                                                            <td>60 kg</td>
+                                                            <td>Baker's Delight</td>
+                                                            <td>05-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Cheddar Cheese</td>
+                                                            <td>Dairy </td>
+                                                            <td>20 kg</td>
+                                                            <td>10 kg</td>
+                                                            <td>Dairy Best</td>
+                                                            <td>10-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Tomatoes</td>
+                                                            <td>Vegetables</td>
+                                                            <td>60 kg</td>
+                                                            <td>30 kg</td>
+                                                            <td>Fresh Veggies Inc.</td>
+                                                            <td>15-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Meat Steak</td>
+                                                            <td>Meat</td>
+                                                            <td>65 kg</td>
+                                                            <td>27 kg</td>
+                                                            <td>Prime Meats</td>
+                                                            <td>20-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Shrimp</td>
+                                                            <td>Seafood</td>
+                                                            <td>35 kg</td>
+                                                            <td>20 kg</td>
+                                                            <td>Oceanic Supplies</td>
+                                                            <td>25-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Basil Leaves</td>
+                                                            <td>Herbs</td>
+                                                            <td>6 kg</td>
+                                                            <td>3 kg</td>
+                                                            <td>Herb Masters</td>
+                                                            <td>28-03-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Spaghetti</td>
+                                                            <td>Pasta</td>
+                                                            <td>80 kg</td>
+                                                            <td>50 kg</td>
+                                                            <td>Italian Goods</td>
+                                                            <td>05-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Butter</td>
+                                                            <td>Dairy</td>
+                                                            <td>25 kg</td>
+                                                            <td>14 kg</td>
+                                                            <td>Dairy Best</td>
+                                                            <td>12-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                       <tr>
+                                                            <td>Brown Rice</td>
+                                                            <td>Grains</td>
+                                                            <td>40 kg</td>
+                                                            <td>25 kg</td>
+                                                            <td>Grain Suppliers</td>
+                                                            <td>18-02-2024</td>
+                                                            <td>
+                                                                 <div class="d-flex gap-3">
+                                                                      <a href="#!" class="text-muted"><i class="ri-eye-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-dark"><i class="ri-edit-line align-middle fs-20"></i></a>
+                                                                      <a href="#!" class="link-danger"><i class="ri-delete-bin-5-line align-middle fs-20"></i></a>
+                                                                 </div>
+                                                            </td>
+                                                       </tr>
+                                                  </tbody>
+                                             </table>
+                                        </div>
+                                        <!-- end table-responsive -->
+                                   </div>
+                                   <div class="card-footer border-0">
+                                        <nav aria-label="Page navigation example">
+                                             <ul class="pagination justify-content-end mb-0">
+                                                  <li class="page-item"><a class="page-link" href="javascript:void(0);"><i class="ri-arrow-left-s-line"></i></a></li>
+                                                  <li class="page-item active"><a class="page-link" href="javascript:void(0);">1</a></li>
+                                                  <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+                                                  <li class="page-item"><a class="page-link" href="javascript:void(0);">3</a></li>
+                                                  <li class="page-item"><a class="page-link" href="javascript:void(0);"><i class="ri-arrow-right-s-line"></i></a></li>
+                                             </ul>
+                                        </nav>
+                                   </div>
+                              </div>
+                         </div>
+
+                    </div>
+
+               </div>
+               <!-- End Page Content -->
+
+               @@include("partials/footer.html")
+          </div>
+          <!-- END Wrapper -->
+
+          @@include("partials/vendor-scripts.html")
+
+</body>
+
+</html>

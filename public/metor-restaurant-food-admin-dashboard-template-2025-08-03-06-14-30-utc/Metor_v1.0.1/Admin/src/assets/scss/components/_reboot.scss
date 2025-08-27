@@ -1,0 +1,106 @@
+//
+// _reboot.scss
+//
+
+body {
+    overflow-x: hidden;
+    letter-spacing: 0.01rem;
+}
+
+.row>* {
+    position: relative;
+}
+
+.scroll-hidden {
+    &::-webkit-scrollbar {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    &::-webkit-scrollbar:vertical {
+        width: 0px;
+    }
+}
+
+
+// Iconify
+iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+}
+
+
+.profile-bg {
+    background-image: url("/assets/images/profile-bg-2.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: 142px;
+}
+
+.food-bg {
+    background-image: url("/assets/images/food-icon/food-bg.jpg");
+    background-position: top;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+}
+
+.faq-bg {
+    background-image: url("/assets/images/faq.png");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+}
+
+.bg-faq {
+    background-image: linear-gradient(rgba(0, 0, 255, 0.02) 2px, transparent 2px), linear-gradient(to right, rgba(0, 0, 255, 0.02) 2px, transparent 2px);
+    background-size: 78px 78px;
+    background-color: rgba(210, 230, 243, 0);
+}
+
+
+.food-bg-1 {
+    background-image: url("/assets/images/desh.jpg");
+    background-position: top;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+}
+
+.bg-location {
+    background-image: url("/assets/images/r-1.jpg");
+    background-position: top;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-top: 250px;
+    padding-bottom: 50px;
+
+}
+
+
+.swiper-button-disabled {
+    i {
+        color: $gray-400 !important;
+    }
+}
+
+.ribbon-box {
+    span {
+        transform: rotate(45deg);
+        width: 100px;
+        top: 19px;
+        right: -21px;
+    }
+}
+
+
+.profile-img-file-input {
+    display: none;
+}
+
+.profile-img-file-input1 {
+    display: none;
+}
