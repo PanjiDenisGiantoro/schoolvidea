@@ -42,44 +42,8 @@
                                 <form action="" method="POST" class="authentication-form">
                                     @csrf
 
-                                    <div class="mb-4">
-                                        <label class="form-label" for="kodeSekolah">Email</label>
-                                        <div class="position-relative w-100">
-                                            <input type="text"
-                                                   class="form-control form-control-lg rounded"
-                                                   id="kodeSekolah"
-                                                   name="kode_sekolah"
-                                                   value="{{ old('kode_sekolah') }}"
-                                                   placeholder="Masukkan Kode Sekolah"
-                                                   required>
-                                            <p class="text-muted p-0 position-absolute end-0 top-50 border-0 fs-4 translate-middle-y me-2 mb-0">
-                                                <i class="bx bx-building fs-20 mt-1 text-muted"></i>
-                                            </p>
-                                        </div>
-                                        @error('kode_sekolah')
-                                        <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label" for="UserPass">Password</label>
-                                        <div class="position-relative w-100">
-                                            <input type="password"
-                                                   class="form-control form-control-lg rounded"
-                                                   id="UserPass"
-                                                   name="password"
-                                                   placeholder="Masukkan Password"
-                                                   required>
-                                            <button type="button"
-                                                    class="btn text-muted p-0 position-absolute end-0 top-50 border-0 fs-4 translate-middle-y me-2">
-                                                <i class="bx bx-show fs-20 mt-1 text-muted"></i>
-                                            </button>
-                                        </div>
-                                        @error('password')
-                                        <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-
+                                    <x-input-field type="email" name="email" label="Email" placeholder="Masukkan email"  icon="bx bx-envelope" />
+                                    <x-input-field name="password" label="user password" type="password" icon="bx bx-lock" />
                                     <div class="mb-3">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" name="remember" id="checkbox-signin">

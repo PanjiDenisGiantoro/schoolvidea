@@ -1,8 +1,7 @@
 @extends('layouts.app')
-
+@section('title', 'Dashboard')
 @section('content')
     <!-- Start Container Fluid -->
-    <div class="page-content">
 
         <div class="row">
             <!-- Card Petugas -->
@@ -141,6 +140,9 @@
             </div>
         </div>
 
-    </div>
+
     @include('partials.vendor-scripts')
+
 @endsection
+
+

@@ -15,3 +15,10 @@ Route::prefix('auth')->group(function () {
         return view('pages.portalcode');
     });
 });
+
+
+Route::prefix('officer')->group(function () {
+    Route::get('/', function () {
+        return view('pages.data_master.officer');
+    })->name('petugas');
+});

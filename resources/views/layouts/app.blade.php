@@ -28,7 +28,6 @@
 </div>
 <!-- END Wrapper -->
 
-@include('partials.vendor-scripts')
 
 </body>
 </html>
