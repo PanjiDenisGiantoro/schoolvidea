@@ -19,6 +19,6 @@ Route::prefix('auth')->group(function () {
 
 Route::prefix('officer')->group(function () {
     Route::get('/', function () {
-        return view('pages.data_master.officer');
+        return view('pages.data_master.officer.officer');
     })->name('petugas');
 });

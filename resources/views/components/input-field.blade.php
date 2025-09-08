@@ -21,7 +21,6 @@
             </button>
         @endif
 
-        {{-- Jika ada icon custom --}}
         @isset($icon)
             <p class="text-muted p-0 position-absolute end-0 top-50 border-0 fs-4 translate-middle-y me-2 mb-0">
                 <i class="{{ $icon }} fs-20 mt-1 text-muted"></i>
