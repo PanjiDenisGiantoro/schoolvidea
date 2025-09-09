@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\TahunajaranController;
 
 
 Route::get('/dashboard', function () {
@@ -44,4 +45,15 @@ Route::prefix('unit')->group(function () {
     Route::put('unit/update/{id}', [UnitController::class, 'update'])->name('unit.update');
     Route::get('/delete/{id}', [UnitController::class, 'destroy'])->name('unit.destroy');
     Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
+});
+
+Route::prefix('tahunajaran')->group(function () {
+    Route::get('/', [TahunajaranController::class, 'index'])->name('tahunajaran.index');
+    Route::get('/create', [TahunajaranController::class, 'create'])->name('tahunajaran.create');
+    Route::post('/store', [TahunajaranController::class, 'store'])->name('tahunajaran.store');
+    Route::get('/edit/{id}', [TahunajaranController::class, 'edit'])->name('tahunajaran.edit');
+    Route::put('tahunajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahunajaran.update');
+    Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahunajaran.destroy');
+    Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahunajaran.show');
+
 });
