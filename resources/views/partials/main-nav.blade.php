@@ -40,6 +40,7 @@
                           <!-- Petugas -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('petugas') }}">Petugas</a></li>
                           <!-- Unit -->
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}" > Lembaga Unit</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
 
                           <!-- Petugas Unit -->
