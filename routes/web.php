@@ -4,27 +4,41 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\TahunajaranController;
+use App\Http\Controllers\OfficerController;
+use App\Http\Controllers\RolesController;
+use App\Http\Controllers\AuthController;
 
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('home');
+Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
+Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
 
-//auth
-Route::prefix('auth')->group(function () {
-    Route::get('/login', function () {
-        return view('pages.login');
-    })->name('login');
-    Route::get('portalcode', function () {
-        return view('pages.portalcode');
-    });
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login.form');
+Route::post('/login', [AuthController::class, 'login'])->name('login.process');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    Route::prefix('officer')->group(function () {
+    Route::get('/', [OfficerController::class, 'index'])->name('officer.index');
+    Route::get('/create', [OfficerController::class, 'create'])->name('officer.create');
+    Route::post('/store', [OfficerController::class, 'store'])->name('officer.store');
+    Route::get('/edit/{id}', [OfficerController::class, 'edit'])->name('officer.edit');
+    Route::put('officer/update/{id}', [OfficerController::class, 'update'])->name('officer.update');
+    Route::get('/delete/{id}', [OfficerController::class, 'destroy'])->name('officer.destroy');
+    Route::get('/show/{id}', [OfficerController::class, 'show'])->name('officer.show');
 });
-
-
-Route::prefix('officer')->group(function () {
-    Route::get('/', function () {
-        return view('pages.data_master.officer.officer');
-    })->name('petugas');
+Route::prefix('roles')->group(function () {
+    Route::get('/', [RolesController::class, 'index'])->name('roles.index');
+    Route::get('/create', [RolesController::class, 'create'])->name('roles.create');
+    Route::post('/store', [RolesController::class, 'store'])->name('roles.store');
+    Route::get('/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
+    Route::put('roles/update/{id}', [RolesController::class, 'update'])->name('roles.update');
+    Route::get('/delete/{id}', [RolesController::class, 'destroy'])->name('roles.destroy');
+    Route::get('/show/{id}', [RolesController::class, 'show'])->name('roles.show');
 });
 
 Route::prefix('lembagaunit')->group(function () {
@@ -47,13 +61,14 @@ Route::prefix('unit')->group(function () {
     Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
 });
 
-Route::prefix('tahunajaran')->group(function () {
-    Route::get('/', [TahunajaranController::class, 'index'])->name('tahunajaran.index');
-    Route::get('/create', [TahunajaranController::class, 'create'])->name('tahunajaran.create');
-    Route::post('/store', [TahunajaranController::class, 'store'])->name('tahunajaran.store');
-    Route::get('/edit/{id}', [TahunajaranController::class, 'edit'])->name('tahunajaran.edit');
-    Route::put('tahunajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahunajaran.update');
-    Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahunajaran.destroy');
-    Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahunajaran.show');
+Route::prefix('tahun_ajaran')->group(function () {
+    Route::get('/', [TahunajaranController::class, 'index'])->name('tahun_ajaran.index');
+    Route::get('/create', [TahunajaranController::class, 'create'])->name('tahun_ajaran.create');
+    Route::post('/store', [TahunajaranController::class, 'store'])->name('tahun_ajaran.store');
+    Route::get('/edit/{id}', [TahunajaranController::class, 'edit'])->name('tahun_ajaran.edit');
+    Route::put('tahun_ajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahun_ajaran.update');
+    Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahun_ajaran.destroy');
+    Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahun_ajaran.show');
 
+});
 });

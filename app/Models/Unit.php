@@ -12,7 +12,12 @@ class Unit extends Model
     public function yayasan(){
         return $this->belongsTo(Yayasan::class);
     }
+
     public function getStatusAttribute($value){
         return $value == 1 ? 'Aktif' : 'Tidak Aktif';
+    }
+    public function scopeIsactive($query)
+    {
+        return $query->where('status', 1);
     }
 }

@@ -1,46 +1,84 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
+
 @section('content')
+
+    @include('partials.page-title', [
+        'title' => 'Dashboard',
+        'subTitle' => 'Data Petugas'
+    ])
+
     <div class="card">
         <div class="card-body">
             <div class="row g-5">
+                <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">List Petugas</h5>
+                    <a href="{{ url('officer/create') }}" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i> Tambah Data
+                    </a>
+                </div>
 
-                <div class="col-lg-12">
-                    <h5 class="card-title mb-4">
-                        Officer
-                    </h5>
-                </div>
-                <div class="col-lg-12">
-                    <button class="btn btn-primary">Tambah Data</button>
-                </div>
-                <div class="col-lg-12">
-                    <table class="table table-striped table-hover table-bordered">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama</th>
-                                <th>NIK</th>
-                                <th>Tempat Lahir</th>
-                                <th>Tanggal Lahir</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                    </table>
-                </div>
+                <table id="datatable" class="table table-bordered table-striped">
+                    <thead>
+                    @if(!empty($headers) && is_array($headers))
+                        @foreach($headers as $header)
+                            <th>{{ $header }}</th>
+                        @endforeach
+                    @else
+                        <th>No data</th>
+                    @endif
+                    </thead>
+                    <tbody>
+                    @forelse($officer as $item)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $item->officer->unit->nama_unit ?? '-' }}</td>
+                            <td>{{ $item->name ?? '-' }}</td>
+                            <td>{{ $item->roles[0]->name ?? '-' }}</td>
+                            <td>{{ $item->officer->nip ?? '-' }}</td>
+                            <td>{{ $item->email ?? '-' }}</td>
+                            <td>
+                                <div class="d-flex gap-3">
+                                <a href="{{ route('officer.show', $item->id ?? '') }}" class="link-primary text-muted">
+                                    <i class="ri-eye-line align-middle fs-20"></i>
+                                    Show
+                                </a>
+                                <a href="{{ route('officer.edit', $item->id ?? '') }}" class="link-warning text-muted">
+                                    <i class="ri-edit-line align-middle fs-20"></i>
+                                    Edit
+                                </a>
+                                <a href="{{ route('officer.destroy', $item->id ?? '') }}" class="link-danger text-muted">
+                                    <i class="ri-delete-bin-5-line align-middle fs-20"></i>
+                                    Hapus
+                                </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    @include('partials.vendor-scripts')
-    <!-- Gridjs Plugin js -->
-    <script src="{{ asset('assets/vendor/gridjs/gridjs.umd.js') }}"></script>
-
-    <!-- Gridjs Demo js -->
-    <script src="{{ asset('assets/js/components/table-gridjs.js') }}"></script>
 @endsection
+@push('scripts')
+    @if($officer->isNotEmpty())
+
+    <script>
+        $(document).ready(function () {
+            $('#datatable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                language: {
+                    url: '{{ asset("assets/datatables/id.json") }}'
+                }
+            });
+        });
+    </script>
+    @endif
+@endpush

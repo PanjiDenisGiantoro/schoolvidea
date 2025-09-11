@@ -4,7 +4,7 @@
 @section('content')
     @include('partials.page-title', [
         'title' => isset($unit) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Lembaga Unit'
+        'subTitle' => 'Unit'
     ])
     <div class="card">
         <div class="card-body">
@@ -23,7 +23,7 @@
                         <hr>
                         <div class="mb-3">
                             <label for="yayasan_id" class="form-label">Yayasan</label>
-                            <select name="yayasan_id"  id="choices-single-no-sorting" name="choices-single-no-sorting" data-choices data-choices-sorting-false>
+                            <select name="yayasan_id"  id="choices-single-no-sorting"  data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Yayasan --</option>
                                 @foreach($yayasan as $y)
                                     <option value="{{ $y->id }}"

@@ -18,6 +18,8 @@
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="p-3">
+                            {{-- Notifikasi --}}
+
                             <div class="mx-auto mb-5 auth-logo text-center">
                                 <a href="{{ url('/') }}" class="logo-dark">
                                     <img src="{{ asset('assets/images/logo-dark.png') }}" height="30" alt="logo dark">
@@ -27,6 +29,17 @@
                                     <img src="{{ asset('assets/images/logo-white.png') }}" height="30" alt="logo light">
                                 </a>
                             </div>
+                            @if(session('success'))
+                                <div class="alert alert-success text-center mb-3">
+                                    {{ session('success') }}
+                                </div>
+                            @endif
+
+                            @if(session('error'))
+                                <div class="alert alert-danger text-center mb-3">
+                                    {{ session('error') }}
+                                </div>
+                            @endif
 
                             <div class="text-center mb-4">
                                 <h3 class="fw-bold text-dark fs-20">Masukkan Kode Sekolah</h3>
@@ -34,7 +47,7 @@
                             </div>
 
                             <div class="p-3">
-                                <form action="" method="POST" class="authentication-form">
+                                <form action="{{ url('portalpost') }}" method="POST" class="authentication-form">
                                     @csrf
                                     <div class="mb-3">
                                         <label class="form-label" for="kode-sekolah">Kode Sekolah</label>

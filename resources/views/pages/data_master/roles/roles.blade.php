@@ -5,15 +5,15 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Tahun Ajaran'
+        'subTitle' => 'Data Role'
     ])
 
     <div class="card">
         <div class="card-body">
             <div class="row g-5">
                 <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">List Tahun Ajaran</h5>
-                    <a href="{{ url('tahun_ajaran/create') }}" class="btn btn-primary">
+                    <h5 class="card-title mb-0">List Role</h5>
+                    <a href="{{ url('roles/create') }}" class="btn btn-primary">
                         <i class="bi bi-download me-1"></i> Tambah Data
                     </a>
                 </div>
@@ -29,30 +29,23 @@
                     @endif
                     </thead>
                     <tbody>
-                    @forelse($tahun_ajaran as $item)
+                    @forelse($roles as $item)
                         <tr>
 
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->tahun_ajaran ?? '-' }}</td>
-                            <td>{{ $item->semester ?? '-' }}</td>
-                            <td>{{ $item->tanggal_mulai ?? '-' }}</td>
-                            <td>{{ $item->tanggal_selesai ?? '-' }}</td>
-                            <td>
-                                <span class="badge {{ $item->status === 'Aktif' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $item->status }}
-                                </span>
-                            </td>
+                            <td>{{ $item->name ?? '-' }}</td>
+
                             <td>
                                 <div class="d-flex gap-3">
-                                <a href="{{ route('tahun_ajaran.show', $item->id) }}" class="link-primary text-muted">
+                                <a href="{{ route('roles.show', $item->id) }}" class="link-primary text-muted">
                                     <i class="ri-eye-line align-middle fs-20"></i>
                                     Show
                                 </a>
-                                <a href="{{ route('tahun_ajaran.edit', $item->id) }}" class="link-warning text-muted">
+                                <a href="{{ route('roles.edit', $item->id) }}" class="link-warning text-muted">
                                     <i class="ri-edit-line align-middle fs-20"></i>
                                     Edit
                                 </a>
-                                <a href="{{ route('tahun_ajaran.destroy', $item->id) }}" class="link-danger text-muted">
+                                <a href="{{ route('roles.destroy', $item->id) }}" class="link-danger text-muted">
                                     <i class="ri-delete-bin-5-line align-middle fs-20"></i>
                                     Hapus
                                 </a>
@@ -72,7 +65,7 @@
 
 @endsection
 @push('scripts')
-    @if($tahun_ajaran->isNotEmpty())
+    @if($roles->isNotEmpty())
 
     <script>
         $(document).ready(function () {

@@ -60,4 +60,14 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+    public function officer()
+    {
+        return $this->hasOne(Officer::class);
+    }
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
+
 }

@@ -38,16 +38,13 @@
                       <ul class="sub-menu-nav">
 
                           <!-- Petugas -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('petugas') }}">Petugas</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Petugas</a></li>
                           <!-- Unit -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}" > Lembaga Unit</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
 
-                          <!-- Petugas Unit -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('petugas-unit') }}">Petugas Unit</a></li>
-
                           <!-- Tahun -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun') }}">Tahun</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun</a></li>
 
                           <!-- Kelas -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
@@ -59,6 +56,7 @@
 
                           <!-- Kategori -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategori') }}">Kategori</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
                           <!-- Rekening -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategori') }}">Rekening</a></li>
                       </ul>
@@ -108,6 +106,14 @@
                               <i class="ri-bar-chart-box-ai-line"></i>
                          </span>
                          <span class="nav-text"> Reports </span>
+                    </a>
+               </li>
+               <li class="menu-item">
+                    <a class="menu-link" href="reports.html">
+                         <span class="nav-icon">
+                              <i class="ri-coin-line"></i>
+                         </span>
+                         <span class="nav-text"> Pengeluaran </span>
                     </a>
                </li>
 
