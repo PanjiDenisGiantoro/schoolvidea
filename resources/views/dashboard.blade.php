@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
+
 @section('content')
     <!-- Start Container Fluid -->
 
@@ -139,9 +140,6 @@
                 </div>
             </div>
         </div>
-
-
-    @include('partials.vendor-scripts')
 
 @endsection
 

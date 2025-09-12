@@ -7,6 +7,7 @@ use App\Http\Controllers\TahunajaranController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KelasController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -69,6 +70,20 @@ Route::prefix('tahun_ajaran')->group(function () {
     Route::put('tahun_ajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahun_ajaran.update');
     Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahun_ajaran.destroy');
     Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahun_ajaran.show');
-
 });
+
+
+    Route::prefix('kelas')->group(function () {
+        Route::get('/', [KelasController::class, 'index'])->name('kelas.index');
+        Route::get('/create', [KelasController::class, 'create'])->name('kelas.create');
+        Route::post('/store', [KelasController::class, 'store'])->name('kelas.store');
+        Route::get('/edit/{id}', [KelasController::class, 'edit'])->name('kelas.edit');
+        Route::put('kelas/update/{id}', [KelasController::class, 'update'])->name('kelas.update');
+        Route::get('/delete/{id}', [KelasController::class, 'destroy'])->name('kelas.destroy');
+        Route::get('/show/{id}', [KelasController::class, 'show'])->name('kelas.show');
+    });
+
+
+
+
 });

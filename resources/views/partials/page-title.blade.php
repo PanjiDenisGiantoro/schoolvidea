@@ -17,7 +17,7 @@
                 }
             }
             @endphp
-            <h4 class="mb-0 fw-semibold">{{ $subTitle ?? '' }} ({{ $tahun_ajaran->tahun_ajaran }} - {{ $tahun_ajaran->semester }})</h4>
+            <h4 class="mb-0 fw-semibold">{{ $subTitle ?? '' }} ({{ $tahun_ajaran->tahun_ajaran ?? 'Tahun Ajaran Belum Diatur' }} - {{ $tahun_ajaran->semester ?? 'Semester Belum Diatur' }})</h4>
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="javascript:void(0);">{{ $title ?? '' }}</a>
