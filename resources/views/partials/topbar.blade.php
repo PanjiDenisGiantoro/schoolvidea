@@ -93,7 +93,7 @@
                               <span class="d-flex align-items-center gap-2">
                                    <img class="rounded-circle" width="32" src="assets/images/users/avatar-1.jpg" alt="user-image">
                                    <span class="d-lg-flex flex-column gap-1 d-none">
-                                        <h5 class="my-0 fs-13 text-uppercase text-reset fw-bold">Doris Lietz</h5>
+                                        <h5 class="my-0 fs-13 text-uppercase text-reset fw-bold">{{ \Illuminate\Support\Facades\Auth::user()->name ?? '' }}</h5>
                                    </span>
                               </span>
                          </a>

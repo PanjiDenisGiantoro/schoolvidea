@@ -9,8 +9,8 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action=""
-{{--            {{ isset($officer) ? route('officer.update', $officer->id) : route('officer.store') }}"--}}
+            <form id="userForm" action="
+            {{ isset($officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
                 @if(isset($officer))
@@ -41,12 +41,8 @@
                     <div class="col-md-4">
 
                         <x-input-field type="password" name="password" label="Password"
-                                       @if(empty($officer))
-                                           placeholder="Masukkan Password"
-                                       @else
-                                           placeholder="Kosongkan jika tidak ingin mengubah password"
-                                       @endif
-                                            icon="bx bx-lock"
+                                       :placeholder="isset($officer) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
+                                       icon="bx bx-lock"
                                        :value="old('name')" required />
                     </div>
                 </div>
@@ -66,14 +62,22 @@
 
                         <div class="mb-3">
                             <label for="role_id" class="form-label">Role Petugas</label>
-                            <select name="role_id" id="choices-single-no-sorting" data-choices data-choices-sorting-false>
+                            <select name="role_id" id="choices-single-no-sorting" class="form-control" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Role --</option>
-                                @foreach($roles as $r)
-                                    <option value="{{ $r->id }}"
-                                        {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
-                                        {{ $r->name }}
-                                    </option>
-                                @endforeach
+                                @if(!empty($officer))
+                                    @foreach($roles as $r)
+                                        <option value="{{ $r->id }}"
+                                            {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
+                                            {{ $r->name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    @foreach($roles as $r)
+                                        <option value="{{ $r->id }}">
+                                            {{ $r->name }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
 

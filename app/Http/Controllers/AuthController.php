@@ -37,6 +37,11 @@ class AuthController extends Controller
 
         return view('pages.login');
     }
+    // Halaman login
+    public function logincentral()
+    {
+        return view('pages.login');
+    }
 
     // Proses login
     public function login(Request $request)
@@ -59,12 +64,14 @@ class AuthController extends Controller
         ]);
     }
 
+
+
     // Logout
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('portal.form')->with('success', 'Anda telah logout');
+        return redirect('/login')->with('success', 'Anda telah logout');
     }
 }

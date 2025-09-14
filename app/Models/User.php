@@ -8,12 +8,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Officer;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
     use HasRoles;
+
+    /**
+     * Get the officer associated with the user.
+     */
+    public function officers()
+    {
+        return $this->hasOne(Officer::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -64,10 +73,29 @@ class User extends Authenticatable
     {
         return $this->hasOne(Officer::class);
     }
+
     public function siswa()
     {
         return $this->hasOne(Siswa::class);
     }
+
+    public function scopeHasRole($query, $role)
+    {
+        return $query->whereHas('role', function ($q) use ($role) {
+            $q->where('name', $role);
+        });
+    }
+    public function role()
+    {
+        return $this->belongsTo(Roles_petugas::class);
+    }
+    public function userRole()
+    {
+        return $this->belongsTo(Roles_petugas::class, 'id');
+    }
+
+
+
 
 
 }

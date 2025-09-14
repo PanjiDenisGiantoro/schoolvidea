@@ -62,4 +62,5 @@ class RolesController extends Controller
         $show = true;
         return view('pages.data_master.roles.roles_create', compact('roles','show'));
     }
+
 }

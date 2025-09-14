@@ -37,6 +37,10 @@
 
                             <td>
                                 <div class="d-flex gap-3">
+                                    <a href="{{ route('roles.permissions', $item->id) }}" class="link-info text-muted">
+                                        <i class="ri-lock-line align-middle fs-20"></i>
+                                        Permission
+                                    </a>
                                 <a href="{{ route('roles.show', $item->id) }}" class="link-primary text-muted">
                                     <i class="ri-eye-line align-middle fs-20"></i>
                                     Show

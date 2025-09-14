@@ -35,7 +35,13 @@
                             <td>{{ $item->nama_kelas }}</td>
                             <td>{{ $item->unit->nama_unit }}</td>
                             <td>{{ $item->officer->user->name ?? '' }}</td>
-                           <td>
+
+                            <td>
+                                <span class="badge {{ $item->status === 'Aktif' ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $item->status }}
+                                </span>
+                            </td>
+                            <td>
                                 <div class="d-flex gap-3">
                                 <a href="{{ route('kelas.show', $item->id ?? '') }}" class="link-primary text-muted">
                                     <i class="ri-eye-line align-middle fs-20"></i>

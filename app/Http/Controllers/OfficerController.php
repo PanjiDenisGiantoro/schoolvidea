@@ -29,6 +29,7 @@ class OfficerController extends Controller
     }
     public function create()
     {
+
         $units = Unit::isactive()->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
@@ -60,18 +61,13 @@ class OfficerController extends Controller
                 'password' => bcrypt($request->password),
             ]);
 
-            // 2. Ambil role dari roles_petugas
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
-
-            // 3. Pastikan role ada juga di Spatie roles
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
-            // 4. Assign role ke user
             $user->assignRole($roleSpatie->name);
 
-            // 5. Buat officer (role_id ambil dari roles_petugas!)
           $officer =   Officer::create([
                 'nip'             => $request->nip,
                 'iamge'           => $request->image,

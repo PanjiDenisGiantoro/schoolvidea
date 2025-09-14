@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kelas;
+use App\Models\Officer;
 use App\Models\Tahun_ajaran;
+use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
 
@@ -25,35 +27,52 @@ class KelasController extends Controller
     public function create()
     {
         $yayasan = Yayasan::active()->get();
-        return view('pages.data_master.kelas.kelas_create', compact('yayasan'));
+        $units = Unit::get();
+        $wali = Officer::wali()->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+
+        return view('pages.data_master.kelas.kelas_create', compact('yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }
     public function store(Request $request)
     {
-        $request->validate([
-            'tahun_ajaran' => 'required|string|max:255|unique:tahun_ajarans,tahun_ajaran',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date',
-            'semester' => 'required',
-            'status' => 'required|in:0,1',
-        ]);
-        $tanggal_mulai = $request->tanggal_mulai ? $request->tanggal_mulai . '-01' : null;
-        $tanggal_selesai = $request->tanggal_selesai ? $request->tanggal_selesai . '-01' : null;
+        try{
+            $request->validate([
+                'nama_kelas'      => 'required|string|max:255',
+                'tahun_ajaran_id' => 'required',
+                'unit_id'         => 'required',
+                'officer_id'      => 'required',
+                'status'          => 'required|in:0,1', // atau 0/1 kalau status disimpan angka
+            ]);
 
-        Tahun_ajaran::create([
-            'tahun_ajaran' => $request->tahun_ajaran,
-            'tanggal_mulai' => $tanggal_mulai,
-            'tanggal_selesai' => $tanggal_selesai,
-            'semester' => $request->semester,
-            'status' => $request->status,
-        ]);
+            Kelas::create([
+                'nama_kelas'      => $request->nama_kelas,
+                'tahun_ajaran_id' => $request->tahun_ajaran_id,
+                'unit_id'         => $request->unit_id,
+                'officer_id'      => $request->officer_id,
+                'status'          => $request->status,
+            ]);
 
-        return redirect()->route('kelas.index')
-            ->with('success', 'Data berhasil ditambahkan dengan Tahun Ajaran' . $request->tahun_ajaran);
+            return redirect()->route('kelas.index')
+                ->with('success', 'Data kelas berhasil ditambahkan: ' . $request->nama_kelas);
+
+        }catch (\Exception $e){
+            dd($e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal menambahkan data kelas: ' . $e->getMessage());
+        }
+
     }
     public function edit($id)
     {
         $kelas = Tahun_ajaran::findOrFail($id);
-        return view('pages.data_master.kelas.kelas_create', compact('tahun_ajaran'));
+        $yayasan = Yayasan::active()->get();
+        $units = Unit::get();
+        $wali = Officer::wali()->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+
+        return view('pages.data_master.kelas.kelas_create', compact('tahun_ajaran','kelas','yayasan','units','wali','tahun_ajaran_selected'));
     }
     public function update(Request $request, $id)
     {
@@ -75,8 +94,14 @@ class KelasController extends Controller
     }
     public function show($id)
     {
-        $kelas = Tahun_ajaran::findOrFail($id);
+        $kelas = Kelas::findOrFail($id);
+        $yayasan = Yayasan::active()->get();
+        $units = Unit::get();
+        $wali = Officer::wali()->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+
         $show = true;
-        return view('pages.data_master.kelas.kelas_create', compact('kelas','show'));
+        return view('pages.data_master.kelas.kelas_create', compact('kelas','show','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }
 }

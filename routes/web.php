@@ -11,18 +11,17 @@ use App\Http\Controllers\KelasController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
+Route::get('/portal', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
-
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login.form');
+Route::get('/login-central', [AuthController::class, 'logincentral'])->name('logincentral.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
-
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-
     Route::prefix('officer')->group(function () {
     Route::get('/', [OfficerController::class, 'index'])->name('officer.index');
     Route::get('/create', [OfficerController::class, 'create'])->name('officer.create');
@@ -40,6 +39,7 @@ Route::prefix('roles')->group(function () {
     Route::put('roles/update/{id}', [RolesController::class, 'update'])->name('roles.update');
     Route::get('/delete/{id}', [RolesController::class, 'destroy'])->name('roles.destroy');
     Route::get('/show/{id}', [RolesController::class, 'show'])->name('roles.show');
+    Route::get('/permissions/{id}', [RolesController::class, 'permissions'])->name('roles.permissions');
 });
 
 Route::prefix('lembagaunit')->group(function () {
