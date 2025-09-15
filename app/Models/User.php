@@ -93,6 +93,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Roles_petugas::class, 'id');
     }
+    public function userRoles()
+    {
+        return $this->belongsTo(Roles_petugas::class, 'role_id'); // atau sesuai field
+    }
 
 
 

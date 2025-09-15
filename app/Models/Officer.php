@@ -39,9 +39,9 @@ class Officer extends Model
 
     public function scopeWali($query)
     {
-        return $query->with(['user.userRole']) // eager load user & role
+        return $query->with(['user.userRoles'])
         ->whereHas('user', function ($q) {
-            $q->whereHas('userRole', function ($r) {
+            $q->whereHas('userRoles', function ($r) {
                 $r->where('name', 'walikelas');
             });
         });

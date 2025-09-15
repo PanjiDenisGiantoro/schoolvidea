@@ -28,7 +28,7 @@ class KelasController extends Controller
     {
         $yayasan = Yayasan::active()->get();
         $units = Unit::get();
-        $wali = Officer::wali()->get();
+        $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
@@ -65,22 +65,26 @@ class KelasController extends Controller
     }
     public function edit($id)
     {
-        $kelas = Tahun_ajaran::findOrFail($id);
+        $kelas = Kelas::findOrFail($id);
         $yayasan = Yayasan::active()->get();
         $units = Unit::get();
-        $wali = Officer::wali()->get();
+        $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-
         return view('pages.data_master.kelas.kelas_create', compact('tahun_ajaran','kelas','yayasan','units','wali','tahun_ajaran_selected'));
     }
     public function update(Request $request, $id)
     {
-        $kelas = Tahun_ajaran::findOrFail($id);
-        $data = $request->all();
-        $data['tanggal_mulai']   = $request->tanggal_mulai ? $request->tanggal_mulai . '-01' : null;
-        $data['tanggal_selesai'] = $request->tanggal_selesai ? $request->tanggal_selesai . '-01' : null;
 
+        $request->validate([
+            'nama_kelas'      => 'required|string|max:255',
+            'tahun_ajaran_id' => 'required',
+            'unit_id'         => 'required',
+            'officer_id'      => 'required',
+            'status'          => 'required|in:0,1'
+        ]);
+        $data = $request->all();
+        $kelas = Kelas::findOrFail($id);
         $kelas->update($data);
         return redirect()->route('kelas.index')
             ->with('success', 'Data berhasil diupdate');
@@ -97,7 +101,7 @@ class KelasController extends Controller
         $kelas = Kelas::findOrFail($id);
         $yayasan = Yayasan::active()->get();
         $units = Unit::get();
-        $wali = Officer::wali()->get();
+        $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
