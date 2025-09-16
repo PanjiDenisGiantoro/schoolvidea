@@ -52,6 +52,22 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="jurusan_id">Jurusan</label>
+                            <select name="jurusan_id" id="jurusan_id"  class="form-select" data-choices data-choices-sorting-false>
+                                <option value="">-- Pilih Jurusan --</option>
+                                @foreach($jurusan as $jurusans)
+                                    <option value="{{ $jurusans->id }}"
+                                        {{ old('jurusan_id', $kelas->jurusan_id ?? '') == $jurusans->id ? 'selected' : '' }}>
+                                        {{ $jurusans->nama_jurusan }} ({{ $jurusans->unit->nama_unit ?? '-' }}
+                                        - {{ $jurusans->tahun_ajaran->tahun_ajaran ?? '-' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                    </div>
 
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -63,6 +79,9 @@
                             </select>
                         </div>
                     </div>
+
+
+
 
                     <div class="col-md-4">
                         <div class="mb-3">

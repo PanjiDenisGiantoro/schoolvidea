@@ -37,28 +37,20 @@
                   <div class="collapse" id="sidebarMasterData">
                       <ul class="sub-menu-nav">
 
-                          <!-- Petugas -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Petugas</a></li>
-                          <!-- Unit -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}" > Lembaga Unit</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
 
-                          <!-- Tahun -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun</a></li>
 
-                          <!-- Kelas -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
 
-                          <!-- Siswa -->
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
-                          <!-- Akun -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Akun</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
 
-                          <!-- Kategori -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategori') }}">Kategori</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategoritagihan') }}">Kategori</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
-                          <!-- Rekening -->
-                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategori') }}">Rekening</a></li>
                       </ul>
                   </div>
               </li>
@@ -74,7 +66,7 @@
 
 
               <li class="menu-item">
-                  <a class="menu-link" href="settings.html">
+                  <a class="menu-link" href="{{ url('tabungan') }}">
                          <span class="nav-icon">
                               <i class="ri-store-3-line"></i>
                          </span>

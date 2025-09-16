@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
 use App\Models\Tahun_ajaran;
@@ -12,12 +13,13 @@ use Illuminate\Http\Request;
 class KelasController extends Controller
 {
     public function index(){
-        $kelas = Kelas::with('unit','officer.user')->get();
+        $kelas = Kelas::with('unit','officer.user','jurusan')->get();
         $headers = [
             'No',
             'Nama Unit',
             'Nama Kelas',
             'Wali Kelas',
+            'Jurusan',
             'Status',
             'Action'
         ];
@@ -31,8 +33,10 @@ class KelasController extends Controller
         $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+        $jurusan = Jurusan::get();
+        $kelas = Kelas::get();
 
-        return view('pages.data_master.kelas.kelas_create', compact('yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }
     public function store(Request $request)
     {
@@ -43,6 +47,7 @@ class KelasController extends Controller
                 'unit_id'         => 'required',
                 'officer_id'      => 'required',
                 'status'          => 'required|in:0,1', // atau 0/1 kalau status disimpan angka
+                'jurusan_id'      => 'required',
             ]);
 
             Kelas::create([
@@ -51,6 +56,7 @@ class KelasController extends Controller
                 'unit_id'         => $request->unit_id,
                 'officer_id'      => $request->officer_id,
                 'status'          => $request->status,
+                'jurusan_id'      => $request->jurusan_id,
             ]);
 
             return redirect()->route('kelas.index')
@@ -71,17 +77,18 @@ class KelasController extends Controller
         $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        return view('pages.data_master.kelas.kelas_create', compact('tahun_ajaran','kelas','yayasan','units','wali','tahun_ajaran_selected'));
+        $jurusan = Jurusan::get();
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan','tahun_ajaran','kelas','yayasan','units','wali','tahun_ajaran_selected'));
     }
     public function update(Request $request, $id)
     {
-
         $request->validate([
             'nama_kelas'      => 'required|string|max:255',
             'tahun_ajaran_id' => 'required',
             'unit_id'         => 'required',
             'officer_id'      => 'required',
-            'status'          => 'required|in:0,1'
+            'status'          => 'required|in:0,1',
+            'jurusan_id'      => 'required',
         ]);
         $data = $request->all();
         $kelas = Kelas::findOrFail($id);
@@ -104,8 +111,9 @@ class KelasController extends Controller
         $wali = Officer::get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+        $jurusan = Jurusan::get();
 
         $show = true;
-        return view('pages.data_master.kelas.kelas_create', compact('kelas','show','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan','kelas','show','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }
 }

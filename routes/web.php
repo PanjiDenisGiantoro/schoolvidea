@@ -8,6 +8,10 @@ use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KelasController;
+use App\Http\Controllers\JurusanController;
+use App\Http\Controllers\KategoritagihanController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\TabunganController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -83,7 +87,54 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/show/{id}', [KelasController::class, 'show'])->name('kelas.show');
     });
 
+    Route::prefix('jurusan')->group(function () {
+        Route::get('/', [JurusanController::class, 'index'])->name('jurusan.index');
+        Route::get('/create', [JurusanController::class, 'create'])->name('jurusan.create');
+        Route::post('/store', [JurusanController::class, 'store'])->name('jurusan.store');
+        Route::get('/edit/{id}', [JurusanController::class, 'edit'])->name('jurusan.edit');
+        Route::put('jurusan/update/{id}', [JurusanController::class, 'update'])->name('jurusan.update');
+        Route::get('/delete/{id}', [JurusanController::class, 'destroy'])->name('jurusan.destroy');
+        Route::get('/show/{id}', [JurusanController::class, 'show'])->name('jurusan.show');
+    });
+    Route::prefix('siswa')->group(function () {
+        Route::get('/', [SiswaController::class, 'index'])->name('siswa.index');
+        Route::get('/create', [SiswaController::class, 'create'])->name('siswa.create');
+        Route::post('/store', [SiswaController::class, 'store'])->name('siswa.store');
+        Route::get('/edit/{id}', [SiswaController::class, 'edit'])->name('siswa.edit');
+        Route::put('siswa/update/{id}', [SiswaController::class, 'update'])->name('siswa.update');
+        Route::get('/delete/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
+        Route::get('/show/{id}', [SiswaController::class, 'show'])->name('siswa.show');
+        Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
+        Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);
 
+    });
+    Route::prefix('kategoritagihan')->group(function () {
+        Route::get('/', [KategoritagihanController::class, 'index'])->name('kategoritagihan.index');
+        Route::get('/create', [KategoritagihanController::class, 'create'])->name('kategoritagihan.create');
+        Route::post('/store', [KategoritagihanController::class, 'store'])->name('kategoritagihan.store');
+        Route::get('/edit/{id}', [KategoritagihanController::class, 'edit'])->name('kategoritagihan.edit');
+        Route::put('kategoritagihan/update/{id}', [KategoritagihanController::class, 'update'])->name('kategoritagihan.update');
+        Route::get('/delete/{id}', [KategoritagihanController::class, 'destroy'])->name('kategoritagihan.destroy');
+        Route::get('/show/{id}', [KategoritagihanController::class, 'show'])->name('kategoritagihan.show');
+    });
 
+    Route::prefix('tabungan')->group(function () {
+        Route::get('/', [TabunganController::class, 'index'])->name('tabungan.index');
+        Route::get('/create', [TabunganController::class, 'create'])->name('tabungan.create');
+        Route::post('/store', [TabunganController::class, 'store'])->name('tabungan.store');
+        Route::get('/{id}', [TabunganController::class, 'show'])->name('tabungan.show'); // detail transaksi
+        Route::get('/{id}/edit', [TabunganController::class, 'edit'])->name('tabungan.edit');
+        Route::put('/{id}', [TabunganController::class, 'update'])->name('tabungan.update');
+        Route::delete('/{id}', [TabunganController::class, 'destroy'])->name('tabungan.destroy');
+    });
+    Route::prefix('akun')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AkunController::class, 'index'])->name('akun.index');
+        Route::get('/create', [\App\Http\Controllers\AkunController::class, 'create'])->name('akun.create');
+        Route::post('/store', [\App\Http\Controllers\AkunController::class, 'store'])->name('akun.store');
+        Route::get('/{id}', [\App\Http\Controllers\AkunController::class, 'show'])->name('akun.show'); // detail transaksi
+        Route::get('/{id}/edit', [\App\Http\Controllers\AkunController::class, 'edit'])->name('akun.edit');
+        Route::put('/{id}', [\App\Http\Controllers\AkunController::class, 'update'])->name('akun.update');
+        Route::delete('/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->name('akun.destroy');
+    });
 
 });

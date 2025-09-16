@@ -50,6 +50,7 @@ class OfficerController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
+            'rfid_no' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -59,6 +60,7 @@ class OfficerController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
+                'rfid_no' => $request->rfid_no,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
@@ -77,6 +79,7 @@ class OfficerController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'user_id'         => $user->id,
                 'role_id'         => $rolePetugas->id, // ✅ foreign key cocok dengan roles_petugas
+
             ]);
             DB::commit();
 
@@ -114,6 +117,7 @@ class OfficerController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
+            'rfid_no' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -126,6 +130,7 @@ class OfficerController extends Controller
                 'name'  => $request->name,
                 'email' => $request->email,
                 'password' => $request->password ? bcrypt($request->password) : $user->password,
+                'rfid_no' => $request->rfid_no,
             ]);
 
             // Update role user

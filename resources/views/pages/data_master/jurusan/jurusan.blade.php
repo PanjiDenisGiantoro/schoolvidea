@@ -5,15 +5,15 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Kelas'
+        'subTitle' => 'Data Jurusan'
     ])
 
     <div class="card">
         <div class="card-body">
             <div class="row g-5">
                 <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">List Kelas</h5>
-                    <a href="{{ url('kelas/create') }}" class="btn btn-primary">
+                    <h5 class="card-title mb-0">List Jurusan</h5>
+                    <a href="{{ url('jurusan/create') }}" class="btn btn-primary">
                         <i class="bi bi-download me-1"></i> Tambah Data
                     </a>
                 </div>
@@ -29,14 +29,13 @@
                     @endif
                     </thead>
                     <tbody>
-                    @forelse($kelas as $item)
+                    @forelse($jurusan as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->nama_kelas }}</td>
-                            <td>{{ $item->unit->nama_unit }}</td>
-                            <td>{{ $item->officer->user->name ?? '' }}</td>
-                            <td>{{ $item->jurusan->nama_jurusan ?? '' }}</td>
-
+                            <td>{{ $item->nama_jurusan }}</td>
+                            <td>{{ $item->kode_jurusan }}</td>
+                            <td>{{ $item->keterangan ?? '' }}</td>
+                            <td>{{ $item->unit->nama_unit ?? '' }}</td>
                             <td>
                                 <span class="badge {{ $item->status === 'Aktif' ? 'bg-success' : 'bg-danger' }}">
                                     {{ $item->status }}
@@ -44,15 +43,15 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-3">
-                                <a href="{{ route('kelas.show', $item->id ?? '') }}" class="link-primary text-muted">
+                                <a href="{{ route('jurusan.show', $item->id ?? '') }}" class="link-primary text-muted">
                                     <i class="ri-eye-line align-middle fs-20"></i>
                                     Show
                                 </a>
-                                <a href="{{ route('kelas.edit', $item->id ?? '') }}" class="link-warning text-muted">
+                                <a href="{{ route('jurusan.edit', $item->id ?? '') }}" class="link-warning text-muted">
                                     <i class="ri-edit-line align-middle fs-20"></i>
                                     Edit
                                 </a>
-                                <a href="{{ route('kelas.destroy', $item->id ?? '') }}" class="link-danger text-muted">
+                                <a href="{{ route('jurusan.destroy', $item->id ?? '') }}" class="link-danger text-muted">
                                     <i class="ri-delete-bin-5-line align-middle fs-20"></i>
                                     Hapus
                                 </a>
@@ -72,7 +71,7 @@
 
 @endsection
 @push('scripts')
-    @if($kelas->isNotEmpty())
+    @if($jurusan->isNotEmpty())
 
     <script>
         $(document).ready(function () {
