@@ -48,6 +48,7 @@
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
+                          <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Setting Akun</a></li>
 
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategoritagihan') }}">Kategori</a></li>
                           <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>

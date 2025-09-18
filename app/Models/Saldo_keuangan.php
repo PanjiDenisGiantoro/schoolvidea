@@ -8,4 +8,8 @@ class Saldo_keuangan extends Model
 {
     protected $table = 'saldo_keuangan';
     protected $guarded = [];
+    public function getStatusTtextAttribute($value)
+    {
+        return $value == 1 ? 'Aktif' : 'Tidak Aktif';
+    }
 }

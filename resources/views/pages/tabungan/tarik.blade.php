@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Tambah Transaksi Tabungan')
+@section('title', 'Tarik Tabungan')
 
 @section('content')
     @include('partials.page-title', [
-        'title' => 'Tambah Transaksi',
+        'title' => 'Tarik Tabungan',
         'subTitle' => 'Tabungan / Keuangan'
     ])
 
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        {{-- Detail Siswa dan Form Tabungan --}}
+        {{-- Detail Siswa dan Form Penarikan --}}
         <div class="col-12">
             <div class="row g-4">
                 {{-- Detail Siswa --}}
@@ -46,35 +46,25 @@
                         <ul class="list-unstyled small">
                             <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
                             <li><strong>Nomor Induk:</strong> <span id="detail_nisn">-</span></li>
-                            <li><strong>Unit Pendidikan:</strong> <span id="detail_unit">-</span></li>
                             <li><strong>Kelas Sekarang:</strong> <span id="detail_kelas">-</span></li>
-                            <li><strong>Nama Jurusan:</strong> <span id="detail_jurusan">-</span></li>
-                            <li><strong>Tahun Ajaran:</strong> <span id="detail_tahun">-</span></li>
-                            <li><strong>Jenis Kelamin:</strong> <span id="detail_gender">-</span></li>
-                            <li><strong>TTL:</strong> <span id="detail_lahir">-</span></li>
-                            <li><strong>Telepon:</strong> <span id="detail_telp">-</span></li>
+                            <li><strong>Saldo Tabungan:</strong> <span id="saldo_awal">Rp 0</span></li>
                         </ul>
                     </div>
                 </div>
 
                 {{-- Form Transaksi --}}
                 <div class="col-md-8">
-                    <form action="{{ route('tabungan.store') }}" method="POST" id="formTabungan">
+                    <form action="{{ route('tabungan.tarik.store') }}" method="POST" id="formTarik">
                         @csrf
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
                         <div class="card p-4 shadow-sm rounded-4 border-0">
-                            <h5 class="fw-bold text-primary">Detail Transaksi</h5>
+                            <h5 class="fw-bold text-danger">Detail Penarikan</h5>
                             <hr>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Jumlah Saldo Awal</label>
-                                <div id="saldo_awal" class="fw-bold text-success">Rp 0</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="jumlah" class="form-label fw-semibold">Jumlah Setoran <span class="text-danger">*</span></label>
+                                <label for="jumlah" class="form-label fw-semibold">Jumlah Penarikan <span class="text-danger">*</span></label>
                                 <input type="number" name="jumlah" id="jumlah" class="form-control rounded-pill shadow-sm" required>
                             </div>
 
@@ -85,11 +75,11 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Jumlah Transaksi</label>
-                                <div id="jumlah_transaksi" class="fw-bold text-info">Rp 0</div>
+                                <div id="jumlah_transaksi" class="fw-bold text-danger">Rp 0</div>
                             </div>
 
-                            <button type="submit" class="btn btn-success w-100 rounded-pill shadow-lg animate-btn">
-                                <i class="bx bx-check-circle"></i> Proses Tambah Saldo
+                            <button type="submit" class="btn btn-danger w-100 rounded-pill shadow-lg animate-btn">
+                                <i class="bx bx-wallet-alt"></i> Proses Tarik Saldo
                             </button>
                         </div>
                     </form>
@@ -98,34 +88,12 @@
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <style>
-        .animate-btn {
-            transition: all 0.3s ease-in-out;
-        }
-        .animate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-        }
-    </style>
-@endpush
-
-
 @push('scripts')
     <script>
-        // Update jumlah transaksi real-time
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
-
-        jumlahInput.addEventListener('input', function() {
-            const value = parseInt(this.value) || 0;
-            jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
-        });
+        const saldoAwalEl = document.getElementById('saldo_awal');
+        let saldoAwal = 0;
 
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
@@ -146,17 +114,16 @@
                     data.forEach(siswa => {
                         const option = document.createElement('option');
                         option.value = siswa.id;
-                        option.text = siswa.user.name; // sesuaikan field nama user
+                        option.text = siswa.user.name;
                         siswaSelect.appendChild(option);
                     });
-                })
-                .catch(err => console.error(err));
+                });
         });
 
         // Load detail siswa saat dipilih
         siswaSelect.addEventListener('change', function() {
             const siswaId = this.value;
-            penerimaHidden.value = siswaId; // update hidden input untuk request
+            penerimaHidden.value = siswaId;
 
             if (!siswaId) return;
 
@@ -165,21 +132,30 @@
                 .then(data => {
                     document.getElementById('detail_nama').innerText = data.nama_lengkap;
                     document.getElementById('detail_nisn').innerText = data.nisn;
-                    document.getElementById('detail_unit').innerText = data.unit;
                     document.getElementById('detail_kelas').innerText = data.kelas;
-                    document.getElementById('detail_jurusan').innerText = data.jurusan;
-                    document.getElementById('detail_tahun').innerText = data.tahun_ajaran;
-                    document.getElementById('detail_gender').innerText = data.gender;
-                    document.getElementById('detail_lahir').innerText = `${data.tempat_lahir}, ${data.tanggal_lahir}`;
-                    document.getElementById('detail_telp').innerText = data.no_hp;
+
+                    if (data.saldo_akhir) {
+                        saldoAwal = parseInt(data.saldo_akhir); // simpan saldo untuk validasi
+                        saldoAwalEl.innerText = 'Rp ' + saldoAwal.toLocaleString('id-ID');
+                    }
+
                     if (data.foto) {
                         document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
                     }
-                    // Optional: update saldo awal jika ada
-                    if (data.saldo_akhir) {
-                        document.getElementById('saldo_awal').innerText = 'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID');
-                    }
                 });
+        });
+
+        // Update jumlah transaksi real-time + validasi saldo
+        jumlahInput.addEventListener('input', function() {
+            let value = parseInt(this.value) || 0;
+
+            if (value > saldoAwal) {
+                alert("Jumlah penarikan tidak boleh lebih besar dari saldo (" + saldoAwal.toLocaleString('id-ID') + ")");
+                this.value = saldoAwal; // otomatis set ke saldo maksimal
+                value = saldoAwal;
+            }
+
+            jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
         });
     </script>
 @endpush

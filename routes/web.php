@@ -12,6 +12,7 @@ use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KategoritagihanController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TabunganController;
+use App\Http\Controllers\SettingAkunController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -122,10 +123,10 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/', [TabunganController::class, 'index'])->name('tabungan.index');
         Route::get('/create', [TabunganController::class, 'create'])->name('tabungan.create');
         Route::post('/store', [TabunganController::class, 'store'])->name('tabungan.store');
-        Route::get('/{id}', [TabunganController::class, 'show'])->name('tabungan.show'); // detail transaksi
-        Route::get('/{id}/edit', [TabunganController::class, 'edit'])->name('tabungan.edit');
-        Route::put('/{id}', [TabunganController::class, 'update'])->name('tabungan.update');
-        Route::delete('/{id}', [TabunganController::class, 'destroy'])->name('tabungan.destroy');
+        Route::get('/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
+        Route::post('/store-tarik', [TabunganController::class, 'tarikStore'])->name('tabungan.tarik.store');
+        Route::get('/show/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
+        Route::get('/status/{id}', [TabunganController::class, 'status'])->name('tabungan.status');
     });
     Route::prefix('akun')->group(function () {
         Route::get('/', [\App\Http\Controllers\AkunController::class, 'index'])->name('akun.index');
@@ -135,6 +136,15 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/{id}/edit', [\App\Http\Controllers\AkunController::class, 'edit'])->name('akun.edit');
         Route::put('/{id}', [\App\Http\Controllers\AkunController::class, 'update'])->name('akun.update');
         Route::delete('/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->name('akun.destroy');
+    });
+    Route::prefix('setting_akun')->group(function () {
+        Route::get('/', [SettingAkunController::class, 'index'])->name('setting_akun.index');
+        Route::get('/create', [SettingAkunController::class, 'create'])->name('setting_akun.create');
+        Route::post('/store', [SettingAkunController::class, 'store'])->name('setting_akun.store');
+        Route::get('/{id}', [SettingAkunController::class, 'show'])->name('setting_akun.show'); // detail transaksi
+        Route::get('/{id}/edit', [SettingAkunController::class, 'edit'])->name('setting_akun.edit');
+        Route::put('/{id}', [SettingAkunController::class, 'update'])->name('setting_akun.update');
+        Route::delete('/{id}', [SettingAkunController::class, 'destroy'])->name('setting_akun.destroy');
     });
 
 });
