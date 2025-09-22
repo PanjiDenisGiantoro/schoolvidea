@@ -12,10 +12,17 @@ class Akun extends Model
     {
         return $this->belongsTo(Akun::class, 'parent_id');
     }
+    public function children()
+    {
+        return $this->hasMany(Akun::class, 'parent_id');
+    }
 
     public function unit()
     {
         return $this->belongsTo(\App\Models\Unit::class, 'unit_id');
     }
-
+    public function jurnals()
+    {
+        return $this->hasMany(Jurnals::class, 'akun_id');
+    }
 }

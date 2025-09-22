@@ -18,4 +18,16 @@ class Keuangan_transaksi extends Model
     {
         return $this->hasMany(Jurnals::class, 'transaksi_id');
     }
+    public function jurnal()
+    {
+        return $this->hasMany(Jurnals::class, 'transaksi_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'penerima_id');
+    }
+    public function penerima()
+    {
+        return $this->morphTo(__FUNCTION__, 'penerima_tipe', 'penerima_id');
+    }
 }

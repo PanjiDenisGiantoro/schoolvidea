@@ -92,7 +92,6 @@ class TabunganController extends Controller
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
             }
 
-            // Jurnal Debit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
                 'akun_id'      => $akun_debit,
@@ -145,7 +144,7 @@ class TabunganController extends Controller
             'keterangan'  => 'nullable|string',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $siswa = Siswa::findOrFail($request->penerima_id);
@@ -220,12 +219,12 @@ class TabunganController extends Controller
                 'dilakukan_pada' => now(),
             ]);
 
-//            DB::commit();
+            DB::commit();
 
             return redirect()->route('tabungan.index')->with('success', 'Penarikan tabungan berhasil.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-//            DB::rollBack();
+//            dd($e->getMessage());
+            DB::rollBack();
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -270,6 +269,79 @@ class TabunganController extends Controller
 
         return redirect()->route('tabungan.index')->with('success', 'Status tabungan berhasil diubah.');
 
+    }
+    public function report(Request $request, $userId)
+    {
+        $from = $request->from ?? date('Y-m-01');
+        $to   = $request->to ?? date('Y-m-t');
+
+        // saldo terakhir
+        $saldoAkhir = Saldo_keuangan::where('user_id', $userId)
+            ->orderBy('last_updated', 'desc')
+            ->value('saldo_akhir');
+
+        // transaksi per user
+        $transaksis = Keuangan_transaksi::where('penerima_id', $userId)
+            ->whereBetween('tanggal_transaksi', [$from, $to])
+            ->orderBy('tanggal_transaksi', 'asc')
+            ->get();
+
+        // saldo berjalan
+        $saldoAwal = 0;
+        $saldoBerjalan = $saldoAwal;
+        $riwayat = [];
+
+        foreach ($transaksis as $trx) {
+            if ($trx->jenis_transaksi === 'setoran_tabungan') {
+                $saldoBerjalan += $trx->jumlah;
+            } elseif ($trx->jenis_transaksi === 'penarikan_tabungan') {
+                $saldoBerjalan -= $trx->jumlah;
+            }
+
+            $riwayat[] = [
+                'tanggal' => $trx->tanggal_transaksi,
+                'jenis'   => $trx->jenis_transaksi,
+                'jumlah'  => $trx->jumlah,
+                'keterangan' => $trx->keterangan,
+                'saldo'   => $saldoBerjalan,
+            ];
+        }
+
+
+        return view('pages.report.tabungan.tabungan', compact(
+            'userId', 'from', 'to', 'saldoAwal', 'saldoAkhir', 'riwayat'
+        ));
+    }
+    public function reportAll(Request $request)
+    {
+        $from = $request->from ?? date('Y-m-01');
+        $to   = $request->to ?? date('Y-m-t');
+
+        $saldos = Saldo_keuangan::with('siswa')->get();
+
+        $rekap = [];
+        foreach ($saldos as $saldo) {
+            $transaksis = Keuangan_transaksi::where('penerima_id', $saldo->user_id)
+                ->where('penerima_tipe', Siswa::class)
+                ->whereBetween('tanggal_transaksi', [$from, $to])
+                ->get();
+
+
+            $setoran   = $transaksis->where('jenis_transaksi', 'setoran_tabungan')->sum('jumlah');
+            $penarikan = $transaksis->where('jenis_transaksi', 'penarikan_tabungan')->sum('jumlah');
+
+            $rekap[] = [
+                'nama'        => $saldo->siswa->nisn ?? 'Siswa-'.$saldo->user_id,
+                'setoran'     => $setoran,
+                'penarikan'   => $penarikan,
+                'saldo_akhir' => $saldo->saldo_akhir,
+            ];
+        }
+
+
+        return view('pages.report.tabungan.tabunganall', compact(
+            'rekap', 'from', 'to'
+        ));
     }
 
 

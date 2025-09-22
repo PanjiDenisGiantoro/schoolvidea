@@ -13,6 +13,8 @@ use App\Http\Controllers\KategoritagihanController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\SettingAkunController;
+use App\Http\Controllers\JurnalController;
+use App\Http\Controllers\TagihanController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -127,6 +129,9 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::post('/store-tarik', [TabunganController::class, 'tarikStore'])->name('tabungan.tarik.store');
         Route::get('/show/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
         Route::get('/status/{id}', [TabunganController::class, 'status'])->name('tabungan.status');
+        Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
+        Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
+
     });
     Route::prefix('akun')->group(function () {
         Route::get('/', [\App\Http\Controllers\AkunController::class, 'index'])->name('akun.index');
@@ -146,5 +151,23 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::put('/{id}', [SettingAkunController::class, 'update'])->name('setting_akun.update');
         Route::delete('/{id}', [SettingAkunController::class, 'destroy'])->name('setting_akun.destroy');
     });
+
+
+    Route::prefix('report')->group(function () {
+        Route::get('/arus-kas', [JurnalController::class, 'aruskas'])->name('report.arus-kas');
+        Route::get('/jurnal', [JurnalController::class, 'jurnal'])->name('report.jurnal');
+        Route::get('/buku_besar', [JurnalController::class, 'buku_besar'])->name('report.buku_besar');
+        Route::get('/neraca_saldo', [JurnalController::class, 'neraca_saldo'])->name('report.neraca_saldo');
+        Route::get('/neraca', [JurnalController::class, 'neraca'])->name('report.neraca');
+        Route::get('/labarugi', [JurnalController::class, 'labarugi'])->name('report.labarugi');
+    });
+
+    Route::prefix('tagihan')->group(function () {
+        Route::get('/', [TagihanController::class, 'index'])->name('tagihan.index');
+        Route::get('/create', [TagihanController::class, 'create'])->name('tagihan.create');
+        Route::post('/store', [TagihanController::class, 'store'])->name('tagihan.store');
+
+    });
+
 
 });

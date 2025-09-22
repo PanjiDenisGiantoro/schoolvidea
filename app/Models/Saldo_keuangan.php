@@ -12,4 +12,12 @@ class Saldo_keuangan extends Model
     {
         return $value == 1 ? 'Aktif' : 'Tidak Aktif';
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    public function siswa()
+    {
+        return $this->belongsTo(Siswa::class, 'user_id');
+    }
 }
