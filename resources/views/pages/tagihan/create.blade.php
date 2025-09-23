@@ -11,10 +11,11 @@
             </a>
         </div>
 
-        <div class="card">
+        <div class="card rounded-3 shadow-sm">
             <div class="card-body">
                 <form action="{{ route('tagihan.store') }}" method="POST">
                     @csrf
+
                     {{-- Unit Pendidikan --}}
                     <div class="mb-3">
                         <label class="form-label">Unit Pendidikan</label>
@@ -26,14 +27,10 @@
                         </select>
                     </div>
 
-                    {{-- Daftar Kelas --}}
+                    {{-- Pilih Kelas --}}
                     <div class="mb-3">
-                        <label class="form-label">Daftar Kelas</label><br>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pilihKelas" onchange="toggleKelas()">
-                            <label class="form-check-label" for="pilihKelas">Memilih</label>
-                        </div>
-                        <select name="kelas_id" id="kelasSelect" class="form-control mt-2 d-none">
+                        <label for="kelas" class="form-label">Pilih Kelas</label>
+                        <select id="kelas" class="form-control" data-choices data-choices-sorting-false required name="kelas">
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
@@ -41,10 +38,64 @@
                         </select>
                     </div>
 
-                    {{-- Jumlah Periode --}}
+                    {{-- Pilihan Semua / Per Siswa --}}
+                    <div id="pilihanSiswa" class="mb-3 d-none">
+                        <label class="form-label">Pilih Target</label><br>
+                        <input type="radio" name="target" value="all" checked> Semua Siswa
+                        <input type="radio" name="target" value="per"> Pilih Per Siswa
+                    </div>
+
+                    {{-- Tabel Siswa --}}
+                    <div id="tableSiswaWrapper" class="d-none">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th width="5%">
+                                    <input type="checkbox" id="checkAll">
+                                </th>
+                                <th>Nama Siswa</th>
+                                <th>Nomor Induk</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tableSiswa">
+                            {{-- Ajax isi disini --}}
+                            </tbody>
+                        </table>
+                    </div>
+
+
                     <div class="mb-3">
-                        <label class="form-label">Jumlah Periode Tagihan <span class="text-danger">*</span></label>
-                        <input type="number" name="periode" class="form-control" min="1" required>
+                        <label class="form-label">Jenis Tagihan</label><br>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="jenisTagihanSwitch" name="jenis_tagihan" value="bulanan" checked>
+                            <label class="form-check-label" for="jenisTagihanSwitch">
+                                Bulanan <span class="text-muted">(matikan switch untuk Bebas)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- Jumlah Periode --}}
+
+                    {{-- Jika Bulanan tampilkan periode --}}
+                    <div id="periodeWrapper" class="mb-3">
+                        <label class="form-label">Jumlah Periode Tagihan</label>
+                        <select name="periode" class="form-control">
+                            <option value="">-- Pilih Periode --</option>
+                            <optgroup label="Bulan">
+                                @foreach(range(1,12) as $i)
+                                    <option value="{{ $i }}">{{ $i }} Bulan</option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="Tahun">
+                                <option value="24">Bulanan (2 Tahun)</option>
+                                <option value="36">Bulanan (3 Tahun)</option>
+                                <option value="48">Bulanan (4 Tahun)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div id="bebasWrapper" class="mb-3 d-none">
+                        <label class="form-label">Nominal Tagihan (Bebas)</label>
+                        <input type="number" name="nominal_bebas" class="form-control" placeholder="Masukkan nominal bebas">
                     </div>
 
                     {{-- Bulan & Tahun Mulai --}}
@@ -71,40 +122,126 @@
                     {{-- Item Tagihan --}}
                     <div id="itemTagihan">
                         <div class="mb-3">
-                            <label class="form-label">Item Tagihan 1 <span class="text-danger">*</span></label>
-                            <input type="text" name="items[0][nama]" class="form-control mb-2" placeholder="Nama Item">
-                            <input type="number" name="items[0][jumlah]" class="form-control" placeholder="Nominal">
+                            <label class="form-label">Item Tagihan 1</label>
+                            <select name="items[0][id]" class="form-control">
+                                <option value="">-- Pilih Item --</option>
+                                @foreach($kategoriTagihan as $kat)
+                                    <option value="{{ $kat->id }}">
+                                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan,0,',','.') }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <button type="button" class="btn btn-sm btn-success" onclick="tambahItem()">+ Tambah Item</button>
 
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                        <a href="{{ route('tagihan.index') }}" class="btn btn-secondary">Batal</a>
+                        <button type="submit" class="btn btn-primary rounded-pill">Simpan</button>
+                        <a href="{{ route('tagihan.index') }}" class="btn btn-secondary rounded-pill">Batal</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+@endsection
+
+    @push('scripts')
 
     <script>
+        $(document).ready(function() {
+
+            $('#jenisTagihanSwitch').on('change', function(){
+                if($(this).is(':checked')){
+                    // Mode bulanan
+                    $('#periodeWrapper').removeClass('d-none');
+                    $('#bebasWrapper').addClass('d-none');
+                    $(this).val('bulanan');
+                }else{
+                    // Mode bebas
+                    $('#periodeWrapper').addClass('d-none');
+                    $('#bebasWrapper').removeClass('d-none');
+                    $(this).val('bebas');
+                }
+            });
+
+            $('#kelas').on('change', function() {
+                let kelasId = $(this).val();
+                if(kelasId){
+                    $('#pilihanSiswa').removeClass('d-none');
+                    $('input[name="target"][value="all"]').prop('checked', true);
+                    $('#tableSiswaWrapper').addClass('d-none'); // reset
+                    loadSiswa(kelasId);
+                }else{
+                    $('#pilihanSiswa').addClass('d-none');
+                    $('#tableSiswaWrapper').addClass('d-none');
+                }
+            });
+
+            // Radio toggle
+            $('input[name="target"]').on('change', function() {
+                if($(this).val() === 'per'){
+                    $('#tableSiswaWrapper').removeClass('d-none');
+                }else{
+                    $('#tableSiswaWrapper').addClass('d-none');
+                }
+            });
+
+            // Check All
+            $(document).on('change', '#checkAll', function() {
+                $('.checkItem').prop('checked', $(this).prop('checked'));
+            });
+        });
+
+        // Ajax load siswa
+        function loadSiswa(kelasId){
+            $.get(`/kelas/${kelasId}/siswa`, function(data) {
+                let rows = '';
+                data.forEach((s, i) => {
+                    rows += `
+                <tr>
+                    <td><input type="checkbox" name="siswa[]" value="${s.id}" class="checkItem"></td>
+                    <td>${s.user.name}</td>
+                    <td>${s.nisn}</td>
+                </tr>
+            `;
+                });
+                $('#tableSiswa').html(rows);
+                $('#checkAll').prop('checked', false);
+            });
+        }
+
         let itemCount = 1;
 
+        // Tambah item tagihan
         function tambahItem() {
             let container = document.getElementById('itemTagihan');
             let html = `
         <div class="mb-3">
             <label class="form-label">Item Tagihan ${itemCount+1}</label>
-            <input type="text" name="items[${itemCount}][nama]" class="form-control mb-2" placeholder="Nama Item">
-            <input type="number" name="items[${itemCount}][jumlah]" class="form-control" placeholder="Nominal">
+            <select name="items[${itemCount}][id]" class="form-control">
+                <option value="">-- Pilih Item --</option>
+                @foreach($kategoriTagihan as $kat)
+            <option value="{{ $kat->id }}">
+                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan,0,',','.') }}
+            </option>
+@endforeach
+            </select>
         </div>
     `;
             container.insertAdjacentHTML('beforeend', html);
             itemCount++;
         }
 
-        function toggleKelas() {
-            document.getElementById('kelasSelect').classList.toggle('d-none');
-        }
+        // Tampilkan siswa kalau mode = "siswa"
+        document.getElementById('modeTagihan').addEventListener('change', function() {
+            let siswaWrapper = document.getElementById('siswaWrapper');
+            if (this.value === "siswa") {
+                siswaWrapper.classList.remove('d-none');
+            } else {
+                siswaWrapper.classList.add('d-none');
+            }
+        });
+
+
     </script>
-@endsection
+    @endpush

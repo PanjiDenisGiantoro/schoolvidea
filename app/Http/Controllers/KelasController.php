@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
+use App\Models\Siswa;
 use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\Yayasan;
@@ -116,4 +117,13 @@ class KelasController extends Controller
         $show = true;
         return view('pages.data_master.kelas.kelas_create', compact('jurusan','kelas','show','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }
+    public function getSiswa($id)
+    {
+        $siswa = Siswa::where('kelas_id', $id)
+            ->with('user:id,name') // ambil nama dari relasi user
+            ->get(['id','user_id','kelas_id','nisn']);
+
+        return response()->json($siswa);
+    }
+
 }

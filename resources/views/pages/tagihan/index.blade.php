@@ -93,25 +93,62 @@
                         <th>Nama Lengkap</th>
                         <th>Tagihan Unit</th>
                         <th>Tagihan Kelas</th>
+                        <th>Item Tagihan</th>
                         <th>Jml. Tagihan</th>
                         <th>Jml. Dibayar</th>
                         <th>Jml. Tunggakan</th>
                         <th>Status</th>
+                        <th>Detail</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {{-- contoh dummy --}}
-                    <tr>
-                        <td>1</td>
-                        <td>12345</td>
-                        <td>Andi</td>
-                        <td>SMP</td>
-                        <td>9A</td>
-                        <td>Rp 1.000.000</td>
-                        <td>Rp 500.000</td>
-                        <td>Rp 500.000</td>
-                        <td><span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span></td>
-                    </tr>
+                    @forelse($tagihans as $index => $ts)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $ts->siswa->nisn }}</td>
+                            <td>{{ $ts->siswa->user->name }}</td>
+                            <td>{{ $ts->tagihan->unit->nama_unit ?? '-' }}</td>
+                            <td>{{ $ts->tagihan->kelas->nama_kelas ?? '-' }}</td>
+                            <td>
+                                @foreach($ts->tagihan->items as $item)
+                                    {{ $item->kategori->nama_kategori ?? '-' }}
+                                @endforeach
+                            </td>
+                            <td>
+                                @php
+                                    $total_tagihan = $ts->tagihan->items->sum('nominal') * ($ts->tagihan->periode ?? 1);
+                                @endphp
+                                Rp {{ number_format($total_tagihan, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @php
+                                    $sudah_bayar = $ts->siswa->pembayaran_tagihan->where('tagihan_id', $ts->tagihan_id)->sum('jumlah_bayar');
+                                @endphp
+                                Rp {{ number_format($sudah_bayar, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @php
+                                    $tunggakan = $total_tagihan - $sudah_bayar;
+                                @endphp
+                                Rp {{ number_format($tunggakan, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @if($sudah_bayar >= $total_tagihan)
+                                    <span class="badge bg-success rounded-pill">Lunas</span>
+                                @else
+                                    <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
+                                @endif
+                            </td>
+                            <td>
+{{--                                <i class="ri-mac-line"></i>--}}
+                                <a href="{{ route('tagihan.show', $ts->id) }}" class="btn btn-primary rounded-pill"><i class="ri-eye-line"></i></a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9">Tidak ada data tagihan.</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>

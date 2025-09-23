@@ -108,7 +108,7 @@
 
 
             <li class="menu-item">
-                <a class="menu-link" href="pos.html">
+                <a class="menu-link" href="{{ url('pembayaran') }}">
                          <span class="nav-icon">
                               <i class="ri-mac-line"></i>
                          </span>
@@ -132,9 +132,7 @@
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/neraca_saldo') }}">Neraca Saldo</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/neraca') }}">Neraca</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/labarugi') }}">Laba Rugi</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/tabungan') }}">Tabungan</a></li>
-
-
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan/report-all') }}">Tabungan</a></li>
                     </ul>
                 </div>
             </li>

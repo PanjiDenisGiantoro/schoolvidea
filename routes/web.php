@@ -15,6 +15,7 @@ use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\SettingAkunController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\TagihanController;
+use App\Http\Controllers\PembayaranController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -88,6 +89,8 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::put('kelas/update/{id}', [KelasController::class, 'update'])->name('kelas.update');
         Route::get('/delete/{id}', [KelasController::class, 'destroy'])->name('kelas.destroy');
         Route::get('/show/{id}', [KelasController::class, 'show'])->name('kelas.show');
+        Route::get('/{id}/siswa', [KelasController::class, 'getSiswa']);
+
     });
 
     Route::prefix('jurusan')->group(function () {
@@ -166,7 +169,13 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/', [TagihanController::class, 'index'])->name('tagihan.index');
         Route::get('/create', [TagihanController::class, 'create'])->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->name('tagihan.store');
+        Route::get('/show/{id}', [TagihanController::class, 'show'])->name('tagihan.show');
+        Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
 
+    });
+    Route::prefix('pembayaran')->group(function () {
+        Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
+        Route::post('/store', [PembayaranController::class, 'store'])->name('pembayaran.store');
     });
 
 

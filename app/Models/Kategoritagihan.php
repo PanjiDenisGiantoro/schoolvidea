@@ -17,4 +17,9 @@ class Kategoritagihan extends Model
     {
         return $this->belongsTo(Tahun_ajaran::class);
     }
+    public function items()
+    {
+        return $this->hasMany(KategoriTagihan::class);
+    }
+
 }

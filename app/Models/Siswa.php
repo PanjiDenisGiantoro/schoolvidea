@@ -28,5 +28,10 @@ class Siswa extends Model
     {
         return $this->hasOne(Saldo_keuangan::class, 'user_id');
     }
+    public function pembayaran_tagihan()
+    {
+        return $this->hasMany(TagihanSiswa::class, 'siswa_id');
+    }
+
 
 }
