@@ -85,6 +85,7 @@ class TabunganController extends Controller
 
             $settings = setting_akun::where('kategori', 'tabungan')->get();
 
+
             $akun_debit  = $settings->where('debit', 1)->first()?->akun_id;
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id;
 
@@ -132,7 +133,7 @@ class TabunganController extends Controller
             return redirect()->route('tabungan.index')->with('success', 'Transaksi berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('danger', $e->getMessage());
         }
     }
     public function tarikStore(Request $request)

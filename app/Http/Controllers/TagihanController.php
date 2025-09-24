@@ -13,6 +13,7 @@ use App\Models\Tagihan;
 use App\Models\TagihanItem;
 use App\Models\TagihanSiswa;
 use App\Models\Unit;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class TagihanController extends Controller
             'nominal_bebas' => 'nullable|numeric',
             'bulan_mulai' => 'required|integer|min:1|max:12',
             'tahun_mulai' => 'required|integer',
-            'siswa.*' => 'nullable|exists:siswa,id',
+            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
         DB::beginTransaction();
@@ -157,6 +158,11 @@ class TagihanController extends Controller
     }
     public function show($id)
     {
+//        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+//            ->where('siswa_id', 1)
+//            ->first();
+//        dd($tagihanSiswa);
+
         $tagihanSiswa = TagihanSiswa::with([
             'siswa.user',
             'tagihan.unit',
@@ -166,6 +172,58 @@ class TagihanController extends Controller
         ])->findOrFail($id);
 
         return view('pages.tagihan.show', compact('tagihanSiswa'));
+    }
+    public function perbulan($siswaId)
+    {
+        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+            ->where('siswa_id', $siswaId)
+            ->first();
+
+        if (!$tagihanSiswa) {
+            return response()->json([]);
+        }
+
+        $tagihan = $tagihanSiswa->tagihan;
+
+        // Hanya proses jika jenis_tagihan = bulanan
+        if ($tagihan->jenis_tagihan !== 'bulanan') {
+            return response()->json([]);
+        }
+
+        $bulanMulai = (int) $tagihan->bulan_mulai; // misal 10 (Oktober)
+        $tahunMulai = (int) $tagihan->tahun_mulai; // misal 2025
+        $periode    = (int) $tagihan->periode;     // misal 5 (5 bulan)
+        $nominal    = $tagihan->items->sum('nominal');
+
+
+        // Ambil nama kategori (bisa banyak → array → join string)
+        $kategoriList = $tagihan->items->map(function ($item) {
+            return $item->kategori->nama_kategori ? $item->kategori->nama_kategori : '-';
+        })->toArray();
+
+        $namaKategori = implode(', ', $kategoriList);
+
+        $data = [];
+
+        for ($i = 0; $i < $periode; $i++) {
+            $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($i);
+
+            $data[] = [
+                'id'      => $tagihan->id,
+                'bulan'   => $date->translatedFormat('F'), // Nama bulan (contoh: Oktober)
+                'tahun'   => $date->year,
+                'nominal' => $nominal,
+                'status'  => 'Belum Lunas', // nanti bisa dicek dari pembayaran
+                'nama_kategori' => $namaKategori,
+
+            ];
+        }
+
+
+        return response()->json([
+            'total_tagihan' => $nominal * $periode, // total semua bulan
+            'detail'        => $data
+        ]);
     }
 
 }

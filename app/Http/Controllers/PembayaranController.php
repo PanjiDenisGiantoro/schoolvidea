@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jurnals;
+use App\Models\Kelas;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\setting_akun;
@@ -20,8 +21,9 @@ class PembayaranController extends Controller
         $siswaList = Siswa::all();
         $tagihanList = Tagihan::all();
         $akunList = setting_akun::all();
+        $kelas = Kelas::get();
 
-        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList'));
+        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas'));
 
     }
     public function store(Request $request)

@@ -127,6 +127,7 @@
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
         });
 
+        // Element DOM
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
@@ -135,51 +136,77 @@
         // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
-            kelasHidden.value = kelasId;
+            kelasHidden.value = kelasId; // update hidden input
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
 
             if (!kelasId) return;
 
             fetch(`/siswa/by-kelas/${kelasId}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
                 .then(data => {
+                    if (!data.length) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.text = 'Tidak ada siswa';
+                        siswaSelect.appendChild(option);
+                        return;
+                    }
+
                     data.forEach(siswa => {
                         const option = document.createElement('option');
                         option.value = siswa.id;
-                        option.text = siswa.user.name; // sesuaikan field nama user
+                        option.text = siswa.user && siswa.user.name ? siswa.user.name : 'Nama tidak tersedia';
                         siswaSelect.appendChild(option);
                     });
                 })
-                .catch(err => console.error(err));
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.text = 'Gagal memuat siswa';
+                    siswaSelect.appendChild(option);
+                });
         });
 
         // Load detail siswa saat dipilih
         siswaSelect.addEventListener('change', function() {
             const siswaId = this.value;
-            penerimaHidden.value = siswaId; // update hidden input untuk request
+            penerimaHidden.value = siswaId;
 
             if (!siswaId) return;
 
             fetch(`/siswa/siswadetail/${siswaId}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
                 .then(data => {
-                    document.getElementById('detail_nama').innerText = data.nama_lengkap;
-                    document.getElementById('detail_nisn').innerText = data.nisn;
-                    document.getElementById('detail_unit').innerText = data.unit;
-                    document.getElementById('detail_kelas').innerText = data.kelas;
-                    document.getElementById('detail_jurusan').innerText = data.jurusan;
-                    document.getElementById('detail_tahun').innerText = data.tahun_ajaran;
-                    document.getElementById('detail_gender').innerText = data.gender;
-                    document.getElementById('detail_lahir').innerText = `${data.tempat_lahir}, ${data.tanggal_lahir}`;
-                    document.getElementById('detail_telp').innerText = data.no_hp;
+                    document.getElementById('detail_nama').innerText = data.nama_lengkap || '-';
+                    document.getElementById('detail_nisn').innerText = data.nisn || '-';
+                    document.getElementById('detail_unit').innerText = data.unit || '-';
+                    document.getElementById('detail_kelas').innerText = data.kelas || '-';
+                    document.getElementById('detail_jurusan').innerText = data.jurusan || '-';
+                    document.getElementById('detail_tahun').innerText = data.tahun_ajaran || '-';
+                    document.getElementById('detail_gender').innerText = data.gender || '-';
+                    document.getElementById('detail_lahir').innerText = `${data.tempat_lahir || '-'}, ${data.tanggal_lahir || '-'}`;
+                    document.getElementById('detail_telp').innerText = data.no_hp || '-';
+
                     if (data.foto) {
                         document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
+                    } else {
+                        document.querySelector('img[alt="Foto Siswa"]').src = `{{ asset('images/default-user.png') }}`;
                     }
-                    // Optional: update saldo awal jika ada
-                    if (data.saldo_akhir) {
-                        document.getElementById('saldo_awal').innerText = 'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID');
-                    }
-                });
+
+                    // update saldo awal jika ada
+                    document.getElementById('saldo_awal').innerText = data.saldo_akhir
+                        ? 'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID')
+                        : 'Rp 0';
+                })
+                .catch(err => console.error('Fetch detail siswa error:', err));
         });
+
     </script>
 @endpush

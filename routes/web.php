@@ -171,6 +171,7 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::post('/store', [TagihanController::class, 'store'])->name('tagihan.store');
         Route::get('/show/{id}', [TagihanController::class, 'show'])->name('tagihan.show');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
+        Route::get('/perbulan/{id}',[TagihanController::class,'perbulan'])->name('tagihan.perbulan');
 
     });
     Route::prefix('pembayaran')->group(function () {
