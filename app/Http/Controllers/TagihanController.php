@@ -158,10 +158,6 @@ class TagihanController extends Controller
     }
     public function show($id)
     {
-//        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
-//            ->where('siswa_id', 1)
-//            ->first();
-//        dd($tagihanSiswa);
 
         $tagihanSiswa = TagihanSiswa::with([
             'siswa.user',
@@ -173,56 +169,68 @@ class TagihanController extends Controller
 
         return view('pages.tagihan.show', compact('tagihanSiswa'));
     }
-    public function perbulan($siswaId)
+
+    public function perbulan($tagihanSiswaId)
     {
         $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
-            ->where('siswa_id', $siswaId)
-            ->first();
+            ->find($tagihanSiswaId);
 
-        if (!$tagihanSiswa) {
+        if (!$tagihanSiswa || $tagihanSiswa->tagihan->jenis_tagihan !== 'bulanan') {
             return response()->json([]);
         }
 
         $tagihan = $tagihanSiswa->tagihan;
-
-        // Hanya proses jika jenis_tagihan = bulanan
-        if ($tagihan->jenis_tagihan !== 'bulanan') {
-            return response()->json([]);
-        }
-
-        $bulanMulai = (int) $tagihan->bulan_mulai; // misal 10 (Oktober)
-        $tahunMulai = (int) $tagihan->tahun_mulai; // misal 2025
-        $periode    = (int) $tagihan->periode;     // misal 5 (5 bulan)
+        $bulanMulai = (int) $tagihan->bulan_mulai;
+        $tahunMulai = (int) $tagihan->tahun_mulai;
+        $periode    = (int) $tagihan->periode;
         $nominal    = $tagihan->items->sum('nominal');
 
-
-        // Ambil nama kategori (bisa banyak → array → join string)
-        $kategoriList = $tagihan->items->map(function ($item) {
-            return $item->kategori->nama_kategori ? $item->kategori->nama_kategori : '-';
-        })->toArray();
-
-        $namaKategori = implode(', ', $kategoriList);
-
         $data = [];
-
         for ($i = 0; $i < $periode; $i++) {
             $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($i);
 
             $data[] = [
-                'id'      => $tagihan->id,
-                'bulan'   => $date->translatedFormat('F'), // Nama bulan (contoh: Oktober)
-                'tahun'   => $date->year,
-                'nominal' => $nominal,
-                'status'  => 'Belum Lunas', // nanti bisa dicek dari pembayaran
-                'nama_kategori' => $namaKategori,
-
+                'id'            => $tagihanSiswa->id,
+                'nama_kategori' => $tagihan->items->pluck('kategori.nama_kategori')->implode(', '),
+                'bulan'         => $date->translatedFormat('F'),
+                'tahun'         => $date->year,
+                'nominal'       => $nominal,
+                'status'        => 'Belum Lunas'
             ];
         }
 
+        return response()->json($data);
+    }
+
+    public function daftarTagihan($siswaId)
+    {
+        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+            ->where('siswa_id', $siswaId)
+            ->get();
+
+        if ($tagihanSiswa->isEmpty()) {
+            return response()->json([]);
+        }
+
+        $data = $tagihanSiswa->map(function ($ts) {
+            return [
+                'id'            => $ts->id,
+                'jenis_tagihan' => $ts->tagihan->jenis_tagihan,
+                'nominal'       => $ts->tagihan->items->sum('nominal'),
+                'kategori'      => $ts->tagihan->items->map(function ($item) {
+                    return [
+                        'id'            => $item->kategori->id,
+                        'nama_kategori' => $item->kategori->nama_kategori ?? '-',
+                        'kode_kategori' => $item->kategori->kode_kategori ?? '-',
+                        'nominal'       => $item->nominal,
+                    ];
+                }),
+            ];
+        });
 
         return response()->json([
-            'total_tagihan' => $nominal * $periode, // total semua bulan
-            'detail'        => $data
+            'detail' => $data,
+            'total_tagihan' => $tagihanSiswa->sum('tagihan.items.nominal'),
         ]);
     }
 
