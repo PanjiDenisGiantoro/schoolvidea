@@ -246,46 +246,6 @@
                 listTagihanContainer.style.display = 'none';
             }
         });
-        document.getElementById('nama_tagihan').addEventListener('change', function() {
-            const tagihanId = this.value;
-            if (!tagihanId) return;
-
-            fetch(`/tagihan/perbulan/${tagihanId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.length) {
-                        listTagihan.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
-                        </td>
-                    </tr>`;
-                        return;
-                    }
-
-                    listTagihan.innerHTML = data.map(tagihan => `
-                <tr>
-                    <td class="text-center">${tagihan.bulan} ${tagihan.tahun}</td>
-                    <td class="text-center">${tagihan.nama_kategori}</td>
-                    <td class="fw-bold text-end">Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}</td>
-                    <td class="text-center">
-                        <span class="badge ${tagihan.status === 'lunas' ? 'bg-success' : 'bg-warning'}">
-                            ${tagihan.status.toUpperCase()}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        ${tagihan.status === 'lunas'
-                        ? `<span class="text-success"><i class="fa fa-check-circle"></i> Lunas</span>`
-                        : `<button type="button"
-                                       class="btn btn-success btn-sm rounded-pill"
-                                       onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}')">
-                                       <i class="fa fa-credit-card"></i> Bayar
-                                   </button>`}
-                    </td>
-                </tr>
-            `).join('');
-                });
-        });
 
 
         // Load siswa berdasarkan kelas
@@ -346,18 +306,88 @@
                 })
                 .catch(err => console.error(err));
         });
+        document.getElementById('nama_tagihan').addEventListener('change', function() {
+            const tagihanId = this.value;
+            const siswaId = siswaSelect.value;
+
+            if (!tagihanId) return;
+
+            fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.length) {
+                        listTagihan.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                        </td>
+                    </tr>`;
+                        return;
+                    }
+
+                    listTagihan.innerHTML = data.map(tagihan => `
+                <tr>
+                    <td class="text-center">${tagihan.bulan} ${tagihan.tahun}</td>
+                    <td class="text-center">${tagihan.nama_kategori}</td>
+                    <td class="fw-bold text-end">Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}</td>
+                    <td class="text-center">
+                        <span class="badge ${tagihan.status === 'lunas' ? 'bg-success' : 'bg-warning'}">
+                            ${tagihan.status.toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        ${tagihan.status === 'Lunas'
+                        ? `<span class="text-success"><i class="fa fa-check-circle"></i> Lunas</span>`
+                        : `<button type="button"
+                                       class="btn btn-success btn-sm rounded-pill"
+                                       onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', '${tagihan.nominal}', '${tagihan.id}')">
+                                       <i class="fa fa-credit-card"></i> Bayar
+                                   </button>`}
+                    </td>
+                </tr>
+            `).join('');
+                });
+        });
 
     </script>
     <script>
 
-        function bayarTagihan(tagihanId, bulan, tahun) {
-            document.getElementById('tagihan_hidden').value = tagihanId;
-            document.getElementById('bulan_hidden').value = bulan;
-            document.getElementById('tahun_hidden').value = tahun;
+        function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
+            if (!confirm(`Yakin ingin bayar ${bulan} ${tahun} sebesar Rp ${parseInt(nominal).toLocaleString('id-ID')} ?`)) {
+                return;
+            }
 
-            alert(`Bayar Tagihan ID: ${tagihanId}, Bulan: ${bulan} - ${tahun}`);
-            // nanti di-submit ke form
+            fetch('/pembayaran/store', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal,
+                    kategori_id: kategoriId,
+                    metode: 'manual',
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status == 1) {
+                        alert('Pembayaran berhasil!');
+                        // reload list tagihan supaya status berubah lunas
+                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                    } else {
+                        alert('Gagal: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Terjadi kesalahan saat membayar.');
+                });
         }
+
 
     </script>
 @endpush
