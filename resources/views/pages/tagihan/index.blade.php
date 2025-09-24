@@ -102,36 +102,28 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @forelse($tagihans as $index => $ts)
+                    @foreach($tagihans as $tagihan)
+                        @php
+                            $ts = $tagihan->tagihanSiswa->first(); // ambil siswa pertama saja
+                            $siswa = $ts->siswa ?? null;
+                            $sudah_bayar = $siswa?->pembayaranTagihan->where('tagihan_siswa_id', $ts->id)->sum('jumlah_bayar') ?? 0;
+                            $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
+                            $tunggakan = $total_tagihan - $sudah_bayar;
+                        @endphp
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $ts->siswa->nisn }}</td>
-                            <td>{{ $ts->siswa->user->name }}</td>
-                            <td>{{ $ts->tagihan->unit->nama_unit ?? '-' }}</td>
-                            <td>{{ $ts->tagihan->kelas->nama_kelas ?? '-' }}</td>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $siswa?->nisn ?? '-' }}</td>
+                            <td>{{ $siswa?->user->name ?? '-' }}</td>
+                            <td>{{ $tagihan->unit->nama_unit ?? '-' }}</td>
+                            <td>{{ $tagihan->kelas->nama_kelas ?? '-' }}</td>
                             <td>
-                                @foreach($ts->tagihan->items as $item)
-                                    {{ $item->kategori->nama_kategori ?? '-' }}
+                                @foreach($tagihan->items as $item)
+                                    {{ $item->kategori->nama_kategori ?? '-' }}<br>
                                 @endforeach
                             </td>
-                            <td>
-                                @php
-                                    $total_tagihan = $ts->tagihan->items->sum('nominal') * ($ts->tagihan->periode ?? 1);
-                                @endphp
-                                Rp {{ number_format($total_tagihan, 0, ',', '.') }}
-                            </td>
-                            <td>
-                                @php
-                                    $sudah_bayar = $ts->siswa->pembayaran_tagihan->where('tagihan_id', $ts->tagihan_id)->sum('jumlah_bayar');
-                                @endphp
-                                Rp {{ number_format($sudah_bayar, 0, ',', '.') }}
-                            </td>
-                            <td>
-                                @php
-                                    $tunggakan = $total_tagihan - $sudah_bayar;
-                                @endphp
-                                Rp {{ number_format($tunggakan, 0, ',', '.') }}
-                            </td>
+                            <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($sudah_bayar, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
                             <td>
                                 @if($sudah_bayar >= $total_tagihan)
                                     <span class="badge bg-success rounded-pill">Lunas</span>
@@ -140,15 +132,13 @@
                                 @endif
                             </td>
                             <td>
-{{--                                <i class="ri-mac-line"></i>--}}
                                 <a href="{{ route('tagihan.show', $ts->id) }}" class="btn btn-primary rounded-pill"><i class="ri-eye-line"></i></a>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9">Tidak ada data tagihan.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
+
+
+
                     </tbody>
                 </table>
             </div>

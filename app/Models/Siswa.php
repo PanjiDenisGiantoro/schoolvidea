@@ -32,6 +32,18 @@ class Siswa extends Model
     {
         return $this->hasMany(TagihanSiswa::class, 'siswa_id');
     }
+    public function pembayaranTagihan()
+    {
+        // Melalui TagihanSiswa
+        return $this->hasManyThrough(
+            PembayaranTagihan::class,  // Model target
+            TagihanSiswa::class,       // Model perantara
+            'siswa_id',                // Foreign key di TagihanSiswa yang mengarah ke Siswa
+            'tagihan_siswa_id',        // Foreign key di PembayaranTagihan yang mengarah ke TagihanSiswa
+            'id',                      // Local key di Siswa
+            'id'                       // Local key di TagihanSiswa
+        );
+    }
 
 
 }

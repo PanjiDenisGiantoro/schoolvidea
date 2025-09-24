@@ -30,10 +30,37 @@ class TagihanController extends Controller
     }
     public function index()
     {
-        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
+//        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
+
+        $tagihans = Tagihan::with([
+            'unit',
+            'kelas',
+            'items.kategori',
+            'tagihanSiswa.siswa.user',
+            'tagihanSiswa.siswa.pembayaranTagihan'
+        ])->get();
 
 //        dd($tagihans);
-        return view('pages.tagihan.index', compact('tagihans'));
+        $summary = [
+            'jumlah_data' => $tagihans->count(),
+            'nominal_tagihan' => $tagihans->sum(function($t) {
+                $total = $t->items->sum('nominal') * ($t->periode ?? 1);
+                return $total * $t->tagihanSiswa->count(); // total tagihan semua siswa
+            }),
+            'sudah_dibayar' => $tagihans->sum(function($t) {
+                return $t->tagihanSiswa->sum(function($ts) {
+                    return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                });
+            }),
+            'belum_dibayar' => $tagihans->sum(function($t) {
+                $total_tagihan = $t->items->sum('nominal') * ($t->periode ?? 1);
+                return $t->tagihanSiswa->sum(function($ts) use ($total_tagihan) {
+                    $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                    return $total_tagihan - $sudah_bayar;
+                });
+            }),
+        ];
+        return view('pages.tagihan.index', compact('tagihans','summary'));
     }
 
 
@@ -172,7 +199,9 @@ class TagihanController extends Controller
             return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-    public function show($id)
+
+
+        public function show($id)
     {
 
         $tagihanSiswa = TagihanSiswa::with([
@@ -185,6 +214,7 @@ class TagihanController extends Controller
 
         return view('pages.tagihan.show', compact('tagihanSiswa'));
     }
+
     public function perbulan($siswaId,$tagihanId)
     {
         $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
