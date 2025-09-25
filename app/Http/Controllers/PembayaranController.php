@@ -56,7 +56,7 @@ class PembayaranController extends Controller
 
             // Update status tagihan_siswa
             $tagihanSiswa->update([
-                'status'        => 1,
+                'status'        => '1',
                 'tanggal_bayar' => now(),
             ]);
 

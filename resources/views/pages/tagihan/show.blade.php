@@ -11,18 +11,22 @@
         </a>
 
         {{-- Info Siswa --}}
+        {{-- Info Siswa --}}
+        @php $siswa = $tagihanSiswa->first()->siswa ?? null; @endphp
+
         <div class="card mb-4 shadow-sm rounded-3 border-0">
             <div class="card-body">
-                <h5>{{ optional($tagihanSiswa->siswa->user)->name ?? '-' }} ({{ $tagihanSiswa->siswa->nisn ?? '-' }})</h5>
-                <p>Unit: {{ optional($tagihanSiswa->tagihan->unit)->nama_unit ?? '-' }}</p>
-                <p>Kelas: {{ optional($tagihanSiswa->tagihan->kelas)->nama_kelas ?? '-' }}</p>
-                <p>Jenis Tagihan: {{ ucfirst($tagihanSiswa->tagihan->jenis_tagihan) ?? '-' }}</p>
-                <p>Periode: {{ $tagihanSiswa->tagihan->periode ?? 1 }} bulan</p>
-                <p>Bulan Mulai: {{ $tagihanSiswa->tagihan->bulan_mulai ?? '-' }}/{{ $tagihanSiswa->tagihan->tahun_mulai ?? '-' }}</p>
+                <h5>{{ optional($siswa->user)->name ?? '-' }} ({{ $siswa->nisn ?? '-' }})</h5>
+                <p>Unit: {{ optional($tagihanSiswa->first()->tagihan->unit)->nama_unit ?? '-' }}</p>
+                <p>Kelas: {{ optional($tagihanSiswa->first()->tagihan->kelas)->nama_kelas ?? '-' }}</p>
+                <p>Jenis Tagihan: {{ ucfirst($tagihanSiswa->first()->tagihan->jenis_tagihan) ?? '-' }}</p>
+                <p>Periode: {{ $tagihanSiswa->first()->tagihan->periode ?? 1 }} bulan</p>
+                <p>Bulan Mulai: {{ $tagihanSiswa->first()->tagihan->bulan_mulai ?? '-' }}/{{ $tagihanSiswa->first()->tagihan->tahun_mulai ?? '-' }}</p>
             </div>
         </div>
 
-        {{-- 2. Jumlah Tagihan --}}
+
+        {{-- Jumlah Tagihan Seluruh Periode --}}
         <div class="card mb-4 shadow-sm rounded-3 border-0">
             <div class="card-body">
                 <h5>Jumlah Tagihan Seluruh Periode</h5>
@@ -34,61 +38,35 @@
                         <th>Nominal per Bulan</th>
                         <th>Bulan</th>
                         <th>Total</th>
-                        <th>Aksi</th>
+                        <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($tagihanSiswa->tagihan->items ?? [] as $index => $item)
-                        @php
-                            $periode = $tagihanSiswa->tagihan->periode ?? 1;
-                            $bulan_mulai = $tagihanSiswa->tagihan->bulan_mulai ?? 1;
-                            $tahun_mulai = $tagihanSiswa->tagihan->tahun_mulai ?? now()->year;
-                        @endphp
-
-                        @for($i = 0; $i < $periode; $i++)
-                            @php
-                                $bulan = ($bulan_mulai + $i - 1) % 12 + 1;
-                                $tahun = $tahun_mulai + intdiv(($bulan_mulai + $i - 1), 12);
-
-                                $sudah_bayar = optional($tagihanSiswa->siswa->pembayaranTagihan)
-                                    ->where('tagihan_siswa_id', $tagihanSiswa->id)
-                                    ->where('kategori_id', $item->kategori_id)
-                                    ->where('bulan', $bulan)
-                                    ->where('tahun', $tahun)
-                                    ->sum('jumlah_bayar');
-
-                                $sisa = $item->nominal - $sudah_bayar;
-                            @endphp
+                    @foreach($tagihanSiswa as $ts)
+                        @foreach($ts->tagihan->items ?? [] as $index => $item)
                             <tr>
-                                <td>{{ $index + 1 }}.{{ $i + 1 }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
                                 <td>Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                                <td>{{ \Carbon\Carbon::createFromDate($tahun, $bulan, 1)->format('F Y') }}</td>
+                                <td>{{ \Carbon\Carbon::createFromDate($ts->tahun_mulai, $ts->bulan_ke, 1)->format('F Y') }}</td>
                                 <td>Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
                                 <td>
-                                    @if($sisa > 0)
-                                        <a href="{{ route('tagihan.bayar', [
-                        'id' => $tagihanSiswa->id,
-                        'kategori_id' => $item->kategori_id,
-                        'bulan' => $bulan,
-                        'tahun' => $tahun
-                    ]) }}" class="btn btn-success btn-sm rounded-pill">
-                                            Bayar
-                                        </a>
+                                    @if($ts->status == '1')
+                                        <span class="badge bg-success">Lunas</span>
                                     @else
-                                        <span class="badge bg-success rounded-pill">Lunas</span>
+                                        <span class="badge bg-danger">Belum Lunas</span>
                                     @endif
                                 </td>
                             </tr>
-                        @endfor
+                        @endforeach
                     @endforeach
-
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- 3. Pembayaran --}}
+        {{-- Riwayat Pembayaran --}}
+        {{-- Riwayat Pembayaran --}}
         <div class="card mb-4 shadow-sm rounded-3 border-0">
             <div class="card-body">
                 <h5>Riwayat Pembayaran</h5>
@@ -102,7 +80,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($tagihanSiswa->siswa->pembayaranTagihan ?? [] as $index => $pembayaran)
+                    @foreach($siswa->pembayaranTagihan ?? [] as $index => $pembayaran)
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($pembayaran->tanggal_bayar)->format('d/m/Y') }}</td>
@@ -110,16 +88,47 @@
                             <td>Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
-
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="d-flex justify-content-end">
-            <a href="{{ route('tagihan.bayar', $tagihanSiswa->id) }}" class="btn btn-success rounded-pill">
-                <i class="fa fa-credit-card"></i> Bayar Tagihan
-            </a>
-        </div>
     </div>
+
+    <script>
+        function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
+            if (!confirm(`Yakin ingin bayar ${bulan}/${tahun} sebesar Rp ${parseInt(nominal).toLocaleString('id-ID')} ?`)) {
+                return;
+            }
+
+            fetch('/pembayaran/store', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal,
+                    kategori_id: kategoriId,
+                    metode: 'manual',
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status == 1) {
+                        alert('Pembayaran berhasil!');
+                        location.reload(); // reload halaman supaya status berubah
+                    } else {
+                        alert('Gagal: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Terjadi kesalahan saat membayar.');
+                });
+        }
+    </script>
 @endsection

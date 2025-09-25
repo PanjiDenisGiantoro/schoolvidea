@@ -201,23 +201,26 @@ class TagihanController extends Controller
     }
 
 
-        public function show($id)
+    public function show($id, $siswaId)
     {
-
         $tagihanSiswa = TagihanSiswa::with([
             'siswa.user',
             'tagihan.unit',
             'tagihan.kelas',
             'tagihan.items.kategori',
-            'siswa.pembayaran_tagihan'
-        ])->findOrFail($id);
+            'siswa.pembayaranTagihan'
+        ])
+            ->where('tagihan_id', $id)
+            ->where('siswa_id', $siswaId)
+            ->get(); // ambil semua bulan
+
 
         return view('pages.tagihan.show', compact('tagihanSiswa'));
     }
 
     public function perbulan($siswaId,$tagihanId)
     {
-        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+        $tagihanSiswa = TagihanSiswa::with('siswa','tagihan.items.kategori')
             ->where('tagihan_id', $tagihanId)
             ->where('siswa_id', $siswaId)
             ->orderBy('bulan_ke')

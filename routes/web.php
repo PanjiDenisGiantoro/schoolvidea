@@ -169,7 +169,7 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/', [TagihanController::class, 'index'])->name('tagihan.index');
         Route::get('/create', [TagihanController::class, 'create'])->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->name('tagihan.store');
-        Route::get('/show/{id}', [TagihanController::class, 'show'])->name('tagihan.show');
+        Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
         Route::get('/perbulan/{id}',[TagihanController::class,'perbulan'])->name('tagihan.perbulan');
         Route::get('/daftarTagihan/{id}',[TagihanController::class,'daftarTagihan'])->name('tagihan.daftarTagihan');

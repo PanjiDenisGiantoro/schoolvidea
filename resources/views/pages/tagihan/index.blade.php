@@ -85,6 +85,7 @@
         {{-- Tabel --}}
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle text-center">
                     <thead class="table-primary">
                     <tr>
@@ -132,7 +133,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('tagihan.show', $ts->id) }}" class="btn btn-primary rounded-pill"><i class="ri-eye-line"></i></a>
+                                <a href="{{ route('tagihan.show', [$tagihan->id, $siswa?->id]) }}" class="btn btn-primary rounded-pill"><i class="ri-eye-line"></i></a>
                             </td>
                         </tr>
                     @endforeach
@@ -141,6 +142,7 @@
 
                     </tbody>
                 </table>
+            </div>
             </div>
         </div>
     </div>
