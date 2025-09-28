@@ -17,7 +17,7 @@
         <ul class="navbar-nav" id="navbar-nav">
 
             <li class="menu-item pt-2">
-                <a class="menu-link" href="index.html">
+                <a class="menu-link" href="{{ url('dashboard') }}">
                          <span class="nav-icon">
                               <i class="ri-dashboard-2-line"></i>
                          </span>

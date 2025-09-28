@@ -17,4 +17,5 @@ class Pembayarantagihan extends Model
         return $this->belongsTo(User::class, 'create_by');
 
     }
+
 }

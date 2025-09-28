@@ -18,4 +18,8 @@ class TagihanSiswa extends Model
     {
         return $this->belongsTo(Siswa::class);
     }
+    public function pembayaranTagihan()
+    {
+        return $this->hasMany(PembayaranTagihan::class, 'tagihan_siswa_id');
+    }
 }
