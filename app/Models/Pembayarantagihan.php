@@ -10,7 +10,7 @@ class Pembayarantagihan extends Model
     protected $guarded = [];
     public function tagihanSiswa()
     {
-        return $this->belongsTo(TagihanSiswa::class, 'tagihan_siswa_id');
+        return $this->belongsTo(Tagihansiswa::class, 'tagihan_siswa_id');
     }
     public function user()
     {

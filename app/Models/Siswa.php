@@ -8,7 +8,7 @@ class Siswa extends Model
 {
     protected $table = 'siswas';
     protected $guarded = [];
-    
+
     // Cast JSON kolom 'va_siswa' menjadi array
     protected $casts = [
         'va_siswa' => 'array',
@@ -35,13 +35,13 @@ class Siswa extends Model
     }
     public function pembayaran_tagihan()
     {
-        return $this->hasMany(TagihanSiswa::class, 'siswa_id');
+        return $this->hasMany(Tagihansiswa::class, 'siswa_id');
     }
     public function pembayaranTagihan()
     {
         // Melalui TagihanSiswa
         return $this->hasManyThrough(
-            PembayaranTagihan::class,  // Model target
+            Pembayarantagihan::class,  // Model target
             TagihanSiswa::class,       // Model perantara
             'siswa_id',                // Foreign key di TagihanSiswa yang mengarah ke Siswa
             'tagihan_siswa_id',        // Foreign key di PembayaranTagihan yang mengarah ke TagihanSiswa

@@ -19,7 +19,7 @@ class Kategoritagihan extends Model
     }
     public function items()
     {
-        return $this->hasMany(KategoriTagihan::class);
+        return $this->hasMany(Kategoritagihan::class);
     }
 
 }

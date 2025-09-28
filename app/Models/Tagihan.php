@@ -31,10 +31,10 @@ class Tagihan extends Model
     }
     public function items()
     {
-        return $this->hasMany(TagihanItem::class)->with('kategori');
+        return $this->hasMany(Tagihanitem::class)->with('kategori');
     }
     public function tagihanSiswa()
     {
-        return $this->hasMany(TagihanSiswa::class);
+        return $this->hasMany(Tagihansiswa::class);
     }
 }
