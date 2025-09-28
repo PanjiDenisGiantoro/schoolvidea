@@ -20,6 +20,6 @@ class TagihanSiswa extends Model
     }
     public function pembayaranTagihan()
     {
-        return $this->hasMany(PembayaranTagihan::class, 'tagihan_siswa_id');
+        return $this->hasMany(Pembayarantagihan::class, 'tagihan_siswa_id');
     }
 }
