@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class UnitController extends Controller
 {
     public function index(){
-        $unit = Unit::get();
+        $unit = Unit::
+        when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })
+        ->get();
         $headers = [
             'No',
             'Nama Yayasan',
@@ -29,7 +34,12 @@ class UnitController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::active()->get();
+        $yayasan = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })->where('status', '1')->get();
         return view('pages.data_master.unit.unit_create', compact('yayasan'));
     }
     public function store(Request $request)

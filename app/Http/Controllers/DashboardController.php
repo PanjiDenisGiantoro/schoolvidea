@@ -96,6 +96,11 @@ class DashboardController extends Controller
 
         $datas = TagihanSiswa::with('tagihan.items')
             ->whereYear('created_at', $tahun)
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('tagihan', function ($q) use ($unitId) {
+                    $q->where('unit_id', $unitId);
+                });
+            })
             ->get()
             ->groupBy(function ($row) {
                 return $row->created_at->format('n'); // bulan angka

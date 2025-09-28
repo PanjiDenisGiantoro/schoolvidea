@@ -22,7 +22,7 @@
                               <i class="ri-dashboard-2-line"></i>
                          </span>
                     <span class="nav-text"> Dashboard </span>
-                    <span class="badge bg-success badge-pill text-end">9+</span>
+{{--                    <span class="badge bg-success badge-pill text-end">9+</span>--}}
                 </a>
             </li>
 

@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class LembagaunitController extends Controller
 {
     public function index(){
-        $lembagaunit = Yayasan::get();
+        $lembagaunit = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })
+            ->get();
 
         $headers = [
             'No',

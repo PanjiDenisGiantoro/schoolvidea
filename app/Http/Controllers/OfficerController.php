@@ -9,13 +9,18 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 class OfficerController extends Controller
 {
     public function index(){
-        $officer = User::with('officer.unit','roles')->get();
+        $officer = User::with('officer.unit','roles')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
+            ->get();
         $headers = [
             'No',
             'Nama Unit',

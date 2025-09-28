@@ -21,4 +21,8 @@ class Yayasan extends Model
     {
         return $query->where('status', 0);
     }
+    public function units()
+    {
+        return $this->hasMany(Unit::class, 'yayasan_id', 'id');
+    }
 }
