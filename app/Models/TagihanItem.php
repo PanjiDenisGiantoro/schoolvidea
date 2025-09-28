@@ -16,7 +16,7 @@ class TagihanItem extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(KategoriTagihan::class, 'kategori_id');
+        return $this->belongsTo(Kategoritagihan::class, 'kategori_id');
     }
 
 }
