@@ -34,6 +34,7 @@ class User extends Authenticatable
         'email',
         'password',
         'rfid_no',
+        'unit_id',
     ];
 
     /**

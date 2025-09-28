@@ -69,14 +69,15 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
-                        <h4 class="card-title">Statistik Siswa</h4>
+                        <h4 class="card-title">Statistik Tagihan Pembayaran</h4>
                         <span class="text-muted">Per Tahun Ajaran</span>
                     </div>
                     <div class="card-body">
-                        <div id="chartSiswa" class="apex-charts" data-colors="#604ae3,#0dcaf0,#198754"></div>
+                        <div id="chartTagihan" class="apex-charts" data-colors="#604ae3,#0dcaf0,#198754"></div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Info Tabungan -->
             <div class="col-lg-4">
@@ -99,7 +100,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Daftar Siswa Baru</h4>
+                        <h4 class="card-title">Daftar Pembayaran Tagihan Terbaru</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -155,5 +156,60 @@
         </div>
 
 @endsection
+@push('scripts')
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chartData = @json($datas);
+
+            // Mapping bulan ke nama bulan
+            const bulanLabels = chartData.map(item => {
+                const bulan = item.bulan;
+                const namaBulan = new Date(2000, bulan - 1, 1).toLocaleString('id-ID', { month: 'long' });
+                return namaBulan;
+            });
+
+            // Series untuk chart
+            const options = {
+                chart: {
+                    type: "bar",
+                    height: 350,
+                    stacked: false
+                },
+                colors: ["#604ae3", "#0dcaf0", "#198754"],
+                series: [
+                    {
+                        name: "Total Tagihan",
+                        data: chartData.map(item => item.jml_tagihan)
+                    },
+                    {
+                        name: "Total Dibayar",
+                        data: chartData.map(item => item.jml_dibayar)
+                    },
+                    {
+                        name: "Total Tunggakan",
+                        data: chartData.map(item => item.jml_tunggakan)
+                    }
+                ],
+                xaxis: {
+                    categories: bulanLabels
+                },
+                yaxis: {
+                    labels: {
+                        formatter: val => "Rp " + val.toLocaleString("id-ID")
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: val => "Rp " + val.toLocaleString("id-ID")
+                    }
+                }
+            };
+
+            const chart = new ApexCharts(document.querySelector("#chartTagihan"), options);
+            chart.render();
+        });
+    </script>
+
+@endpush
 

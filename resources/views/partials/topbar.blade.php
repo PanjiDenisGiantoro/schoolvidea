@@ -120,9 +120,18 @@
                               <a class="dropdown-item" href="auth-lock-screen.html">
                                    <i class="bx bx-lock fs-18 align-middle me-2"></i><span class="align-middle">Lock screen</span>
                               </a>
-                              <a class="dropdown-item" href="auth-signin.html">
-                                   <i class="bx bx-log-out fs-18 align-middle me-2"></i><span class="align-middle">Logout</span>
-                              </a>
+                             <a class="dropdown-item" href="#"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                 <i class="bx bx-log-out fs-18 align-middle me-2"></i>
+                                 <span class="align-middle">Logout</span>
+                             </a>
+
+                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                 @csrf
+                             </form>
+
+
+
                          </div>
                     </div>
                </div>

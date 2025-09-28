@@ -61,6 +61,7 @@ class OfficerController extends Controller
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
                 'rfid_no' => $request->rfid_no,
+                'unit_id' => $request->unit_id,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);

@@ -24,7 +24,13 @@ Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('po
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login.form');
 Route::get('/login-central', [AuthController::class, 'logincentral'])->name('logincentral.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::post('/logout', function () {
+    \Illuminate\Support\Facades\Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/portal');
+})->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class,'index'])->name('dashboard');

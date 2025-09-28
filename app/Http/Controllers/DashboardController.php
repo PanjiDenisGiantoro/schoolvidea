@@ -7,29 +7,52 @@ use App\Models\Keuangan_transaksi;
 use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
 use App\Models\Tagihan;
+use App\Models\TagihanSiswa;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+
         // hitung total saldo dari saldo_keuangan
         $totalSaldo = Saldo_keuangan::where('status', 1) // kalau hanya saldo aktif
-            ->sum('saldo_akhir');
+             ->when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->whereHas('user', function ($q) use ($unitId) {
+                $q->where('unit_id', $unitId);
+            });
+        })->sum('saldo_akhir');
 
         $jumlahTransaksi = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
 
-        $totalPetugas = User::with('roles')->whereHas('roles', function ($query) {
+        $totalPetugas = User::with('roles')
+            ->whereHas('roles', function ($query) {
             $query->where('name', '!=', 'siswa');
+        })
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
+            ->count();
+        if(Auth::user()->unit_id != null){
+            $totalUnit = 1;
+        }else{
+            $totalUnit = Unit::count();
+        }
+        $totalKelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
         })->count();
-        $totalUnit = Unit::count();
-        $totalKelas = Kelas::count();
-        $totalSiswa = Siswa::count();
+
+
+        $totalSiswa = Siswa::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->count();
+
         $tagihans = Tagihan::with([
             'unit',
             'kelas',
@@ -37,6 +60,9 @@ class DashboardController extends Controller
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.pembayaranTagihan'
         ])
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
             ->latest() // ambil yang terbaru
             ->limit(10)
             ->get();
@@ -66,6 +92,31 @@ class DashboardController extends Controller
             ->take(10); // ambil hanya 10 data pertama
 
 
-        return view('dashboard', compact('totalPetugas', 'totalUnit', 'totalKelas', 'totalSiswa','totalSaldo','jumlahTransaksi','data'));
+        $tahun = now()->year;
+
+        $datas = TagihanSiswa::with('tagihan.items')
+            ->whereYear('created_at', $tahun)
+            ->get()
+            ->groupBy(function ($row) {
+                return $row->created_at->format('n'); // bulan angka
+            })
+            ->map(function ($rows, $bulan) {
+                $jmlTagihan = $rows->sum(function ($ts) {
+                    return $ts->tagihan ? $ts->tagihan->items->sum('nominal') : 0;
+                });
+
+                $jmlDibayar = $rows->sum('sisa_nominal');
+                $jmlTunggakan = $jmlTagihan - $jmlDibayar;
+
+                return [
+                    'bulan' => $bulan,
+                    'jml_tagihan' => $jmlTagihan,
+                    'jml_dibayar' => $jmlDibayar,
+                    'jml_tunggakan' => $jmlTunggakan,
+                ];
+            })
+            ->values();
+
+        return view('dashboard', compact('totalPetugas', 'totalUnit', 'totalKelas', 'totalSiswa','totalSaldo','jumlahTransaksi','data','datas'));
     }
 }
