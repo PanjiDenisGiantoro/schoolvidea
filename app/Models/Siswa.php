@@ -42,7 +42,7 @@ class Siswa extends Model
         // Melalui TagihanSiswa
         return $this->hasManyThrough(
             Pembayarantagihan::class,  // Model target
-            TagihanSiswa::class,       // Model perantara
+            Tagihansiswa::class,       // Model perantara
             'siswa_id',                // Foreign key di TagihanSiswa yang mengarah ke Siswa
             'tagihan_siswa_id',        // Foreign key di PembayaranTagihan yang mengarah ke TagihanSiswa
             'id',                      // Local key di Siswa

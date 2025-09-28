@@ -7,7 +7,7 @@ use App\Models\Keuangan_transaksi;
 use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
 use App\Models\Tagihan;
-use App\Models\TagihanSiswa;
+use App\Models\Tagihansiswa;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -94,7 +94,7 @@ class DashboardController extends Controller
 
         $tahun = now()->year;
 
-        $datas = TagihanSiswa::with('tagihan.items')
+        $datas = Tagihansiswa::with('tagihan.items')
             ->whereYear('created_at', $tahun)
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->whereHas('tagihan', function ($q) use ($unitId) {

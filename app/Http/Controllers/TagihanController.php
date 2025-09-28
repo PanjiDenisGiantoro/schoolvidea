@@ -11,7 +11,7 @@ use App\Models\setting_akun;
 use App\Models\Siswa;
 use App\Models\Tagihan;
 use App\Models\TagihanItem;
-use App\Models\TagihanSiswa;
+use App\Models\Tagihansiswa;
 use App\Models\Unit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -122,7 +122,7 @@ class TagihanController extends Controller
             }
 
             foreach ($siswaList as $siswa) {
-                $sudahAda = TagihanSiswa::where('siswa_id', $siswa->id)
+                $sudahAda = Tagihansiswa::where('siswa_id', $siswa->id)
                     ->where('status', '!=', '1') // belum lunas
                     ->whereHas('tagihan.items', function ($q) use ($kategoriIds) {
                         $q->whereIn('kategori_id', $kategoriIds);
@@ -146,7 +146,7 @@ class TagihanController extends Controller
                 if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
                     // generate sesuai jumlah bulan
                     for ($i = 1; $i <= $tagihan->periode; $i++) {
-                        TagihanSiswa::create([
+                        Tagihansiswa::create([
                             'tagihan_id'    => $tagihan->id,
                             'siswa_id'      => $siswa->id,
                             'bulan_ke'      => $i,
@@ -156,7 +156,7 @@ class TagihanController extends Controller
                     }
                 } else {
                     // jenis bebas → cuma 1 row
-                    TagihanSiswa::create([
+                    Tagihansiswa::create([
                         'tagihan_id'    => $tagihan->id,
                         'siswa_id'      => $siswa->id,
                         'bulan_ke'      => null,
@@ -218,7 +218,7 @@ class TagihanController extends Controller
 
     public function show($id, $siswaId)
     {
-        $tagihanSiswa = TagihanSiswa::with([
+        $tagihanSiswa = Tagihansiswa::with([
             'siswa.user',
             'tagihan.unit',
             'tagihan.kelas',
@@ -289,7 +289,7 @@ class TagihanController extends Controller
 
     public function perbulan($siswaId, $tagihanId)
     {
-        $tagihanSiswa = TagihanSiswa::with('siswa','tagihan.items.kategori')
+        $tagihanSiswa = Tagihansiswa::with('siswa','tagihan.items.kategori')
             ->where('tagihan_id', $tagihanId)
             ->where('siswa_id', $siswaId)
             ->orderBy('bulan_ke')
@@ -333,7 +333,7 @@ class TagihanController extends Controller
 
     public function daftarTagihan($siswaId)
     {
-        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+        $tagihanSiswa = Tagihansiswa::with('tagihan.items.kategori')
             ->where('siswa_id', $siswaId)
             ->whereHas('tagihan', function ($query) {
                 $query->where('jenis_tagihan', 'bulanan')
@@ -374,7 +374,7 @@ class TagihanController extends Controller
 
     public function daftarTagihanBebas($siswaId)
     {
-        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+        $tagihanSiswa = Tagihansiswa::with('tagihan.items.kategori')
             ->where('siswa_id', $siswaId)
             ->whereHas('tagihan', function ($query) {
                 $query->where('jenis_tagihan', 'bebas')
@@ -414,7 +414,7 @@ class TagihanController extends Controller
     }
     public function tagihanBebas($siswaId)
     {
-        $data = TagihanSiswa::with('tagihan.items.kategori')
+        $data = Tagihansiswa::with('tagihan.items.kategori')
             ->where('siswa_id', $siswaId)
             ->whereHas('tagihan', function($q) {
                 $q->where('jenis_tagihan', 'bebas');

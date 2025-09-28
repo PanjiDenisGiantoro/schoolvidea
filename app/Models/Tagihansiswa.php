@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TagihanSiswa extends Model
+class Tagihansiswa extends Model
 {
     protected $table = 'tagihan_siswa';
     protected $guarded = [];

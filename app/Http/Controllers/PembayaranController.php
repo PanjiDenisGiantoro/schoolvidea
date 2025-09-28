@@ -10,7 +10,7 @@ use App\Models\Pembayarantagihan;
 use App\Models\setting_akun;
 use App\Models\Siswa;
 use App\Models\Tagihan;
-use App\Models\TagihanSiswa;
+use App\Models\Tagihansiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +32,7 @@ class PembayaranController extends Controller
     {
         DB::beginTransaction();
         try {
-            $tagihanSiswa = TagihanSiswa::findOrFail($request->tagihan_siswa_id);
+            $tagihanSiswa = Tagihansiswa::findOrFail($request->tagihan_siswa_id);
 
             if ($tagihanSiswa->status === 1) {
                 return response()->json([
@@ -85,7 +85,7 @@ class PembayaranController extends Controller
                 'sisa_nominal'  => $sisaSetelahBayar,
                 'tanggal_bayar' => $tanggalBayar,
             ]);
-            $allLunas = !TagihanSiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
+            $allLunas = !Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
                 ->where('status', '!=', '1')
                 ->exists();
 
