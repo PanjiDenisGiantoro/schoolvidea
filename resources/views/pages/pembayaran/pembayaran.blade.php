@@ -3,8 +3,8 @@
 
 @section('content')
     @include('partials.page-title', [
-        'title' => 'Tambah Transaksi',
-        'subTitle' => 'Tabungan / Keuangan'
+        'title' => 'Tambah Transaksi Pembayaran',
+        'subTitle' => 'Pembayaran / Keuangan'
     ])
     @push('styles')
         <style>
@@ -93,18 +93,7 @@
         </div>
 
         {{-- Ringkasan Tagihan --}}
-        <div class="card shadow-sm rounded-4 border-0 mt-3">
-            <div class="card-body">
-                <h6 class="fw-bold text-primary mb-3">📌 Detail Tagihan</h6>
-                <ul class="list-group list-group-flush small" id="detail_tagihan">
 
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Total Tagihan</span>
-                        <strong id="total_tagihan">Rp 0</strong>
-                    </li>
-                </ul>
-            </div>
-        </div>
 
         {{-- Daftar Tagihan --}}
         <div class="card shadow-sm rounded-4 border-0 mt-3">
@@ -119,6 +108,7 @@
                             <th>Bulan</th>
                             <th>Kategori</th>
                             <th>Nominal</th>
+                            <th>Sisa Nominal</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -209,7 +199,6 @@
                             <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
                         </td>
                     </tr>`;
-                            document.getElementById('total_tagihan').innerText = "Rp 0";
                             document.getElementById('nama_tagihan_wrapper').style.display = 'none';
                             return;
                         }
@@ -222,14 +211,10 @@
                             opt.value = tagihan.id;
 
                             // ambil kategori pertama (kalau ada)
-                            const kategoriNama = tagihan.kategori && tagihan.kategori.length > 0
-                                ? tagihan.kategori[0].nama_kategori
-                                : 'Tanpa Kategori';
+                            const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ?? 'Tanpa Kategori';
 
-                            const kategoriKode = tagihan.kategori && tagihan.kategori.length > 0
-                                ? tagihan.kategori[0].kode_kategori
-                                : '-';
-                            opt.text = `${kategoriKode} - ${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
+
+                            opt.text = ` ${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
                             tagihanSelect.appendChild(opt);
                         });
 
@@ -238,13 +223,49 @@
                         document.getElementById('nama_tagihan_wrapper').style.display = 'block';
                         // simpan semua data
                         window.tagihanData = data.detail;
-                        document.getElementById('total_tagihan').innerText = 'Rp ' + parseInt(data.total_tagihan).toLocaleString('id-ID');
                     })
                     .catch(err => console.error('Fetch tagihan error:', err));
             } else if (kategori === 'bebas') {
-                // bebas → sembunyikan list tagihan
-                listTagihanContainer.style.display = 'none';
+                const siswaId = siswaSelect.value;
+                if (!siswaId) return;
+
+                fetch(`/tagihan/daftarTagihanBebas/${siswaId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.detail || !data.detail.length) {
+                            listTagihan.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
+                        </td>
+                    </tr>`;
+                            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+                            return;
+                        }
+
+                        // isi dropdown nama tagihan
+                        const tagihanSelect = document.getElementById('nama_tagihan');
+                        tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
+                        data.detail.forEach((tagihan, idx) => {
+                            const opt = document.createElement('option');
+                            opt.value = tagihan.id;
+
+                            const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ?? 'Tanpa Kategori';
+
+
+                            opt.text = ` ${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
+                            tagihanSelect.appendChild(opt);
+                        });
+
+
+                        // ⬇️ disini wrapper di-show
+                        document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+                        // simpan semua data
+                        window.tagihanData = data.detail;
+                    })
+                    .catch(err => console.error('Fetch tagihan error:', err));
             }
+
         });
 
 
@@ -326,26 +347,28 @@
                     }
 
                     listTagihan.innerHTML = data.map(tagihan => `
-                <tr>
-                    <td class="text-center">${tagihan.bulan} ${tagihan.tahun}</td>
-                    <td class="text-center">${tagihan.nama_kategori}</td>
-                    <td class="fw-bold text-end">Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}</td>
-                    <td class="text-center">
-                        <span class="badge ${tagihan.status === 'lunas' ? 'bg-success' : 'bg-warning'}">
-                            ${tagihan.status.toUpperCase()}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        ${tagihan.status === 'Lunas'
+    <tr>
+        <td class="text-center">${tagihan.bulan} ${tagihan.tahun}</td>
+        <td class="text-center">${tagihan.nama_kategori}</td>
+        <td class="fw-bold text-end">Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}</td>
+        <td class="fw-bold text-end">Rp ${parseInt(tagihan.sisa_nominal).toLocaleString('id-ID')}</td> <!-- ✅ kolom baru -->
+        <td class="text-center">
+            <span class="badge ${tagihan.status === 'Lunas' ? 'bg-success' : 'bg-warning'}">
+                ${tagihan.status.toUpperCase()}
+            </span>
+        </td>
+        <td class="text-center">
+            ${tagihan.status === 'Lunas'
                         ? `<span class="text-success"><i class="fa fa-check-circle"></i> Lunas</span>`
                         : `<button type="button"
-                                       class="btn btn-success btn-sm rounded-pill"
-                                       onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', '${tagihan.nominal}', '${tagihan.id}')">
-                                       <i class="fa fa-credit-card"></i> Bayar
-                                   </button>`}
-                    </td>
-                </tr>
-            `).join('');
+                           class="btn btn-success btn-sm rounded-pill"
+                           onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', '${tagihan.nominal}', '${tagihan.id}')">
+                           <i class="fa fa-credit-card"></i> Bayar
+                       </button>`}
+        </td>
+    </tr>
+`).join('');
+
                 });
         });
 
@@ -353,10 +376,57 @@
     <script>
 
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
-            if (!confirm(`Yakin ingin bayar ${bulan} ${tahun} sebesar Rp ${parseInt(nominal).toLocaleString('id-ID')} ?`)) {
-                return;
-            }
+            Swal.fire({
+                title: `Bayar Tagihan ${bulan} ${tahun}`,
+                text: `Total: Rp ${parseInt(nominal).toLocaleString('id-ID')}`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Bayar Full",
+                cancelButtonText: "Batal",
+                showDenyButton: true,
+                denyButtonText: "Bayar Sebagian",
+                confirmButtonColor: "#3085d6",
+                denyButtonColor: "#f59e0b",
+                cancelButtonColor: "#d33"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 🔹 Bayar Full
+                    kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, nominal);
+                } else if (result.isDenied) {
+                    // 🔹 Input Nominal untuk Bayar Sebagian
+                    Swal.fire({
+                        title: "Masukkan Nominal Bayar",
+                        input: "number",
+                        inputAttributes: {
+                            min: 1,
+                            max: nominal
+                        },
+                        inputLabel: `Maksimal Rp ${parseInt(nominal).toLocaleString('id-ID')}`,
+                        inputPlaceholder: "Contoh: 500000",
+                        showCancelButton: true,
+                        confirmButtonText: "Bayar",
+                        cancelButtonText: "Batal",
+                        preConfirm: (val) => {
+                            if (!val || val <= 0) {
+                                Swal.showValidationMessage("Nominal harus lebih dari 0");
+                                return false;
+                            }
+                            if (parseInt(val) > parseInt(nominal)) {
+                                Swal.showValidationMessage("Nominal tidak boleh lebih besar dari total tagihan!");
+                                return false;
+                            }
+                            return val;
+                        }
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, res.value);
+                        }
+                    });
+                }
+            });
+        }
 
+        function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
                 method: 'POST',
                 headers: {
@@ -367,7 +437,8 @@
                     tagihan_siswa_id: tagihanId,
                     bulan: bulan,
                     tahun: tahun,
-                    nominal: nominal,
+                    nominal: nominal,     // total tagihan
+                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
                     kategori_id: kategoriId,
                     metode: 'manual',
                 })
@@ -375,16 +446,22 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {
-                        alert('Pembayaran berhasil!');
-                        // reload list tagihan supaya status berubah lunas
-                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                        Swal.fire({
+                            title: "Berhasil!",
+                            text: "Pembayaran berhasil dilakukan.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            // reload list tagihan supaya status berubah lunas / sebagian
+                            document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                        });
                     } else {
-                        alert('Gagal: ' + data.message);
+                        Swal.fire("Gagal!", data.message, "error");
                     }
                 })
                 .catch(err => {
                     console.error('Error:', err);
-                    alert('Terjadi kesalahan saat membayar.');
+                    Swal.fire("Error!", "Terjadi kesalahan saat membayar.", "error");
                 });
         }
 

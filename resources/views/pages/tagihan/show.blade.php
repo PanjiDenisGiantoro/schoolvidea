@@ -27,6 +27,7 @@
 
 
         {{-- Jumlah Tagihan Seluruh Periode --}}
+        {{-- Jumlah Tagihan Seluruh Periode --}}
         <div class="card mb-4 shadow-sm rounded-3 border-0">
             <div class="card-body">
                 <h5>Jumlah Tagihan Seluruh Periode</h5>
@@ -39,34 +40,39 @@
                         <th>Bulan</th>
                         <th>Total</th>
                         <th>Status</th>
+                        <th>Tanggal Bayar</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($tagihanSiswa as $ts)
-                        @foreach($ts->tagihan->items ?? [] as $index => $item)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
-                                <td>Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                                <td>{{ \Carbon\Carbon::createFromDate($ts->tahun_mulai, $ts->bulan_ke, 1)->format('F Y') }}</td>
-                                <td>Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                                <td>
-                                    @if($ts->status == '1')
-                                        <span class="badge bg-success">Lunas</span>
-                                    @else
-                                        <span class="badge bg-danger">Belum Lunas</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @endforeach
+                    @forelse($dataPerbulan as $index => $row)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $row['nama_kategori'] }}</td>
+                            <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                            <td>{{ $row['bulan'] }} {{ $row['tahun'] }}</td>
+                            <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                            <td>
+                                @if($row['status'] === 'Lunas')
+                                    <span class="badge bg-success">Lunas</span>
+                                @else
+                                    <span class="badge bg-danger">Belum Lunas</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7">Tidak ada data tagihan.</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- Riwayat Pembayaran --}}
-        {{-- Riwayat Pembayaran --}}
+
         <div class="card mb-4 shadow-sm rounded-3 border-0">
             <div class="card-body">
                 <h5>Riwayat Pembayaran</h5>
@@ -75,23 +81,30 @@
                     <tr>
                         <th>#</th>
                         <th>Tanggal Bayar</th>
-                        <th>Kategori</th>
+                        <th>Bulan</th>
                         <th>Jumlah</th>
+                        <th>Petugas</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($siswa->pembayaranTagihan ?? [] as $index => $pembayaran)
+                    @forelse($pembayaranSiswa as $index => $pembayaran)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ \Carbon\Carbon::parse($pembayaran->tanggal_bayar)->format('d/m/Y') }}</td>
-                            <td>{{ optional($pembayaran->kategori)->nama_kategori ?? '-' }}</td>
-                            <td>Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($pembayaran['tanggal_bayar'])->format('d/m/Y') }}</td>
+                            <td>{{ $pembayaran['bulan'] ? $pembayaran['bulan'].' '.$pembayaran['tahun'] : '-' }}</td>
+                            <td>Rp {{ number_format($pembayaran['jumlah_bayar'], 0, ',', '.') }}</td>
+                            <td>{{ $pembayaran['create_by'] }}</td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5">Belum ada pembayaran.</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+
 
     </div>
 

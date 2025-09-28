@@ -8,6 +8,11 @@ class Siswa extends Model
 {
     protected $table = 'siswas';
     protected $guarded = [];
+    
+    // Cast JSON kolom 'va_siswa' menjadi array
+    protected $casts = [
+        'va_siswa' => 'array',
+    ];
     public function unit()
     {
         return $this->belongsTo(Unit::class);
@@ -44,6 +49,4 @@ class Siswa extends Model
             'id'                       // Local key di TagihanSiswa
         );
     }
-
-
 }

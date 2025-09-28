@@ -95,6 +95,7 @@
                         <th>Tagihan Unit</th>
                         <th>Tagihan Kelas</th>
                         <th>Item Tagihan</th>
+                        <th>Type Tagihan</th>
                         <th>Jml. Tagihan</th>
                         <th>Jml. Dibayar</th>
                         <th>Jml. Tunggakan</th>
@@ -107,9 +108,16 @@
                         @php
                             $ts = $tagihan->tagihanSiswa->first(); // ambil siswa pertama saja
                             $siswa = $ts->siswa ?? null;
-                            $sudah_bayar = $siswa?->pembayaranTagihan->where('tagihan_siswa_id', $ts->id)->sum('jumlah_bayar') ?? 0;
+
                             $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
-                            $tunggakan = $total_tagihan - $sudah_bayar;
+
+                            $jumlah_dibayar = $tagihan->tagihanSiswa
+                                ->where('siswa_id', $siswa?->id)
+                                ->where('status', 1)
+                                ->count() * $tagihan->items->sum('nominal');
+
+                            // jumlah tunggakan
+                            $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
                         @endphp
                         <tr>
                             <td>{{ $loop->iteration }}</td>
@@ -122,11 +130,13 @@
                                     {{ $item->kategori->nama_kategori ?? '-' }}<br>
                                 @endforeach
                             </td>
+                            <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
+
                             <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($sudah_bayar, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
                             <td>
-                                @if($sudah_bayar >= $total_tagihan)
+                                @if($tunggakan <= 0)
                                     <span class="badge bg-success rounded-pill">Lunas</span>
                                 @else
                                     <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
@@ -137,6 +147,7 @@
                             </td>
                         </tr>
                     @endforeach
+
 
 
 

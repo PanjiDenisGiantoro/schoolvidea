@@ -24,7 +24,7 @@ class TagihanController extends Controller
     {
         $units = Unit::all();
         $kelas = Kelas::all();
-        $kategoriTagihan = Kategoritagihan::all();
+        $kategoriTagihan = Kategoritagihan::where('status', 1)->get();
 
         return view('pages.tagihan.create', compact('units','kelas','kategoriTagihan'));
     }
@@ -111,6 +111,7 @@ class TagihanController extends Controller
                     $total_tagihan += $nominal_item;
                 }
             }
+            $kategoriIds = collect($request->items)->pluck('id')->filter()->all();
 
             // Ambil siswa target
             $siswaList = [];
@@ -120,6 +121,18 @@ class TagihanController extends Controller
                 $siswaList = Siswa::where('kelas_id', $request->kelas)->get();
             }
 
+            foreach ($siswaList as $siswa) {
+                $sudahAda = TagihanSiswa::where('siswa_id', $siswa->id)
+                    ->where('status', '!=', '1') // belum lunas
+                    ->whereHas('tagihan.items', function ($q) use ($kategoriIds) {
+                        $q->whereIn('kategori_id', $kategoriIds);
+                    })
+                    ->exists();
+                if ($sudahAda) {
+                    DB::rollBack();
+                    return back()->withInput()->with('danger', "Siswa {$siswa->nama} masih punya tagihan aktif dengan kategori yang sama.");
+                }
+            }
             // 3. Simpan tagihan_siswa dan jurnal
             $settings = setting_akun::where('kategori', 'tagihan-masuk')->get();
             $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
@@ -138,6 +151,7 @@ class TagihanController extends Controller
                             'siswa_id'      => $siswa->id,
                             'bulan_ke'      => $i,
                             'tanggal_bayar' => null,
+                            'sisa_nominal'  => $total_tagihan,
                         ]);
                     }
                 } else {
@@ -147,6 +161,7 @@ class TagihanController extends Controller
                         'siswa_id'      => $siswa->id,
                         'bulan_ke'      => null,
                         'tanggal_bayar' => null,
+                        'sisa_nominal'  => $total_tagihan,
                     ]);
                 }
 
@@ -208,17 +223,71 @@ class TagihanController extends Controller
             'tagihan.unit',
             'tagihan.kelas',
             'tagihan.items.kategori',
-            'siswa.pembayaranTagihan'
+            'siswa.pembayaranTagihan.tagihanSiswa',
+            'siswa.pembayaranTagihan.user', // tambahkan relasi user dari pembayaran
         ])
             ->where('tagihan_id', $id)
             ->where('siswa_id', $siswaId)
-            ->get(); // ambil semua bulan
+            ->orderBy('bulan_ke')
+            ->get();
 
+        if ($tagihanSiswa->isEmpty()) {
+            return view('pages.tagihan.show', [
+                'tagihanSiswa'    => collect(),
+                'dataPerbulan'    => collect(),
+                'pembayaranSiswa' => collect(),
+            ]);
+        }
 
-        return view('pages.tagihan.show', compact('tagihanSiswa'));
+        $firstTagihan   = $tagihanSiswa->first()->tagihan;
+        $siswa          = $tagihanSiswa->first()->siswa;
+
+        $nominal        = $firstTagihan->items->sum('nominal');
+        $namaKategori   = $firstTagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+
+        $bulanMulai     = (int) $firstTagihan->bulan_mulai;
+        $tahunMulai     = (int) $firstTagihan->tahun_mulai;
+
+        $dataPerbulan = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori) {
+            $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
+
+            return [
+                'id'            => $ts->id,
+                'tagihan_id'    => $ts->tagihan_id,
+                'nama_kategori' => $namaKategori,
+                'bulan'         => $date->translatedFormat('F'),
+                'tahun'         => $date->year,
+                'nominal'       => $nominal,
+                'status'        => $ts->status == 1 ? 'Lunas' : 'Belum Lunas',
+                'tanggal_bayar' => $ts->tanggal_bayar
+            ];
+        });
+
+        $pembayaranSiswa = $siswa->pembayaranTagihan->map(function ($p) use ($bulanMulai, $tahunMulai) {
+            $ts = $p->tagihanSiswa;
+            $bulanKe = $ts?->bulan_ke;
+
+            $date = $bulanKe
+                ? Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1)
+                : null;
+
+            return [
+                'id'            => $p->id,
+                'tanggal_bayar' => $p->tanggal_bayar,
+                'jumlah_bayar'  => $p->jumlah_bayar,
+                'bulan_ke'      => $bulanKe,
+                'bulan'         => $date ? $date->translatedFormat('F') : null,
+                'tahun'         => $date ? $date->year : null,
+                'create_by'     => $p->user?->name,  // ambil nama user
+            ];
+        });
+
+        return view('pages.tagihan.show', compact('tagihanSiswa', 'dataPerbulan', 'pembayaranSiswa'));
     }
 
-    public function perbulan($siswaId,$tagihanId)
+
+
+    public function perbulan($siswaId, $tagihanId)
     {
         $tagihanSiswa = TagihanSiswa::with('siswa','tagihan.items.kategori')
             ->where('tagihan_id', $tagihanId)
@@ -239,6 +308,11 @@ class TagihanController extends Controller
 
         $data = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori) {
             $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
+            $statusLabels = [
+                0 => 'Belum Lunas',
+                1 => 'Lunas',
+                2 => 'Proses Cicilan',
+            ];
 
             return [
                 'id'            => $ts->id,
@@ -247,18 +321,24 @@ class TagihanController extends Controller
                 'bulan'         => $date->translatedFormat('F'),
                 'tahun'         => $date->year,
                 'nominal'       => $nominal,
-                'status'        => $ts->status == 1 ? 'Lunas' : 'Belum Lunas',
-                'tanggal_bayar' => $ts->tanggal_bayar,
+                'sisa_nominal'  => $ts->sisa_nominal, // ✅ tambahkan field ini
+                'status'        => $statusLabels[$ts->status] ?? '-',
+                'tanggal_bayar' => $ts->tanggal_bayar
             ];
         });
 
         return response()->json($data);
     }
 
+
     public function daftarTagihan($siswaId)
     {
         $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
             ->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function ($query) {
+                $query->where('jenis_tagihan', 'bulanan')
+                    ->where('status_tagihan', 0);
+            })
             ->get()
             ->groupBy('tagihan_id'); // distinct by tagihan
 
@@ -288,9 +368,68 @@ class TagihanController extends Controller
         })->values(); // reset index biar array rapi
 
         return response()->json([
-            'detail'        => $data,
-            'total_tagihan' => $data->sum('nominal'),
+            'detail'        => $data
         ]);
+    }
+
+    public function daftarTagihanBebas($siswaId)
+    {
+        $tagihanSiswa = TagihanSiswa::with('tagihan.items.kategori')
+            ->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function ($query) {
+                $query->where('jenis_tagihan', 'bebas')
+                    ->where('status_tagihan', 0);
+            })
+            ->get()
+            ->groupBy('tagihan_id'); // distinct by tagihan
+
+        if ($tagihanSiswa->isEmpty()) {
+            return response()->json([]);
+        }
+
+        $data = $tagihanSiswa->map(function ($rows) {
+            $first = $rows->first();
+
+            return [
+                'id'            => $first->tagihan->id,
+                'jenis_tagihan' => $first->tagihan->jenis_tagihan,
+                'nominal'       => $first->tagihan->items->sum('nominal'),
+                'kategori'      => $first->tagihan->items->map(function ($item) {
+                    return [
+                        'id'            => $item->kategori->id,
+                        'nama_kategori' => $item->kategori->nama_kategori ?? '-',
+                        'kode_kategori' => $item->kategori->kode_kategori ?? '-',
+                        'nominal'       => $item->nominal,
+                    ];
+                }),
+                'jumlah_bulan'  => $rows->count(), // total bulan dari periode
+                'sudah_lunas'   => $rows->where('status', 'lunas')->count(),
+                'belum_lunas'   => $rows->where('status', 'belum')->count(),
+            ];
+        })->values(); // reset index biar array rapi
+
+        return response()->json([
+            'detail'        => $data
+        ]);
+    }
+    public function tagihanBebas($siswaId)
+    {
+        $data = TagihanSiswa::with('tagihan.items.kategori')
+            ->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function($q) {
+                $q->where('jenis_tagihan', 'bebas');
+            })
+            ->get()
+            ->map(function($ts) {
+                return [
+                    'id' => $ts->id,
+                    'nama_kategori' => optional($ts->tagihan->items->first()->kategori)->nama_kategori,
+                    'nominal' => $ts->tagihan->items->sum('nominal'),
+                    'status' => $ts->status,
+                ];
+            });
+
+        return response()->json($data);
     }
 
 }

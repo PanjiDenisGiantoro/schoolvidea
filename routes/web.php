@@ -173,7 +173,9 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
         Route::get('/perbulan/{id}',[TagihanController::class,'perbulan'])->name('tagihan.perbulan');
         Route::get('/daftarTagihan/{id}',[TagihanController::class,'daftarTagihan'])->name('tagihan.daftarTagihan');
+        Route::get('/daftarTagihanBebas/{id}',[TagihanController::class,'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
+        Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
 
 
     });

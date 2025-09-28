@@ -12,4 +12,9 @@ class Pembayarantagihan extends Model
     {
         return $this->belongsTo(TagihanSiswa::class, 'tagihan_siswa_id');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'create_by');
+
+    }
 }
