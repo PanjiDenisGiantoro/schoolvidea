@@ -16,6 +16,7 @@ use App\Http\Controllers\SettingAkunController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\TagihanController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\PotonganController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -180,9 +181,12 @@ Route::prefix('tahun_ajaran')->group(function () {
         Route::get('/daftarTagihanBebas/{id}',[TagihanController::class,'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
-
-
     });
+
+    Route::prefix('potongan')->group(function (){
+        Route::get('/', [PotonganController::class, 'index'])->name('potongan.index');
+    });
+
     Route::prefix('pembayaran')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
