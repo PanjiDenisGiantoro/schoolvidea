@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tagihan_siswa', function (Blueprint $table) {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE tagihan_siswa MODIFY COLUMN status ENUM('0', '1', '2')");
+            $table->string('status')->default('0')->change();
         });
     }
 
@@ -22,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tagihan_siswa', function (Blueprint $table) {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE tagihan_siswa MODIFY COLUMN status ENUM('0', '1')");
-
+            $table->string('status')->default('0')->change();
         });
     }
 };
