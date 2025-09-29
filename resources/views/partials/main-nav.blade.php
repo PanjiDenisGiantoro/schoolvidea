@@ -36,10 +36,10 @@
                 </a>
                 <div class="collapse" id="sidebarMasterData">
                     <ul class="sub-menu-nav">
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
 
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga
                                 </a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun Ajaran</a>
