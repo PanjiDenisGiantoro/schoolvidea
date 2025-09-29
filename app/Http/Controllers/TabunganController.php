@@ -175,12 +175,12 @@ class TabunganController extends Controller
         try {
             $siswa = Siswa::findOrFail($request->penerima_id);
             if (!$siswa) {
-                return back()->with('error', 'Siswa tidak ditemukan.');
+                return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
             $rekening = Saldo_keuangan::where('user_id', $request->penerima_id)->where('status', 1)->first();
             if(!$rekening){
-                return back()->with('error', 'Rekening tabungan tidak ditemukan.');
+                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
             $settings = setting_akun::where('kategori', 'tabungan-tarik')->get();
 
@@ -251,7 +251,7 @@ class TabunganController extends Controller
         } catch (\Exception $e) {
 //            dd($e->getMessage());
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('danger',$e->getMessage());
         }
     }
     public function show($siswa_id)
