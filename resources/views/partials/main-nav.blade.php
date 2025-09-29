@@ -37,25 +37,23 @@
                 <div class="collapse" id="sidebarMasterData">
                     <ul class="sub-menu-nav">
 
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Petugas</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga
-                                Unit</a></li>
+                                </a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
-
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun</a>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun Ajaran</a>
                         </li>
-
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
-
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan Staff</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Setting
                                 Akun</a></li>
 
                         <li class="sub-menu-item"><a class="sub-menu-link"
                                                      href="{{ url('kategoritagihan') }}">Kategori</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
                     </ul>
                 </div>
             </li>
