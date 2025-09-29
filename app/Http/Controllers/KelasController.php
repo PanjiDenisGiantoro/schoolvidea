@@ -10,11 +10,17 @@ use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class KelasController extends Controller
 {
     public function index(){
-        $kelas = Kelas::with('unit','officer.user','jurusan')->get();
+        $kelas = Kelas::with('unit','officer.user','jurusan')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
+            ->get();
+
         $headers = [
             'No',
             'Nama Unit',
@@ -29,13 +35,25 @@ class KelasController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::active()->get();
-        $units = Unit::get();
-        $wali = Officer::get();
+        $yayasan = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })
+        ->get();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })->get();
+        $wali = Officer::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
+
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $jurusan = Jurusan::get();
-        $kelas = Kelas::get();
+        $jurusan = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
 
         return view('pages.data_master.kelas.kelas_create', compact('jurusan','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
     }

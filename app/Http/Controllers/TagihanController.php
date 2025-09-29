@@ -22,9 +22,15 @@ class TagihanController extends Controller
 {
     public function create()
     {
-        $units = Unit::all();
-        $kelas = Kelas::all();
-        $kategoriTagihan = Kategoritagihan::where('status', 1)->get();
+        $units = Unit::when(Auth::user()->unit_id,function($query,$unit_id){
+            $query->where('id',$unit_id);
+        })->where('status','1')->get();
+        $kelas = Kelas::when(Auth::user()->unit_id,function($query,$unit_id){
+            $query->where('unit_id',$unit_id);
+        })->where('status','1')->get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function($query,$unit_id){
+            $query->where('unit_id',$unit_id);
+        })->where('status','1')->get();
 
         return view('pages.tagihan.create', compact('units','kelas','kategoriTagihan'));
     }
@@ -38,7 +44,9 @@ class TagihanController extends Controller
             'items.kategori',
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.siswa.pembayaranTagihan'
-        ])->get();
+        ])->when(Auth::user()->unit_id,function($query,$unit_id){
+            $query->where('unit_id',$unit_id);
+        })->get();
 
 //        dd($tagihans);
         $summary = [

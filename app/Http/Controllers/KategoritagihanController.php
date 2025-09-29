@@ -6,12 +6,20 @@ use App\Models\Kategoritagihan;
 use App\Models\Unit;
 use App\Models\Tahun_ajaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class KategoritagihanController extends Controller
 {
     public function index()
     {
-        $kategoritagihans = Kategoritagihan::with(['unit'])->get();
+        $kategoritagihans = Kategoritagihan::with('unit')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                // Filter kategori berdasarkan unit_id dari relasi 'unit'
+                $query->whereHas('unit', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })
+            ->get();
 
         $headers = [
             'No',
@@ -28,7 +36,11 @@ class KategoritagihanController extends Controller
 
     public function create()
     {
-        $units = Unit::isactive()->get();
+        $units = Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
+            $query->where('id',$unit_id);
+        })
+            ->where('status','1')
+            ->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
@@ -64,7 +76,11 @@ class KategoritagihanController extends Controller
     public function edit($id)
     {
         $kategoritagihan = Kategoritagihan::findOrFail($id);
-        $units = Unit::isactive()->get();
+        $units = Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
+            $query->where('id',$unit_id);
+        })
+            ->where('status','1')
+            ->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 

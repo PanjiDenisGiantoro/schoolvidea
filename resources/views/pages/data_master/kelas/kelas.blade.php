@@ -32,8 +32,8 @@
                     @forelse($kelas as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->nama_kelas }}</td>
                             <td>{{ $item->unit->nama_unit }}</td>
+                            <td>{{ $item->nama_kelas }}</td>
                             <td>{{ $item->officer->user->name ?? '' }}</td>
                             <td>{{ $item->jurusan->nama_jurusan ?? '' }}</td>
 

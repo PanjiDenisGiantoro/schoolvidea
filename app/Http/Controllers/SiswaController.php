@@ -11,13 +11,19 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class SiswaController extends Controller
 {
     public function index(){
-        $siswa = Siswa::with('unit','kelas','user')->get();
+        $siswa = Siswa::with('unit','kelas','user')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id',$unitId);
+            })
+            ->where('status','1')
+            ->get();
         $headers = [
             'No',
             'Unit',
@@ -32,12 +38,21 @@ class SiswaController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::active()->get();
-        $units = Unit::isactive()->get();
+        $yayasan = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })->where('status','1')->get();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })->where('status','1')->get();
 
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $kelas = Kelas::get();
+        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id',$unitId);
+        })->where('status','1')->get();
 
         return view('pages.data_master.siswa.siswa_create', compact('kelas','yayasan','units','tahun_ajaran','tahun_ajaran_selected'));
     }
@@ -106,18 +121,24 @@ class SiswaController extends Controller
                 ->with('success', 'Siswa berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('danger' ,$e->getMessage());
         }
     }
 
     public function edit($id)
     {
         $siswa = Siswa::findOrFail($id);
-        $units = Unit::isactive()->get();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })->where('status','1')->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $kelas = Kelas::all();
-        $jurusans = Jurusan::all();
+        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status','1')->get();
+        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status','1')->get();
 
         return view('pages.data_master.siswa.siswa_create', compact(
             'siswa','units','tahun_ajaran','tahun_ajaran_selected','kelas','jurusans'
@@ -171,8 +192,7 @@ class SiswaController extends Controller
 //            DB::commit();
             return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-//            DB::rollBack();
+            DB::rollBack();
             return back()->with('error', $e->getMessage());
         }
     }

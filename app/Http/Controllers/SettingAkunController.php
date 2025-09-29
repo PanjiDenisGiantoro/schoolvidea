@@ -6,12 +6,17 @@ use App\Models\setting_akun;
 use App\Models\Unit;
 use App\Models\Akun;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SettingAkunController extends Controller
 {
     public function index()
     {
-        $settings = setting_akun::with(['unit', 'akun'])->get();
+        $settings = setting_akun::with(['unit', 'akun'])
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
+            ->get();
         $headers = [
             'No',
             'Nama Setting',
@@ -29,8 +34,16 @@ class SettingAkunController extends Controller
 
     public function create()
     {
-        $units = Unit::isactive()->get();
-        $akuns = Akun::all();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })
+            ->where('status','1')
+            ->get();
+        $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })
+            ->where('status','1')
+            ->get();
 
         return view('pages.data_master.setting_akun.setting_akun_create', compact('units','akuns'));
     }

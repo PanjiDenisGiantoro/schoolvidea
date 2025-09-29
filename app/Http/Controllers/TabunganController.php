@@ -21,7 +21,12 @@ class TabunganController extends Controller
      */
     public function index()
     {
-        $transaksis = Siswa::with('tahun_ajaran','saldo','user','kelas','unit')->get();
+        $transaksis = Siswa::with('tahun_ajaran','saldo','user','kelas','unit')
+            ->when(Auth::user()->unit_id,function ($queyr,$unit_id){
+                $queyr->where('unit_id',$unit_id);
+            })
+            ->where('status','1')
+            ->get();
 
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->sum('jumlah');
@@ -37,7 +42,10 @@ class TabunganController extends Controller
      */
     public function create()
     {
-        $kelas = Kelas::get();
+        $kelas = Kelas::when(Auth::user()->unit_id,function ($query,$unit_id){
+            $query->where('unit_id',$unit_id);
+        })->where('status','1')
+            ->get();
         return view('pages.tabungan.create', compact('kelas'));
     }
     public function tarik()
@@ -66,12 +74,17 @@ class TabunganController extends Controller
             $siswa = Siswa::findOrFail($request->penerima_id);
 
             if(!$siswa){
-                return back()->with('error', 'Siswa tidak ditemukan.');
+                return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
-            $rekening = Saldo_keuangan::where('user_id', $request->penerima_id)->where('status', 1)->first();
+            $rekening = Saldo_keuangan::with('user') ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('user', function ($q) use ($unitId) {
+                    $q->where('unit_id', $unitId);
+                });
+            })->
+            where('user_id', $request->penerima_id)->where('status', 1)->first();
             if(!$rekening){
-                return back()->with('error', 'Rekening tabungan tidak ditemukan.');
+                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
@@ -83,7 +96,12 @@ class TabunganController extends Controller
                 'created_by'      => Auth::id(),
             ]);
 
-            $settings = setting_akun::where('kategori', 'tabungan')->get();
+            $settings = setting_akun::where('kategori', 'tabungan')
+                ->when(Auth::user()->unit_id,function ($query,$unit_id){
+                    $query->where('unit_id',$unit_id);
+                })
+                ->where('status','1')
+                ->get();
 
 
             $akun_debit  = $settings->where('debit', 1)->first()?->akun_id;
@@ -110,14 +128,21 @@ class TabunganController extends Controller
                 'keterangan'   => $request->keterangan,
             ]);
 
-            $saldoSiswa = Saldo_keuangan::firstOrCreate(
-                [
-                    'status' => 1,
-                    'akun_id' => $akun_kredit,
-                    'user_id' => $request->penerima_id
-                ],
-                ['saldo_akhir' => 0]
-            );
+            $saldoSiswa = Saldo_keuangan::with('user')
+                ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                    $query->whereHas('user', function ($q) use ($unitId) {
+                        $q->where('unit_id', $unitId);
+                    });
+                })
+                ->firstOrCreate(
+                    [
+                        'akun_id' => $akun_kredit,
+                        'user_id' => $request->penerima_id,
+                        'status' => 1
+                    ],
+                    ['saldo_akhir' => 0]
+                );
+
 
             Keuangan_transaksi_logs::create([
                 'transaksi_id'  => $transaksi->id,

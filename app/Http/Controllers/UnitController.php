@@ -74,7 +74,12 @@ class UnitController extends Controller
     public function edit($id)
     {
         $unit = Unit::findOrFail($id);
-        $yayasan = Yayasan::active()->get();
+        $yayasan = Yayasan::where('status','1')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })->get();
         return view('pages.data_master.unit.unit_create', compact('unit','yayasan'));
     }
     public function update(Request $request, $id)

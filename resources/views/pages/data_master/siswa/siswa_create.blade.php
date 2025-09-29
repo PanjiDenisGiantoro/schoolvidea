@@ -100,6 +100,10 @@
                         <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
                                        placeholder="Masukkan tanggal lahir"
                                        :value="old('tanggal_lahir', $siswa->tanggal_lahir ?? '')" />
+
+                            <x-input-field type="text" name="rfid_no" label="RFID"
+                                           placeholder="Masukkan tanggal lahir"
+                                           :value="old('rfid_no', $siswa->rfid_no ?? '')" />
                         </div>
 
                     </div>

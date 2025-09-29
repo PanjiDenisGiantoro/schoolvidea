@@ -7,13 +7,18 @@ use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JurusanController extends Controller
 {
     public function index(){
         $jurusan = Jurusan::with(['unit' => function ($q) {
             $q->isactive();
-        }])->get();
+        }])
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })
+            ->get();
         $headers = [
             'No',
             'Nama Jurusan',
@@ -28,8 +33,16 @@ class JurusanController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::active()->get();
-        $units = Unit::isactive()->get();
+        $yayasan = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })->active()->get();
+        $units = Unit::when(Auth::user()->unit_id,function ($query, $unitId) {
+          $query->where('id', $unitId);
+        })
+            ->where('status','1')->get();
 
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
@@ -63,7 +76,10 @@ class JurusanController extends Controller
     public function edit($id)
     {
         $jurusan = Jurusan::findOrFail($id);
-        $units = Unit::isactive()->get();
+        $units = Unit::when(Auth::user()->unit_id,function ($query, $unit_id){
+            $query->where('unit_id', $unit_id);
+        })
+        ->isactive()->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
