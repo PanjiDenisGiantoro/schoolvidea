@@ -194,7 +194,7 @@ class TabunganController extends Controller
             // Ambil saldo siswa
             $saldoSiswa = Saldo_keuangan::firstOrCreate(
                 [
-                    'akun_id' => $akun_debit,
+//                    'akun_id' => $akun_debit,
                     'user_id' => $request->penerima_id
                 ],
                 ['saldo_akhir' => 0]
