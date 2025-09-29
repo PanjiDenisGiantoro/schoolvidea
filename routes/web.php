@@ -17,6 +17,7 @@ use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\TagihanController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PotonganController;
+use App\Http\Controllers\TipeunitController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -83,6 +84,15 @@ Route::prefix('tahun_ajaran')->group(function () {
     Route::put('tahun_ajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahun_ajaran.update');
     Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahun_ajaran.destroy');
     Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahun_ajaran.show');
+});
+Route::prefix('tipe_unit')->group(function () {
+    Route::get('/', [TipeunitController::class, 'index'])->name('tipe_unit.index');
+    Route::get('/create', [TipeunitController::class, 'create'])->name('tipe_unit.create');
+    Route::post('/store', [TipeunitController::class, 'store'])->name('tipe_unit.store');
+    Route::get('/edit/{id}', [TipeunitController::class, 'edit'])->name('tipe_unit.edit');
+    Route::put('tipe_unit/update/{id}', [TipeunitController::class, 'update'])->name('tipe_unit.update');
+    Route::get('/delete/{id}', [TipeunitController::class, 'destroy'])->name('tipe_unit.destroy');
+    Route::get('/show/{id}', [TipeunitController::class, 'show'])->name('tipe_unit.show');
 });
 
 
