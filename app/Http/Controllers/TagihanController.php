@@ -10,7 +10,7 @@ use App\Models\Keuangan_transaksi_logs;
 use App\Models\setting_akun;
 use App\Models\Siswa;
 use App\Models\Tagihan;
-use App\Models\TagihanItem;
+use App\Models\Tagihanitem;
 use App\Models\Tagihansiswa;
 use App\Models\Unit;
 use Carbon\Carbon;
@@ -111,7 +111,7 @@ class TagihanController extends Controller
                 if (!empty($item['id'])) {
                     $kategori = KategoriTagihan::find($item['id']);
                     $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
-                    TagihanItem::create([
+                    Tagihanitem::create([
                         'tagihan_id' => $tagihan->id,
                         'kategori_id' => $item['id'],
                         'nominal' => $nominal_item,
