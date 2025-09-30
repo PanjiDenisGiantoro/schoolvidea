@@ -27,7 +27,6 @@ class TabunganController extends Controller
             })
             ->where('status','1')
             ->get();
-
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->sum('jumlah');
 
@@ -82,9 +81,9 @@ class TabunganController extends Controller
                     $q->where('unit_id', $unitId);
                 });
             })->
-            where('user_id', $request->penerima_id)->where('status', 1)->first();
+            where('user_id', $request->penerima_id)->where('status', 0)->first();
             if(!$rekening){
-                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+                return back()->with('danger', 'Rekening tabungan belum Aktif.');
             }
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
@@ -136,7 +135,7 @@ class TabunganController extends Controller
                 })
                 ->firstOrCreate(
                     [
-                        'akun_id' => $akun_kredit,
+//                        'akun_id' => $akun_kredit,
                         'user_id' => $request->penerima_id,
                         'status' => 1
                     ],

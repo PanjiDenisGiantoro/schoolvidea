@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Roles_petugas;
+use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
 use App\Models\Tahun_ajaran;
 use App\Models\Unit;
@@ -100,8 +101,9 @@ class SiswaController extends Controller
             // 4️⃣ Assign role ke user
             $user->assignRole($roleSpatie->name);
 
+
             // 5️⃣ Buat data siswa
-            Siswa::create([
+           $siswa =  Siswa::create([
                 'nisn'            => $request->nisn,
                 'tempat_lahir'    => $request->tempat_lahir,
                 'tanggal_lahir'   => $request->tanggal_lahir,
@@ -113,6 +115,12 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
+            ]);
+
+            $tabungan = Saldo_keuangan::create([
+                'user_id' => $siswa->id,
+                'saldo_akhir' => 0,
+                'status' => 0
             ]);
 
             DB::commit();
