@@ -18,6 +18,7 @@ use App\Http\Controllers\TagihanController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PotonganController;
 use App\Http\Controllers\TipeunitController;
+use App\Http\Controllers\ReportController;
 
 
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
@@ -95,6 +96,10 @@ Route::prefix('tipe_unit')->group(function () {
     Route::get('/show/{id}', [TipeunitController::class, 'show'])->name('tipe_unit.show');
 });
 
+
+    Route::prefix('report')->group(function () {
+        Route::get('/tagihan', [ReportController::class, 'tagihan'])->name('report.tagihan');
+    });
 
     Route::prefix('kelas')->group(function () {
         Route::get('/', [KelasController::class, 'index'])->name('kelas.index');

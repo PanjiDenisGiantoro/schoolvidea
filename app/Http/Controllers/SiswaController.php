@@ -118,7 +118,7 @@ class SiswaController extends Controller
             ]);
 
             $tabungan = Saldo_keuangan::create([
-                'user_id' => $siswa->id,
+                'user_id' => $user->id,
                 'saldo_akhir' => 0,
                 'status' => 0
             ]);
