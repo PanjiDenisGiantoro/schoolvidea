@@ -44,9 +44,11 @@
                                        :value="old('nama_unit', $unit->nama_unit ?? '')" required />
 
                         <x-input-field type="text" name="code" label="Code"
-                                       placeholder="Auto Generate" icon="bx bx-code"
-                                       style="background-color: #e9ecef; color: #6c757d;"
-                                       :value="old('code', $unit->code ?? '')" readonly  />
+                                       placeholder="Kosongkan untuk auto generate" icon="bx bx-code"
+{{--                                       style="background-color: #e9ecef; color: #6c757d;"--}}
+                                       :value="old('code', $unit->code ?? '')"   />
+
+                        />
 
                         <x-input-field type="text" name="image" label="Image (URL/Path)"
                                        placeholder="Masukkan URL gambar" icon="bx bx-image"
@@ -74,6 +76,17 @@
                         <x-input-field type="text" name="website" label="Website"
                                        placeholder="Masukkan website" icon="bx bx-globe"
                                        :value="old('website', $unit->website ?? '')" />
+
+                        <label for="tipe_unit_id" class="form-label">Tipe Unit</label>
+                        <select name="tipe_unit_id"  id="choices-single-no-sorting"  data-choices data-choices-sorting-false>
+                            <option value="">-- Pilih Tipe Unit --</option>
+                            @foreach($tipeunit as $tipe)
+                                <option value="{{ $tipe->id }}"
+                                    {{ old('tipe_unit_id', $unit->tipe_unit_id ?? '') == $tipe->id ? 'selected' : '' }}>
+                                    {{ $tipe->nama_tipe_unit }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="col-md-4">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tipeunit;
 use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Illuminate\Support\Str;
 class UnitController extends Controller
 {
     public function index(){
-        $unit = Unit::
+        $unit = Unit::with('tipe_unit')->
         when(Auth::user()->unit_id, function ($query, $unitId) {
             $query->where('id', $unitId);
         })
@@ -19,6 +20,7 @@ class UnitController extends Controller
         $headers = [
             'No',
             'Nama Yayasan',
+            'Tipe Unit',
             'Nama Unit',
             'Code Unit',
             'Logo',
@@ -40,7 +42,9 @@ class UnitController extends Controller
                     $q->where('id', $unitId);
                 });
             })->where('status', '1')->get();
-        return view('pages.data_master.unit.unit_create', compact('yayasan'));
+
+        $tipeunit = Tipeunit::where('status','1')->get();
+        return view('pages.data_master.unit.unit_create', compact('yayasan','tipeunit'));
     }
     public function store(Request $request)
     {
@@ -53,9 +57,13 @@ class UnitController extends Controller
             'alamat' => 'nullable|string',
             'website' => 'nullable|string',
             'status' => 'required|in:0,1',
+            'tipe_unit_id' => 'nullable'
         ]);
-        // generate central_code 7 huruf acak
-        $centralCode = strtoupper(Str::random(5));
+
+        $centralCode = $request->code;
+        if (empty($centralCode)) {
+            $centralCode = 'U' . strtoupper(Str::random(7));
+        }
         Unit::create([
             'nama_unit' => $request->nama_unit,
             'code' => 'U'.$centralCode,
@@ -66,6 +74,7 @@ class UnitController extends Controller
             'website' => $request->website,
             'yayasan_id' => $request->yayasan_id,
             'status' => $request->status,
+            'tipe_unit_id' => $request->tipe_unit_id
         ]);
 
         return redirect()->route('unit.index')
@@ -80,7 +89,9 @@ class UnitController extends Controller
                     $q->where('id', $unitId);
                 });
             })->get();
-        return view('pages.data_master.unit.unit_create', compact('unit','yayasan'));
+        $tipeunit = Tipeunit::where('status','1')->get();
+
+        return view('pages.data_master.unit.unit_create', compact('unit','yayasan','tipeunit'));
     }
     public function update(Request $request, $id)
     {

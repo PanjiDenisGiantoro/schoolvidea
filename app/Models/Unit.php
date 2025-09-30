@@ -37,4 +37,8 @@ class Unit extends Model
     {
         return $query->where('status', '1');
     }
+    public function tipe_unit()
+    {
+        return $this->belongsTo(Tipeunit::class, 'tipe_unit_id', 'id');
+    }
 }

@@ -22,10 +22,11 @@
                                        :value="old('nama_yayasan', $lembagaunit->nama_yayasan ?? '')" required />
 
                         <x-input-field type="text" name="central_code" label="Central Code"
-                                       placeholder="Auto Generate" icon="bx bx-code"
-                                       :value="old('central_code', $lembagaunit->central_code ?? '')" readonly
-                                       style="background-color: #e9ecef; color: #6c757d;"
+                                       placeholder="Kosongkan untuk auto generate"
+                                       icon="bx bx-code"
+                                       :value="old('central_code', $lembagaunit->central_code ?? '')"
                         />
+
 
                         <x-input-field type="text" name="image" label="Image (URL/Path)"
                                        placeholder="Masukkan URL gambar" icon="bx bx-image"

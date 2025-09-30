@@ -41,19 +41,23 @@ class LembagaunitController extends Controller
     {
         $request->validate([
             'nama_yayasan' => 'required|string|max:255',
+            'central_code' => 'nullable|string|max:50|unique:yayasan,central_code', // optional
             'no_hp'        => 'nullable|string|max:20',
             'email'        => 'nullable|email',
             'alamat'       => 'nullable|string',
             'website'      => 'nullable|string',
             'image'        => 'nullable|string',
+            'status'       => 'required|in:0,1',
         ]);
 
-        // generate central_code 7 huruf acak
-        $centralCode = strtoupper(Str::random(7));
+        $centralCode = $request->central_code;
+        if (empty($centralCode)) {
+            $centralCode = 'U' . strtoupper(Str::random(7));
+        }
 
         Yayasan::create([
             'nama_yayasan' => $request->nama_yayasan,
-            'central_code' => 'U'.$centralCode,
+            'central_code' => $centralCode,
             'no_hp'        => $request->no_hp,
             'email'        => $request->email,
             'alamat'       => $request->alamat,
@@ -65,6 +69,7 @@ class LembagaunitController extends Controller
         return redirect()->route('lembagaunit.index')
             ->with('success', 'Data berhasil ditambahkan dengan Central Code: ' . $centralCode);
     }
+
     public function edit($id)
     {
         $lembagaunit = Yayasan::findOrFail($id);

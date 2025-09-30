@@ -34,6 +34,7 @@
 
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $item->yayasan->nama_yayasan ?? '-' }}</td>
+                            <td>{{ $item->tipe_unit->nama_tipe_unit ?? '-' }}</td>
                             <td>{{ $item->nama_unit ?? '-' }}</td>
                             <td>{{ $item->code ?? '-' }}</td>
                             <td>{{ $item->image ?? '-' }}</td>
