@@ -34,6 +34,7 @@
                             <td>{{ $item->nisn }}</td>
                             <td>{{ $item->kelas->nama_kelas ?? '-' }}</td>
                             <td>{{ $item->user->name ?? '-' }}</td>
+                            <td>{{ $item->va_siswa ?? '-' }}</td>
                             <td>
                                 @if($item->status == 1)
                                     <span class="badge bg-success">Aktif</span>

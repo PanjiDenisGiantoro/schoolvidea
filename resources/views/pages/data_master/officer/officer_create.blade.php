@@ -91,6 +91,10 @@
                                        placeholder="Masukkan URL gambar" icon="bx bx-image"
                                        :value="old('image', $officer->officer->iamge ?? '')" />
 
+                        <x-input-field type="text" name="va_guru" label="VA Petugas"
+                                       placeholder="Masukkan VA Petugas" icon="bx bx-credit-card"
+                                       :value="old('va_guru', $officer->officer->va_guru ?? '')" />
+
 
                     </div>
                     <div class="col-md-4">

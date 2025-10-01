@@ -31,6 +31,7 @@ class SiswaController extends Controller
             'NISN',
             'Kelas',
             'Nama',
+            'VA Siswa',
             'Status',
             'Action'
         ];
@@ -69,6 +70,7 @@ class SiswaController extends Controller
             'tahun_ajaran_id' => 'required',
             'status'          => 'required|in:0,1',
             'rfid_no'         => 'nullable|string|max:255',
+            'va_siswa'        => 'nullable|string|max:255',
         ]);
 
         // ✅ 2. Cek kalau gagal
@@ -115,6 +117,7 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
+               'va_siswa' => $request->va_siswa
             ]);
 
             $tabungan = Saldo_keuangan::create([
@@ -170,6 +173,7 @@ class SiswaController extends Controller
             'tempat_lahir'    => 'required|string|max:255',
             'no_hp' => 'nullable|string|min:6',
             'rfid_no'         => 'nullable|string|max:255',
+            'va_siswa'        => 'nullable|string|max:255',
         ]);
 
 //        DB::beginTransaction();
@@ -195,6 +199,7 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
+                'va_siswa'        => $request->va_siswa,
             ]);
 
 //            DB::commit();

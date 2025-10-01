@@ -37,6 +37,7 @@
                             <td>{{ $item->roles[0]->name ?? '-' }}</td>
                             <td>{{ $item->officer->nip ?? '-' }}</td>
                             <td>{{ $item->email ?? '-' }}</td>
+                            <td>{{ $item->officer->va_guru ?? '-' }}</td>
                             <td>
                                 <div class="d-flex gap-3">
                                 <a href="{{ route('officer.show', $item->id ?? '') }}" class="link-primary text-muted">

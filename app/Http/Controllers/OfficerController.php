@@ -28,6 +28,7 @@ class OfficerController extends Controller
             'Role',
             'NIP',
             'email',
+            'VA Petugas',
             'Action'
         ];
         return view('pages.data_master.officer.officer', compact('officer','headers'));
@@ -56,6 +57,7 @@ class OfficerController extends Controller
             'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'rfid_no' => 'nullable|string|max:255',
+
         ]);
 
         DB::beginTransaction();
