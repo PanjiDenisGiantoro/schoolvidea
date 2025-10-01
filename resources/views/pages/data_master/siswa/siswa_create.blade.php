@@ -148,6 +148,76 @@
                         </div>
                     </div>
                 </div>
+                <div class="row g-3 mt-4">
+                    <h5 class="card-title mb-0 mt-3">Data Tambahan Siswa</h5>
+                    <p class="text-muted">Masukkan data tambahan siswa</p>
+                    <hr>
+
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="nis" label="NIS"
+                                       placeholder="Masukkan NIS"
+                                       icon="bx bx-id-card"
+                                       :value="old('nis', $siswa->nis ?? '')" />
+
+                        <x-input-field type="text" name="nik" label="NIK"
+                                       placeholder="Masukkan NIK"
+                                       icon="bx bx-id-card"
+                                       :value="old('nik', $siswa->nik ?? '')" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="L" {{ old('jenis_kelamin', $siswa->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin', $siswa->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="agama" class="form-label">Agama</label>
+                            <select name="agama" id="agama" class="form-select" required>
+                                <option value="">-- Pilih Agama --</option>
+                                <option value="Islam" {{ old('agama', $siswa->agama ?? '') == 'Islam' ? 'selected' : '' }}>Islam</option>
+                                <option value="Kristen" {{ old('agama', $siswa->agama ?? '') == 'Kristen' ? 'selected' : '' }}>Kristen</option>
+                                <option value="Katolik" {{ old('agama', $siswa->agama ?? '') == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                                <option value="Hindu" {{ old('agama', $siswa->agama ?? '') == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                                <option value="Buddha" {{ old('agama', $siswa->agama ?? '') == 'Buddha' ? 'selected' : '' }}>Buddha</option>
+                                <option value="Konghucu" {{ old('agama', $siswa->agama ?? '') == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="no_hp_ortu" label="No. HP Orang Tua"
+                                       placeholder="Masukkan nomor HP orang tua"
+                                       icon="bx bx-phone"
+                                       :value="old('no_hp_ortu', $siswa->no_hp_ortu ?? '')" />
+
+                        <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
+                                       placeholder="Masukkan nama orang tua"
+                                       icon="bx bx-user"
+                                       :value="old('nama_ortu', $siswa->nama_ortu ?? '')" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="bank" label="Bank"
+                                       placeholder="Masukkan nama bank"
+                                       icon="bx bx-bank"
+                                       :value="old('bank', $siswa->bank ?? '')" />
+
+                        <x-input-field type="text" name="no_rekening" label="No Rekening"
+                                       placeholder="Masukkan nomor rekening"
+                                       icon="bx bx-credit-card"
+                                       :value="old('no_rekening', $siswa->no_rekening ?? '')" />
+
+                        <x-input-field type="text" name="qrcode" label="QR Code"
+                                       placeholder="Masukkan kode / path QR"
+                                       icon="bx bx-qr"
+                                       :value="old('qrcode', $siswa->qrcode ?? '')" />
+                    </div>
+                </div>
 
                 <div class="mt-3 text-end">
                     <button type="submit" class="btn btn-success">

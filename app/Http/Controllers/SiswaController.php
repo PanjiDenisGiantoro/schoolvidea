@@ -71,6 +71,15 @@ class SiswaController extends Controller
             'status'          => 'required|in:0,1',
             'rfid_no'         => 'nullable|string|max:255',
             'va_siswa'        => 'nullable|string|max:255',
+            'nis'           => 'nullable|string|max:20|unique:siswas,nis',
+            'nik'           => 'nullable|string|max:20|unique:siswas,nik',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'agama'         => 'nullable|string|max:50',
+            'no_hp_ortu'    => 'nullable|string|max:20',
+            'nama_ortu'     => 'nullable|string|max:100',
+            'bank'          => 'nullable|string|max:100',
+            'no_rekening'   => 'nullable|string|max:50',
+            'qrcode'        => 'nullable|string',
         ]);
 
         // ✅ 2. Cek kalau gagal
@@ -117,7 +126,18 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
-               'va_siswa' => $request->va_siswa
+               'va_siswa' => $request->va_siswa,
+               'nis' => $request->nis,
+               'nik'           => $request->nik,
+               'jenis_kelamin' => $request->jenis_kelamin,
+               'agama'         => $request->agama,
+               'no_hp_ortu'    => $request->no_hp_ortu,
+               'nama_ortu'     => $request->nama_ortu,
+               'bank'          => $request->bank,
+               'no_rekening'   => $request->no_rekening,
+               'qrcode'        => $request->qrcode,
+
+
             ]);
 
             $tabungan = Saldo_keuangan::create([
@@ -174,6 +194,15 @@ class SiswaController extends Controller
             'no_hp' => 'nullable|string|min:6',
             'rfid_no'         => 'nullable|string|max:255',
             'va_siswa'        => 'nullable|string|max:255',
+            'nis'           => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
+            'nik'           => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'agama'         => 'nullable|string|max:50',
+            'no_hp_ortu'    => 'nullable|string|max:20',
+            'nama_ortu'     => 'nullable|string|max:100',
+            'bank'          => 'nullable|string|max:100',
+            'no_rekening'   => 'nullable|string|max:50',
+            'qrcode'        => 'nullable|string',
         ]);
 
 //        DB::beginTransaction();
@@ -200,6 +229,15 @@ class SiswaController extends Controller
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
                 'va_siswa'        => $request->va_siswa,
+                'nis' => $request->nis,
+                'nik'           => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'agama'         => $request->agama,
+                'no_hp_ortu'    => $request->no_hp_ortu,
+                'nama_ortu'     => $request->nama_ortu,
+                'bank'          => $request->bank,
+                'no_rekening'   => $request->no_rekening,
+                'qrcode'        => $request->qrcode,
             ]);
 
 //            DB::commit();
