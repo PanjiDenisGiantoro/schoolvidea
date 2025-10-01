@@ -35,11 +35,11 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $item->nama_yayasan ?? '-' }}</td>
                             <td>{{ $item->central_code ?? '-' }}</td>
-                            <td>{{ $item->image ?? '-' }}</td>
                             <td>{{ $item->no_hp ?? '-' }}</td>
                             <td>{{ $item->email ?? '-' }}</td>
                             <td>{{ $item->alamat ?? '-' }}</td>
                             <td>{{ $item->website ?? '-' }}</td>
+                            <td>{{ $item->nama_pimpinan ?? '-' }}</td>
                             <td>
                                 <span class="badge {{ $item->status === 'Aktif' ? 'bg-success' : 'bg-danger' }}">
                                     {{ $item->status }}

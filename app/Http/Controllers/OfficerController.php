@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Jurusan;
 use App\Models\Officer;
 use App\Models\Roles_petugas;
 use App\Models\Tahun_ajaran;
@@ -40,7 +41,10 @@ class OfficerController extends Controller
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $roles = Roles_petugas::all();
-        return view('pages.data_master.officer.officer_create', compact('roles','units','tahun_ajaran','tahun_ajaran_selected'));
+        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
+        return view('pages.data_master.officer.officer_create', compact('roles','units','tahun_ajaran','tahun_ajaran_selected','jurusans'));
     }
 
     public function store(Request $request)
@@ -50,14 +54,24 @@ class OfficerController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6', // ✅ tambah confirmed
             'role_id' => 'required|exists:roles,id',       // ✅ validasi harus ada di Spatie roles
-            'nip' => 'required|string|max:50|unique:officers,nip',
             'image' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
             'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'rfid_no' => 'nullable|string|max:255',
-
+            'nip'             => 'required|string|max:50|unique:officers,nip',
+            'nuptk'           => 'nullable|string|max:50',
+            'nik'             => 'nullable|string|max:50',
+            'jenis_kelamin'   => 'nullable|in:Laki-laki,Perempuan',
+            'agama'           => 'nullable|string|max:50',
+            'tanggal_lahir'   => 'nullable|date',
+            'alamat'          => 'nullable|string',
+            'bank'            => 'nullable|string|max:100',
+            'no_rekening'     => 'nullable|string|max:50',
+            'no_kartu_rfid'   => 'nullable|string|max:100',
+            'qr_code'         => 'nullable|string|max:100',
+            'va_guru'         => 'nullable|string|max:100',
         ]);
 
         DB::beginTransaction();
@@ -87,7 +101,18 @@ class OfficerController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'user_id'         => $user->id,
                 'role_id'         => $rolePetugas->id, // ✅ foreign key cocok dengan roles_petugas
-
+                'nuptk'           => $request->nuptk,
+                'nik'             => $request->nik,
+              'jenis_kelamin'   => $request->jenis_kelamin,
+              'agama'           => $request->agama,
+              'tanggal_lahir'   => $request->tanggal_lahir,
+              'alamat'          => $request->alamat,
+              'bank'            => $request->bank,
+              'no_rekening'     => $request->no_rekening,
+              'no_kartu_rfid'   => $request->no_kartu_rfid,
+              'qr_code'         => $request->qr_code,
+              'jurusan'         => $request->jurusan,
+              'va_guru'         => $request->va_guru,
             ]);
             DB::commit();
 
@@ -108,8 +133,10 @@ class OfficerController extends Controller
         $units   = Unit::all();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-
-        return view('pages.data_master.officer.officer_create', compact('officer', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected'));
+        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
+        return view('pages.data_master.officer.officer_create', compact('jurusans','officer', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected'));
     }
 
     public function update(Request $request, $id)
@@ -126,6 +153,16 @@ class OfficerController extends Controller
             'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'rfid_no' => 'nullable|string|max:255',
+            'nik'             => 'nullable|string|max:50',
+            'jenis_kelamin'   => 'nullable|in:Laki-laki,Perempuan',
+            'agama'           => 'nullable|string|max:50',
+            'tanggal_lahir'   => 'nullable|date',
+            'alamat'          => 'nullable|string',
+            'bank'            => 'nullable|string|max:100',
+            'no_rekening'     => 'nullable|string|max:50',
+            'no_kartu_rfid'   => 'nullable|string|max:100',
+            'qr_code'         => 'nullable|string|max:100',
+            'va_guru'         => 'nullable|string|max:100',
         ]);
 
         DB::beginTransaction();
@@ -159,6 +196,17 @@ class OfficerController extends Controller
                 'unit_id'         => $request->unit_id,
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'role_id'         => $rolePetugas->id,
+                'nik'             => $request->nik,
+                'jenis_kelamin'   => $request->jenis_kelamin,
+                'agama'           => $request->agama,
+                'tanggal_lahir'   => $request->tanggal_lahir,
+                'alamat'          => $request->alamat,
+                'bank'            => $request->bank,
+                'no_rekening'     => $request->no_rekening,
+                'no_kartu_rfid'   => $request->no_kartu_rfid,
+                'qr_code'         => $request->qr_code,
+                'jurusan'         => $request->jurusan,
+                'va_guru'         => $request->va_guru,
             ]);
 
             DB::commit();

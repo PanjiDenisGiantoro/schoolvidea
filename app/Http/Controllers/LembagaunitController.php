@@ -22,11 +22,11 @@ class LembagaunitController extends Controller
             'No',
             'Nama Yayasan',
             'Central Code Yayasan',
-            'image',
             'No Telp',
             'Email',
             'Alamat',
             'Website',
+            'Nama Pimpinan',
             'Status',
             'Action'
         ];
@@ -41,13 +41,14 @@ class LembagaunitController extends Controller
     {
         $request->validate([
             'nama_yayasan' => 'required|string|max:255',
-            'central_code' => 'nullable|string|max:50|unique:yayasan,central_code', // optional
+            'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
             'no_hp'        => 'nullable|string|max:20',
             'email'        => 'nullable|email',
             'alamat'       => 'nullable|string',
             'website'      => 'nullable|string',
             'image'        => 'nullable|string',
             'status'       => 'required|in:0,1',
+            'nama_pimpinan' => 'nullable|string|max:255',
         ]);
 
         $centralCode = $request->central_code;
@@ -64,6 +65,7 @@ class LembagaunitController extends Controller
             'website'      => $request->website,
             'image'        => $request->image,
             'status'       => $request->status,
+            'nama_pimpinan' => $request->nama_pimpinan,
         ]);
 
         return redirect()->route('lembagaunit.index')
@@ -94,5 +96,23 @@ class LembagaunitController extends Controller
             $lembagaunit = Yayasan::findOrFail($id);
             $show = true;
         return view('pages.data_master.kode_lembaga.kode_lembaga_create', compact('lembagaunit','show'));
+    }
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpg,jpeg,png,gif|max:1024',
+        ]);
+
+        $file = $request->file('file');
+        $randomName = substr(str_shuffle('0123456789'), 0, 15);
+        $extension = $file->getClientOriginalExtension();
+        $filename = $randomName . '.' . $extension;
+        $path = $file->storeAs('uploads/lembagaunit', $filename, 'public');
+
+        return response()->json([
+            'success' => true,
+            'filepath' => 'storage/' . $path,
+            'filename' => $filename
+        ]);
     }
 }

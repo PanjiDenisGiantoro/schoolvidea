@@ -37,7 +37,7 @@
                             <td>{{ $item->tipe_unit->nama_tipe_unit ?? '-' }}</td>
                             <td>{{ $item->nama_unit ?? '-' }}</td>
                             <td>{{ $item->code ?? '-' }}</td>
-                            <td>{{ $item->image ?? '-' }}</td>
+{{--                            <td>{{ $item->image ?? '-' }}</td>--}}
                             <td>{{ $item->no_hp ?? '-' }}</td>
                             <td>{{ $item->email ?? '-' }}</td>
                             <td>{{ $item->alamat ?? '-' }}</td>

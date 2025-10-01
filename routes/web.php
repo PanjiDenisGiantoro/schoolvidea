@@ -65,6 +65,8 @@ Route::prefix('lembagaunit')->group(function () {
     Route::put('lembagaunit/update/{id}', [LembagaUnitController::class, 'update'])->name('lembagaunit.update');
     Route::get('/delete/{id}', [LembagaunitController::class, 'destroy'])->name('lembagaunit.destroy');
     Route::get('/show/{id}', [LembagaunitController::class, 'show'])->name('lembagaunit.show');
+    Route::post('/upload', [LembagaUnitController::class, 'upload'])->name('lembagaunit.upload');
+
 });
 
 Route::prefix('unit')->group(function () {
@@ -75,6 +77,7 @@ Route::prefix('unit')->group(function () {
     Route::put('unit/update/{id}', [UnitController::class, 'update'])->name('unit.update');
     Route::get('/delete/{id}', [UnitController::class, 'destroy'])->name('unit.destroy');
     Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
+    Route::post('/upload', [UnitController::class, 'upload'])->name('unit.upload');
 });
 
 Route::prefix('tahun_ajaran')->group(function () {

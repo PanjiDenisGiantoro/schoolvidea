@@ -48,12 +48,22 @@
 {{--                                       style="background-color: #e9ecef; color: #6c757d;"--}}
                                        :value="old('code', $unit->code ?? '')"   />
 
-                        />
-
-                        <x-input-field type="text" name="image" label="Image (URL/Path)"
-                                       placeholder="Masukkan URL gambar" icon="bx bx-image"
-                                       :value="old('image', $unit->image ?? '')" />
-
+                        <div class="mb-3">
+                            <label for="image-dropzone" class="form-label">Upload Gambar</label>
+                            <div class="dropzone" id="image-dropzone"></div>
+                            <input type="hidden" name="image" id="image-hidden"
+                                   value="{{ old('image', $unit->image ?? '') }}">
+                            <small class="text-muted">Format: JPG, PNG, GIF | Max: 2MB</small>
+                        </div>
+                        <div class="modal fade" id="imageModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center">
+                                        <img id="previewImage" src="" class="img-fluid rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="mb-2">
                             <label for="status" class="form-label">Status Unit </label>
 
@@ -123,5 +133,65 @@
         });
     });
     @endif
+</script> <script>
+    Dropzone.autoDiscover = false;
+
+    Dropzone.options.myDropzone = {
+        paramName: "file",
+        maxFilesize: 1,
+        acceptedFiles: "image/*",
+        addRemoveLinks: true,
+        init: function () {
+            this.on("addedfile", function (file) {
+                file.previewElement.addEventListener("click", function () {
+                    // ambil url preview
+                    let imgSrc = file.dataURL;
+                    document.getElementById("previewImage").src = imgSrc;
+                    // buka modal
+                    var modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                    modal.show();
+                });
+            });
+        }
+    };
+
+    let myDropzone = new Dropzone("#image-dropzone", {
+        url: "{{ route('unit.upload') }}",
+        paramName: "file",
+        maxFiles: 1,
+        maxFilesize: 1, // MB
+        acceptedFiles: ".jpg,.jpeg,.png",
+        addRemoveLinks: true,
+        thumbnailWidth: 200,  // ubah default (120px)
+        thumbnailHeight: 200, // biar lebih proporsional
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+        },
+        success: function (file, response) {
+            document.querySelector("#image-hidden").value = response.filepath;
+        },
+        removedfile: function(file) {
+            file.previewElement.remove();
+            document.querySelector("#image-hidden").value = ""; // kosongkan kalau dihapus
+        }
+    });
+
+    // Kalau edit, preload gambar lama
+    @if(isset($unit) && $unit->image)
+
+    let mockFile = {
+        name: "Current Image",
+        size: 12345,
+        type: 'image/jpeg', // bisa disesuaikan
+        accepted: true
+    };
+
+    myDropzone.emit("addedfile", mockFile);
+    myDropzone.emit("thumbnail", mockFile, "{{ asset($unit->image) }}");
+    myDropzone.emit("complete", mockFile);
+    myDropzone.files.push(mockFile);
+    @endif
+
 </script>
+
 @endpush

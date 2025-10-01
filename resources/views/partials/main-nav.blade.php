@@ -135,14 +135,14 @@
                     </ul>
                 </div>
             </li>
-            <li class="menu-item">
-                <a class="menu-link" href="reports.html">
-                         <span class="nav-icon">
-                              <i class="ri-coin-line"></i>
-                         </span>
-                    <span class="nav-text"> Pengeluaran </span>
-                </a>
-            </li>
+{{--            <li class="menu-item">--}}
+{{--                <a class="menu-link" href="reports.html">--}}
+{{--                         <span class="nav-icon">--}}
+{{--                              <i class="ri-coin-line"></i>--}}
+{{--                         </span>--}}
+{{--                    <span class="nav-text"> Pengeluaran </span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
             <li class="menu-item">
                 <a class="menu-link" href="reports.html">
                          <span class="nav-icon">

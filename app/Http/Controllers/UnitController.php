@@ -23,7 +23,6 @@ class UnitController extends Controller
             'Tipe Unit',
             'Nama Unit',
             'Code Unit',
-            'Logo',
             'No Telp',
             'Email',
             'Alamat',
@@ -113,4 +112,20 @@ class UnitController extends Controller
         $show = true;
         return view('pages.data_master.unit.unit_create', compact('unit','show'));
     }
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $file = $request->file('file');
+        $filename = Str::random(15) . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/unit', $filename, 'public');
+
+        return response()->json([
+            'success' => true,
+            'filepath' => 'storage/' . $path
+        ]);
+    }
+
 }
