@@ -246,7 +246,7 @@ class TabunganController extends Controller
     }
     public function show($siswa_id)
     {
-        $siswa = Siswa::with('kelas')->findOrFail($siswa_id);
+        $siswa = Siswa::with('kelas','user')->findOrFail($siswa_id);
 
         // Ambil semua transaksi siswa
         $logs = Keuangan_transaksi::where('penerima_id', $siswa_id)
@@ -254,7 +254,7 @@ class TabunganController extends Controller
             ->get();
 
         // Ambil saldo akhir dari saldo_keuangan
-        $saldo = Saldo_keuangan::where('user_id', $siswa_id)->first();
+        $saldo = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
         $saldo_akhir = $saldo?->saldo_akhir ?? 0;
 
         // Hitung saldo awal dari transaksi terakhir

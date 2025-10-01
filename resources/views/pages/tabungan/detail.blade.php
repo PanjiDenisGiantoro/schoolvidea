@@ -18,7 +18,7 @@
                          width="120">
                 </div>
                 <ul class="list-unstyled small">
-                    <li><strong>Nama Lengkap:</strong> {{ $siswa->nama_lengkap }}</li>
+                    <li><strong>Nama Lengkap:</strong> {{ $siswa->user->name }}</li>
                     <li><strong>Nomor Induk (NISN):</strong> {{ $siswa->nisn }}</li>
                     <li><strong>Kelas:</strong> {{ $siswa->kelas->nama_kelas }}</li>
                 </ul>

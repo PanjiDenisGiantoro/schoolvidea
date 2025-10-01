@@ -8,10 +8,18 @@
 
         {{-- Action Buttons --}}
         <div class="d-flex mb-3">
-            <a href="{{ url('tagihan/create') }}" class="btn btn-primary me-2 rounded-pill shadow-sm"><i class="fa fa-plus"></i> Tambah</a>
-            <a href="#" class="btn btn-primary me-2 rounded-pill shadow-sm"><i class="fa fa-upload"></i> Impor</a>
-            <a href="#" class="btn btn-primary me-2 rounded-pill shadow-sm"><i class="fa fa-download"></i> Ekspor</a>
-            <a href="#" class="btn btn-primary rounded-pill shadow-sm"><i class="fa fa-sync"></i> Sinkron</a>
+            <a href="{{ url('tagihan/create') }}" class="btn btn-primary me-2 rounded-pill shadow-sm">
+                <i class="fa fa-plus"></i> Tambah
+            </a>
+            <a href="#" class="btn btn-primary me-2 rounded-pill shadow-sm">
+                <i class="fa fa-upload"></i> Impor
+            </a>
+            <a href="#" class="btn btn-primary me-2 rounded-pill shadow-sm">
+                <i class="fa fa-download"></i> Ekspor
+            </a>
+            <a href="#" class="btn btn-primary rounded-pill shadow-sm">
+                <i class="fa fa-sync"></i> Sinkron
+            </a>
         </div>
 
         {{-- Summary Cards --}}
@@ -86,74 +94,75 @@
         <div class="card shadow-sm rounded-3 border-0">
             <div class="card-body">
                 <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle text-center">
-                    <thead class="table-primary">
-                    <tr>
-                        <th>#</th>
-                        <th>Nomor Induk</th>
-                        <th>Nama Lengkap</th>
-                        <th>Tagihan Unit</th>
-                        <th>Tagihan Kelas</th>
-                        <th>Item Tagihan</th>
-                        <th>Type Tagihan</th>
-                        <th>Jml. Tagihan</th>
-                        <th>Jml. Dibayar</th>
-                        <th>Jml. Tunggakan</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($tagihans as $tagihan)
-                        @php
-                            $ts = $tagihan->tagihanSiswa->first(); // ambil siswa pertama saja
-                            $siswa = $ts->siswa ?? null;
-
-                            $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
-
-                            $jumlah_dibayar = $tagihan->tagihanSiswa
-                                ->where('siswa_id', $siswa?->id)
-                                ->where('status', 1)
-                                ->count() * $tagihan->items->sum('nominal');
-
-                            // jumlah tunggakan
-                            $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
-                        @endphp
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-primary">
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $siswa?->nisn ?? '-' }}</td>
-                            <td>{{ $siswa?->user->name ?? '-' }}</td>
-                            <td>{{ $tagihan->unit->nama_unit ?? '-' }}</td>
-                            <td>{{ $tagihan->kelas->nama_kelas ?? '-' }}</td>
-                            <td>
-                                @foreach($tagihan->items as $item)
-                                    {{ $item->kategori->nama_kategori ?? '-' }}<br>
-                                @endforeach
-                            </td>
-                            <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
-
-                            <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
-                            <td>
-                                @if($tunggakan <= 0)
-                                    <span class="badge bg-success rounded-pill">Lunas</span>
-                                @else
-                                    <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
-                                @endif
-                            </td>
-                            <td>
-                                <a href="{{ route('tagihan.show', [$tagihan->id, $siswa?->id]) }}" class="btn btn-primary rounded-pill"><i class="ri-eye-line"></i></a>
-                            </td>
+                            <th>#</th>
+                            <th>Nomor Induk</th>
+                            <th>Nama Lengkap</th>
+                            <th>Tagihan Unit</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Item Tagihan</th>
+                            <th>Type Tagihan</th>
+                            <th>Jml. Tagihan</th>
+                            <th>Jml. Dibayar</th>
+                            <th>Jml. Tunggakan</th>
+                            <th>Status</th>
+                            <th>Detail</th>
                         </tr>
-                    @endforeach
+                        </thead>
+                        <tbody>
+                        @foreach($tagihans as $tagihan)
+                            @php
+                                $siswa = $tagihan->tagihanSiswa->first()?->siswa;
 
+                                $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
 
+                                $jumlah_dibayar = $siswa
+                                    ? $tagihan->tagihanSiswa
+                                        ->where('siswa_id', $siswa->id)
+                                        ->where('status', 1)
+                                        ->count() * $tagihan->items->sum('nominal')
+                                    : 0;
 
+                                $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
+                            @endphp
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $siswa?->nisn ?? '-' }}</td>
+                                <td>{{ $siswa?->user->name ?? '-' }}</td>
+                                <td>{{ $tagihan->unit->nama_unit ?? '-' }}</td>
+                                <td>{{ $tagihan->kelas->nama_kelas ?? '-' }}</td>
+                                <td>
+                                    @foreach($tagihan->items as $item)
+                                        {{ $item->kategori->nama_kategori ?? '-' }}<br>
+                                    @endforeach
+                                </td>
+                                <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
 
-                    </tbody>
-                </table>
-            </div>
+                                <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
+                                <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
+                                <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($tunggakan <= 0)
+                                        <span class="badge bg-success rounded-pill">Lunas</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($siswa)
+                                        <a href="{{ route('tagihan.show', [$tagihan->id, $siswa->id]) }}"
+                                           class="btn btn-primary rounded-pill">
+                                            <i class="ri-eye-line"></i>
+                                        </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
