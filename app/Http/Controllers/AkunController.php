@@ -29,6 +29,31 @@ class AkunController extends Controller
 
         return view('pages.data_master.akun.akun', compact('akuns', 'headers'));
     }
+    private function buildAkunOptions(
+        $akunList,
+        $parentId = null,
+        $level = 0,
+        $excludeId = null
+    ): array {
+        $options = [];
+
+        foreach ($akunList->where('parent_id', $parentId) as $akun) {
+            if ($akun->id == $excludeId) continue;
+
+            $options[] = [
+                'id' => $akun->id,
+                'nama' => str_repeat('--', $level) . ' ' . $akun->nama_akun
+            ];
+
+            // recursive untuk children
+            $children = $this->buildAkunOptions($akunList, $akun->id, $level + 1, $excludeId);
+            if ($children) {
+                $options = array_merge($options, $children);
+            }
+        }
+
+        return $options; // wajib mengembalikan array
+    }
 
     public function create()
     {
@@ -40,7 +65,11 @@ class AkunController extends Controller
         })
         ->where('status','1')
             ->get();// ambil data unit
-        return view('pages.data_master.akun.akun_create', compact('parents','units'));
+
+
+        $akunOptions = $this->buildAkunOptions($parents, null, 0);
+
+        return view('pages.data_master.akun.akun_create', compact('parents','units','akunOptions'));
     }
 
     public function store(Request $request)
@@ -79,7 +108,10 @@ class AkunController extends Controller
             $query->where('id',$unit_id);
         })
             ->where('status','1')->get();
-        return view('pages.data_master.akun.akun_create', compact('akun', 'parents', 'units'));
+
+        $akunOptions = $this->buildAkunOptions($parents, null, 0);
+
+        return view('pages.data_master.akun.akun_create', compact('akun', 'parents', 'units','akunOptions'));
     }
 
     public function update(Request $request, $id)

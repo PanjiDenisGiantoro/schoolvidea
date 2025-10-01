@@ -34,7 +34,7 @@
 {{--                    list kategori ada tabungan dan transaksi--}}
                     <div class="col-md-4">
                         <label for="kategori_akun" class="form-label">Kategori Akun</label>
-                        <select name="kategori_akun" id="kategori_akun" class="form-select" required>
+                        <select name="kategori_akun" id="kategori_akun" class="form-control" required data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Kategori Akun --</option>
                             <option value="tabungan" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
                             <option value="transaksi" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'transaksi' ? 'selected' : '' }}>Transaksi</option>
@@ -45,7 +45,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="tipe" class="form-label">Tipe</label>
-                            <select name="tipe" id="tipe" class="form-select" required>
+                            <select name="tipe" id="tipe" class="form-control" required data-choices data-choices-sorting-false>
                                 @php
                                     $types = ['ASET', 'LIABILITAS', 'EKUITAS', 'PENDAPATAN', 'BEBAN'];
                                 @endphp
@@ -62,7 +62,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="parent_id" class="form-label">Parent</label>
-                            <select name="parent_id" id="parent_id" class="form-select">
+                            <select name="parent_id" id="parent_id" class="form-select" required data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Parent --</option>
                                 @foreach($parents as $p)
                                     @if(!isset($akun) || $p->id != $akun->id)
@@ -80,7 +80,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-select">
+                            <select name="unit_id" id="unit_id" class="form-control" required data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"

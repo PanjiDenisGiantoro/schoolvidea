@@ -36,8 +36,17 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="akun_id" class="form-label">Akun</label>
-                            <select name="akun_id" id="akun_id" class="form-select">
+
+
+                            <select name="akun_id" id="akun_id" class="form-control"  data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Akun --</option>
+
+{{--                                @foreach($akunOptions as $opt)--}}
+{{--                                    <option value="{{ $opt['id'] }}" {{ old('akun_id', $akun->akun_id ?? '') == $opt['id'] ? 'selected' : '' }}>--}}
+{{--                                        {{ $opt['nama'] }}--}}
+{{--                                    </option>--}}
+{{--                                @endforeach--}}
+{{--                                --}}
                                 @foreach($akuns as $a)
                                     <option value="{{ $a->id }}"
                                         {{ old('akun_id', $setting->akun_id ?? '') == $a->id ? 'selected' : '' }}>
@@ -82,7 +91,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-select">
+                            <select name="unit_id" id="unit_id" class="form-control" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"
