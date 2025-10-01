@@ -18,6 +18,7 @@
                     </a>
                 </div>
 
+                <div class="table-responsive">
                 <table id="datatable" class="table table-bordered table-striped">
                     <thead>
                     @if(!empty($headers) && is_array($headers))
@@ -71,6 +72,7 @@
                     @endforelse
                     </tbody>
                 </table>
+            </div>
             </div>
         </div>
     </div>

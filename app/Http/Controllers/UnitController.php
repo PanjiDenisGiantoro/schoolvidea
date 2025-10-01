@@ -110,7 +110,15 @@ class UnitController extends Controller
     {
         $unit = Unit::findOrFail($id);
         $show = true;
-        return view('pages.data_master.unit.unit_create', compact('unit','show'));
+        $yayasan = Yayasan::with('units')
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('units', function ($q) use ($unitId) {
+                    $q->where('id', $unitId);
+                });
+            })->where('status', '1')->get();
+        $tipeunit = Tipeunit::where('status','1')->get();
+
+        return view('pages.data_master.unit.unit_create', compact('unit','show','yayasan','tipeunit'));
     }
     public function upload(Request $request)
     {
