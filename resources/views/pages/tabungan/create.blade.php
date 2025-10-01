@@ -14,7 +14,7 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm">
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-md-6">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-select rounded-pill shadow-sm">
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -134,10 +134,18 @@
         const penerimaHidden = document.getElementById('penerima_hidden');
 
         // Load siswa berdasarkan kelas
+        const siswaChoices = new Choices(siswaSelect, {
+            removeItemButton: false,
+            shouldSort: false
+        });
+
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
-            kelasHidden.value = kelasId; // update hidden input
-            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            kelasHidden.value = kelasId;
+
+            // reset select siswa
+            siswaChoices.clearStore();
+            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
 
             if (!kelasId) return;
 
@@ -148,26 +156,20 @@
                 })
                 .then(data => {
                     if (!data.length) {
-                        const option = document.createElement('option');
-                        option.value = '';
-                        option.text = 'Tidak ada siswa';
-                        siswaSelect.appendChild(option);
+                        siswaChoices.setChoices([{ value: '', label: 'Tidak ada siswa', selected: true }], 'value', 'label', true);
                         return;
                     }
 
-                    data.forEach(siswa => {
-                        const option = document.createElement('option');
-                        option.value = siswa.id;
-                        option.text = siswa.user && siswa.user.name ? siswa.user.name : 'Nama tidak tersedia';
-                        siswaSelect.appendChild(option);
-                    });
+                    const options = data.map(siswa => ({
+                        value: siswa.id,
+                        label: siswa.user && siswa.user.name ? siswa.user.name : 'Nama tidak tersedia'
+                    }));
+
+                    siswaChoices.setChoices(options, 'value', 'label', true);
                 })
                 .catch(err => {
                     console.error('Fetch error:', err);
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.text = 'Gagal memuat siswa';
-                    siswaSelect.appendChild(option);
+                    siswaChoices.setChoices([{ value: '', label: 'Gagal memuat siswa', selected: true }], 'value', 'label', true);
                 });
         });
 

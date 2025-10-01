@@ -14,7 +14,7 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm">
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-md-6">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-select rounded-pill shadow-sm">
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm " data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -99,24 +99,29 @@
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
+        const siswaChoices = new Choices(siswaSelect, {
+            removeItemButton: false,
+            shouldSort: false
+        });
 
         // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
             kelasHidden.value = kelasId;
-            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            // reset select
+            siswaChoices.clearStore(); // bersihkan semua opsi
+            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
 
             if (!kelasId) return;
 
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => res.json())
                 .then(data => {
-                    data.forEach(siswa => {
-                        const option = document.createElement('option');
-                        option.value = siswa.id;
-                        option.text = siswa.user.name;
-                        siswaSelect.appendChild(option);
-                    });
+                    const options = data.map(siswa => ({
+                        value: siswa.id,
+                        label: siswa.user.name
+                    }));
+                    siswaChoices.setChoices(options, 'value', 'label', true);
                 });
         });
 

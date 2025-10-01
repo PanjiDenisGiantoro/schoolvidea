@@ -245,7 +245,7 @@ class SiswaController extends Controller
     }
     public function showdetail($id)
     {
-        $siswa = \App\Models\Siswa::with(['kelas.jurusan', 'unit','user','tahun_ajaran','saldo'])->find($id);
+        $siswa = \App\Models\Siswa::with(['kelas.jurusan', 'unit','user.saldo','tahun_ajaran'])->find($id);
         return response()->json([
             'nama_lengkap' => $siswa->user->nama,
             'nisn' => $siswa->nisn,
@@ -257,7 +257,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => $siswa->tanggal_lahir,
             'no_hp' => $siswa->no_hp,
             'foto' => $siswa->foto,
-            'saldo_akhir' => $siswa->saldo->saldo_akhir ?? 0,
+            'saldo_akhir' => $siswa->user->saldo->saldo_akhir ?? 0,
         ]);
     }
 

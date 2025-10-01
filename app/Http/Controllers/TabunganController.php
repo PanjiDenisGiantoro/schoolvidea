@@ -21,7 +21,7 @@ class TabunganController extends Controller
      */
     public function index()
     {
-        $transaksis = Siswa::with('tahun_ajaran','saldo','user','kelas','unit')
+        $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
             ->when(Auth::user()->unit_id,function ($queyr,$unit_id){
                 $queyr->where('unit_id',$unit_id);
             })
@@ -66,22 +66,17 @@ class TabunganController extends Controller
             'keterangan'     => 'nullable|string',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
 
         try {
             // Ambil data siswa
-            $siswa = Siswa::findOrFail($request->penerima_id);
+            $siswa = Siswa::with('user')->findOrFail($request->penerima_id);
 
             if(!$siswa){
                 return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
-            $rekening = Saldo_keuangan::with('user') ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('user', function ($q) use ($unitId) {
-                    $q->where('unit_id', $unitId);
-                });
-            })->
-            where('user_id', $request->penerima_id)->where('status', 0)->first();
+            $rekening = Saldo_keuangan::with('user')->where('user_id', $siswa->user->id)->where('status', 1)->first();
             if(!$rekening){
                 return back()->with('danger', 'Rekening tabungan belum Aktif.');
             }
@@ -128,15 +123,10 @@ class TabunganController extends Controller
             ]);
 
             $saldoSiswa = Saldo_keuangan::with('user')
-                ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                    $query->whereHas('user', function ($q) use ($unitId) {
-                        $q->where('unit_id', $unitId);
-                    });
-                })
                 ->firstOrCreate(
                     [
 //                        'akun_id' => $akun_kredit,
-                        'user_id' => $request->penerima_id,
+                        'user_id' => $siswa->user->id,
                         'status' => 1
                     ],
                     ['saldo_akhir' => 0]
@@ -152,16 +142,17 @@ class TabunganController extends Controller
                 'dilakukan_pada'=> now(),
             ]);
             $saldoSiswa->increment('saldo_akhir', $request->jumlah);
-            DB::commit();
+//            DB::commit();
 
             return redirect()->route('tabungan.index')->with('success', 'Transaksi berhasil disimpan.');
         } catch (\Exception $e) {
-            DB::rollBack();
+//            DB::rollBack();
             return back()->with('danger', $e->getMessage());
         }
     }
     public function tarikStore(Request $request)
     {
+
         $request->validate([
             'kelas_id'    => 'required',
             'penerima_id' => 'required',
@@ -172,12 +163,12 @@ class TabunganController extends Controller
         DB::beginTransaction();
 
         try {
-            $siswa = Siswa::findOrFail($request->penerima_id);
+            $siswa = Siswa::with('user')->findOrFail($request->penerima_id);
             if (!$siswa) {
                 return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
-            $rekening = Saldo_keuangan::where('user_id', $request->penerima_id)->where('status', 1)->first();
+            $rekening = Saldo_keuangan::where('user_id', $siswa->user->id)->where('status', 1)->first();
             if(!$rekening){
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
@@ -194,7 +185,7 @@ class TabunganController extends Controller
             $saldoSiswa = Saldo_keuangan::firstOrCreate(
                 [
 //                    'akun_id' => $akun_debit,
-                    'user_id' => $request->penerima_id
+                    'user_id' => $siswa->user->id,
                 ],
                 ['saldo_akhir' => 0]
             );

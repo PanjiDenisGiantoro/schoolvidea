@@ -121,14 +121,14 @@
                             <th>#</th>
                             <th>Nomor Induk</th>
                             <th>Nama Lengkap</th>
-                            <th>Tagihan Unit</th>
+                            <th> Unit</th>
                             <th>Tagihan Kelas</th>
                             <th>Item Tagihan</th>
+                            <th>Type Tagihan</th>
                             <th>Jumlah Tagihan</th>
                             <th>Jumlah Dibayar</th>
                             <th>Tunggakan</th>
                             <th>Status</th>
-                            <th>Detail</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -169,11 +169,7 @@
                                         <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <a href="{{ route('tagihan.show', [$tagihan->id, $siswa?->id]) }}" class="btn btn-sm btn-primary rounded-pill">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
-                                </td>
+
                             </tr>
                         @endforeach
                         </tbody>

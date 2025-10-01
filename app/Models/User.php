@@ -99,6 +99,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Roles_petugas::class, 'role_id'); // atau sesuai field
     }
+    public function saldo()
+    {
+        return $this->hasOne(Saldo_keuangan::class, 'user_id');
+    }
 
 
 

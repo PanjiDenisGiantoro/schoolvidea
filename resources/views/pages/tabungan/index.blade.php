@@ -87,25 +87,28 @@
                             <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
                             <td>{{ $siswa->tahun_ajaran->tahun_ajaran ?? '-' }}</td>
                             <td>
-    <span class="badge rounded-pill
-        bg-{{ ($siswa->saldo?->status == 1) ? 'primary' : 'secondary' }}">
-        {{ ($siswa->saldo?->status == 1) ? 'Aktif' : 'Tidak Aktif' }}
-    </span>
+                                @php
+                                    $saldo = $siswa->user->saldo ?? null;
+                                    $statusBadge = ($saldo && $saldo->status == 1) ? 'primary' : 'secondary';
+                                    $statusText  = ($saldo && $saldo->status == 1) ? 'Aktif' : 'Tidak Aktif';
+                                @endphp
+                                <span class="badge rounded-pill bg-{{ $statusBadge }}">
+            {{ $statusText }}
+        </span>
                             </td>
-                            <td>Rp {{ number_format($siswa->saldo?->saldo_akhir ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($saldo->saldo_akhir ?? 0, 0, ',', '.') }}</td>
                             <td>
                                 <a href="{{ route('tabungan.show', $siswa->id) }}"
                                    class="btn btn-sm btn-outline-primary rounded-pill">Detail</a>
 
-                                @if($siswa->saldo?->status === 0)
-                                    <a href="{{ route('tabungan.status', $siswa->saldo->id) }}"
+                                @if($saldo && $saldo->status == 0)
+                                    <a href="{{ route('tabungan.status', $saldo->id) }}"
                                        class="btn btn-sm btn-primary rounded-pill">Aktif</a>
-                                @elseif($siswa->saldo)
-                                    <a href="{{ route('tabungan.status', $siswa->saldo->id) }}"
+                                @elseif($saldo)
+                                    <a href="{{ route('tabungan.status', $saldo->id) }}"
                                        class="btn btn-sm btn-danger rounded-pill">Non Aktif</a>
                                 @endif
                             </td>
-
                         </tr>
                     @empty
                         <tr>
