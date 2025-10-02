@@ -116,7 +116,7 @@ class OfficerController extends Controller
               'no_rekening'     => $request->no_rekening,
               'no_kartu_rfid'   => $request->no_kartu_rfid,
               'qr_code'         => $request->qr_code,
-              'jurusan'         => $request->jurusan,
+              'jurusan'         => json_encode($request->jurusan),  // Menyimpan data sebagai JSON
               'va_guru'         => $request->va_guru,
             ]);
 //            DB::commit();
@@ -125,7 +125,6 @@ class OfficerController extends Controller
                 ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollBack();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
@@ -133,8 +132,11 @@ class OfficerController extends Controller
     public function edit($id)
     {
         $officer = User::with('officer.unit','roles')
-            ->where('id', $id)
+            ->whereHas('officer', function ($query) use ($id) {
+                $query->where('id', $id);
+            })
             ->first();
+        $jurusanArray = $officer->officer->jurusan;  // Mengakses jurusan langsung sebagai array
         $roles   = Roles_petugas::all();
         $units   = Unit::all();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
@@ -142,7 +144,7 @@ class OfficerController extends Controller
         $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
             $query->where('unit_id', $unitId);
         })->get();
-        return view('pages.data_master.officer.officer_create', compact('jurusans','officer', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.officer.officer_create', compact('jurusans','officer', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected','jurusanArray'));
     }
 
     public function update(Request $request, $id)
@@ -171,7 +173,7 @@ class OfficerController extends Controller
             'va_guru'         => 'nullable|string|max:100',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $officer = Officer::findOrFail($id);
             $user    = $officer->user;
@@ -211,15 +213,15 @@ class OfficerController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'no_kartu_rfid'   => $request->no_kartu_rfid,
                 'qr_code'         => $request->qr_code,
-                'jurusan'         => $request->jurusan,
+                'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'va_guru'         => $request->va_guru,
             ]);
 
-//            DB::commit();
+            DB::commit();
             return redirect()->route('officer.index')->with('success', 'Officer berhasil diupdate');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-//            DB::rollBack();
+//            dd($e->getMessage());
+            DB::rollBack();
             return back()->with('error','Terjadi kesalahan: ' . $e->getMessage());
         }
     }

@@ -57,6 +57,9 @@ Route::prefix('roles')->group(function () {
     Route::get('/delete/{id}', [RolesController::class, 'destroy'])->name('roles.destroy');
     Route::get('/show/{id}', [RolesController::class, 'show'])->name('roles.show');
     Route::get('/permissions/{id}', [RolesController::class, 'permissions'])->name('roles.permissions');
+    Route::get('roles/{id}/permissions', [RolesController::class, 'permissions'])->name('roles.permissions');
+    Route::post('roles/{id}/permissions', [RolesController::class, 'updatePermissions'])->name('roles.updatePermissions');
+
 });
 
 Route::prefix('lembagaunit')->group(function () {

@@ -1,18 +1,18 @@
 @extends('layouts.app')
-@section('title', isset($officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+@section('title', isset($officer->officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
 
 @section('content')
     @include('partials.page-title', [
-        'title' => isset($officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
+        'title' => isset($officer->officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
         'subTitle' => 'Guru & Staff'
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action="{{ isset($officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
+            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
-                @if(isset($officer))
+                @if(isset($officer->officer))
                     @method('PUT')
                 @endif
 
@@ -147,12 +147,13 @@
                             <select name="jurusan[]" id="jurusan" class="form-select" multiple>
                                 @foreach ($jurusans as $jurusan)
                                     <option value="{{ $jurusan->id }}"
-                                        {{ in_array($jurusan->id, old('jurusan', $officer->jurusan ?? [])) ? 'selected' : '' }}>
+                                        {{ in_array($jurusan->id, old('jurusan', $jurusanArray ?? [])) ? 'selected' : '' }}>
                                         {{ $jurusan->nama_jurusan }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <div class="mb-3">
                             <label for="image-dropzone" class="form-label">Upload Gambar</label>
                             <div class="dropzone" id="image-dropzone"></div>

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Roles_petugas extends Model
+class Roles_petugas extends SpatieRole
 {
-
-    protected $table = 'roles';
-    protected $guarded = [];
+    // Relasi many-to-many ke Permission
+    public function permission()
+    {
+        return $this->belongsToMany(Permission::class, 'role_has_permissions');
+    }
 }
