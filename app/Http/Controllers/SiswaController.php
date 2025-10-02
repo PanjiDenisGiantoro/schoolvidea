@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class SiswaController extends Controller
 {
@@ -301,6 +302,21 @@ class SiswaController extends Controller
             'no_hp' => $siswa->no_hp,
             'foto' => $siswa->foto,
             'saldo_akhir' => $siswa->user->saldo->saldo_akhir ?? 0,
+        ]);
+    }
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpg,jpeg,png,gif|max:1024',
+        ]);
+
+        $file = $request->file('file');
+        $filename = Str::random(15) . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/siswa', $filename, 'public');
+
+        return response()->json([
+            'success' => true,
+            'filepath' => 'storage/' . $path
         ]);
     }
 

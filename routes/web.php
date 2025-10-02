@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('officer/update/{id}', [OfficerController::class, 'update'])->name('officer.update');
     Route::get('/delete/{id}', [OfficerController::class, 'destroy'])->name('officer.destroy');
     Route::get('/show/{id}', [OfficerController::class, 'show'])->name('officer.show');
+        Route::post('/upload', [OfficerController::class, 'upload'])->name('officer.upload');
+
 });
 Route::prefix('roles')->group(function () {
     Route::get('/', [RolesController::class, 'index'])->name('roles.index');
@@ -135,6 +137,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/show/{id}', [SiswaController::class, 'show'])->name('siswa.show');
         Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
         Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);
+        Route::post('/upload', [SiswaController::class, 'upload'])->name('siswa.upload');
 
     });
     Route::prefix('kategoritagihan')->group(function () {

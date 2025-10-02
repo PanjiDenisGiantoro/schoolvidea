@@ -12,6 +12,7 @@ use App\Models\Yayasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class OfficerController extends Controller
@@ -21,7 +22,11 @@ class OfficerController extends Controller
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
             })
+            ->whereHas('roles', function ($query) {
+                $query->whereNotIn('name', ['siswa', 'admin', 'user']);
+            })
             ->get();
+
         $headers = [
             'No',
             'Nama Unit',
@@ -63,7 +68,7 @@ class OfficerController extends Controller
             'nip'             => 'required|string|max:50|unique:officers,nip',
             'nuptk'           => 'nullable|string|max:50',
             'nik'             => 'nullable|string|max:50',
-            'jenis_kelamin'   => 'nullable|in:Laki-laki,Perempuan',
+            'jenis_kelamin'   => 'nullable',
             'agama'           => 'nullable|string|max:50',
             'tanggal_lahir'   => 'nullable|date',
             'alamat'          => 'nullable|string',
@@ -74,7 +79,7 @@ class OfficerController extends Controller
             'va_guru'         => 'nullable|string|max:100',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
         try {
             // 1. Buat user baru
             $user = User::create([
@@ -114,12 +119,13 @@ class OfficerController extends Controller
               'jurusan'         => $request->jurusan,
               'va_guru'         => $request->va_guru,
             ]);
-            DB::commit();
+//            DB::commit();
 
             return redirect()->route('officer.index')
                 ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);
 
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
@@ -143,18 +149,18 @@ class OfficerController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id, // unique kecuali user ini
-            'password' => 'nullable|string|min:6|confirmed',
-            'role_id' => 'required|exists:roles_petugas,id',
-            'nip' => 'required|string|max:50|unique:officers,nip,' . $id,
-            'image' => 'nullable|string|max:255',
+            'email' => 'required|email',
+            'role_id' => 'required',       // ✅ validasi harus ada di Spatie roles
+            'iamge' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
-            'unit_id' => 'required|exists:units,id',
-            'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
+            'unit_id' => 'required',
+            'tahun_ajaran_id' => 'required',
             'rfid_no' => 'nullable|string|max:255',
+            'nip'             => 'required|string|max:50',
+            'nuptk'           => 'nullable|string|max:50',
             'nik'             => 'nullable|string|max:50',
-            'jenis_kelamin'   => 'nullable|in:Laki-laki,Perempuan',
+            'jenis_kelamin'   => 'nullable',
             'agama'           => 'nullable|string|max:50',
             'tanggal_lahir'   => 'nullable|date',
             'alamat'          => 'nullable|string',
@@ -165,7 +171,7 @@ class OfficerController extends Controller
             'va_guru'         => 'nullable|string|max:100',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
         try {
             $officer = Officer::findOrFail($id);
             $user    = $officer->user;
@@ -209,11 +215,12 @@ class OfficerController extends Controller
                 'va_guru'         => $request->va_guru,
             ]);
 
-            DB::commit();
+//            DB::commit();
             return redirect()->route('officer.index')->with('success', 'Officer berhasil diupdate');
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            dd($e->getMessage());
+//            DB::rollBack();
+            return back()->with('error','Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -246,6 +253,21 @@ class OfficerController extends Controller
         $show = true;
 
         return view('pages.data_master.officer.officer_create', compact('officer', 'show'));
+    }
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpg,jpeg,png,gif|max:1024',
+        ]);
+
+        $file = $request->file('file');
+        $filename = Str::random(15) . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/officer', $filename, 'public');
+
+        return response()->json([
+            'success' => true,
+            'filepath' => 'storage/' . $path
+        ]);
     }
 
 }

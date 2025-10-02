@@ -4,7 +4,7 @@
 @section('content')
     @include('partials.page-title', [
         'title' => isset($officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Petugas'
+        'subTitle' => 'Guru & Staff'
     ])
 
     <div class="card">
@@ -17,7 +17,7 @@
                 @endif
 
                 {{-- Data Akses --}}
-                <h5 class="card-title mb-0 mt-3">Data Akses Petugas</h5>
+                <h5 class="card-title mb-0 mt-3">Data Akses Guru & Staff</h5>
                 <p class="text-muted">Masukkan data akses untuk login</p>
                 <hr>
                 <div class="row g-3">
@@ -40,7 +40,7 @@
                 </div>
 
                 {{-- Data Lengkap --}}
-                <h5 class="card-title mb-0 mt-4">Data Lengkap Petugas</h5>
+                <h5 class="card-title mb-0 mt-4">Data Lengkap Guru & Staff</h5>
                 <p class="text-muted">Masukkan informasi detail petugas</p>
                 <hr>
                 <div class="row g-3">
@@ -100,14 +100,14 @@
                                        placeholder="Masukkan QR Code" icon="bx bx-qr"
                                        :value="old('qr_code', $officer->officer->qr_code ?? '')" />
 
-                        <x-input-field type="text" name="va_guru" label="VA Petugas"
-                                       placeholder="Masukkan VA Petugas" icon="bx bx-credit-card"
+                        <x-input-field type="text" name="va_guru" label="VA Guru & Staff"
+                                       placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card"
                                        :value="old('va_guru', $officer->officer->va_guru ?? '')" />
                     </div>
 
                     <div class="col-md-3">
                         <div class="mb-3">
-                            <label for="role_id" class="form-label">Role Petugas</label>
+                            <label for="role_id" class="form-label">Role Guru & Staff</label>
                             <select name="role_id" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $r)
@@ -153,6 +153,22 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="image-dropzone" class="form-label">Upload Gambar</label>
+                            <div class="dropzone" id="image-dropzone"></div>
+                            <input type="hidden" name="image" id="image-hidden"
+                                   value="{{ old('image', $officer->officer->iamge ?? '') }}">
+                            <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
+                        </div>
+                        <div class="modal fade" id="imageModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center">
+                                        <img id="previewImage" src="" class="img-fluid rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -161,10 +177,7 @@
                             <label for="alamat" class="form-label">Alamat</label>
                             <textarea name="alamat" id="alamat" class="form-control" rows="7">{{ old('alamat', $officer->officer->alamat ?? '') }}</textarea>
                         </div>
-                        <x-input-field type="text" name="image" label="Foto (URL/Path)"
-                                       placeholder="Masukkan URL gambar" icon="bx bx-image"
-                                       :value="old('image', $officer->officer->image ?? '')" />
-                    </div>
+                         </div>
                 </div>
 
                 <div class="mt-3 text-end">
@@ -191,5 +204,65 @@
             });
         });
         @endif
+    </script>
+    <script>
+        Dropzone.autoDiscover = false;
+
+        Dropzone.options.myDropzone = {
+            paramName: "file",
+            maxFilesize: 1,
+            acceptedFiles: "image/*",
+            addRemoveLinks: true,
+            init: function () {
+                this.on("addedfile", function (file) {
+                    file.previewElement.addEventListener("click", function () {
+                        // ambil url preview
+                        let imgSrc = file.dataURL;
+                        document.getElementById("previewImage").src = imgSrc;
+                        // buka modal
+                        var modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                        modal.show();
+                    });
+                });
+            }
+        };
+
+        let myDropzone = new Dropzone("#image-dropzone", {
+            url: "{{ route('officer.upload') }}",
+            paramName: "file",
+            maxFiles: 1,
+            maxFilesize: 1, // MB
+            acceptedFiles: ".jpg,.jpeg,.png",
+            addRemoveLinks: true,
+            thumbnailWidth: 200,  // ubah default (120px)
+            thumbnailHeight: 200, // biar lebih proporsional
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function (file, response) {
+                document.querySelector("#image-hidden").value = response.filepath;
+            },
+            removedfile: function(file) {
+                file.previewElement.remove();
+                document.querySelector("#image-hidden").value = ""; // kosongkan kalau dihapus
+            }
+        });
+
+        // Kalau edit, preload gambar lama
+        @if(isset($officer->officer) && $officer->officer->iamge)
+
+        let mockFile = {
+            name: "Current Image",
+            size: 12345,
+            type: 'image/jpeg', // bisa disesuaikan
+            accepted: true
+        };
+
+        myDropzone.emit("addedfile", mockFile);
+        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->officer->iamge) }}");
+        myDropzone.emit("complete", mockFile);
+        myDropzone.files.push(mockFile);
+        @endif
+
     </script>
 @endpush

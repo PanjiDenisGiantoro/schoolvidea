@@ -5,14 +5,14 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Petugas'
+        'subTitle' => 'Data Guru & Staff'
     ])
 
     <div class="card">
         <div class="card-body">
             <div class="row g-5">
                 <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">List Petugas</h5>
+                    <h5 class="card-title mb-0">List Guru & Staff</h5>
                     <a href="{{ url('officer/create') }}" class="btn btn-primary">
                         <i class="bi bi-download me-1"></i> Tambah Data
                     </a>
@@ -40,15 +40,15 @@
                             <td>{{ $item->officer->va_guru ?? '-' }}</td>
                             <td>
                                 <div class="d-flex gap-3">
-                                <a href="{{ route('officer.show', $item->id ?? '') }}" class="link-primary text-muted">
+                                <a href="{{ route('officer.show', $item->officer->id ?? '') }}" class="link-primary text-muted">
                                     <i class="ri-eye-line align-middle fs-20"></i>
                                     Show
                                 </a>
-                                <a href="{{ route('officer.edit', $item->id ?? '') }}" class="link-warning text-muted">
+                                <a href="{{ route('officer.edit', $item->officer->id ?? '') }}" class="link-warning text-muted">
                                     <i class="ri-edit-line align-middle fs-20"></i>
                                     Edit
                                 </a>
-                                <a href="{{ route('officer.destroy', $item->id ?? '') }}" class="link-danger text-muted">
+                                <a href="{{ route('officer.destroy', $item->officer->id?? '') }}" class="link-danger text-muted">
                                     <i class="ri-delete-bin-5-line align-middle fs-20"></i>
                                     Hapus
                                 </a>

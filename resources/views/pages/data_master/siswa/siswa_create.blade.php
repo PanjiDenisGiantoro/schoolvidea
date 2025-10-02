@@ -11,7 +11,7 @@
         <div class="card-body">
             <form id="siswaForm"
                   action="{{ isset($siswa) ? route('siswa.update', $siswa->id) : route('siswa.store') }}"
-                  method="POST">
+                  method="POST" enctype="multipart/form-data">
                 @csrf
                 @if(isset($siswa))
                     @method('PUT')
@@ -70,6 +70,22 @@
                                        icon="bx bx-map"
                                        :value="old('tempat_lahir', $siswa->tempat_lahir ?? '')" />
 
+                        <div class="mb-3">
+                            <label for="image-dropzone" class="form-label">Upload Gambar</label>
+                            <div class="dropzone" id="image-dropzone"></div>
+                            <input type="hidden" name="image" id="image-hidden"
+                                   value="{{ old('image', $siswa->image ?? '') }}">
+                            <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
+                        </div>
+                        <div class="modal fade" id="imageModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center">
+                                        <img id="previewImage" src="" class="img-fluid rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-md-3">
@@ -78,15 +94,12 @@
                                        icon="bx bx-phone"
                                        :value="old('no_hp', $siswa->no_hp ?? '')" />
 
-                        <x-input-field type="text" name="image" label="Foto (URL/Path)"
-                                       placeholder="Masukkan URL gambar"
-                                       icon="bx bx-image"
-                                       :value="old('image', $siswa->image ?? '')" />
-
                         <x-input-field type="text" name="va_siswa" label="VA Siswa"
                                        placeholder="Masukkan VA Petugas" icon="bx bx-credit-card"
                                        :value="old('va_siswa', $siswa->va_siswa ?? '')" />
-
+                        <x-input-field type="text" name="rfid_no" label="RFID"
+                                       placeholder="Masukkan tanggal lahir"
+                                       :value="old('rfid_no', $siswa->rfid_no ?? '')" />
                     </div>
 
                     <div class="col-md-3">
@@ -106,9 +119,14 @@
                                        placeholder="Masukkan tanggal lahir"
                                        :value="old('tanggal_lahir', $siswa->tanggal_lahir ?? '')" />
 
-                            <x-input-field type="text" name="rfid_no" label="RFID"
-                                           placeholder="Masukkan tanggal lahir"
-                                           :value="old('rfid_no', $siswa->rfid_no ?? '')" />
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select name="status" id="status" class="form-select" required>
+                                    <option value="">-- Pilih Status --</option>
+                                    <option value="1" {{ old('status', $siswa->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
+                                    <option value="0" {{ old('status', $siswa->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
+                                </select>
+                            </div>
                         </div>
 
                     </div>
@@ -138,14 +156,7 @@
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="">-- Pilih Status --</option>
-                                <option value="1" {{ old('status', $siswa->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
-                                <option value="0" {{ old('status', $siswa->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
-                            </select>
-                        </div>
+
                     </div>
                 </div>
                 <div class="row g-3 mt-4">
@@ -243,5 +254,65 @@
             });
         });
         @endif
+    </script>
+    <script>
+        Dropzone.autoDiscover = false;
+
+        Dropzone.options.myDropzone = {
+            paramName: "file",
+            maxFilesize: 1,
+            acceptedFiles: "image/*",
+            addRemoveLinks: true,
+            init: function () {
+                this.on("addedfile", function (file) {
+                    file.previewElement.addEventListener("click", function () {
+                        // ambil url preview
+                        let imgSrc = file.dataURL;
+                        document.getElementById("previewImage").src = imgSrc;
+                        // buka modal
+                        var modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                        modal.show();
+                    });
+                });
+            }
+        };
+
+        let myDropzone = new Dropzone("#image-dropzone", {
+            url: "{{ route('siswa.upload') }}",
+            paramName: "file",
+            maxFiles: 1,
+            maxFilesize: 1, // MB
+            acceptedFiles: ".jpg,.jpeg,.png",
+            addRemoveLinks: true,
+            thumbnailWidth: 200,  // ubah default (120px)
+            thumbnailHeight: 200, // biar lebih proporsional
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function (file, response) {
+                document.querySelector("#image-hidden").value = response.filepath;
+            },
+            removedfile: function(file) {
+                file.previewElement.remove();
+                document.querySelector("#image-hidden").value = ""; // kosongkan kalau dihapus
+            }
+        });
+
+        // Kalau edit, preload gambar lama
+        @if(isset($siswa) && $siswa->image)
+
+        let mockFile = {
+            name: "Current Image",
+            size: 12345,
+            type: 'image/jpeg', // bisa disesuaikan
+            accepted: true
+        };
+
+        myDropzone.emit("addedfile", mockFile);
+        myDropzone.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
+        myDropzone.emit("complete", mockFile);
+        myDropzone.files.push(mockFile);
+        @endif
+
     </script>
 @endpush
