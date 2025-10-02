@@ -216,5 +216,14 @@ Route::prefix('tipe_unit')->group(function () {
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
     });
 
+    Route::prefix('migrasi')->group(function () {
+        Route::get('/import', [\App\Http\Controllers\MigrasiController::class, 'index'])->name('import.index');
+        Route::post('/import/siswa', [\App\Http\Controllers\MigrasiController::class, 'importSiswa'])->name('import.siswa');
+        Route::post('/import/kelas', [\App\Http\Controllers\MigrasiController::class, 'importKelas'])->name('import.kelas');
+        Route::post('/import/officer', [\App\Http\Controllers\MigrasiController::class, 'importOfficer'])->name('import.officer');
+        Route::post('/import/jurusan', [\App\Http\Controllers\MigrasiController::class, 'importJurusan'])->name('import.jurusan');
+        Route::get('/import/template/{type}', [\App\Http\Controllers\MigrasiController::class, 'downloadTemplate'])->name('import.template');
+
+    });
 
 });

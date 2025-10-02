@@ -144,7 +144,7 @@
 {{--                </a>--}}
 {{--            </li>--}}
             <li class="menu-item">
-                <a class="menu-link" href="reports.html">
+                <a class="menu-link" href="{{ url('migrasi/import') }}">
                          <span class="nav-icon">
                               <i class="ri-database-fill"></i>
                          </span>
