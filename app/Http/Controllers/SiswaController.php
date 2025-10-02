@@ -195,8 +195,8 @@ class SiswaController extends Controller
             'no_hp' => 'nullable|string|min:6',
             'rfid_no'         => 'nullable|string|max:255',
             'va_siswa'        => 'nullable|string|max:255',
-            'nis'           => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
-            'nik'           => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'nis'           => 'nullable|string|max:20',
+            'nik'           => 'nullable|string|max:20',
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama'         => 'nullable|string|max:50',
             'no_hp_ortu'    => 'nullable|string|max:20',
@@ -244,6 +244,7 @@ class SiswaController extends Controller
 //            DB::commit();
             return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return back()->with('error', $e->getMessage());
         }
