@@ -82,7 +82,6 @@ class KelasController extends Controller
                 ->with('success', 'Data kelas berhasil ditambahkan: ' . $request->nama_kelas);
 
         }catch (\Exception $e){
-            dd($e->getMessage());
             return redirect()->back()
                 ->with('error', 'Gagal menambahkan data kelas: ' . $e->getMessage());
         }

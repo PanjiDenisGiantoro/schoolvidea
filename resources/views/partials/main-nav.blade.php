@@ -50,7 +50,8 @@
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Setting
-                                Akun</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('rekening') }}">Rekening
+                                </a></li>
 
                         <li class="sub-menu-item"><a class="sub-menu-link"
                                                      href="{{ url('kategoritagihan') }}">Kategori</a></li>

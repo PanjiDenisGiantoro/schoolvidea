@@ -60,6 +60,32 @@
                     <div class="card-body">
                         <form action="{{ route('import.siswa') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <div class="mb-3">
+                                <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Tahun Ajaran --</option>
+                                    @foreach($tahun_ajaran as $t)
+                                        <option value="{{ $t->id }}"
+                                            {{ old('tahun_ajaran_id', $officer->tahun_ajaran_id ?? ($tahun_ajaran_selected->id ?? '')) == $t->id ? 'selected' : '' }}>
+                                            {{ $t->tahun_ajaran ?? '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Dropdown Unit -->
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Nama Unit</label>
+                                <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Unit --</option>
+                                    @foreach($unit_migrasi as $u)
+                                        <option value="{{ $u->id }}"
+                                            {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                            {{ $u->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <input type="file" name="file" class="form-control mb-2" required>
                             <div class="d-flex justify-content-between">
                                 <a href="{{ route('import.template', 'siswa') }}" class="btn btn-outline-secondary">Download Template</a>
@@ -77,6 +103,32 @@
                     <div class="card-body">
                         <form action="{{ route('import.kelas') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <div class="mb-3">
+                                <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Tahun Ajaran --</option>
+                                    @foreach($tahun_ajaran as $t)
+                                        <option value="{{ $t->id }}"
+                                            {{ old('tahun_ajaran_id', $officer->tahun_ajaran_id ?? ($tahun_ajaran_selected->id ?? '')) == $t->id ? 'selected' : '' }}>
+                                            {{ $t->tahun_ajaran ?? '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Dropdown Unit -->
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Nama Unit</label>
+                                <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Unit --</option>
+                                    @foreach($unit_migrasi as $u)
+                                        <option value="{{ $u->id }}"
+                                            {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                            {{ $u->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <input type="file" name="file" class="form-control mb-2" required>
                             <div class="d-flex justify-content-between">
                                 <a href="{{ route('import.template', 'kelas') }}" class="btn btn-outline-secondary">Download Template</a>
@@ -94,9 +146,35 @@
                     <div class="card-body">
                         <form action="{{ route('import.officer') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <div class="mb-3">
+                                <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Tahun Ajaran --</option>
+                                    @foreach($tahun_ajaran as $t)
+                                        <option value="{{ $t->id }}"
+                                            {{ old('tahun_ajaran_id', $officer->tahun_ajaran_id ?? ($tahun_ajaran_selected->id ?? '')) == $t->id ? 'selected' : '' }}>
+                                            {{ $t->tahun_ajaran ?? '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Dropdown Unit -->
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Nama Unit</label>
+                                <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Unit --</option>
+                                    @foreach($unit_migrasi as $u)
+                                        <option value="{{ $u->id }}"
+                                            {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                            {{ $u->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <input type="file" name="file" class="form-control mb-2" required>
                             <div class="d-flex justify-content-between">
-                                <a href="{{ route('import.template', 'officer') }}" class="btn btn-outline-secondary">Download Template</a>
+                                <a href="{{ route('export.exportkelas') }}" class="btn btn-outline-secondary">Download Template</a>
                                 <button type="submit" class="btn btn-dark">Import</button>
                             </div>
                         </form>
@@ -111,15 +189,47 @@
                     <div class="card-body">
                         <form action="{{ route('import.jurusan') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <!-- Upload File -->
                             <input type="file" name="file" class="form-control mb-2" required>
+
+                            <!-- Dropdown Tahun Ajaran -->
+                            <div class="mb-3">
+                                <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Tahun Ajaran --</option>
+                                    @foreach($tahun_ajaran as $t)
+                                        <option value="{{ $t->id }}"
+                                            {{ old('tahun_ajaran_id', $officer->tahun_ajaran_id ?? ($tahun_ajaran_selected->id ?? '')) == $t->id ? 'selected' : '' }}>
+                                            {{ $t->tahun_ajaran ?? '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Dropdown Unit -->
+                            <div class="mb-3">
+                                <label for="unit_id" class="form-label">Nama Unit</label>
+                                <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                                    <option value="">-- Pilih Unit --</option>
+                                    @foreach($unit_migrasi as $u)
+                                        <option value="{{ $u->id }}"
+                                            {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                            {{ $u->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Button untuk Download Template dan Import -->
                             <div class="d-flex justify-content-between">
-                                <a href="{{ route('import.template', 'jurusan') }}" class="btn btn-outline-secondary">Download Template</a>
+                                <a href="{{ route('export.jurusantkelas') }}" class="btn btn-outline-secondary">Download Template</a>
                                 <button type="submit" class="btn btn-dark">Import</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 @endsection

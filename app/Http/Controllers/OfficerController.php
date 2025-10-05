@@ -79,7 +79,7 @@ class OfficerController extends Controller
             'va_guru'         => 'nullable|string|max:100',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // 1. Buat user baru
             $user = User::create([
@@ -119,7 +119,7 @@ class OfficerController extends Controller
               'jurusan'         => json_encode($request->jurusan),  // Menyimpan data sebagai JSON
               'va_guru'         => $request->va_guru,
             ]);
-//            DB::commit();
+            DB::commit();
 
             return redirect()->route('officer.index')
                 ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);

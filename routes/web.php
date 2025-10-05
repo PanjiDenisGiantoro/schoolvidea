@@ -223,7 +223,20 @@ Route::prefix('tipe_unit')->group(function () {
         Route::post('/import/officer', [\App\Http\Controllers\MigrasiController::class, 'importOfficer'])->name('import.officer');
         Route::post('/import/jurusan', [\App\Http\Controllers\MigrasiController::class, 'importJurusan'])->name('import.jurusan');
         Route::get('/import/template/{type}', [\App\Http\Controllers\MigrasiController::class, 'downloadTemplate'])->name('import.template');
+        Route::get('/export/{type}', [\App\Http\Controllers\MigrasiController::class, 'exportOfficer'])->name('export.template');
+        Route::get('/exportkelas/', [\App\Http\Controllers\MigrasiController::class, 'exportkelas'])->name('export.exportkelas');
+        Route::get('/jurusantkelas/', [\App\Http\Controllers\MigrasiController::class, 'jurusantkelas'])->name('export.jurusantkelas');
 
+    });
+
+    Route::prefix('rekening')->group(function () {
+        Route::get('/', [\App\Http\Controllers\RekeningController::class, 'index'])->name('rekening.index');
+        Route::get('/create', [\App\Http\Controllers\RekeningController::class, 'create'])->name('rekening.create');
+        Route::post('/store', [\App\Http\Controllers\RekeningController::class, 'store'])->name('rekening.store');
+        Route::get('/edit/{id}', [\App\Http\Controllers\RekeningController::class, 'edit'])->name('rekening.edit');
+        Route::put('/update/{id}', [\App\Http\Controllers\RekeningController::class, 'update'])->name('rekening.update');
+        Route::get('/delete/{id}', [\App\Http\Controllers\RekeningController::class, 'destroy'])->name('rekening.destroy');
+        Route::get('/show/{id}', [\App\Http\Controllers\RekeningController::class, 'show'])->name('rekening.show');
     });
 
 });
