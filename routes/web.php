@@ -28,10 +28,8 @@ Route::prefix('landing')->group(function () {
     Route::get('/success', function () {
         return view('pages.notif.notif_success');
     })->name('landing.success');
-
-
-});Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
-Route::get('/portal', [AuthController::class, 'portalCode'])->name('login');
+});
+Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login.form');
 Route::get('/login-central', [AuthController::class, 'logincentral'])->name('logincentral.form');

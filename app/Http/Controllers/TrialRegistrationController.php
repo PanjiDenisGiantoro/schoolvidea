@@ -21,7 +21,7 @@ class TrialRegistrationController extends Controller
     public function showForm()
     {
         // Mengambil data tipe unit dan yayasan untuk dropdown
-        $tipeunit = TipeUnit::all();
+        $tipeunit = Tipeunit::all();
         $yayasans = Yayasan::all();
         return view('registerpublic', compact('tipeunit', 'yayasans'));
     }
