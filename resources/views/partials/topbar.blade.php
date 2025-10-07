@@ -99,27 +99,10 @@
                          </a>
                          <div class="dropdown-menu dropdown-menu-end">
 
-                              <a class="dropdown-item" href="pages-profile.html">
+                              <a class="dropdown-item" href="{{ route('profile.showupdate') }}">
                                    <i class="bx bx-user-circle fs-18 align-middle me-2"></i><span class="align-middle">My Account</span>
                               </a>
 
-                              <a class="dropdown-item" href="pages-pricing.html">
-                                   <i class="bx bx-wallet fs-18 align-middle me-2"></i><span class="align-middle">Pricing</span>
-                              </a>
-                              <a class="dropdown-item" href="pages-faqs.html">
-                                   <i class="bx bx-help-circle fs-18 align-middle me-2"></i><span class="align-middle">Help</span>
-                              </a>
-                              <a class="dropdown-item" href="pages-gallery.html">
-                                   <i class="bx bx-photo-album fs-18 align-middle me-2"></i>
-                                   <span class="align-middle">Photos</span>
-                                   <span class="align-middle float-end badge badge-soft-danger">New</span>
-                              </a>
-
-                              <div class="dropdown-divider my-1"></div>
-
-                              <a class="dropdown-item" href="auth-lock-screen.html">
-                                   <i class="bx bx-lock fs-18 align-middle me-2"></i><span class="align-middle">Lock screen</span>
-                              </a>
                              <a class="dropdown-item" href="#"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                  <i class="bx bx-log-out fs-18 align-middle me-2"></i>

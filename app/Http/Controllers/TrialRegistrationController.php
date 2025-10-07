@@ -106,6 +106,7 @@ class TrialRegistrationController extends Controller
         // Buat User sebagai admin
         $user = User::create([
             'name' => $request->username,
+            'unit_id' =>$unit->id,
             'password' => Hash::make('123456'), // Menggunakan hash untuk password
             'email' => $request->email,
         ]);

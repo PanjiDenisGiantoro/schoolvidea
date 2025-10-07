@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Tipeunit;
 use App\Models\Unit;
 use App\Models\Yayasan;
+use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -104,20 +106,6 @@ class AuthController extends Controller
 
         if(!empty($data['yayasan_id'])){
 
-//            yayasans
-//id
-//nama_yayasan
-//nama_pimpinan
-//central_code
-//image
-//no_hp
-//email
-//alamat
-//website
-//status
-//created_at
-//updated_at
-
             $yayasan = Yayasan::create([
                 'nama_yayasan' => $data['yayasan_id'],
                 'nama_pimpinan' => $data['full_name'],
@@ -147,5 +135,26 @@ class AuthController extends Controller
         return redirect()
             ->route('landing') // Ganti dengan route yang sesuai
             ->with('success', 'Terima kasih! Data Anda sudah kami terima. Tim kami akan segera menghubungi Anda.');
+    }
+    public function showupdate()
+    {
+        return view('pages.profile.update');
+    }
+
+    // Function untuk handle update password
+    public function updatePassword(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Redirect dengan sukses
+        return redirect()->route('profile.show')->with('success', 'Password berhasil diupdate.');
     }
 }

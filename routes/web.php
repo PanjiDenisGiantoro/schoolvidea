@@ -45,6 +45,9 @@ Route::post('/logout', function () {
 })->name('logout');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/profile/', [AuthController::class, 'showupdate'])->name('profile.showupdate');
+    Route::put('/profile/update-password', [AuthController::class, 'updatePassword'])->name('profile.updatePassword');
+
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class,'index'])->name('dashboard');
     Route::prefix('officer')->group(function () {
     Route::get('/', [OfficerController::class, 'index'])->name('officer.index');

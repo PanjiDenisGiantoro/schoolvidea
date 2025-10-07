@@ -33,7 +33,8 @@ class DashboardController extends Controller
 
         $totalPetugas = User::with('roles')
             ->whereHas('roles', function ($query) {
-            $query->where('name', '!=', 'siswa');
+            $query->where('name', '!=', 'siswa')
+            ->where('name','!=','admin')->where('name','!=','user');
         })
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
