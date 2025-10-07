@@ -156,6 +156,25 @@
                                     </option>
                                 @endforeach
                             </select>
+
+                            <div class="card shadow-sm border-0" style="max-width: 250px;">
+                                <div class="card-header bg-primary text-white text-center fw-semibold">
+                                    QR Code Petugas
+                                </div>
+                                <div class="card-body text-center">
+                                    @if (!empty($siswa->va_siswa))
+                                        <div class="p-2">
+                                            {!! QrCode::size(180)->generate($siswa->va_siswa) !!}
+                                        </div>
+                                        <p class="mt-2 text-muted small mb-0">
+                                            {{ $siswa->user->name ?? 'Nama Petugas' }}
+                                        </p>
+                                        <p class="text-muted small">{{ $siswa->va_siswa }}</p>
+                                    @else
+                                        <p class="text-muted">QR Code belum tersedia.</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

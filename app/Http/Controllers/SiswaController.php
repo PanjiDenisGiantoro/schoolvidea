@@ -71,7 +71,7 @@ class SiswaController extends Controller
             'tahun_ajaran_id' => 'required',
             'status'          => 'required|in:0,1',
             'rfid_no'         => 'nullable|string|max:255',
-            'va_siswa'        => 'nullable|string|max:255',
+//            'va_siswa'        => 'nullable|string|max:255',
             'nis'           => 'nullable|string|max:20|unique:siswas,nis',
             'nik'           => 'nullable|string|max:20|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -113,6 +113,11 @@ class SiswaController extends Controller
             // 4️⃣ Assign role ke user
             $user->assignRole($roleSpatie->name);
 
+            if(empty($request->va_siswa)){
+               $va= 'VA'.$request->unit_id.'-'.$request->nisn;
+            }else{
+                $va = $request->va_siswa;
+            }
 
             // 5️⃣ Buat data siswa
            $siswa =  Siswa::create([
@@ -127,7 +132,7 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
-               'va_siswa' => $request->va_siswa,
+               'va_siswa' => $va,
                'nis' => $request->nis,
                'nik'           => $request->nik,
                'jenis_kelamin' => $request->jenis_kelamin,
@@ -217,6 +222,11 @@ class SiswaController extends Controller
                     : $user->password,
             ]);
 
+            if(empty($request->va_siswa)){
+                $va = 'VA'.$request->unit_id.'-'.$request->nisn;
+            }else{
+                $va = $request->va_siswa;
+            }
             // 🔹 Update siswa
             $siswa->update([
                 'nisn'            => $request->nisn,
@@ -229,7 +239,7 @@ class SiswaController extends Controller
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
-                'va_siswa'        => $request->va_siswa,
+                'va_siswa'        =>$va,
                 'nis' => $request->nis,
                 'nik'           => $request->nik,
                 'jenis_kelamin' => $request->jenis_kelamin,

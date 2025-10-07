@@ -76,9 +76,26 @@
                         <x-input-field type="text" name="no_rekening" label="No Rekening"
                                        placeholder="Masukkan Nomor Rekening" icon="bx bx-credit-card"
                                        :value="old('no_rekening', $officer->no_rekening ?? '')" />
-                        <x-input-field type="text" name="qr_code" label="QR Code"
-                                       placeholder="Masukkan QR Code" icon="bx bx-qr"
-                                       :value="old('qr_code', $officer->qr_code ?? '')" />
+
+                        <div class="card shadow-sm border-0" style="max-width: 250px;">
+                            <div class="card-header bg-primary text-white text-center fw-semibold">
+                                QR Code Petugas
+                            </div>
+                            <div class="card-body text-center">
+                                @if (!empty($officer->va_guru))
+                                    <div class="p-2">
+                                        {!! QrCode::size(180)->generate($officer->va_guru) !!}
+                                    </div>
+                                    <p class="mt-2 text-muted small mb-0">
+                                        {{ $officer->user->name ?? 'Nama Petugas' }}
+                                    </p>
+                                    <p class="text-muted small">{{ $officer->va_guru }}</p>
+                                @else
+                                    <p class="text-muted">QR Code belum tersedia.</p>
+                                @endif
+                            </div>
+                        </div>
+
                     </div>
                     <!-- Colom - 2 -->
                     <div class="col-md-3">
