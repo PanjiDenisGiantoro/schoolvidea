@@ -10,6 +10,7 @@ use App\Exports\SiswaExport;
 use App\Imports\KelasImport;
 use App\Imports\OfficerImport;
 use App\Imports\SiswaImport;
+use App\Jobs\ImportJurusanJob;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
@@ -123,7 +124,9 @@ class MigrasiController extends Controller
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
         try{
-            Excel::import(new \App\Imports\JurusanImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+            ImportJurusanJob::dispatch($unit_id, $tahun_ajaran_id, $request->file('file'));
+
+//            Excel::import(new \App\Imports\JurusanImport($unit_id, $tahun_ajaran_id), $request->file('file'));
         }catch (\Exception $e){
             return back()->with('danger', 'Gagal import data Jurusan: ' . $e->getMessage());
         }
