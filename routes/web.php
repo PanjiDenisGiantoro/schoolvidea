@@ -20,8 +20,17 @@ use App\Http\Controllers\PotonganController;
 use App\Http\Controllers\TipeunitController;
 use App\Http\Controllers\ReportController;
 
+Route::prefix('landing')->group(function () {
+    Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
+    Route::post('/store', [\App\Http\Controllers\TrialRegistrationController::class, 'store'])->name('landing.store');
+    Route::get('/registration_portal/{id}', [\App\Http\Controllers\TrialRegistrationController::class, 'registrationPortal'])->name('landing.registration_portal');
+    Route::put('/storeportal/{id}', [\App\Http\Controllers\TrialRegistrationController::class, 'storePortal'])->name('landing.storeportal');
+    Route::get('/success', function () {
+        return view('pages.notif.notif_success');
+    })->name('landing.success');
 
-Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
+
+});Route::get('/portal', [AuthController::class, 'portalCode'])->name('portal.form');
 Route::get('/portal', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login.form');
