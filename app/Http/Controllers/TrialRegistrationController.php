@@ -7,7 +7,7 @@ use App\Mail\TrialRegistrationConfirmationnext;
 use App\Models\Roles;
 use App\Models\Roles_petugas;
 use App\Models\TrialRegistration;
-use App\Models\TipeUnit;
+use App\Models\Tipeunit;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
