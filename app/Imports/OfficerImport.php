@@ -56,7 +56,8 @@ class OfficerImport implements ToModel, WithHeadingRow
 
             // 1. Update atau buat User berdasarkan email
             $user = User::updateOrCreate(
-                ['email' => $row['email']], // Kondisi pencarian berdasarkan email
+                ['email' => $row['email'],
+                    'unit_id' => $this->unit_id], // Kondisi pencarian berdasarkan email
                 [
                     'name' => $row['name'],
                     'email' => $row['email'],
@@ -83,7 +84,9 @@ class OfficerImport implements ToModel, WithHeadingRow
 
             // 4. Update atau buat Officer berdasarkan nip
             $officer = Officer::updateOrCreate(
-                ['nip' => $row['nip']], // Kondisi pencarian berdasarkan nip
+                ['nip' => $row['nip'],
+                    'unit_id' => $this->unit_id,
+                    'tahun_ajaran_id' => $this->tahun_ajaran_id], // Kondisi pencarian berdasarkan nip
                 [
                     'name' => $row['name'],
                     'nip' => $row['nip'],

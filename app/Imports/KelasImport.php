@@ -39,7 +39,9 @@ class KelasImport implements ToModel, WithHeadingRow
         }
 
         // Cek apakah kelas dengan nama_kelas sudah ada
-        $kelas = Kelas::where('nama_kelas', $row['nama_kelas'])->first();
+        $kelas = Kelas::where('nama_kelas', $row['nama_kelas'])
+            ->where('unit_id', $this->unit_id)
+            ->where('tahun_ajaran_id', $this->tahun_ajaran_id)->first();
 
         if ($kelas) {
             // Jika kelas sudah ada, lakukan update
