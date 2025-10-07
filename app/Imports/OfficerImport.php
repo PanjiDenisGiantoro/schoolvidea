@@ -6,7 +6,6 @@ use App\Models\Officer;
 use App\Models\Roles_petugas;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -14,8 +13,8 @@ class OfficerImport implements ToModel, WithHeadingRow
 {
     protected $unit_id;
     protected $tahun_ajaran_id;
-    public $importedCount = 0; // Add this variable to count successful imports
 
+    // Constructor untuk unit_id dan tahun_ajaran_id
     public function __construct($unit_id, $tahun_ajaran_id)
     {
         $this->unit_id = $unit_id;
@@ -34,7 +33,7 @@ class OfficerImport implements ToModel, WithHeadingRow
         Log::info('Incoming row data: ' . json_encode($row));
 
         try {
-            // Validate that required fields are not empty or null
+            // Validasi kolom yang dibutuhkan
             if (
                 empty($row['name']) || empty($row['email']) || empty($row['password']) ||
                 empty($row['role_id']) || empty($row['nip']) || empty($row['nuptk']) || empty($row['nik'])
@@ -43,41 +42,31 @@ class OfficerImport implements ToModel, WithHeadingRow
                 return null;  // Skip this row if any required fields are missing
             }
 
-            // Convert numeric values to string
-            $row['no_hp'] = (string) $row['no_hp'];
-            $row['rfid_no'] = (string) $row['rfid_no'];
-            $row['nip'] = (string) $row['nip'];
-            $row['nuptk'] = (string) $row['nuptk'];
-            $row['nik'] = (string) $row['nik'];
-            $row['password'] = (string) $row['password']; // Convert password to string
-
-            // Validate that numeric fields are valid (after conversion to string)
+            // Validasi bahwa kolom numeric valid
             $numericFields = ['no_hp', 'rfid_no', 'nip', 'nuptk', 'nik'];
-
             foreach ($numericFields as $field) {
-                // Skip validation for null or empty fields
-                if (empty($row[$field])) {
-                    continue;  // Skip empty fields and continue the validation
-                }
-
+                if (empty($row[$field])) continue;  // Skip empty fields
                 if (!is_numeric($row[$field])) {
                     Log::warning("Skipping row due to invalid $field value: " . json_encode($row));
                     return null;  // Skip this row if any numeric field is invalid
                 }
             }
 
-            DB::beginTransaction();  // Start a transaction to ensure consistency
+            DB::beginTransaction();  // Mulai transaksi untuk memastikan konsistensi
 
-            // 1. Create User
-            $user = User::create([
-                'name' => $row['name'],
-                'email' => $row['email'],
-                'password' => bcrypt($row['password']),
-                'rfid_no' => $row['rfid_no'],
-                'unit_id' => $this->unit_id,
-            ]);
+            // 1. Update atau buat User berdasarkan email
+            $user = User::updateOrCreate(
+                ['email' => $row['email']], // Kondisi pencarian berdasarkan email
+                [
+                    'name' => $row['name'],
+                    'email' => $row['email'],
+                    'password' => bcrypt($row['password']),
+                    'rfid_no' => $row['rfid_no'],
+                    'unit_id' => $this->unit_id,
+                ]
+            );
 
-            // 2. Find the role from Roles_petugas
+            // 2. Cari role dari Roles_petugas berdasarkan role_id
             $rolePetugas = Roles_petugas::where('name', $row['role_id'])->first();
             if (!$rolePetugas) {
                 throw new \Exception('Role not found for role_id: ' . $row['role_id']);
@@ -89,41 +78,49 @@ class OfficerImport implements ToModel, WithHeadingRow
                 ['guard_name' => 'web']
             );
 
+            // Menetapkan role ke user
             $user->assignRole($roleSpatie->name);
 
-            // 4. Create Officer
-            $officer = Officer::create([
-                'nip' => $row['nip'],
-                'iamge' => $row['image'],
-                'tempat_lahir' => $row['tempat_lahir'],
-                'no_hp' => $row['no_hp'],
-                'unit_id' => $this->unit_id,
-                'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'user_id' => $user->id,
-                'role_id' => $rolePetugas->id,
-                'nuptk' => $row['nuptk'],
-                'nik' => $row['nik'],
-                'jenis_kelamin' => $row['jenis_kelamin'],
-                'agama' => $row['agama'],
-                'tanggal_lahir' => $row['tanggal_lahir'],
-                'alamat' => $row['alamat'],
-                'bank' => $row['bank'],
-                'no_rekening' => $row['no_rekening'],
-                'no_kartu_rfid' => $row['no_kartu_rfid'],
-                'qr_code' => $row['qr_code'],
-                'va_guru' => $row['va_guru'],
-            ]);
+            // 4. Update atau buat Officer berdasarkan nip
+            $officer = Officer::updateOrCreate(
+                ['nip' => $row['nip']], // Kondisi pencarian berdasarkan nip
+                [
+                    'name' => $row['name'],
+                    'nip' => $row['nip'],
+                    'iamge' => $row['image'],
+                    'tempat_lahir' => $row['tempat_lahir'],
+                    'no_hp' => $row['no_hp'],
+                    'unit_id' => $this->unit_id,
+                    'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                    'user_id' => $user->id,
+                    'role_id' => $rolePetugas->id,
+                    'nuptk' => $row['nuptk'],
+                    'nik' => $row['nik'],
+                    'jenis_kelamin' => $row['jenis_kelamin'],
+                    'agama' => $row['agama'],
+                    'tanggal_lahir' => $row['tanggal_lahir'],
+                    'alamat' => $row['alamat'],
+                    'bank' => $row['bank'],
+                    'no_rekening' => $row['no_rekening'],
+                    'no_kartu_rfid' => $row['no_kartu_rfid'],
+                    'qr_code' => $row['qr_code'],
+                    'va_guru' => $row['va_guru'],
+                ]
+            );
 
-            DB::commit();  // Commit the transaction
+            DB::commit();  // Commit transaksi
 
-            $this->importedCount++;  // Increment count for each successfully imported officer
-
-            return $officer;  // Return the model instance for the import to work
+            return $officer;  // Mengembalikan model officer yang berhasil diproses
 
         } catch (\Exception $e) {
-            DB::rollBack();  // Rollback in case of error
+            DB::rollBack();  // Rollback transaksi jika ada error
             Log::error('Error during officer import: ' . $e->getMessage());
             return null;  // Skip this row in case of error
         }
+    }
+
+    public function chunkSize(): int
+    {
+        return 100; // Proses 100 baris data per chunk untuk menghindari timeout
     }
 }

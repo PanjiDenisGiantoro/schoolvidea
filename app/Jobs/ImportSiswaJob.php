@@ -1,16 +1,15 @@
 <?php
-
 namespace App\Jobs;
 
+use App\Imports\SiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\JurusanImport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ImportJurusanJob implements ShouldQueue
+class ImportSiswaJob implements ShouldQueue
 {
     use Queueable, InteractsWithQueue, SerializesModels;
 
@@ -41,10 +40,11 @@ class ImportJurusanJob implements ShouldQueue
     public function handle()
     {
         try {
-            Excel::import(new JurusanImport($this->unit_id, $this->tahun_ajaran_id), $this->file);
-            Log::info('Jurusan import berhasil');
+            // Mengimpor data menggunakan SiswaImport
+            Excel::import(new SiswaImport($this->unit_id, $this->tahun_ajaran_id), $this->file);
+            Log::info('Siswa import berhasil');
         } catch (\Exception $e) {
-            Log::error('Terjadi kesalahan saat mengimpor jurusan: ' . $e->getMessage());
+            Log::error('Terjadi kesalahan saat mengimpor siswa: ' . $e->getMessage());
         }
     }
 }

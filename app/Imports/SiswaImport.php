@@ -108,4 +108,8 @@ class SiswaImport implements ToModel, WithHeadingRow
             return null;  // Skip this row in case of error
         }
     }
+    public function chunkSize(): int
+    {
+        return 100; // Set ukuran chunk untuk menghindari timeout
+    }
 }

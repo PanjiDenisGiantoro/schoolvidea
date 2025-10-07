@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\JurusanExport;
+use App\Jobs\ImportJurusanJob;
 use App\Exports\KelasExport;
 use App\Exports\OfficerExport;
 use App\Exports\OfficerTemplateExport;
@@ -10,7 +11,9 @@ use App\Exports\SiswaExport;
 use App\Imports\KelasImport;
 use App\Imports\OfficerImport;
 use App\Imports\SiswaImport;
-use App\Jobs\ImportJurusanJob;
+use App\Jobs\ImportKelasJob;
+use App\Jobs\ImportOfficerJob;
+use App\Jobs\ImportSiswaJob;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
@@ -56,62 +59,74 @@ class MigrasiController extends Controller
         }
         return back()->with('error', 'Template tidak ditemukan');
     }
+
     public function importSiswa(Request $request)
     {
+        // Validasi file yang di-upload
         $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls'
+            'file' => 'required|mimes:xlsx,csv,xls',
         ]);
 
+        // Ambil file dari request
+        $file = $request->file('file');
         $unit_id = $request->input('unit_id');
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
-        try{
-            Excel::import(new SiswaImport($unit_id, $tahun_ajaran_id), $request->file('file'));
-        }catch (\Exception $e){
+        try {
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            // Mengantri job untuk diproses di background
+            dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
+        } catch (\Exception $e) {
             return back()->with('danger', 'Gagal import data siswa: ' . $e->getMessage());
         }
 
-        // logic import siswa
-        return back()->with('success', 'Data siswa berhasil diimport!');
+        return back()->with('success', 'Data siswa sedang diproses di background!');
     }
+
+
 
     public function importKelas(Request $request)
     {
+        // Validasi file yang di-upload
         $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls'
+            'file' => 'required|mimes:xlsx,csv,xls',
         ]);
 
         $unit_id = $request->input('unit_id');
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
         try{
-            Excel::import(new KelasImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            dispatch(new ImportKelasJob($unit_id, $tahun_ajaran_id, $filePath));
         }catch (\Exception $e){
-            return back()->with('danger', 'Gagal import data Kelas: ' . $e->getMessage());
+            return back()->with('danger', 'Gagal import data Officer: ' . $e->getMessage());
         }
 
-        // logic import kelas
-        return back()->with('success', 'Data kelas berhasil diimport!');
+        return back()->with('success', 'Data kelas sedang diproses di background!');
     }
+
 
     public function importOfficer(Request $request)
     {
-        // Validate the file
+        // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
-        try {
-            // Import the file and get the imported count
-            $import =  Excel::import(new OfficerImport($request->unit_id, $request->tahun_ajaran_id), $request->file('file'));
+        $unit_id = $request->input('unit_id');
+        $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
-            // Retrieve the imported count
-
-            // Return a success message with the count
-            return back()->with('success', 'Data imported successfully.');
-        } catch (\Exception $e) {
-            return back()->with('danger', 'Failed to import: ' . $e->getMessage());
+        try{
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            dispatch(new ImportOfficerJob($unit_id, $tahun_ajaran_id, $filePath));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data Officer: ' . $e->getMessage());
         }
+        return back()->with('success', 'Data officer sedang diproses di background.');
     }
+
 
 
     public function importJurusan(Request $request)
@@ -124,9 +139,9 @@ class MigrasiController extends Controller
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
         try{
-            ImportJurusanJob::dispatch($unit_id, $tahun_ajaran_id, $request->file('file'));
-
-//            Excel::import(new \App\Imports\JurusanImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            dispatch(new ImportJurusanJob($unit_id, $tahun_ajaran_id, $filePath));
         }catch (\Exception $e){
             return back()->with('danger', 'Gagal import data Jurusan: ' . $e->getMessage());
         }

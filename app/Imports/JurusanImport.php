@@ -24,14 +24,45 @@ class JurusanImport implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        // Pastikan data diproses mulai dari baris kedua (header diabaikan)
-        return new Jurusan([
-            'nama_jurusan'    => $row['nama_jurusan'],   // Mengakses berdasarkan nama kolom
-            'kode_jurusan'    => $row['kode_jurusan'],
-            'keterangan'      => $row['keterangan'],
-            'unit_id'         => $this->unit_id, // Use the unit_id passed from the request
-            'tahun_ajaran_id' => $this->tahun_ajaran_id, // Use the tahun_ajaran_id passed from the request
-            'status'          => $row['status'] ?? 1,  // Status default 1 jika kosong
-        ]);
+        // Validasi: pastikan nama_jurusan dan kode_jurusan tidak kosong
+        if (empty($row['nama_jurusan']) || empty($row['kode_jurusan'])) {
+            return null;
+        }
+
+        // Cek apakah kode_jurusan sudah ada di database
+        $jurusan = Jurusan::where('kode_jurusan', $row['kode_jurusan'])
+            ->where('unit_id', $this->unit_id)
+            ->where('tahun_ajaran_id', $this->tahun_ajaran_id)
+            ->first();
+
+        if ($jurusan) {
+            // Jika kode_jurusan sudah ada, lakukan update
+            $jurusan->update([
+                'nama_jurusan'    => $row['nama_jurusan'],
+                'kode_jurusan'    => $row['kode_jurusan'],
+                'keterangan'      => $row['keterangan'],
+                'unit_id'         => $this->unit_id,
+                'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                'status'          => $row['status'] ?? 1,
+            ]);
+
+            return $jurusan; // Mengembalikan objek yang di-update
+        } else {
+            // Jika kode_jurusan belum ada, insert data baru
+            return new Jurusan([
+                'nama_jurusan'    => $row['nama_jurusan'],
+                'kode_jurusan'    => $row['kode_jurusan'],
+                'keterangan'      => $row['keterangan'],
+                'unit_id'         => $this->unit_id,
+                'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                'status'          => $row['status'] ?? 1,
+            ]);
+        }
     }
+
+    public function chunkSize(): int
+    {
+        return 100; // Set ukuran chunk untuk menghindari timeout
+    }
+
 }

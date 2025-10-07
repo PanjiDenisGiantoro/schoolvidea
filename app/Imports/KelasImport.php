@@ -2,9 +2,8 @@
 namespace App\Imports;
 
 use App\Models\Kelas;
-use App\Models\Officer;
-use App\Models\User; // Assuming officers are in the 'users' table
 use App\Models\Jurusan;
+use App\Models\Officer;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -26,26 +25,48 @@ class KelasImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
-        $officer = User::with('officer')->where('name', $row['guru_wali_kelas'])->first();
-        $officer_id = $officer->officer ? $officer->officer->id : null;
+        // Cek apakah officer berdasarkan nama sudah ada
+        $officer = Officer::where('name', $row['guru_wali_kelas'])->first();
+        $officer_id = $officer ? $officer->id : null;
 
+        // Cek apakah jurusan berdasarkan nama sudah ada
         $jurusan = Jurusan::where('nama_jurusan', $row['jurusan'])->first();
         $jurusan_id = $jurusan ? $jurusan->id : null;
 
+        // Skip jika ada field yang kosong
         if (is_null($officer_id) || is_null($jurusan_id) || is_null($row['status'])) {
             return null; // Skip this row if any of these values are null
         }
 
-        $status = (string) $row['status']; // Convert to '1' or '0'
+        // Cek apakah kelas dengan nama_kelas sudah ada
+        $kelas = Kelas::where('nama_kelas', $row['nama_kelas'])->first();
 
-        // Return a new Kelas instance with the correct values
-        return new Kelas([
-            'nama_kelas'      => $row['nama_kelas'],
-            'unit_id'         => $this->unit_id, // Use the unit_id passed from the request
-            'tahun_ajaran_id' => $this->tahun_ajaran_id, // Use the tahun_ajaran_id passed from the request
-            'officer_id'      => $officer_id,
-            'status'          => $status, // Store status as string '1' or '0'
-            'jurusan_id'      => $jurusan_id,
-        ]);
+        if ($kelas) {
+            // Jika kelas sudah ada, lakukan update
+            $kelas->update([
+                'nama_kelas'      => $row['nama_kelas'],
+                'unit_id'         => $this->unit_id,
+                'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                'officer_id'      => $officer_id,
+                'status'          => $row['status'],
+                'jurusan_id'      => $jurusan_id,
+            ]);
+            return $kelas; // Mengembalikan objek yang diupdate
+        } else {
+            // Jika kelas belum ada, buat kelas baru
+            return new Kelas([
+                'nama_kelas'      => $row['nama_kelas'],
+                'unit_id'         => $this->unit_id,
+                'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                'officer_id'      => $officer_id,
+                'status'          => $row['status'],
+                'jurusan_id'      => $jurusan_id,
+            ]);
+        }
+    }
+
+    public function chunkSize(): int
+    {
+        return 100; // Set ukuran chunk untuk menghindari timeout
     }
 }
