@@ -19,9 +19,13 @@
 
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <x-input-field type="text" name="type_rekening" label="Tipe Rekening"
-                                       placeholder="Tabungan / Giro / dll"
-                                       :value="old('type_rekening', $rekening->type_rekening ?? '')" />
+                        <label for="type_rekening" class="form-label">Tipe Rekening</label>
+                        <select name="type_rekening" id="type_rekening" class="form-select">
+                            <option value="">-- Pilih Tipe Rekening --</option>
+                            <option value="tabungan" {{ old('type_rekening', $rekening->type_rekening ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
+                            <option value="tagihan" {{ old('type_rekening', $rekening->type_rekening ?? '') == 'tagihan' ? 'selected' : '' }}>Tagihan</option>
+                            <option value="lainnya" {{ old('type_rekening', $rekening->type_rekening ?? '') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
@@ -37,15 +41,11 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label for="user_id" class="form-label">User</label>
-                        <select name="user_id" id="user_id" class="form-select">
-                            <option value="">-- Pilih User --</option>
-                            @foreach($users as $u)
-                                <option value="{{ $u->id }}" {{ old('user_id', $rekening->user_id ?? '') == $u->id ? 'selected' : '' }}>
-                                    {{ $u->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-input-field type="text" name="nama_pemilik_rekening" label="Nama Pemilik Rekening"
+                                       placeholder="Masukkan Nama Pemilik Rekening"
+                                       :value="old('nama_pemilik_rekening', $rekening->nama_pemilik_rekening ?? '')" />
+
+
                     </div>
 
                     <div class="col-md-4">

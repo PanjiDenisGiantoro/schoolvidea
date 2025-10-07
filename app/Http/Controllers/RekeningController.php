@@ -11,7 +11,7 @@ class RekeningController extends Controller
 {
     public function index()
     {
-        $rekenings = Rekening::with(['user', 'unit'])->get();
+        $rekenings = Rekening::with( 'unit')->get();
 
         $headers = [
             'No',
@@ -41,7 +41,7 @@ class RekeningController extends Controller
         $request->validate([
             'type_rekening' => 'required|string|max:255',
             'nama_rekening' => 'required|string|max:255',
-            'user_id'       => 'nullable|exists:users,id',
+            'nama_pemilik_rekening'       => 'nullable|string|max:255',
             'unit_id'       => 'nullable|exists:units,id',
             'no_rekening'   => 'nullable|string|max:255',
             'bank'          => 'nullable|string|max:255',
@@ -52,7 +52,7 @@ class RekeningController extends Controller
         Rekening::create([
             'type_rekening' => $request->type_rekening,
             'nama_rekening' => $request->nama_rekening,
-            'user_id'       => $request->user_id,
+            'nama_pemilik_rekening'       => $request->nama_pemilik_rekening,
             'unit_id'       => $request->unit_id,
             'no_rekening'   => $request->no_rekening,
             'bank'          => $request->bank,
@@ -80,7 +80,7 @@ class RekeningController extends Controller
         $request->validate([
             'type_rekening' => 'required|string|max:255',
             'nama_rekening' => 'required|string|max:255',
-            'user_id'       => 'nullable',
+            'nama_pemilik_rekening'       => 'nullable',
             'unit_id'       => 'nullable',
             'no_rekening'   => 'nullable|string|max:255',
             'bank'          => 'nullable|string|max:255',
@@ -91,7 +91,7 @@ class RekeningController extends Controller
         $rekening->update([
             'type_rekening' => $request->type_rekening,
             'nama_rekening' => $request->nama_rekening,
-            'user_id'       => $request->user_id,
+            'nama_pemilik_rekening'       => $request->nama_pemilik_rekening,
             'unit_id'       => $request->unit_id,
             'no_rekening'   => $request->no_rekening,
             'bank'          => $request->bank,
