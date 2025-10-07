@@ -223,9 +223,10 @@ Route::prefix('tipe_unit')->group(function () {
         Route::post('/import/officer', [\App\Http\Controllers\MigrasiController::class, 'importOfficer'])->name('import.officer');
         Route::post('/import/jurusan', [\App\Http\Controllers\MigrasiController::class, 'importJurusan'])->name('import.jurusan');
         Route::get('/import/template/{type}', [\App\Http\Controllers\MigrasiController::class, 'downloadTemplate'])->name('import.template');
-        Route::get('/export/{type}', [\App\Http\Controllers\MigrasiController::class, 'exportOfficer'])->name('export.template');
+        Route::get('/officerexport', [\App\Http\Controllers\MigrasiController::class, 'exportOfficer'])->name('export.officerexport');
         Route::get('/exportkelas/', [\App\Http\Controllers\MigrasiController::class, 'exportkelas'])->name('export.exportkelas');
         Route::get('/jurusantkelas/', [\App\Http\Controllers\MigrasiController::class, 'jurusantkelas'])->name('export.jurusantkelas');
+        Route::get('/siswatkelas/', [\App\Http\Controllers\MigrasiController::class, 'exportSiswa'])->name('export.exportSiswa');
 
     });
 

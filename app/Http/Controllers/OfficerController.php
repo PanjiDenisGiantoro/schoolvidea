@@ -59,7 +59,7 @@ class OfficerController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6', // ✅ tambah confirmed
             'role_id' => 'required|exists:roles,id',       // ✅ validasi harus ada di Spatie roles
-            'image' => 'nullable|string|max:255',
+            'iamge' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
             'unit_id' => 'required|exists:units,id',

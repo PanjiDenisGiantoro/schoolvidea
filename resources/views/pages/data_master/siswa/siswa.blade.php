@@ -83,6 +83,28 @@
                         url: '{{ asset("assets/datatables/id.json") }}'
                     }
                 });
+
+                // SweetAlert2 untuk hapus
+                $('.link-danger').on('click', function(e) {
+                    e.preventDefault(); // cegah link langsung ke href
+                    var url = $(this).attr('href');
+
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Data akan dihapus permanen!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // redirect ke URL hapus
+                            window.location.href = url;
+                        }
+                    });
+                });
             });
         </script>
     @endif

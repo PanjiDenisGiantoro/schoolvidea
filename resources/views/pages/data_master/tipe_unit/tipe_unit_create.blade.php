@@ -24,7 +24,7 @@
                     </div>
 
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-select">
                             <option value="1" {{ old('status', $tipe_unit->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>

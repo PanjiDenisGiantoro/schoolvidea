@@ -2,7 +2,7 @@
 namespace App\Imports;
 
 use App\Models\User;
-use App\Models\Officer;
+use App\Models\Siswa;
 use App\Models\Roles_petugas;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -10,11 +10,10 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-class OfficerImport implements ToModel, WithHeadingRow
+class SiswaImport implements ToModel, WithHeadingRow
 {
     protected $unit_id;
     protected $tahun_ajaran_id;
-    public $importedCount = 0; // Add this variable to count successful imports
 
     public function __construct($unit_id, $tahun_ajaran_id)
     {
@@ -51,21 +50,6 @@ class OfficerImport implements ToModel, WithHeadingRow
             $row['nik'] = (string) $row['nik'];
             $row['password'] = (string) $row['password']; // Convert password to string
 
-            // Validate that numeric fields are valid (after conversion to string)
-            $numericFields = ['no_hp', 'rfid_no', 'nip', 'nuptk', 'nik'];
-
-            foreach ($numericFields as $field) {
-                // Skip validation for null or empty fields
-                if (empty($row[$field])) {
-                    continue;  // Skip empty fields and continue the validation
-                }
-
-                if (!is_numeric($row[$field])) {
-                    Log::warning("Skipping row due to invalid $field value: " . json_encode($row));
-                    return null;  // Skip this row if any numeric field is invalid
-                }
-            }
-
             DB::beginTransaction();  // Start a transaction to ensure consistency
 
             // 1. Create User
@@ -91,38 +75,32 @@ class OfficerImport implements ToModel, WithHeadingRow
 
             $user->assignRole($roleSpatie->name);
 
-            // 4. Create Officer
-            $officer = Officer::create([
-                'nip' => $row['nip'],
-                'iamge' => $row['image'],
+            // 4. Create Siswa
+            $siswa = Siswa::create([
+                'nisn' => $row['nisn'],
+                'name' => $row['name'],
+                'email' => $row['email'],
                 'tempat_lahir' => $row['tempat_lahir'],
                 'no_hp' => $row['no_hp'],
-                'unit_id' => $this->unit_id,
-                'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'user_id' => $user->id,
-                'role_id' => $rolePetugas->id,
-                'nuptk' => $row['nuptk'],
+                'rfid_no' => $row['rfid_no'],
+                'va_siswa' => $row['va_siswa'],
+                'nis' => $row['nis'],
                 'nik' => $row['nik'],
                 'jenis_kelamin' => $row['jenis_kelamin'],
                 'agama' => $row['agama'],
-                'tanggal_lahir' => $row['tanggal_lahir'],
-                'alamat' => $row['alamat'],
+                'no_hp_ortu' => $row['no_hp_ortu'],
+                'nama_ortu' => $row['nama_ortu'],
                 'bank' => $row['bank'],
                 'no_rekening' => $row['no_rekening'],
-                'no_kartu_rfid' => $row['no_kartu_rfid'],
-                'qr_code' => $row['qr_code'],
-                'va_guru' => $row['va_guru'],
             ]);
 
             DB::commit();  // Commit the transaction
 
-            $this->importedCount++;  // Increment count for each successfully imported officer
-
-            return $officer;  // Return the model instance for the import to work
+            return $siswa;  // Return the model instance for the import to work
 
         } catch (\Exception $e) {
             DB::rollBack();  // Rollback in case of error
-            Log::error('Error during officer import: ' . $e->getMessage());
+            Log::error('Error during siswa import: ' . $e->getMessage());
             return null;  // Skip this row in case of error
         }
     }

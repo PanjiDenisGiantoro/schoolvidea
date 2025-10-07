@@ -18488,8 +18488,8 @@ th.fc-day-header {
   content: "\ea4a";
   position: absolute;
   border: 0;
-  top: 18px;
   right: 12px;
+    top: 50%;
   left: auto;
   font-size: 20px;
   font-family: "boxicons";
@@ -18698,7 +18698,7 @@ th.fc-day-header {
   background: var(--bs-secondary-bg);
   border-radius: 6px;
   cursor: pointer;
-  min-height: 150px;
+  min-height: 90px;
   padding: 20px;
 }
 .dropzone .dz-message {

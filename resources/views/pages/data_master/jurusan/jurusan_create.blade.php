@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 @section('title', isset($jurusan) ? (isset($show) && $show ? 'Lihat Jurusan' : 'Edit Jurusan') : 'Tambah Jurusan')
 
@@ -22,8 +23,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-select" data-choices
-                                    data-choices-sorting-false required>
+                            <select name="unit_id" id="unit_id" class="form-select" required>
                                 <option>-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"
@@ -39,8 +39,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices
-                                    data-choices-sorting-false required>
+                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select"  required>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
                                 @foreach($tahun_ajaran as $t)
                                     <option value="{{ $t->id }}"
@@ -52,13 +51,6 @@
                         </div>
                     </div>
 
-                    {{-- Nama Jurusan --}}
-                    <div class="col-md-4">
-                        <x-input-field type="text" name="nama_jurusan" label="Nama Jurusan"
-                                       placeholder="Masukkan Nama Jurusan" icon="bx bx-book"
-                                       :value="old('nama_jurusan', $jurusan->nama_jurusan ?? '')" required/>
-                    </div>
-
                     {{-- Kode Jurusan --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="kode_jurusan" label="Kode Jurusan"
@@ -66,14 +58,16 @@
                                        :value="old('kode_jurusan', $jurusan->kode_jurusan ?? '')" required/>
                     </div>
 
-                    {{-- Keterangan --}}
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
-                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $jurusan->keterangan ?? '') }}</textarea>
-                        </div>
+                    {{-- Nama Jurusan --}}
+                    <div class="col-md-4">
+                        <x-input-field type="text" name="nama_jurusan" label="Nama Jurusan"
+                                       placeholder="Masukkan Nama Jurusan" icon="bx bx-book"
+                                       :value="old('nama_jurusan', $jurusan->nama_jurusan ?? '')" required/>
                     </div>
+
+
+
+
 
                     {{-- Status --}}
                     <div class="col-md-4">
@@ -92,6 +86,15 @@
                         </div>
                     </div>
 
+                    {{-- Keterangan --}}
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
+                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $jurusan->keterangan ?? '') }}</textarea>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="mt-3 text-end">
@@ -106,6 +109,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         @if(isset($show) && $show)
         document.addEventListener('DOMContentLoaded', function () {
@@ -118,5 +122,40 @@
             });
         });
         @endif
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('jurusanForm');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // cegah submit langsung
+
+                Swal.fire({
+                    title: 'Apakah data sudah benar?',
+                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // tampilkan loading sebelum submit
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Harap tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // submit form setelah konfirmasi
+                        form.submit();
+                    }
+                });
+            });
+        });
     </script>
 @endpush

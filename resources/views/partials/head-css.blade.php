@@ -5,3 +5,5 @@
 <script src="{{ asset('assets/js/config.min.js') }}"></script>
 <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="{{ asset('assets/css/alert2.css') }}" rel="stylesheet">
+
+<link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">

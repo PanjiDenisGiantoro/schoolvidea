@@ -41,18 +41,18 @@
                                         <i class="ri-lock-line align-middle fs-20"></i>
                                         Permission
                                     </a>
-                                <a href="{{ route('roles.show', $item->id) }}" class="link-primary text-muted">
-                                    <i class="ri-eye-line align-middle fs-20"></i>
-                                    Show
-                                </a>
-                                <a href="{{ route('roles.edit', $item->id) }}" class="link-warning text-muted">
-                                    <i class="ri-edit-line align-middle fs-20"></i>
-                                    Edit
-                                </a>
-                                <a href="{{ route('roles.destroy', $item->id) }}" class="link-danger text-muted">
-                                    <i class="ri-delete-bin-5-line align-middle fs-20"></i>
-                                    Hapus
-                                </a>
+                                    <a href="{{ route('roles.show', $item->id) }}" class="link-primary text-muted">
+                                        <i class="ri-eye-line align-middle fs-20"></i>
+                                        Show
+                                    </a>
+                                    <a href="{{ route('roles.edit', $item->id) }}" class="link-warning text-muted">
+                                        <i class="ri-edit-line align-middle fs-20"></i>
+                                        Edit
+                                    </a>
+                                    <a href="{{ route('roles.destroy', $item->id) }}" class="link-danger text-muted">
+                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i>
+                                        Hapus
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -70,17 +70,38 @@
 @endsection
 @push('scripts')
     @if($roles->isNotEmpty())
+        <script>
+            $(document).ready(function () {
+                $('#datatable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    language: {
+                        url: '{{ asset("assets/datatables/id.json") }}'
+                    }
+                });
 
-    <script>
-        $(document).ready(function () {
-            $('#datatable').DataTable({
-                responsive: true,
-                pageLength: 10,
-                language: {
-                    url: '{{ asset("assets/datatables/id.json") }}'
-                }
+                // SweetAlert2 untuk hapus
+                $('.link-danger').on('click', function(e) {
+                    e.preventDefault(); // cegah link langsung ke href
+                    var url = $(this).attr('href');
+
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Data akan dihapus permanen!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // redirect ke URL hapus
+                            window.location.href = url;
+                        }
+                    });
+                });
             });
-        });
-    </script>
+        </script>
     @endif
 @endpush

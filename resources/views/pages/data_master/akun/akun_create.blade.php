@@ -31,7 +31,7 @@
                                        placeholder="Masukkan Nama Akun" icon="bx bx-book"
                                        :value="old('nama_akun', $akun->nama_akun ?? '')" required/>
                     </div>
-{{--                    list kategori ada tabungan dan transaksi--}}
+                    {{--                    list kategori ada tabungan dan transaksi--}}
                     <div class="col-md-4">
                         <label for="kategori_akun" class="form-label">Kategori Akun</label>
                         <select name="kategori_akun" id="kategori_akun" class="form-control" required data-choices data-choices-sorting-false>
@@ -119,6 +119,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @if(isset($show) && $show)
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -130,4 +131,39 @@
             });
         </script>
     @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('jurusanForm');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // cegah submit langsung
+
+                Swal.fire({
+                    title: 'Apakah data sudah benar?',
+                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // tampilkan loading sebelum submit
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Harap tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // submit form setelah konfirmasi
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endpush

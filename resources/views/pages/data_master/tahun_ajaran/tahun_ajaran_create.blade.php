@@ -23,21 +23,7 @@
                                        :value="old('tahun_ajaran', $tahun_ajaran->tahun_ajaran ?? '')" required />
                     </div>
 
-                    <div class="col-md-3">
-                        <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
-                        <input type="month" name="tanggal_mulai" id="tanggal_mulai" class="form-control"
-                               value="{{ old('tanggal_mulai', isset($tahun_ajaran->tanggal_mulai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_mulai)->format('Y-m') : '') }}"
-                               required>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
-                        <input type="month" name="tanggal_selesai" id="tanggal_selesai" class="form-control"
-                               value="{{ old('tanggal_selesai', isset($tahun_ajaran->tanggal_selesai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_selesai)->format('Y-m') : '') }}"
-                               required>
-                    </div>
-
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label for="semester" class="form-label">Semester</label>
                         <select name="semester" id="semester" class="form-select">
                             <option value="Ganjil" {{ old('semester', $tahun_ajaran->semester ?? '') == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
@@ -45,9 +31,26 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                        <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="form-control form-control-lg rounded"
+                               value="{{ old('tanggal_mulai', isset($tahun_ajaran->tanggal_mulai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_mulai)->format('Y-m-d') : '') }}"
+                               required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                        <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="form-control form-control-lg rounded"
+                               value="{{ old('tanggal_selesai', isset($tahun_ajaran->tanggal_selesai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_selesai)->format('Y-m-d') : '') }}"
+                               required>
+                    </div>
+
+
+
+
+                    <div class="col-md-6">
                         <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-select">
+                        <select name="status" id="status" class="form-select w-full">
                             <option value="1" {{ old('status', $tahun_ajaran->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
                             <option value="0" {{ old('status', $tahun_ajaran->status ?? '') == 0 ? 'selected' : '' }}>Tidak Aktif</option>
                         </select>
@@ -66,6 +69,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         @if(isset($show) && $show)
         document.addEventListener('DOMContentLoaded', function() {
@@ -78,5 +82,40 @@
             });
         });
         @endif
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('tahunAjaranForm');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // cegah submit langsung
+
+                Swal.fire({
+                    title: 'Apakah data sudah benar?',
+                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // tampilkan loading sebelum submit
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Harap tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // submit form setelah konfirmasi
+                        form.submit();
+                    }
+                });
+            });
+        });
     </script>
 @endpush

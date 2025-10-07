@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exports\JurusanExport;
 use App\Exports\KelasExport;
+use App\Exports\OfficerExport;
 use App\Exports\OfficerTemplateExport;
+use App\Exports\SiswaExport;
 use App\Imports\KelasImport;
 use App\Imports\OfficerImport;
 use App\Models\Jurusan;
@@ -78,14 +80,24 @@ class MigrasiController extends Controller
 
     public function importOfficer(Request $request)
     {
+        // Validate the file
         $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls'
+            'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
-        Excel::import(new OfficerImport, $request->file('file'));
+        try {
+            // Import the file and get the imported count
+            $import =  Excel::import(new OfficerImport($request->unit_id, $request->tahun_ajaran_id), $request->file('file'));
 
-        return back()->with('success', 'Data officer berhasil diimport!');
+            // Retrieve the imported count
+
+            // Return a success message with the count
+            return back()->with('success', 'Data imported successfully.');
+        } catch (\Exception $e) {
+            return back()->with('danger', 'Failed to import: ' . $e->getMessage());
+        }
     }
+
 
     public function importJurusan(Request $request)
     {
@@ -104,13 +116,11 @@ class MigrasiController extends Controller
 
     public function exportOfficer()
     {
-        $filePath = public_path('template/officer_template.xlsx');
-
-        if (file_exists($filePath)) {
-            return response()->download($filePath, 'officer_template.xlsx');
-        }
-
-        return back()->with('error', 'Template Officer tidak ditemukan.');
+        return Excel::download(new OfficerExport(), 'officer.xlsx');
+    }
+    public function exportSiswa()
+    {
+        return Excel::download(new SiswaExport(), 'siswa.xlsx');
     }
     public function exportkelas()
     {

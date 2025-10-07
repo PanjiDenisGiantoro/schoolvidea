@@ -43,27 +43,26 @@
                 <h5 class="card-title mb-0 mt-4">Data Lengkap Guru & Staff</h5>
                 <p class="text-muted">Masukkan informasi detail petugas</p>
                 <hr>
-                <div class="row g-3">
+                <div class="row">
+                    <!-- Colom - 1 -->
                     <div class="col-md-3">
-                        <x-input-field type="text" name="nip" label="NIP"
+                        <div class="mb-4">
+                            <label for="unit_id" class="form-label">Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
+                                <option value="">-- Pilih Unit --</option>
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}" {{ old('unit_id', $officer->officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ $u->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <x-input-field type="text" name="nip" label="NIP" class="text-uppercase"
                                        placeholder="Masukkan NIP" icon="bx bx-id-card"
                                        :value="old('nip', $officer->officer->nip ?? '')" />
-
-                        <x-input-field type="text" name="nuptk" label="NUPTK"
-                                       placeholder="Masukkan NUPTK" icon="bx bx-id-card"
-                                       :value="old('nuptk', $officer->officer->nuptk ?? '')" />
-
-                        <x-input-field type="text" name="nik" label="NIK"
-                                       placeholder="Masukkan NIK" icon="bx bx-id-card"
-                                       :value="old('nik', $officer->officer->nik ?? '')" />
-
                         <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
                                        placeholder="Masukkan tempat lahir" icon="bx bx-map"
                                        :value="old('tempat_lahir', $officer->officer->tempat_lahir ?? '')" />
-
-                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
-                                       icon="bx bx-calendar"
-                                       :value="old('tanggal_lahir', $officer->officer->tanggal_lahir ?? '')" />
 
                         <div class="mb-3">
                             <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
@@ -74,40 +73,17 @@
                             </select>
                         </div>
 
-                        <x-input-field type="text" name="agama" label="Agama"
-                                       placeholder="Masukkan agama" icon="bx bx-book"
-                                       :value="old('agama', $officer->officer->agama ?? '')" />
-                    </div>
-
-                    <div class="col-md-3">
-                        <x-input-field type="text" name="no_hp" label="No. HP"
-                                       placeholder="Masukkan nomor HP" icon="bx bx-phone"
-                                       :value="old('no_hp', $officer->officer->no_hp ?? '')" />
-
-                        <x-input-field type="text" name="bank" label="Bank"
-                                       placeholder="Masukkan nama bank" icon="bx bx-bank"
-                                       :value="old('bank', $officer->officer->bank ?? '')" />
-
                         <x-input-field type="text" name="no_rekening" label="No Rekening"
-                                       placeholder="Masukkan nomor rekening" icon="bx bx-credit-card"
+                                       placeholder="Masukkan Nomor Rekening" icon="bx bx-credit-card"
                                        :value="old('no_rekening', $officer->officer->no_rekening ?? '')" />
-
-                        <x-input-field type="text" name="no_kartu_rfid" label="No Kartu RFID"
-                                       placeholder="Masukkan nomor kartu RFID" icon="bx bx-barcode"
-                                       :value="old('no_kartu_rfid', $officer->officer->no_kartu_rfid ?? '')" />
-
                         <x-input-field type="text" name="qr_code" label="QR Code"
                                        placeholder="Masukkan QR Code" icon="bx bx-qr"
                                        :value="old('qr_code', $officer->officer->qr_code ?? '')" />
-
-                        <x-input-field type="text" name="va_guru" label="VA Guru & Staff"
-                                       placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card"
-                                       :value="old('va_guru', $officer->officer->va_guru ?? '')" />
                     </div>
-
+                    <!-- Colom - 2 -->
                     <div class="col-md-3">
-                        <div class="mb-3">
-                            <label for="role_id" class="form-label">Role Guru & Staff</label>
+                        <div class="mb-4">
+                            <label for="role_id" class="form-label">Role</label>
                             <select name="role_id" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $r)
@@ -117,20 +93,22 @@
                                 @endforeach
                             </select>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" class="form-select" data-choices data-choices-sorting-false>
-                                <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
-                                    <option value="{{ $u->id }}" {{ old('unit_id', $officer->officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
+                        <x-input-field type="text" name="nik" label="NIK"
+                                       placeholder="Masukkan NIK" icon="bx bx-id-card"
+                                       :value="old('nik', $officer->officer->nik ?? '')" />
+                        <x-input-field type="text" name="agama" label="Agama"
+                                       placeholder="Masukkan agama" icon="bx bx-book"
+                                       :value="old('agama', $officer->officer->agama ?? '')" />
+                        <x-input-field type="text" name="no_hp" label="No. Telepon"
+                                       placeholder="Masukkan Nomor Telepon" icon="bx bx-phone"
+                                       :value="old('no_hp', $officer->officer->no_hp ?? '')" />
+                        <x-input-field type="text" name="va_guru" label="VA Guru & Staff"
+                                       placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card"
+                                       :value="old('va_guru', $officer->officer->va_guru ?? '')" />
+                    </div>
+                    <!-- Colom - 3 -->
+                    <div class="col-md-3">
+                        <div class="mb-4">
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
                             <select name="tahun_ajaran_id" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
@@ -141,10 +119,26 @@
                                 @endforeach
                             </select>
                         </div>
+                        <x-input-field type="text" name="nuptk" label="NUPTK"
+                                       placeholder="Masukkan NUPTK" icon="bx bx-id-card"
+                                       :value="old('nuptk', $officer->officer->nuptk ?? '')" />
 
-                        <div class="mb-3">
+                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
+                                       icon="bx bx-calendar"
+                                       :value="old('tanggal_lahir', $officer->officer->tanggal_lahir ?? '')" />
+                        <x-input-field type="text" name="bank" label="Bank"
+                                       placeholder="Masukkan Nama Bank" icon="bx bx-bank"
+                                       :value="old('bank', $officer->officer->bank ?? '')" />
+                        <x-input-field type="text" name="no_kartu_rfid" label="No Kartu RFID"
+                                       placeholder="Masukkan Nomor RFID" icon="bx bx-barcode"
+                                       :value="old('no_kartu_rfid', $officer->officer->no_kartu_rfid ?? '')" />
+                    </div>
+                    <!-- Colom - 4 -->
+                    <div class="col-md-3">
+                        <div class="mb-4" id="jurusan-wrapper">
                             <label for="jurusan" class="form-label">Jurusan</label>
-                            <select name="jurusan[]" id="jurusan" class="form-select" multiple>
+                            <select name="jurusan[]" id="jurusan"  class="form-select" data-choices data-choices-sorting-false>
+                                <option value="">--Pilih Jurusan--</option>
                                 @foreach ($jurusans as $jurusan)
                                     <option value="{{ $jurusan->id }}"
                                         {{ in_array($jurusan->id, old('jurusan', $jurusanArray ?? [])) ? 'selected' : '' }}>
@@ -153,7 +147,10 @@
                                 @endforeach
                             </select>
                         </div>
-
+                        <div class="mb-3">
+                            <label for="alamat" class="form-label">Alamat</label>
+                            <textarea name="alamat" id="alamat" class="form-control" rows="6">{{ old('alamat', $officer->officer->alamat ?? '') }}</textarea>
+                        </div>
                         <div class="mb-3">
                             <label for="image-dropzone" class="form-label">Upload Gambar</label>
                             <div class="dropzone" id="image-dropzone"></div>
@@ -170,22 +167,14 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
-                    <div class="col-md-3">
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label">Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control" rows="7">{{ old('alamat', $officer->officer->alamat ?? '') }}</textarea>
-                        </div>
-                         </div>
                 </div>
 
                 <div class="mt-3 text-end">
                     <button type="submit" class="btn btn-success">
                         {{ isset($officer) ? 'Update' : 'Simpan' }}
                     </button>
-                    <a href="{{ url('user/') }}" class="btn btn-secondary">Batal</a>
+                    <a href="{{ url('officer/') }}" class="btn btn-secondary">Batal</a>
                 </div>
             </form>
         </div>
@@ -193,6 +182,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         @if(isset($show) && $show)
         document.addEventListener('DOMContentLoaded', function() {
@@ -266,4 +256,88 @@
         @endif
 
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit_id');
+            const jurusanWrapper = document.getElementById('jurusan-wrapper');
+
+            function toggleJurusan() {
+                if (unitSelect.value === '') {
+                    jurusanWrapper.style.display = 'none';
+                } else {
+                    jurusanWrapper.style.display = 'block';
+                }
+            }
+
+            // Jalankan saat pertama kali halaman dimuat
+            toggleJurusan();
+
+            // Jalankan setiap kali unit berubah
+            unitSelect.addEventListener('change', toggleJurusan);
+        });
+    </script>
+    {{-- Konfirmasi Submit --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('userForm');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Apakah data sudah benar?',
+                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Harap tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+    {{-- Alert Sukses & Error --}}
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: `
+        <ul style="text-align:left;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+                </ul>
+`,
+                confirmButtonColor: '#d33',
+            });
+        </script>
+    @endif
+
+
 @endpush

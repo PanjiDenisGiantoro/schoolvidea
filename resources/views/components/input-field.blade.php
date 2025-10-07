@@ -1,6 +1,6 @@
 <div class="mb-4">
     <label class="form-label" for="{{ $id ?? $name }}">
-        {{ \Illuminate\Support\Str::title($label) }}
+        {{ $label }}
     </label>
     <div class="position-relative w-100">
         <input

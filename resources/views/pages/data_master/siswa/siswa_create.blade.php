@@ -26,7 +26,7 @@
                         <x-input-field type="text" name="name" label="Nama Lengkap"
                                        placeholder="Masukkan nama lengkap"
                                        icon="bx bx-user"
-                                       :value="old('name', $siswa->user->name ?? '')"
+                                       :value="old('name', $siswa->user?->name ?? '')"
                                        required />
                     </div>
 
@@ -34,7 +34,7 @@
                         <x-input-field type="email" name="email" label="Email"
                                        placeholder="Masukkan email"
                                        icon="bx bx-envelope"
-                                       :value="old('email', $siswa->user->email ?? '')"
+                                       :value="old('email', $siswa->user?->email ?? '')"
                                        required />
                     </div>
 
@@ -46,14 +46,15 @@
                                        :value="''"
                             {{ isset($siswa) ? '' : 'required' }} />
                         @if(isset($siswa))
-                            <input type="password" name="password" class="form-control mt-2"
+                            <input type="password" name="password_confirmation" class="form-control mt-2"
                                    placeholder="Konfirmasi Password (kosongkan jika tidak ganti)">
                         @else
-                            <input type="password" name="password" class="form-control mt-2"
+                            <input type="password" name="password_confirmation" class="form-control mt-2"
                                    placeholder="Konfirmasi Password" required>
                         @endif
                     </div>
                 </div>
+
                 <div class="row g-3 mt-4">
                     <h5 class="card-title mb-0 mt-3">Data Lengkap Siswa</h5>
                     <p class="text-muted">Masukkan data lengkap siswa</p>
@@ -63,20 +64,21 @@
                         <x-input-field type="text" name="nisn" label="NISN"
                                        placeholder="Masukkan NISN"
                                        icon="bx bx-id-card"
-                                       :value="old('nisn', $siswa->nisn ?? '')" required />
+                                       :value="old('nisn', $siswa?->nisn ?? '')" required />
 
                         <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
                                        placeholder="Masukkan tempat lahir"
                                        icon="bx bx-map"
-                                       :value="old('tempat_lahir', $siswa->tempat_lahir ?? '')" />
+                                       :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
 
                         <div class="mb-3">
                             <label for="image-dropzone" class="form-label">Upload Gambar</label>
                             <div class="dropzone" id="image-dropzone"></div>
                             <input type="hidden" name="image" id="image-hidden"
-                                   value="{{ old('image', $siswa->image ?? '') }}">
+                                   value="{{ old('image', $siswa?->image ?? '') }}">
                             <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
                         </div>
+
                         <div class="modal fade" id="imageModal" tabindex="-1">
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class="modal-content">
@@ -92,14 +94,15 @@
                         <x-input-field type="text" name="no_hp" label="No. HP"
                                        placeholder="Masukkan nomor HP"
                                        icon="bx bx-phone"
-                                       :value="old('no_hp', $siswa->no_hp ?? '')" />
+                                       :value="old('no_hp', $siswa?->no_hp ?? '')" />
 
                         <x-input-field type="text" name="va_siswa" label="VA Siswa"
                                        placeholder="Masukkan VA Petugas" icon="bx bx-credit-card"
-                                       :value="old('va_siswa', $siswa->va_siswa ?? '')" />
+                                       :value="old('va_siswa', $siswa?->va_siswa ?? '')" />
+
                         <x-input-field type="text" name="rfid_no" label="RFID"
-                                       placeholder="Masukkan tanggal lahir"
-                                       :value="old('rfid_no', $siswa->rfid_no ?? '')" />
+                                       placeholder="Masukkan RFID"
+                                       :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
                     </div>
 
                     <div class="col-md-3">
@@ -109,26 +112,25 @@
                                 <option value="">-- Pilih Kelas --</option>
                                 @foreach($kelas as $k)
                                     <option value="{{ $k->id }}"
-                                        {{ old('kelas_id', $siswa->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
+                                        {{ old('kelas_id', $siswa?->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
                                         {{ $k->nama_kelas }}
                                     </option>
                                 @endforeach
                             </select>
 
-                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
-                                       placeholder="Masukkan tanggal lahir"
-                                       :value="old('tanggal_lahir', $siswa->tanggal_lahir ?? '')" />
+                            <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
+                                           placeholder="Masukkan tanggal lahir"
+                                           :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
 
                             <div class="mb-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select name="status" id="status" class="form-select" required>
                                     <option value="">-- Pilih Status --</option>
-                                    <option value="1" {{ old('status', $siswa->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
-                                    <option value="0" {{ old('status', $siswa->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
+                                    <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
+                                    <option value="0" {{ old('status', $siswa?->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
                                 </select>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="col-md-3">
@@ -138,7 +140,7 @@
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"
-                                        {{ old('unit_id', $siswa->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ old('unit_id', $siswa?->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                         {{ $u->nama_unit }}
                                     </option>
                                 @endforeach
@@ -149,16 +151,15 @@
                                 <option value="">-- Pilih Tahun Ajaran --</option>
                                 @foreach($tahun_ajaran as $t)
                                     <option value="{{ $t->id }}"
-                                        {{ old('tahun_ajaran_id', $siswa->tahun_ajaran_id ?? ($tahun_ajaran_selected->id ?? '')) == $t->id ? 'selected' : '' }}>
+                                        {{ old('tahun_ajaran_id', $siswa?->tahun_ajaran_id ?? ($tahun_ajaran_selected?->id ?? '')) == $t->id ? 'selected' : '' }}>
                                         {{ $t->tahun_ajaran }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-
-
                     </div>
                 </div>
+
                 <div class="row g-3 mt-4">
                     <h5 class="card-title mb-0 mt-3">Data Tambahan Siswa</h5>
                     <p class="text-muted">Masukkan data tambahan siswa</p>
@@ -168,12 +169,12 @@
                         <x-input-field type="text" name="nis" label="NIS"
                                        placeholder="Masukkan NIS"
                                        icon="bx bx-id-card"
-                                       :value="old('nis', $siswa->nis ?? '')" />
+                                       :value="old('nis', $siswa?->nis ?? '')" />
 
                         <x-input-field type="text" name="nik" label="NIK"
                                        placeholder="Masukkan NIK"
                                        icon="bx bx-id-card"
-                                       :value="old('nik', $siswa->nik ?? '')" />
+                                       :value="old('nik', $siswa?->nik ?? '')" />
                     </div>
 
                     <div class="col-md-3">
@@ -181,8 +182,8 @@
                             <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
                             <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
                                 <option value="">-- Pilih Jenis Kelamin --</option>
-                                <option value="L" {{ old('jenis_kelamin', $siswa->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="P" {{ old('jenis_kelamin', $siswa->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                <option value="L" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
                             </select>
                         </div>
 
@@ -190,12 +191,12 @@
                             <label for="agama" class="form-label">Agama</label>
                             <select name="agama" id="agama" class="form-select" required>
                                 <option value="">-- Pilih Agama --</option>
-                                <option value="Islam" {{ old('agama', $siswa->agama ?? '') == 'Islam' ? 'selected' : '' }}>Islam</option>
-                                <option value="Kristen" {{ old('agama', $siswa->agama ?? '') == 'Kristen' ? 'selected' : '' }}>Kristen</option>
-                                <option value="Katolik" {{ old('agama', $siswa->agama ?? '') == 'Katolik' ? 'selected' : '' }}>Katolik</option>
-                                <option value="Hindu" {{ old('agama', $siswa->agama ?? '') == 'Hindu' ? 'selected' : '' }}>Hindu</option>
-                                <option value="Buddha" {{ old('agama', $siswa->agama ?? '') == 'Buddha' ? 'selected' : '' }}>Buddha</option>
-                                <option value="Konghucu" {{ old('agama', $siswa->agama ?? '') == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                                <option value="Islam" {{ old('agama', $siswa?->agama ?? '') == 'Islam' ? 'selected' : '' }}>Islam</option>
+                                <option value="Kristen" {{ old('agama', $siswa?->agama ?? '') == 'Kristen' ? 'selected' : '' }}>Kristen</option>
+                                <option value="Katolik" {{ old('agama', $siswa?->agama ?? '') == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                                <option value="Hindu" {{ old('agama', $siswa?->agama ?? '') == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                                <option value="Buddha" {{ old('agama', $siswa?->agama ?? '') == 'Buddha' ? 'selected' : '' }}>Buddha</option>
+                                <option value="Konghucu" {{ old('agama', $siswa?->agama ?? '') == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
                             </select>
                         </div>
                     </div>
@@ -204,29 +205,29 @@
                         <x-input-field type="text" name="no_hp_ortu" label="No. HP Orang Tua"
                                        placeholder="Masukkan nomor HP orang tua"
                                        icon="bx bx-phone"
-                                       :value="old('no_hp_ortu', $siswa->no_hp_ortu ?? '')" />
+                                       :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" />
 
                         <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
                                        placeholder="Masukkan nama orang tua"
                                        icon="bx bx-user"
-                                       :value="old('nama_ortu', $siswa->nama_ortu ?? '')" />
+                                       :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" />
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="text" name="bank" label="Bank"
                                        placeholder="Masukkan nama bank"
                                        icon="bx bx-bank"
-                                       :value="old('bank', $siswa->bank ?? '')" />
+                                       :value="old('bank', $siswa?->bank ?? '')" />
 
                         <x-input-field type="text" name="no_rekening" label="No Rekening"
                                        placeholder="Masukkan nomor rekening"
                                        icon="bx bx-credit-card"
-                                       :value="old('no_rekening', $siswa->no_rekening ?? '')" />
+                                       :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
 
                         <x-input-field type="text" name="qrcode" label="QR Code"
                                        placeholder="Masukkan kode / path QR"
                                        icon="bx bx-qr"
-                                       :value="old('qrcode', $siswa->qrcode ?? '')" />
+                                       :value="old('qrcode', $siswa?->qrcode ?? '')" />
                     </div>
                 </div>
 
@@ -242,6 +243,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         @if(isset($show) && $show)
         document.addEventListener('DOMContentLoaded', function() {
@@ -255,6 +257,7 @@
         });
         @endif
     </script>
+
     <script>
         Dropzone.autoDiscover = false;
 
@@ -266,10 +269,8 @@
             init: function () {
                 this.on("addedfile", function (file) {
                     file.previewElement.addEventListener("click", function () {
-                        // ambil url preview
                         let imgSrc = file.dataURL;
                         document.getElementById("previewImage").src = imgSrc;
-                        // buka modal
                         var modal = new bootstrap.Modal(document.getElementById("imageModal"));
                         modal.show();
                     });
@@ -281,38 +282,57 @@
             url: "{{ route('siswa.upload') }}",
             paramName: "file",
             maxFiles: 1,
-            maxFilesize: 1, // MB
+            maxFilesize: 1,
             acceptedFiles: ".jpg,.jpeg,.png",
             addRemoveLinks: true,
-            thumbnailWidth: 200,  // ubah default (120px)
-            thumbnailHeight: 200, // biar lebih proporsional
-            headers: {
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            },
+            thumbnailWidth: 200,
+            thumbnailHeight: 200,
+            headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"},
             success: function (file, response) {
                 document.querySelector("#image-hidden").value = response.filepath;
             },
             removedfile: function(file) {
                 file.previewElement.remove();
-                document.querySelector("#image-hidden").value = ""; // kosongkan kalau dihapus
+                document.querySelector("#image-hidden").value = "";
             }
         });
 
-        // Kalau edit, preload gambar lama
-        @if(isset($siswa) && $siswa->image)
-
-        let mockFile = {
-            name: "Current Image",
-            size: 12345,
-            type: 'image/jpeg', // bisa disesuaikan
-            accepted: true
-        };
-
+        @if(isset($siswa) && $siswa?->image)
+        let mockFile = { name: "Current Image", size: 12345, type: 'image/jpeg', accepted: true };
         myDropzone.emit("addedfile", mockFile);
         myDropzone.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
         myDropzone.emit("complete", mockFile);
         myDropzone.files.push(mockFile);
         @endif
+    </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('siswaForm');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Apakah data sudah benar?',
+                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Harap tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        form.submit();
+                    }
+                });
+            });
+        });
     </script>
 @endpush

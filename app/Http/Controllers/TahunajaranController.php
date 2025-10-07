@@ -37,9 +37,8 @@ class TahunajaranController extends Controller
             'semester' => 'required',
             'status' => 'required|in:0,1',
         ]);
-        $tanggal_mulai = $request->tanggal_mulai ? $request->tanggal_mulai . '-01' : null;
-        $tanggal_selesai = $request->tanggal_selesai ? $request->tanggal_selesai . '-01' : null;
-
+        $tanggal_mulai = $request->tanggal_mulai ? $request->tanggal_mulai . '' : null;
+        $tanggal_selesai = $request->tanggal_selesai ? $request->tanggal_selesai . '' : null;
         Tahun_ajaran::create([
             'tahun_ajaran' => $request->tahun_ajaran,
             'tanggal_mulai' => $tanggal_mulai,
