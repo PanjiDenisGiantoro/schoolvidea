@@ -43,7 +43,7 @@
                                     <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-primary text-muted">
                                         <i class="ri-eye-line align-middle fs-20"></i> Show
                                     </a>
-                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-warning text-muted">
+                                    <a href="{{ route('officer.edit', ['id' => $item->officer->id ?? '']) }}" class="link-warning text-muted">
                                         <i class="ri-edit-line align-middle fs-20"></i> Edit
                                     </a>
                                     <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-danger text-muted">

@@ -1,18 +1,18 @@
 @extends('layouts.app')
-@section('title', isset($officer->officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+@section('title', isset($officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
 
 @section('content')
     @include('partials.page-title', [
-        'title' => isset($officer->officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
+        'title' => isset($officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
         'subTitle' => 'Guru & Staff'
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->officer->id) : route('officer.store') }}"
+            <form id="userForm" action="{{ isset($officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
-                @if(isset($officer->officer))
+                @if(isset($officer))
                     @method('PUT')
                 @endif
 
@@ -24,16 +24,16 @@
                     <div class="col-md-4">
                         <x-input-field type="text" name="name" label="Nama Lengkap"
                                        placeholder="Masukkan nama lengkap" icon="bx bx-user"
-                                       :value="old('name', $officer->name ?? '')" required />
+                                       :value="old('name', $officer->user->name ?? '')" required />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="email" name="email" label="Email"
                                        placeholder="Masukkan email" icon="bx bx-envelope"
-                                       :value="old('email', $officer->email ?? '')" required />
+                                       :value="old('email', $officer->user->email ?? '')" required />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="password" name="password" label="Password"
-                                       :placeholder="isset($officer) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
+                                       :placeholder="isset($officer->user) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
                                        icon="bx bx-lock"
                                        :value="old('password')" />
                     </div>
@@ -51,7 +51,7 @@
                             <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach($units as $u)
-                                    <option value="{{ $u->id }}" {{ old('unit_id', $officer->officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                    <option value="{{ $u->id }}" {{ old('unit_id', $officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                         {{ $u->nama_unit }}
                                     </option>
                                 @endforeach
@@ -59,26 +59,26 @@
                         </div>
                         <x-input-field type="text" name="nip" label="NIP" class="text-uppercase"
                                        placeholder="Masukkan NIP" icon="bx bx-id-card"
-                                       :value="old('nip', $officer->officer->nip ?? '')" />
+                                       :value="old('nip', $officer->nip ?? '')" />
                         <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
                                        placeholder="Masukkan tempat lahir" icon="bx bx-map"
-                                       :value="old('tempat_lahir', $officer->officer->tempat_lahir ?? '')" />
+                                       :value="old('tempat_lahir', $officer->tempat_lahir ?? '')" />
 
                         <div class="mb-3">
                             <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
                             <select name="jenis_kelamin" class="form-select">
                                 <option value="">-- Pilih Jenis Kelamin --</option>
-                                <option value="Laki-laki" {{ old('jenis_kelamin', $officer->officer->jenis_kelamin ?? '') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="Perempuan" {{ old('jenis_kelamin', $officer->officer->jenis_kelamin ?? '') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                                <option value="Laki-laki" {{ old('jenis_kelamin', $officer->jenis_kelamin ?? '') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="Perempuan" {{ old('jenis_kelamin', $officer->jenis_kelamin ?? '') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                             </select>
                         </div>
 
                         <x-input-field type="text" name="no_rekening" label="No Rekening"
                                        placeholder="Masukkan Nomor Rekening" icon="bx bx-credit-card"
-                                       :value="old('no_rekening', $officer->officer->no_rekening ?? '')" />
+                                       :value="old('no_rekening', $officer->no_rekening ?? '')" />
                         <x-input-field type="text" name="qr_code" label="QR Code"
                                        placeholder="Masukkan QR Code" icon="bx bx-qr"
-                                       :value="old('qr_code', $officer->officer->qr_code ?? '')" />
+                                       :value="old('qr_code', $officer->qr_code ?? '')" />
                     </div>
                     <!-- Colom - 2 -->
                     <div class="col-md-3">
@@ -87,7 +87,7 @@
                             <select name="role_id" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $r)
-                                    <option value="{{ $r->id }}" {{ ($officer->officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
+                                    <option value="{{ $r->id }}" {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
                                         {{ $r->name }}
                                     </option>
                                 @endforeach
@@ -95,16 +95,16 @@
                         </div>
                         <x-input-field type="text" name="nik" label="NIK"
                                        placeholder="Masukkan NIK" icon="bx bx-id-card"
-                                       :value="old('nik', $officer->officer->nik ?? '')" />
+                                       :value="old('nik', $officer->nik ?? '')" />
                         <x-input-field type="text" name="agama" label="Agama"
                                        placeholder="Masukkan agama" icon="bx bx-book"
-                                       :value="old('agama', $officer->officer->agama ?? '')" />
+                                       :value="old('agama', $officer->agama ?? '')" />
                         <x-input-field type="text" name="no_hp" label="No. Telepon"
                                        placeholder="Masukkan Nomor Telepon" icon="bx bx-phone"
-                                       :value="old('no_hp', $officer->officer->no_hp ?? '')" />
+                                       :value="old('no_hp', $officer->no_hp ?? '')" />
                         <x-input-field type="text" name="va_guru" label="VA Guru & Staff"
                                        placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card"
-                                       :value="old('va_guru', $officer->officer->va_guru ?? '')" />
+                                       :value="old('va_guru', $officer->va_guru ?? '')" />
                     </div>
                     <!-- Colom - 3 -->
                     <div class="col-md-3">
@@ -121,17 +121,17 @@
                         </div>
                         <x-input-field type="text" name="nuptk" label="NUPTK"
                                        placeholder="Masukkan NUPTK" icon="bx bx-id-card"
-                                       :value="old('nuptk', $officer->officer->nuptk ?? '')" />
+                                       :value="old('nuptk', $officer->nuptk ?? '')" />
 
                         <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
                                        icon="bx bx-calendar"
-                                       :value="old('tanggal_lahir', $officer->officer->tanggal_lahir ?? '')" />
+                                       :value="old('tanggal_lahir', $officer->tanggal_lahir ?? '')" />
                         <x-input-field type="text" name="bank" label="Bank"
                                        placeholder="Masukkan Nama Bank" icon="bx bx-bank"
-                                       :value="old('bank', $officer->officer->bank ?? '')" />
+                                       :value="old('bank', $officer->bank ?? '')" />
                         <x-input-field type="text" name="no_kartu_rfid" label="No Kartu RFID"
                                        placeholder="Masukkan Nomor RFID" icon="bx bx-barcode"
-                                       :value="old('no_kartu_rfid', $officer->officer->no_kartu_rfid ?? '')" />
+                                       :value="old('no_kartu_rfid', $officer->no_kartu_rfid ?? '')" />
                     </div>
                     <!-- Colom - 4 -->
                     <div class="col-md-3">
@@ -149,13 +149,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="alamat" class="form-label">Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control" rows="6">{{ old('alamat', $officer->officer->alamat ?? '') }}</textarea>
+                            <textarea name="alamat" id="alamat" class="form-control" rows="6">{{ old('alamat', $officer->alamat ?? '') }}</textarea>
                         </div>
                         <div class="mb-3">
                             <label for="image-dropzone" class="form-label">Upload Gambar</label>
                             <div class="dropzone" id="image-dropzone"></div>
                             <input type="hidden" name="image" id="image-hidden"
-                                   value="{{ old('image', $officer->officer->iamge ?? '') }}">
+                                   value="{{ old('image', $officer->iamge ?? '') }}">
                             <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
                         </div>
                         <div class="modal fade" id="imageModal" tabindex="-1">
@@ -240,7 +240,7 @@
         });
 
         // Kalau edit, preload gambar lama
-        @if(isset($officer->officer) && $officer->officer->iamge)
+        @if(isset($officer) && $officer->iamge)
 
         let mockFile = {
             name: "Current Image",
@@ -250,7 +250,7 @@
         };
 
         myDropzone.emit("addedfile", mockFile);
-        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->officer->iamge) }}");
+        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->iamge) }}");
         myDropzone.emit("complete", mockFile);
         myDropzone.files.push(mockFile);
         @endif

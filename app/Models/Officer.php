@@ -18,6 +18,10 @@ class Officer extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function rolePetugas()
+    {
+        return $this->belongsTo(Roles::class);
+    }
 
     public function unit()
     {
@@ -27,6 +31,10 @@ class Officer extends Model
     public function kelas()
     {
         return $this->hasMany(Kelas::class);
+    }
+    public function tahunAjaran()
+    {
+        return $this->belongsTo(Tahun_ajaran::class);
     }
 
 

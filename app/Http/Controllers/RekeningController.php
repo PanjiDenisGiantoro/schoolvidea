@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Rekening;
 use App\Models\User;
 use App\Models\Unit;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RekeningController extends Controller
 {
@@ -32,7 +34,9 @@ class RekeningController extends Controller
     public function create()
     {
         $users = User::all();
-        $units = Unit::all();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
         return view('pages.data_master.rekening.rekening_create', compact('users','units'));
     }
 
@@ -114,8 +118,11 @@ class RekeningController extends Controller
 
     public function show($id)
     {
-        $rekening = Rekening::with(['user','unit'])->findOrFail($id);
+        $rekening = Rekening::with(['unit'])->findOrFail($id);
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
         $show = true;
-        return view('pages.data_master.rekening.rekening_create', compact('rekening','show'));
+        return view('pages.data_master.rekening.rekening_create', compact('rekening','show','units'));
     }
 }
