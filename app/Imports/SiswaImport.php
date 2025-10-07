@@ -1,6 +1,8 @@
 <?php
 namespace App\Imports;
 
+use App\Models\Kelas;
+use App\Models\Roles;
 use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Roles_petugas;
@@ -32,23 +34,19 @@ class SiswaImport implements ToModel, WithHeadingRow
         // Log the incoming row data to inspect
         Log::info('Incoming row data: ' . json_encode($row));
 
+
+
+//        convert string all $row
+        $row = array_map('strval', $row);
         try {
+
             // Validate that required fields are not empty or null
             if (
-                empty($row['name']) || empty($row['email']) || empty($row['password']) ||
-                empty($row['role_id']) || empty($row['nip']) || empty($row['nuptk']) || empty($row['nik'])
+                empty($row['name']) || empty($row['email']) || empty($row['password'])
             ) {
                 Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
                 return null;  // Skip this row if any required fields are missing
             }
-
-            // Convert numeric values to string
-            $row['no_hp'] = (string) $row['no_hp'];
-            $row['rfid_no'] = (string) $row['rfid_no'];
-            $row['nip'] = (string) $row['nip'];
-            $row['nuptk'] = (string) $row['nuptk'];
-            $row['nik'] = (string) $row['nik'];
-            $row['password'] = (string) $row['password']; // Convert password to string
 
             DB::beginTransaction();  // Start a transaction to ensure consistency
 
@@ -62,9 +60,9 @@ class SiswaImport implements ToModel, WithHeadingRow
             ]);
 
             // 2. Find the role from Roles_petugas
-            $rolePetugas = Roles_petugas::where('name', $row['role_id'])->first();
+            $rolePetugas = Roles::where('name', 'siswa')->first();
             if (!$rolePetugas) {
-                throw new \Exception('Role not found for role_id: ' . $row['role_id']);
+                dd($rolePetugas);
             }
 
             // 3. Create Spatie role if not already exist
@@ -75,21 +73,27 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             $user->assignRole($roleSpatie->name);
 
+            if($row['jenis_kelamin'] == 'Laki-laki'){
+                $row['jenis_kelamin'] = 'L';
+            }else{
+                $row['jenis_kelamin'] = 'P';
+            }
+            $cek = Kelas::where('nama_kelas', $row['kelas'])->first();
+            $row['kelas_id'] = $cek->id ?? '';
+
             // 4. Create Siswa
             $siswa = Siswa::create([
-                'nisn' => $row['nisn'],
-                'name' => $row['name'],
-                'email' => $row['email'],
-                'tempat_lahir' => $row['tempat_lahir'],
-                'no_hp' => $row['no_hp'],
+                'nisn' => $row['nisn'] ?? '',
+                'kelas_id' => $row['kelas_id'] ?? '',
+                'unit_id' => $this->unit_id,
+                'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                'user_id' => $user->id,
                 'rfid_no' => $row['rfid_no'],
                 'va_siswa' => $row['va_siswa'],
-                'nis' => $row['nis'],
-                'nik' => $row['nik'],
                 'jenis_kelamin' => $row['jenis_kelamin'],
                 'agama' => $row['agama'],
-                'no_hp_ortu' => $row['no_hp_ortu'],
-                'nama_ortu' => $row['nama_ortu'],
+                'no_hp_ortu' => $row['no_hp_orang_tua'],
+                'nama_ortu' => $row['nama_orang_tua'],
                 'bank' => $row['bank'],
                 'no_rekening' => $row['no_rekening'],
             ]);

@@ -9,6 +9,7 @@ use App\Exports\OfficerTemplateExport;
 use App\Exports\SiswaExport;
 use App\Imports\KelasImport;
 use App\Imports\OfficerImport;
+use App\Imports\SiswaImport;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
@@ -59,6 +60,16 @@ class MigrasiController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls'
         ]);
+
+        $unit_id = $request->input('unit_id');
+        $tahun_ajaran_id = $request->input('tahun_ajaran_id');
+
+        try{
+            Excel::import(new SiswaImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data siswa: ' . $e->getMessage());
+        }
+
         // logic import siswa
         return back()->with('success', 'Data siswa berhasil diimport!');
     }
@@ -71,8 +82,11 @@ class MigrasiController extends Controller
 
         $unit_id = $request->input('unit_id');
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
-
-        Excel::import(new KelasImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+        try{
+            Excel::import(new KelasImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data Kelas: ' . $e->getMessage());
+        }
 
         // logic import kelas
         return back()->with('success', 'Data kelas berhasil diimport!');
@@ -108,7 +122,11 @@ class MigrasiController extends Controller
         $unit_id = $request->input('unit_id');
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
-        Excel::import(new \App\Imports\JurusanImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+        try{
+            Excel::import(new \App\Imports\JurusanImport($unit_id, $tahun_ajaran_id), $request->file('file'));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data Jurusan: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Data jurusan berhasil diimport!');
     }
