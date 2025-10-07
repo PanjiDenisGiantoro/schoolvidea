@@ -40,13 +40,13 @@
                             <td>{{ $item->officer->va_guru ?? '-' }}</td>
                             <td>
                                 <div class="d-flex gap-3">
-                                    <a href="{{ route('officer.show', $item->officer->id ?? '') }}" class="link-primary text-muted">
+                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-primary text-muted">
                                         <i class="ri-eye-line align-middle fs-20"></i> Show
                                     </a>
-                                    <a href="{{ route('officer.edit', $item->officer->id ?? '') }}" class="link-warning text-muted">
+                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-warning text-muted">
                                         <i class="ri-edit-line align-middle fs-20"></i> Edit
                                     </a>
-                                    <a href="{{ route('officer.destroy', $item->officer->id ?? '') }}" class="link-danger text-muted">
+                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-danger text-muted">
                                         <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
                                     </a>
                                 </div>

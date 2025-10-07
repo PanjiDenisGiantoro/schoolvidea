@@ -25,6 +25,7 @@ class OfficerController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->whereNotIn('name', ['siswa', 'admin', 'user']);
             })
+            ->whereHas('officer')
             ->get();
 
         $headers = [
