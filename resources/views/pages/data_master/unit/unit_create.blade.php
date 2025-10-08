@@ -112,7 +112,7 @@
                     <button type="submit" class="btn btn-success">
                         {{ isset($unit) ? 'Update' : 'Simpan' }}
                     </button>
-                    <a href="{{ url('lembagaunit/') }}" class="btn btn-secondary">Batal</a>
+                    <a href="{{ url('unit/') }}" class="btn btn-secondary">Batal</a>
                 </div>
             </form>
         </div>

@@ -27,7 +27,7 @@
                                 <option>-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"
-                                        {{ old('unit_id', $officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ old('unit_id', $jurusan->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                         {{ $u->nama_unit }}
                                     </option>
                                 @endforeach
@@ -75,11 +75,11 @@
                             <label for="status" class="form-label">Status</label>
                             <select name="status" id="status" class="form-select">
                                 <option
-                                    value="1" {{ old('status', $lembagaunit->status ?? '') == 'Aktif' ? 'selected' : '' }}>
+                                    value="1" {{ old('status', $jurusan->status ?? '') == 'Aktif' ? 'selected' : '' }}>
                                     Aktif
                                 </option>
                                 <option
-                                    value="0" {{ old('status', $lembagaunit->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>
+                                    value="0" {{ old('status', $jurusan->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>
                                     Tidak Aktif
                                 </option>
                             </select>
