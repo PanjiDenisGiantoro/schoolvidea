@@ -1,58 +1,61 @@
 @extends('layouts.app')
-@section('title', 'Data Siswa')
+@section('title', 'Dashboard')
 
 @section('content')
 
     @include('partials.page-title', [
-        'title' => 'Data Master',
-        'subTitle' => 'Siswa'
+        'title' => 'Dashboard',
+        'subTitle' => 'Data Jabatan'
     ])
 
     <div class="card">
         <div class="card-body">
             <div class="row g-5">
                 <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">List Siswa</h5>
-                    <a href="{{ route('siswa.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> Tambah Data
+                    <h5 class="card-title mb-0">List Jabatan</h5>
+                    <a href="{{ url('positions/create') }}" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i> Tambah Data
                     </a>
                 </div>
 
                 <table id="datatable" class="table table-bordered table-striped">
                     <thead>
-                    <tr>
+                    @if(!empty($headers) && is_array($headers))
                         @foreach($headers as $header)
                             <th>{{ $header }}</th>
                         @endforeach
-                    </tr>
+                    @else
+                        <th>No data</th>
+                    @endif
                     </thead>
                     <tbody>
-                    @forelse($siswa as $item)
+                    @forelse($positions as $item)
                         <tr>
+
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->unit->nama_unit ?? '-' }}</td>
-                            <td>{{ $item->nisn }}</td>
-                            <td>{{ $item->kelas->nama_kelas ?? '-' }}</td>
-                            <td>{{ $item->user->name ?? '-' }}</td>
-                            <td>{{ $item->va_siswa ?? '-' }}</td>
+                            <td>{{ $item->positions_name ?? '-' }}</td>
                             <td>
-                                @if($item->status == 1)
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Non Aktif</span>
-                                @endif
+                                <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">
+                                    @php
+                                        if($item->status == '1'){
+                                            echo 'Aktif';
+                                            }else{
+                                            echo 'Tidak Aktif';
+                                            }
+                                    @endphp
+                                </span>
                             </td>
                             <td>
                                 <div class="d-flex gap-3">
-                                    <a href="{{ route('siswa.show', $item->id ?? '') }}" class="link-primary text-muted">
+                                    <a href="{{ route('positions.show', $item->id) }}" class="link-primary text-muted">
                                         <i class="ri-eye-line align-middle fs-20"></i>
                                         Show
                                     </a>
-                                    <a href="{{ route('siswa.edit', $item->id ?? '') }}" class="link-warning text-muted">
+                                    <a href="{{ route('positions.edit', $item->id) }}" class="link-warning text-muted">
                                         <i class="ri-edit-line align-middle fs-20"></i>
                                         Edit
                                     </a>
-                                    <a href="{{ route('siswa.destroy', $item->id ?? '') }}" class="link-danger text-muted">
+                                    <a href="{{ route('positions.destroy', $item->id) }}" class="link-danger text-muted">
                                         <i class="ri-delete-bin-5-line align-middle fs-20"></i>
                                         Hapus
                                     </a>
@@ -61,7 +64,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ count($headers) }}" class="text-center">Tidak ada data ditemukan</td>
+                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
                         </tr>
                     @endforelse
                     </tbody>
@@ -71,10 +74,8 @@
     </div>
 
 @endsection
-
 @push('scripts')
-    @if($siswa->isNotEmpty())
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if($positions->isNotEmpty())
         <script>
             $(document).ready(function () {
                 $('#datatable').DataTable({
@@ -106,18 +107,6 @@
                         }
                     });
                 });
-            });
-        </script>
-    @endif
-
-    @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: "{{ session('success') }}",
-                timer: 2000,
-                showConfirmButton: false
             });
         </script>
     @endif

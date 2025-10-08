@@ -22,7 +22,7 @@
                               <i class="ri-dashboard-2-line"></i>
                          </span>
                     <span class="nav-text"> Dashboard </span>
-{{--                    <span class="badge bg-success badge-pill text-end">9+</span>--}}
+                    {{--                    <span class="badge bg-success badge-pill text-end">9+</span>--}}
                 </a>
             </li>
 
@@ -36,22 +36,20 @@
                 </a>
                 <div class="collapse" id="sidebarMasterData">
                     <ul class="sub-menu-nav">
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
-
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga
-                                </a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun Ajaran</a>
                         </li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('positions') }}">Jabatan</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan Staff</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Setting
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('rekening') }}">Rekening
-                                </a></li>
+                                Akun</a></li>
 
                         <li class="sub-menu-item"><a class="sub-menu-link"
                                                      href="{{ url('kategoritagihan') }}">Kategori</a></li>
@@ -91,7 +89,7 @@
 
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('potongan') }}">Potongan</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tagihan') }}"> Kelola Data
-                                </a></li>
+                            </a></li>
 
                     </ul>
                 </div>
@@ -136,16 +134,16 @@
                     </ul>
                 </div>
             </li>
-{{--            <li class="menu-item">--}}
-{{--                <a class="menu-link" href="reports.html">--}}
-{{--                         <span class="nav-icon">--}}
-{{--                              <i class="ri-coin-line"></i>--}}
-{{--                         </span>--}}
-{{--                    <span class="nav-text"> Pengeluaran </span>--}}
-{{--                </a>--}}
-{{--            </li>--}}
+            {{--            <li class="menu-item">--}}
+            {{--                <a class="menu-link" href="reports.html">--}}
+            {{--                         <span class="nav-icon">--}}
+            {{--                              <i class="ri-coin-line"></i>--}}
+            {{--                         </span>--}}
+            {{--                    <span class="nav-text"> Pengeluaran </span>--}}
+            {{--                </a>--}}
+            {{--            </li>--}}
             <li class="menu-item">
-                <a class="menu-link" href="{{ url('migrasi/import') }}">
+                <a class="menu-link" href="reports.html">
                          <span class="nav-icon">
                               <i class="ri-database-fill"></i>
                          </span>

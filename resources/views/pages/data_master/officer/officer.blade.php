@@ -34,27 +34,35 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $item->officer->unit->nama_unit ?? '-' }}</td>
                             <td>{{ $item->name ?? '-' }}</td>
-                            <td>{{ $item->roles[0]->name ?? '-' }}</td>
+                            <td>{{ $item->roles->pluck('name')->join(', ') ?: '-' }}</td>
                             <td>{{ $item->officer->nip ?? '-' }}</td>
                             <td>{{ $item->email ?? '-' }}</td>
                             <td>{{ $item->officer->va_guru ?? '-' }}</td>
                             <td>
                                 <div class="d-flex gap-3">
-                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-primary text-muted">
-                                        <i class="ri-eye-line align-middle fs-20"></i> Show
-                                    </a>
-                                    <a href="{{ route('officer.edit', ['id' => $item->officer->id ?? '']) }}" class="link-warning text-muted">
-                                        <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                    </a>
-                                    <a href="{{ route('officer.show', ['id' => $item->officer->id ?? '']) }}" class="link-danger text-muted">
-                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                    </a>
+                                    @if($item->officer)
+                                        <a href="{{ route('officer.show', $item->officer->id) }}" class="link-primary text-muted">
+                                            <i class="ri-eye-line align-middle fs-20"></i> Show
+                                        </a>
+                                        <a href="{{ route('officer.edit', $item->officer->id) }}" class="link-warning text-muted">
+                                            <i class="ri-edit-line align-middle fs-20"></i> Edit
+                                        </a>
+                                        <a href="{{ route('officer.destroy', $item->officer->id) }}" class="link-danger text-muted">
+                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
+                                        </a>
+                                    @else
+                                        <a href="{{ route('officer.destroy', $item->officer->id ?? $item->id) }}" class="link-danger text-muted">
+                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
+                                        </a>
+
+                                    @endif
                                 </div>
+
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                            <td colspan="8" class="text-center">Tidak ada data ditemukan</td>
                         </tr>
                     @endforelse
                     </tbody>
@@ -102,7 +110,7 @@
             });
         </script>
     @endif
-    {{-- SweetAlert2 --}}
+    <!-- {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {{-- Alert sukses jika ada session success --}}
@@ -118,5 +126,5 @@
                 });
             });
         </script>
-    @endif
+    @endif -->
 @endpush

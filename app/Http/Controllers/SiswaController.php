@@ -7,7 +7,6 @@ use App\Models\Kelas;
 use App\Models\Roles_petugas;
 use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
-use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
@@ -16,16 +15,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class SiswaController extends Controller
 {
-    public function index(){
-        $siswa = Siswa::with('unit','kelas','user')
+    public function index()
+    {
+        $units = Unit::all();
+        $siswa = Siswa::with('unit', 'kelas', 'user')
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('unit_id',$unitId);
+                $query->where('unit_id', $unitId);
             })
-            ->where('status','1')
+            ->where('status', '1')
             ->get();
+
         $headers = [
             'No',
             'Unit',
@@ -37,27 +42,36 @@ class SiswaController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.siswa.siswa', compact('siswa','headers'));
+        $logoUnit = $units->first()->image ?? null;
+
+        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit'));
     }
     public function create()
     {
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })->where('status', '1')->get();
+
         $yayasan = Yayasan::with('units')
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->whereHas('units', function ($q) use ($unitId) {
                     $q->where('id', $unitId);
                 });
-            })->where('status','1')->get();
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })->where('status','1')->get();
+            })->where('status', '1')->get();
 
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
-        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id',$unitId);
-        })->where('status','1')->get();
+            $query->where('unit_id', $unitId);
+        })->where('status', '1')->get();
 
-        return view('pages.data_master.siswa.siswa_create', compact('kelas','yayasan','units','tahun_ajaran','tahun_ajaran_selected'));
+        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->where('status', 1)->get();
+
+        $logoUnit = $units->first()->image ?? null;
+
+        return view('pages.data_master.siswa.siswa_create', compact(
+            'kelas', 'yayasan', 'units', 'jurusans', 'logoUnit'
+        ));
     }
     public function store(Request $request)
     {
@@ -68,31 +82,26 @@ class SiswaController extends Controller
             'password'        => 'required|string|min:6',
             'kelas_id'        => 'required',
             'unit_id'         => 'required',
-            'tahun_ajaran_id' => 'required',
             'status'          => 'required|in:0,1',
             'rfid_no'         => 'nullable|string|max:255',
-//            'va_siswa'        => 'nullable|string|max:255',
-            'nis'           => 'nullable|string|max:20|unique:siswas,nis',
-            'nik'           => 'nullable|string|max:20|unique:siswas,nik',
-            'jenis_kelamin' => 'nullable|in:L,P',
-            'agama'         => 'nullable|string|max:50',
-            'no_hp_ortu'    => 'nullable|string|max:20',
-            'nama_ortu'     => 'nullable|string|max:100',
-            'bank'          => 'nullable|string|max:100',
-            'no_rekening'   => 'nullable|string|max:50',
-            'qrcode'        => 'nullable|string',
+            'va_siswa'        => 'nullable|string|max:255',
+            'nis'             => 'nullable|string|max:20|unique:siswas,nis',
+            'nik'             => 'nullable|string|max:20|unique:siswas,nik',
+            'jenis_kelamin'   => 'nullable|in:L,P',
+            'agama'           => 'nullable|string|max:50',
+            'no_hp_ortu'      => 'nullable|string|max:20',
+            'nama_ortu'       => 'nullable|string|max:100',
+            'bank'            => 'nullable|string|max:100',
+            'no_rekening'     => 'nullable|string|max:50',
         ]);
 
-        // ✅ 2. Cek kalau gagal
         if ($validator->fails()) {
-            return back()
-                ->withErrors($validator) // kirim pesan error ke view
-                ->withInput(); // isi form tetap tersimpan
+            return back()->withErrors($validator)->withInput();
         }
 
         DB::beginTransaction();
         try {
-            // 1️⃣ Buat user baru
+            // Buat user baru
             $user = User::create([
                 'name'     => $request->name,
                 'email'    => $request->email,
@@ -101,26 +110,16 @@ class SiswaController extends Controller
                 'unit_id'  => $request->unit_id,
             ]);
 
-            // 2️⃣ Ambil role "siswa" dari tabel roles_petugas
+            // Ambil role "siswa"
             $rolePetugas = Roles_petugas::where('name', 'siswa')->first();
-
-            // 3️⃣ Sinkronkan ke Spatie Role
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
-
-            // 4️⃣ Assign role ke user
             $user->assignRole($roleSpatie->name);
 
-            if(empty($request->va_siswa)){
-               $va= 'VA'.$request->unit_id.'-'.$request->nisn;
-            }else{
-                $va = $request->va_siswa;
-            }
-
-            // 5️⃣ Buat data siswa
-           $siswa =  Siswa::create([
+            // Buat siswa
+            $siswa = Siswa::create([
                 'nisn'            => $request->nisn,
                 'tempat_lahir'    => $request->tempat_lahir,
                 'tanggal_lahir'   => $request->tanggal_lahir,
@@ -129,91 +128,99 @@ class SiswaController extends Controller
                 'user_id'         => $user->id,
                 'unit_id'         => $request->unit_id,
                 'kelas_id'        => $request->kelas_id,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'status'          => $request->status,
                 'rfid_no'         => $request->rfid_no,
-               'va_siswa' => $va,
-               'nis' => $request->nis,
-               'nik'           => $request->nik,
-               'jenis_kelamin' => $request->jenis_kelamin,
-               'agama'         => $request->agama,
-               'no_hp_ortu'    => $request->no_hp_ortu,
-               'nama_ortu'     => $request->nama_ortu,
-               'bank'          => $request->bank,
-               'no_rekening'   => $request->no_rekening,
-               'qrcode'        => $request->qrcode,
+                'va_siswa'        => $request->va_siswa,
+                'nis'             => $request->nis,
+                'nik'             => $request->nik,
+                'jenis_kelamin'   => $request->jenis_kelamin,
+                'agama'           => $request->agama,
+                'no_hp_ortu'      => $request->no_hp_ortu,
+                'nama_ortu'       => $request->nama_ortu,
+                'bank'            => $request->bank,
+                'no_rekening'     => $request->no_rekening,
+            ]);
+            // Jika VA belum diisi, generate otomatis dari NIS + NISN
+            if (empty($request->va_siswa)) {
+                $nis  = str_pad(substr($request->nis ?? '', 0, 8), 8, '0', STR_PAD_RIGHT);
 
+                $nisn_raw = $request->nisn ?? '';
+                // Jika NISN diawali 0, ambil mulai dari digit ke-2
+                if (strlen($nisn_raw) > 0 && $nisn_raw[0] === '0') {
+                    $nisn_raw = substr($nisn_raw, 1);
+                }
+                $nisn = str_pad(substr($nisn_raw, 0, 8), 8, '0', STR_PAD_RIGHT);
 
+                // Gabungkan jadi 16 digit
+                $va_siswa = $nis . $nisn;
+            } else {
+                $va_siswa = $request->va_siswa;
+            }
+
+            // Simpan ke array data
+            $data = $request->all();
+            $data['va_siswa'] = $va_siswa;
+
+            // Simpan ke database
+            if (isset($siswa)) {
+                $siswa->update($data);
+            } else {
+                Siswa::create($data);
+            }
+
+            // Generate QR Code
+            $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
+            $fileName = $siswa->nis . '.png';
+            $path = 'qrcodes/' . $fileName;
+
+            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
+
+            $siswa->update([
+                'qrcode' => $qrcodeValue,
+                'qrcode_image' => $path,
             ]);
 
-            $tabungan = Saldo_keuangan::create([
+            // Buat saldo awal
+            Saldo_keuangan::create([
                 'user_id' => $user->id,
                 'saldo_akhir' => 0,
-                'status' => 0
+                'status' => 0,
             ]);
 
             DB::commit();
-
-            return redirect()->route('siswa.index')
-                ->with('success', 'Siswa berhasil ditambahkan');
+            return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('danger' ,$e->getMessage());
+            return back()->with('danger', $e->getMessage());
         }
     }
 
     public function edit($id)
     {
         $siswa = Siswa::findOrFail($id);
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })->where('status','1')->get();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
-        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('id', $unitId);
-            })->where('status','1')->get();
-        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('id', $unitId);
-            })->where('status','1')->get();
+        $units = Unit::where('status', '1')->get();
+        $kelas = Kelas::where('status', '1')->get();
+        $jurusans = Jurusan::where('status', 1)->get();
+        $logoUnit = $siswa->unit->image ?? null;
 
         return view('pages.data_master.siswa.siswa_create', compact(
-            'siswa','units','tahun_ajaran','tahun_ajaran_selected','kelas','jurusans'
+            'siswa', 'units', 'kelas', 'jurusans', 'logoUnit'
         ));
     }
 
     public function update(Request $request, $id)
     {
         $siswa = Siswa::findOrFail($id);
-        $user  = $siswa->user; // relasi ke tabel users
+        $user  = $siswa->user;
 
         $request->validate([
-            'nisn'            => 'required',
-            'name'            => 'required|string|max:255',
-            'email'           => 'required',
-            'password'        => 'nullable|string|min:6',
-            'kelas_id'        => 'required',
-            'unit_id'         => 'required',
-            'tahun_ajaran_id' => 'required',
-            'status'          => 'required|in:0,1',
-            'tempat_lahir'    => 'required|string|max:255',
-            'no_hp' => 'nullable|string|min:6',
-            'rfid_no'         => 'nullable|string|max:255',
-            'va_siswa'        => 'nullable|string|max:255',
-            'nis'           => 'nullable|string|max:20',
-            'nik'           => 'nullable|string|max:20',
-            'jenis_kelamin' => 'nullable|in:L,P',
-            'agama'         => 'nullable|string|max:50',
-            'no_hp_ortu'    => 'nullable|string|max:20',
-            'nama_ortu'     => 'nullable|string|max:100',
-            'bank'          => 'nullable|string|max:100',
-            'no_rekening'   => 'nullable|string|max:50',
-            'qrcode'        => 'nullable|string',
+            'nisn' => 'required',
+            'name' => 'required|string|max:255',
+            'email' => 'required',
+            'password' => 'nullable|string|min:6',
         ]);
 
-//        DB::beginTransaction();
         try {
-            // 🔹 Update user
             $user->update([
                 'name'  => $request->name,
                 'email' => $request->email,
@@ -222,61 +229,52 @@ class SiswaController extends Controller
                     : $user->password,
             ]);
 
-            if(empty($request->va_siswa)){
-                $va = 'VA'.$request->unit_id.'-'.$request->nisn;
-            }else{
-                $va = $request->va_siswa;
-            }
-            // 🔹 Update siswa
+            $siswa->update($request->all());
+
+            // Regenerate QR code jika NIS/NISN berubah
+            $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
+            $fileName = $siswa->nis . '.png';
+            $path = 'qrcodes/' . $fileName;
+            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
+
             $siswa->update([
-                'nisn'            => $request->nisn,
-                'tempat_lahir'    => $request->tempat_lahir,
-                'tanggal_lahir'   => $request->tanggal_lahir,
-                'no_hp'           => $request->no_hp,
-                'image'           => $request->image ?? $siswa->image,
-                'unit_id'         => $request->unit_id,
-                'kelas_id'        => $request->kelas_id,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
-                'status'          => $request->status,
-                'rfid_no'         => $request->rfid_no,
-                'va_siswa'        =>$va,
-                'nis' => $request->nis,
-                'nik'           => $request->nik,
-                'jenis_kelamin' => $request->jenis_kelamin,
-                'agama'         => $request->agama,
-                'no_hp_ortu'    => $request->no_hp_ortu,
-                'nama_ortu'     => $request->nama_ortu,
-                'bank'          => $request->bank,
-                'no_rekening'   => $request->no_rekening,
-                'qrcode'        => $request->qrcode,
+                'qrcode' => $qrcodeValue,
+                'qrcode_image' => $path,
             ]);
 
-//            DB::commit();
-            return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui');
+            return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            DB::rollBack();
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    public function showQr($id)
+    {
+        $siswa = Siswa::findOrFail($id);
+        $filePath = storage_path('app/' . $siswa->qrcode_image);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'QR code tidak ditemukan');
+        }
+
+        return response()->file($filePath);
     }
 
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
-
         DB::beginTransaction();
         try {
-            // 🔹 Hapus user juga supaya konsisten
             if ($siswa->user) {
                 $siswa->user->delete();
             }
             $siswa->delete();
-
             DB::commit();
-            return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus');
+
+            return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('danger', $e->getMessage());
         }
     }
 
@@ -284,13 +282,15 @@ class SiswaController extends Controller
     {
         $siswa = Siswa::findOrFail($id);
         $units = Unit::isactive()->get();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
-        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $kelas = Kelas::all();
         $jurusans = Jurusan::all();
         $show = true;
+
+        // Logo unit siswa
+        $logoUnit = $siswa->unit->image ?? null;
+
         return view('pages.data_master.siswa.siswa_create', compact(
-            'siswa','show','units','tahun_ajaran','tahun_ajaran_selected','kelas','jurusans'
+            'siswa','show','units','kelas','jurusans','logoUnit'
         ));
     }
     public function getByKelas($kelasId)
@@ -300,21 +300,31 @@ class SiswaController extends Controller
     }
     public function showdetail($id)
     {
-        $siswa = \App\Models\Siswa::with(['kelas.jurusan', 'unit','user.saldo','tahun_ajaran'])->find($id);
+        $siswa = \App\Models\Siswa::with([
+            'kelas.jurusan',
+            'unit',
+            'user.saldo',
+        ])->findOrFail($id);
+
         return response()->json([
-            'nama_lengkap' => $siswa->user->nama,
-            'nisn' => $siswa->nisn,
-            'unit' => $siswa->unit->nama_unit ?? '-',
-            'kelas' => $siswa->kelas->nama_kelas ?? '-',
-            'jurusan' => $siswa->jurusan->jurusan->nama_jurusan ?? '-',
-            'tahun_ajaran' => $siswa->tahun_ajaran->tahun_ajaran ?? '-',
-            'tempat_lahir' => $siswa->tempat_lahir,
-            'tanggal_lahir' => $siswa->tanggal_lahir,
-            'no_hp' => $siswa->no_hp,
-            'foto' => $siswa->foto,
-            'saldo_akhir' => $siswa->user->saldo->saldo_akhir ?? 0,
+            'nama_lengkap'  => $siswa->user->name ?? '-',
+            'nisn'           => $siswa->nisn ?? '-',
+            'unit'           => $siswa->unit->nama_unit ?? '-',
+            'kelas'          => $siswa->kelas->nama_kelas ?? '-',
+            'jurusan'        => $siswa->kelas->jurusan->nama_jurusan ?? '-',
+            'tempat_lahir'   => $siswa->tempat_lahir ?? '-',
+            'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
+            'no_hp'          => $siswa->no_hp ?? '-',
+            'foto'           => $siswa->image
+                ? asset('storage/' . $siswa->image)
+                : asset('images/default-avatar.png'),
+            'qrcode'         => $siswa->qrcode_image
+                ? asset('storage/' . $siswa->qrcode_image)
+                : null,
+            'saldo_akhir'    => $siswa->user->saldo->saldo_akhir ?? 0,
         ]);
     }
+
     public function upload(Request $request)
     {
         $request->validate([
@@ -331,5 +341,12 @@ class SiswaController extends Controller
         ]);
     }
 
+    public function getJurusanByUnit($unitId)
+    {
+        $jurusans = Jurusan::where('unit_id', $unitId)
+            ->where('status', 1)
+            ->get();
+        return response()->json($jurusans);
+    }
 
 }

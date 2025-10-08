@@ -18,6 +18,30 @@
                 @endif
 
                 <div class="row g-3">
+                    {{-- Unit --}}
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit_id" class="form-label">Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-control" required data-choices data-choices-sorting-false>
+                                <option value="">-- Pilih Unit --</option>
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}"
+                                        {{ old('unit_id', $akun->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ $u->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    {{--                    list kategori ada tabungan dan transaksi--}}
+                    <div class="col-md-4">
+                        <label for="kategori_akun" class="form-label">Kategori Akun</label>
+                        <select name="kategori_akun" id="kategori_akun" class="form-control" required data-choices data-choices-sorting-false>
+                            <option value="">-- Pilih Kategori Akun --</option>
+                            <option value="tabungan" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
+                            <option value="transaksi" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'transaksi' ? 'selected' : '' }}>Transaksi</option>
+                        </select>
+                    </div>
                     {{-- Kode Akun --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="kode_akun" label="Kode Akun"
@@ -31,14 +55,22 @@
                                        placeholder="Masukkan Nama Akun" icon="bx bx-book"
                                        :value="old('nama_akun', $akun->nama_akun ?? '')" required/>
                     </div>
-                    {{--                    list kategori ada tabungan dan transaksi--}}
                     <div class="col-md-4">
-                        <label for="kategori_akun" class="form-label">Kategori Akun</label>
-                        <select name="kategori_akun" id="kategori_akun" class="form-control" required data-choices data-choices-sorting-false>
-                            <option value="">-- Pilih Kategori Akun --</option>
-                            <option value="tabungan" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
-                            <option value="transaksi" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'transaksi' ? 'selected' : '' }}>Transaksi</option>
-                        </select>
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
+                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $jurusan->keterangan ?? '') }}</textarea>
+                        </div>
+                    </div>
+                    {{-- Status --}}
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="1" {{ old('status', $akun->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>
+                                <option value="0" {{ old('status', $akun->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
+                            </select>
+                        </div>
                     </div>
 
                     {{-- Tipe --}}
@@ -76,32 +108,10 @@
                         </div>
                     </div>
 
-                    {{-- Unit --}}
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-control" required data-choices data-choices-sorting-false>
-                                <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
-                                    <option value="{{ $u->id }}"
-                                        {{ old('unit_id', $akun->unit_id ?? '') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
 
-                    {{-- Status --}}
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" id="status" class="form-select">
-                                <option value="1" {{ old('status', $akun->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>
-                                <option value="0" {{ old('status', $akun->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
-                            </select>
-                        </div>
-                    </div>
+
+
+
                 </div>
 
                 <div class="mt-3 text-end">

@@ -18,20 +18,27 @@
                 @endif
 
                 <div class="row g-3">
-                    {{-- Nama Setting --}}
+                    {{-- Unit --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="nama_setting" label="Nama Setting"
-                                       placeholder="Masukkan Nama Setting" icon="bx bx-cog"
-                                       :value="old('nama_setting', $setting->nama_setting ?? '')" required/>
+                        <div class="mb-3">
+                            <label for="unit_id" class="form-label">Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
+                                <option value="">-- Pilih Unit --</option>
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}"
+                                        {{ old('unit_id', $setting->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ $u->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-
                     {{-- Kategori --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="kategori" label="Kategori"
                                        placeholder="Masukkan Kategori" icon="bx bx-list-ul"
                                        :value="old('kategori', $setting->kategori ?? '')" required/>
                     </div>
-
                     {{-- Akun --}}
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -41,12 +48,12 @@
                             <select name="akun_id" id="akun_id" class="form-control"  data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Akun --</option>
 
-{{--                                @foreach($akunOptions as $opt)--}}
-{{--                                    <option value="{{ $opt['id'] }}" {{ old('akun_id', $akun->akun_id ?? '') == $opt['id'] ? 'selected' : '' }}>--}}
-{{--                                        {{ $opt['nama'] }}--}}
-{{--                                    </option>--}}
-{{--                                @endforeach--}}
-{{--                                --}}
+                                {{--                                @foreach($akunOptions as $opt)--}}
+                                {{--                                    <option value="{{ $opt['id'] }}" {{ old('akun_id', $akun->akun_id ?? '') == $opt['id'] ? 'selected' : '' }}>--}}
+                                {{--                                        {{ $opt['nama'] }}--}}
+                                {{--                                    </option>--}}
+                                {{--                                @endforeach--}}
+                                {{--                                --}}
                                 @foreach($akuns as $a)
                                     <option value="{{ $a->id }}"
                                         {{ old('akun_id', $setting->akun_id ?? '') == $a->id ? 'selected' : '' }}>
@@ -56,6 +63,17 @@
                             </select>
                         </div>
                     </div>
+
+                    {{-- Nama Setting --}}
+                    <div class="col-md-4">
+                        <x-input-field type="text" name="nama_setting" label="Nama Setting"
+                                       placeholder="Masukkan Nama Setting" icon="bx bx-cog"
+                                       :value="old('nama_setting', $setting->nama_setting ?? '')" required/>
+                    </div>
+
+
+
+
 
                     {{-- Debit --}}
                     <div class="col-md-4">
@@ -73,7 +91,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="kredit" class="form-label">Kredit</label>
-                            <input type="text" name="kredit" id="kredit" class="form-control"
+                            <input type="text" name="kredit" id="kredit" class="form-control py-3"
                                    value="{{ old('kredit', $setting->kredit ?? '') }}" readonly>
                         </div>
                     </div>
@@ -87,21 +105,7 @@
                         </div>
                     </div>
 
-                    {{-- Unit --}}
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-control" data-choices data-choices-sorting-false>
-                                <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
-                                    <option value="{{ $u->id }}"
-                                        {{ old('unit_id', $setting->unit_id ?? '') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
+
 
                     {{-- Status --}}
                     <div class="col-md-4">

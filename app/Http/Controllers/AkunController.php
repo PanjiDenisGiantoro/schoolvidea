@@ -150,7 +150,20 @@ class AkunController extends Controller
     public function show($id)
     {
         $akun = Akun::findOrFail($id);
+        $parents = Akun::where('id', '!=', $id)
+            ->when(Auth::user()->unit_id,function ($query,$unit_id){
+                $query->where('unit_id',$unit_id);
+            })
+            ->where('status','1')
+            ->get(); // exclude diri sendiri
+        $units = \App\Models\Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
+            $query->where('id',$unit_id);
+        })
+            ->where('status','1')->get();
+
+        $akunOptions = $this->buildAkunOptions($parents, null, 0);
+
         $show = true;
-        return view('pages.data_master.akun.akun_create', compact('akun','show'));
+        return view('pages.data_master.akun.akun_create', compact('akun','show','parents','units','akunOptions'));
     }
 }

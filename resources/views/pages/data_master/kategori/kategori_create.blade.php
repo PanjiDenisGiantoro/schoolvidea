@@ -50,13 +50,6 @@
                         </div>
                     </div>
 
-                    {{-- Nama Kategori --}}
-                    <div class="col-md-4">
-                        <x-input-field type="text" name="nama_kategori" label="Nama Kategori"
-                                       placeholder="Masukkan Nama Kategori" icon="bx bx-book"
-                                       :value="old('nama_kategori', $kategoritagihan->nama_kategori ?? '')" required/>
-                    </div>
-
                     {{-- Kode Kategori --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="kode_kategori" label="Kode Kategori"
@@ -64,22 +57,21 @@
                                        :value="old('kode_kategori', $kategoritagihan->kode_kategori ?? '')" required/>
                     </div>
 
+                    {{-- Nama Kategori --}}
+                    <div class="col-md-4">
+                        <x-input-field type="text" name="nama_kategori" label="Nama Kategori"
+                                       placeholder="Masukkan Nama Kategori" icon="bx bx-book"
+                                       :value="old('nama_kategori', $kategoritagihan->nama_kategori ?? '')" required/>
+                    </div>
+
+
+
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
                         <x-input-field type="number" name="biaya_tagihan" label="Biaya Tagihan"
                                        placeholder="Masukkan Biaya Tagihan" icon="bx bx-money"
                                        :value="old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '')" required/>
                     </div>
-
-                    {{-- Keterangan --}}
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
-                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $kategoritagihan->keterangan ?? '') }}</textarea>
-                        </div>
-                    </div>
-
                     {{-- Status --}}
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -90,6 +82,16 @@
                             </select>
                         </div>
                     </div>
+                    {{-- Keterangan --}}
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
+                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $kategoritagihan->keterangan ?? '') }}</textarea>
+                        </div>
+                    </div>
+
+
                 </div>
 
                 <div class="mt-3 text-end">

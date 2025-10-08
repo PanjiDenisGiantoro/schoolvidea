@@ -19,6 +19,8 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PotonganController;
 use App\Http\Controllers\TipeunitController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PositionsController;
+
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -151,7 +153,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
         Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);
         Route::post('/upload', [SiswaController::class, 'upload'])->name('siswa.upload');
-
+        Route::get('/jurusan/by-unit/{unit}', [SiswaController::class, 'getJurusanByUnit']);
     });
     Route::prefix('kategoritagihan')->group(function () {
         Route::get('/', [KategoritagihanController::class, 'index'])->name('kategoritagihan.index');
@@ -248,6 +250,15 @@ Route::prefix('tipe_unit')->group(function () {
         Route::put('/update/{id}', [\App\Http\Controllers\RekeningController::class, 'update'])->name('rekening.update');
         Route::get('/delete/{id}', [\App\Http\Controllers\RekeningController::class, 'destroy'])->name('rekening.destroy');
         Route::get('/show/{id}', [\App\Http\Controllers\RekeningController::class, 'show'])->name('rekening.show');
+    });
+    Route::prefix('positions')->group(function () {
+        Route::get('/', [PositionsController::class, 'index'])->name('positions.index');
+        Route::get('/create', [PositionsController::class, 'create'])->name('positions.create');
+        Route::post('/store', [PositionsController::class, 'store'])->name('positions.store');
+        Route::get('/edit/{id}', [PositionsController::class, 'edit'])->name('positions.edit');
+        Route::put('positions/update/{id}', [PositionsController::class, 'update'])->name('positions.update');
+        Route::get('/delete/{id}', [PositionsController::class, 'destroy'])->name('positions.destroy');
+        Route::get('/show/{id}', [PositionsController::class, 'show'])->name('positions.show');
     });
 
 });

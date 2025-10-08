@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Jurusan;
 use App\Models\Officer;
-use App\Models\Roles;
+use App\Models\Positions;
 use App\Models\Roles_petugas;
 use App\Models\Tahun_ajaran;
 use App\Models\Unit;
@@ -18,42 +18,54 @@ use Spatie\Permission\Models\Role;
 
 class OfficerController extends Controller
 {
-    public function index(){
-        $officer = User::with('officer.unit','roles')
+    public function index()
+    {
+        $officer = User::with('officer.unit', 'roles')
+
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
             })
             ->whereHas('roles', function ($query) {
-                $query->whereNotIn('name', ['siswa', 'admin', 'user']);
+                $query->whereNotIn('name', [ 'siswa', 'admin', 'user']);
             })
-            ->whereHas('officer')
             ->get();
-
         $headers = [
             'No',
             'Nama Unit',
             'Nama',
             'Role',
             'NIP',
-            'email',
+            'Email',
             'VA Petugas',
-            'Action'
+            'Action',
         ];
-        return view('pages.data_master.officer.officer', compact('officer','headers'));
+
+        return view('pages.data_master.officer.officer', compact('officer', 'headers'));
     }
+
     public function create()
     {
-
-
-        $units = Unit::where('status','1')->get();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $units = Unit::all();
+        $roles = Roles_petugas::all();
+        $jurusans = Jurusan::all();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $roles = Roles::all();
-        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
-        return view('pages.data_master.officer.officer_create', compact('roles','units','tahun_ajaran','tahun_ajaran_selected','jurusans'));
+        $positions = Positions::all();
+
+        // Ambil logo unit pertama (atau kosong)
+        $logoUnit = $units->first()->image ?? null;
+
+        return view('pages.data_master.officer.officer_create', compact(
+            'units',
+            'roles',
+            'jurusans',
+            'tahun_ajaran',
+            'tahun_ajaran_selected',
+            'logoUnit',
+            'positions'
+        ));
     }
+
 
     public function store(Request $request)
     {
@@ -82,7 +94,7 @@ class OfficerController extends Controller
             'va_guru'         => 'nullable|string|max:100',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
         try {
             // 1. Buat user baru
             $user = User::create([
@@ -100,7 +112,7 @@ class OfficerController extends Controller
             );
             $user->assignRole($roleSpatie->name);
 
-          $officer =   Officer::create([
+            $officer =   Officer::create([
                 'nip'             => $request->nip,
                 'iamge'           => $request->image,
                 'tempat_lahir'    => $request->tempat_lahir,
@@ -111,18 +123,18 @@ class OfficerController extends Controller
                 'role_id'         => $rolePetugas->id, // ✅ foreign key cocok dengan roles_petugas
                 'nuptk'           => $request->nuptk,
                 'nik'             => $request->nik,
-              'jenis_kelamin'   => $request->jenis_kelamin,
-              'agama'           => $request->agama,
-              'tanggal_lahir'   => $request->tanggal_lahir,
-              'alamat'          => $request->alamat,
-              'bank'            => $request->bank,
-              'no_rekening'     => $request->no_rekening,
-              'no_kartu_rfid'   => $request->no_kartu_rfid,
-              'qr_code'         => $request->qr_code,
-              'jurusan'         => json_encode($request->jurusan),  // Menyimpan data sebagai JSON
-              'va_guru'         => $request->va_guru,
+                'jenis_kelamin'   => $request->jenis_kelamin,
+                'agama'           => $request->agama,
+                'tanggal_lahir'   => $request->tanggal_lahir,
+                'alamat'          => $request->alamat,
+                'bank'            => $request->bank,
+                'no_rekening'     => $request->no_rekening,
+                'no_kartu_rfid'   => $request->no_kartu_rfid,
+                'qr_code'         => $request->qr_code,
+                'jurusan'         => json_encode($request->jurusan),  // Menyimpan data sebagai JSON
+                'va_guru'         => $request->va_guru,
             ]);
-            DB::commit();
+//            DB::commit();
 
             return redirect()->route('officer.index')
                 ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);
@@ -134,20 +146,28 @@ class OfficerController extends Controller
     }
     public function edit($id)
     {
-        $officer = User::with('officer.unit','roles')
-            ->whereHas('officer', function ($query) use ($id) {
-                $query->where('id', $id);
-            })
-            ->first();
-//        $jurusanArray = $officer->officer->jurusan;  // Mengakses jurusan langsung sebagai array
-        $roles   = Roles_petugas::all();
-        $units   = Unit::all();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $officer = Officer::with('user')->findOrFail($id);
+        $units = Unit::all();
+        $roles = Roles_petugas::all();
+        $jurusans = Jurusan::all();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
-        return view('pages.data_master.officer.officer_create', compact('jurusans','officer', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected'));
+        $positions = Positions::all();
+
+
+        // Ambil logo dari unit milik officer
+        $logoUnit = $officer->unit->image ?? null;
+
+        return view('pages.data_master.officer.officer_create', compact(
+            'officer',
+            'units',
+            'roles',
+            'jurusans',
+            'tahun_ajaran',
+            'tahun_ajaran_selected',
+            'logoUnit',
+            'positions'
+        ));
     }
 
     public function update(Request $request, $id)
@@ -231,41 +251,29 @@ class OfficerController extends Controller
 
     public function destroy($id)
     {
-        DB::beginTransaction();
-        try {
-            $officer = Officer::findOrFail($id);
-            $user    = $officer->user;
+        // $id di sini adalah user_id
+        $officer = Officer::where('user_id', $id)->first();
 
-            // Hapus officer
+        if ($officer) {
             $officer->delete();
-
-            // Hapus user juga (opsional, kalau user tidak boleh ada tanpa officer)
-            if ($user) {
-                $user->delete();
-            }
-
-            DB::commit();
-            return redirect()->route('officer.index')->with('success', 'Data officer berhasil dihapus');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
+
+        $user = User::find($id);
+        if ($user) {
+            $user->delete();
+        }
+
+        return redirect()->back()->with('success', 'Data user dan officer berhasil dihapus.');
     }
+
+
 
     public function show($id)
     {
         $officer = Officer::with(['user', 'rolePetugas', 'unit', 'tahunAjaran'])->findOrFail($id);
         $show = true;
 
-//        $jurusanArray = $officer->officer->jurusan ?? ;  // Mengakses jurusan langsung sebagai array
-        $roles   = Roles_petugas::all();
-        $units   = Unit::all();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
-        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
-        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
-        return view('pages.data_master.officer.officer_create', compact('officer', 'show', 'roles', 'units', 'tahun_ajaran','tahun_ajaran_selected','jurusans'));
+        return view('pages.data_master.officer.officer_create', compact('officer', 'show'));
     }
     public function upload(Request $request)
     {

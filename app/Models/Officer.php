@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Unit;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 class Officer extends Model
 {
@@ -36,6 +38,11 @@ class Officer extends Model
     {
         return $this->belongsTo(Tahun_ajaran::class);
     }
+    public function position()
+    {
+        return $this->belongsTo(Positions::class);
+    }
+
 
 
     public function scopeActive($query)
