@@ -59,7 +59,7 @@ class PembayaranController extends Controller
 
             // tentukan status baru
             if ($sisaSetelahBayar == '0') {
-                $statusTagihan = 1; // Lunas
+                $statusTagihan = '1'; // Lunas
                 $sisaSetelahBayar = '0'; // jaga-jaga jangan negatif
                 $keterangan = "Lunas tagihan bulan {$request->bulan} {$request->tahun} sebesar Rp " . number_format($nominal, 0, ',', '.');
                 $tanggalBayar = now();
