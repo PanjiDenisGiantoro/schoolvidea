@@ -41,6 +41,7 @@ class LembagaunitController extends Controller
     {
         $request->validate([
             'nama_yayasan' => 'required|string|max:255',
+            'kode_yayasan' => 'required',
             'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
             'no_hp'        => 'nullable|string|max:20',
             'email'        => 'nullable|email',
@@ -58,6 +59,7 @@ class LembagaunitController extends Controller
 
         Yayasan::create([
             'nama_yayasan' => $request->nama_yayasan,
+            'kode_yayasan' => $request->kode_yayasan,
             'central_code' => $centralCode,
             'no_hp'        => $request->no_hp,
             'email'        => $request->email,
