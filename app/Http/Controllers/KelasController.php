@@ -62,6 +62,7 @@ class KelasController extends Controller
         try{
             $request->validate([
                 'nama_kelas'      => 'required|string|max:255',
+                'kode_kelas' => 'required',
                 'tahun_ajaran_id' => 'required',
                 'unit_id'         => 'required',
                 'officer_id'      => 'required',
@@ -71,6 +72,7 @@ class KelasController extends Controller
 
             Kelas::create([
                 'nama_kelas'      => $request->nama_kelas,
+                'kode_kelas' => $request->kode_kelas,
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
                 'unit_id'         => $request->unit_id,
                 'officer_id'      => $request->officer_id,
@@ -103,6 +105,7 @@ class KelasController extends Controller
         $request->validate([
             'nama_kelas'      => 'required|string|max:255',
             'tahun_ajaran_id' => 'required',
+            'kode_kelas' => 'required',
             'unit_id'         => 'required',
             'officer_id'      => 'required',
             'status'          => 'required|in:0,1',
