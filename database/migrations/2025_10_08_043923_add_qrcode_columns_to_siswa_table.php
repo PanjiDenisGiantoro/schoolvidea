@@ -37,7 +37,7 @@ return new class extends Migration
         });
 
         // Ubah kolom tanggal_lahir menjadi tipe DATE (PostgreSQL-style)
-        DB::statement('ALTER TABLE siswas ALTER COLUMN tanggal_lahir TYPE date USING tanggal_lahir::date');
+//        DB::statement('ALTER TABLE siswas ALTER COLUMN tanggal_lahir TYPE date USING tanggal_lahir::date');
     }
 
     public function down(): void
