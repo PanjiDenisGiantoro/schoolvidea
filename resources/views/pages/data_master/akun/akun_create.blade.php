@@ -59,7 +59,7 @@
                         <div class="mb-3">
                             <label for="keterangan" class="form-label">Keterangan</label>
                             <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
-                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $jurusan->keterangan ?? '') }}</textarea>
+                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $akun->keterangan ?? '') }}</textarea>
                         </div>
                     </div>
                     {{-- Status --}}
@@ -94,19 +94,19 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="parent_id" class="form-label">Parent</label>
-                            <select name="parent_id" id="parent_id" class="form-select" required data-choices data-choices-sorting-false>
-                                <option value="">-- Pilih Parent --</option>
+                            <select name="parent_id" id="parent_id" class="form-select"
+                                    data-choices data-choices-sorting-false>
+                                <option value="" selected disabled>-- Pilih Parent --</option>
                                 @foreach($parents as $p)
-                                    @if(!isset($akun) || $p->id != $akun->id)
+                                    @if(!isset($akun) || $p->id != ($akun->id ?? null))
                                         <option value="{{ $p->id }}"
-                                            {{ old('parent_id', $akun->parent_id ?? '') == $p->id ? 'selected' : '' }}>
+                                            {{ (string)old('parent_id', $akun->parent_id ?? '') === (string)$p->id ? 'selected' : '' }}>
                                             {{ $p->nama_akun }}
                                         </option>
                                     @endif
                                 @endforeach
                             </select>
                         </div>
-                    </div>
 
 
 
@@ -129,6 +129,8 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @if(isset($show) && $show)
         <script>
@@ -141,16 +143,41 @@
             });
         </script>
     @endif
+
+    {{-- SweetAlert tetap --}}
+
+    <script>
+        (function initChoicesOnce(){
+            const init = () => {
+                document.querySelectorAll('select[data-choices]').forEach(el => {
+                    if (el.dataset.choicesInited === '1') return; // cegah double init
+                    new Choices(el, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        removeItemButton: false,
+                        placeholder: true,
+                        placeholderValue: el.querySelector('option[disabled]')?.textContent ?? 'Pilih...'
+                    });
+                    el.dataset.choicesInited = '1';
+                });
+            };
+
+            document.addEventListener('DOMContentLoaded', init);
+            // Jika pakai Turbo/PJAX, aktifkan event berikut (opsional):
+            document.addEventListener('turbo:load', init);
+            document.addEventListener('pjax:end', init);
+        })();
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('jurusanForm');
+            const form = document.getElementById('akunForm');
+            if (!form) return;
 
             form.addEventListener('submit', function(e) {
-                e.preventDefault(); // cegah submit langsung
-
+                e.preventDefault();
                 Swal.fire({
                     title: 'Apakah data sudah benar?',
-                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                    text: 'Pastikan semua data sudah diisi dengan benar sebelum menyimpan.',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Simpan!',
@@ -159,17 +186,7 @@
                     cancelButtonColor: '#6c757d'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // tampilkan loading sebelum submit
-                        Swal.fire({
-                            title: 'Menyimpan...',
-                            text: 'Harap tunggu sebentar.',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        // submit form setelah konfirmasi
+                        Swal.fire({title: 'Menyimpan...', allowOutsideClick:false, didOpen: Swal.showLoading});
                         form.submit();
                     }
                 });
