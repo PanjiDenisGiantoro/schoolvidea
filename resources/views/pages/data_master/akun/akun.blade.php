@@ -18,10 +18,10 @@
                     </a>
                 </div>
 
+                <div class="table-responsive">
                 <table id="datatable" class="table table-bordered table-striped">
                     <thead>
                     <tr>
-                        <th>No</th>
                         <th>Kode Akun</th>
                         <th>Nama Akun</th>
                         <th>Kategori</th>
@@ -38,7 +38,6 @@
                         function renderTree($akuns, $parent_id = null, $level = 0) {
                             foreach ($akuns->where('parent_id', $parent_id) as $akun) {
                                 echo '<tr>';
-                                echo '<td></td>'; // No bisa diatur dengan JS nanti
                                 echo '<td>' . $akun->kode_akun . '</td>';
                                 echo '<td>' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level) . ($level > 0 ? '└─ ' : '') . $akun->nama_akun . '</td>';
                                 echo '<td>' . $akun->kategori_akun ?? '-' . '</td>';
@@ -69,6 +68,7 @@
                     {!! renderTree($akuns) !!}
                     </tbody>
                 </table>
+            </div>
             </div>
         </div>
     </div>

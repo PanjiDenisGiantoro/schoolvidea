@@ -181,10 +181,10 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/', [\App\Http\Controllers\AkunController::class, 'index'])->name('akun.index');
         Route::get('/create', [\App\Http\Controllers\AkunController::class, 'create'])->name('akun.create');
         Route::post('/store', [\App\Http\Controllers\AkunController::class, 'store'])->name('akun.store');
-        Route::get('/{id}', [\App\Http\Controllers\AkunController::class, 'show'])->name('akun.show'); // detail transaksi
+        Route::get('/show/{id}', [\App\Http\Controllers\AkunController::class, 'show'])->name('akun.show'); // detail transaksi
         Route::get('/{id}/edit', [\App\Http\Controllers\AkunController::class, 'edit'])->name('akun.edit');
         Route::put('/{id}', [\App\Http\Controllers\AkunController::class, 'update'])->name('akun.update');
-        Route::delete('/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->name('akun.destroy');
+        Route::get('/destroy/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->name('akun.destroy');
     });
     Route::prefix('setting_akun')->group(function () {
         Route::get('/', [SettingAkunController::class, 'index'])->name('setting_akun.index');
