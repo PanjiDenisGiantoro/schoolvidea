@@ -83,9 +83,9 @@ class PotonganController extends Controller
     }
     private function calculateNominal(Potongan $potongan, Tagihan $tagihan)
     {
-        if ($potongan->tipe_potongan == 'Harga') {
+        if ($potongan->tipe_potongan == 'nominal') {
             return $potongan->nilai; // Fixed value for Harga type
-        } elseif ($potongan->tipe_potongan == 'Persentase') {
+        } elseif ($potongan->tipe_potongan == 'persentase') {
             return ($potongan->nilai / 100) * $tagihan->nominal; // Percentage of the tagihan nominal
         }
         return 0;
