@@ -12,8 +12,9 @@ use App\Models\PotonganSiswa;
 class PotonganController extends Controller
 {
     public function index()
-    {
-        return view('pages.potongan.potongan');
+    {        $potongans = Potongan::with('unit', 'kelas', 'kategoriTagihan')->get();
+
+        return view('pages.potongan.potongan', compact('potongans'));
     }
     public function create()
     {
