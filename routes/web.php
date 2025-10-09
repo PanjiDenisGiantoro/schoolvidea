@@ -95,6 +95,7 @@ Route::prefix('unit')->group(function () {
     Route::get('/delete/{id}', [UnitController::class, 'destroy'])->name('unit.destroy');
     Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
     Route::post('/upload', [UnitController::class, 'upload'])->name('unit.upload');
+    Route::get('/{unitId}/kelas', [UnitController::class, 'listkelas'])->name('unit.kelas');
 });
 
 Route::prefix('tahun_ajaran')->group(function () {
@@ -221,6 +222,8 @@ Route::prefix('tipe_unit')->group(function () {
 
     Route::prefix('potongan')->group(function (){
         Route::get('/', [PotonganController::class, 'index'])->name('potongan.index');
+        Route::get('/create', [PotonganController::class, 'create'])->name('potongan.create');
+        Route::post('/store', [PotonganController::class, 'store'])->name('potongan.store');
     });
 
     Route::prefix('pembayaran')->group(function () {

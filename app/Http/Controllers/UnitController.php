@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kelas;
 use App\Models\Tipeunit;
 use App\Models\Unit;
 use App\Models\Yayasan;
@@ -136,4 +137,9 @@ class UnitController extends Controller
         ]);
     }
 
+    public function listkelas($id)
+    {
+        $kelas = Kelas::where('unit_id', $id)->where('status', '1')->get();
+        return response()->json($kelas);
+    }
 }

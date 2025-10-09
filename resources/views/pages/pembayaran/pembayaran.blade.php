@@ -273,6 +273,19 @@
         filterKelas.addEventListener('change', function() {
             var kelasId = this.value;
             kelasHidden.value = kelasId;
+
+            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+            kategoriSelect.value = '';  // Reset kategori tagihan
+            document.getElementById('list_tagihan').innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
+            </td>
+        </tr>`;
+            document.getElementById('nama_tagihan').innerHTML = '<option value="">-- Pilih Tagihan --</option>';  // Reset nama tagihan
+
+
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
             if (!kelasId) return;
             fetch(`/siswa/by-kelas/${kelasId}`)
