@@ -139,7 +139,7 @@
                         data.forEach(kelas => {
                             const option = document.createElement('option');
                             option.value = kelas.id;
-                            option.text = `${kelas.nama_kelas} (${kelas.kode_kelas})`;
+                            option.text = `${kelas.nama_kelas} `;
                             kelasSelect.appendChild(option);
                         });
 
