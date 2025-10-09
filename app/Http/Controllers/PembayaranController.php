@@ -71,7 +71,7 @@ class PembayaranController extends Controller
 
             // simpan pembayaran
             $pembayaran = PembayaranTagihan::create([
-                'code_pembayaran' => 'PS' . date('YmdHis').rand(1000,9999),
+                'code_pembayaran' => 'PS' . date('YmdHis').$siswa->nisn.rand(1000,9999),
                 'tagihan_siswa_id' => $tagihanSiswa->id,
                 'jumlah_bayar'     => $jumlahBayar,
                 'tanggal_bayar'    => now(),

@@ -82,6 +82,7 @@ class TabunganController extends Controller
             }
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => 'TST' . date('YmdHis').$siswa->nisn.rand(1000,9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'setoran_tabungan',
@@ -196,6 +197,7 @@ class TabunganController extends Controller
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => 'TRK' . date('YmdHis').$siswa->nisn.rand(1000,9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'penarikan_tabungan',
