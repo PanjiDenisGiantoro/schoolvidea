@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategoritagihan;
 use App\Models\Tagihan;
+use App\Models\Tagihansiswa;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 
@@ -33,11 +34,12 @@ class PotonganController extends Controller
             'tipe_potongan' => 'required|in:nominal,persentase',
             'nilai' => 'required|numeric',
             'keterangan' => 'nullable|string|max:64',
-//            'siswa_id' => 'required|array', // array of selected siswa ids
-//            'siswa_id.*' => 'exists:siswas,id', // Validate each siswa_id
+            'siswa_id' => 'required|array', // array of selected siswa ids
+            'siswa_id.*' => 'exists:siswas,id', // Validate each siswa_id
         ]);
 
         try {
+            // Store the Potongan data
             $potongan = Potongan::create([
                 'unit_id' => $request->unit_id,
                 'kelas_id' => $request->kelas_id,
@@ -49,24 +51,35 @@ class PotonganController extends Controller
 
             // Store PotonganSiswa for each selected siswa
             foreach ($request->siswa_id as $siswaId) {
-                // Here you can define how to calculate nominal (e.g., based on tagihan)
-                $tagihan = Tagihan::where('siswa_id', $siswaId)->where('kelas_id', $request->kelas_id)->first();
-                $nominal = $this->calculateNominal($potongan, $tagihan);
+                // Fetch the related tagihan_id from the tagihan_siswa table
+                $tagihanSiswa = Tagihansiswa::where('siswa_id', $siswaId)
+                    ->whereHas('tagihan', function($query) use ($request) {
+                        $query->where('kelas_id', $request->kelas_id);
+                    })
+                    ->first();
 
-                PotonganSiswa::create([
-                    'potongan_id' => $potongan->id,
-                    'tagihan_id' => $tagihan->id,
-                    'tagihan_siswa_id' => $tagihan->siswa_id,
-                    'nominal' => $nominal,
-                ]);
+                // Ensure tagihan_siswa record is found
+                if ($tagihanSiswa) {
+                    // Now get the tagihan using tagihan_siswa
+                    $tagihan = $tagihanSiswa->tagihan;
+
+                    // Calculate the nominal for the discount (potongan)
+                    $nominal = $this->calculateNominal($potongan, $tagihan);
+
+                    // Store the PotonganSiswa entry
+                    PotonganSiswa::create([
+                        'potongan_id' => $potongan->id,
+                        'tagihan_id' => $tagihan->id,
+                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'nominal' => $nominal,
+                    ]);
+                }
             }
 
-        }catch(\Exception $e){
+            return redirect()->route('potongan.index')->with('success', 'Potongan successfully created.');
+        } catch(\Exception $e) {
             dd($e->getMessage());
         }
-        // Store Potongan data
-
-        return redirect()->route('potongan.index')->with('success', 'Potongan successfully created.');
     }
     private function calculateNominal(Potongan $potongan, Tagihan $tagihan)
     {

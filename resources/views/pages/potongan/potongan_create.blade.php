@@ -155,6 +155,7 @@
         });
 
         // Load students dynamically when class is selected
+        // Load students dynamically when class is selected
         document.getElementById('kelas_id').addEventListener('change', function() {
             const kelasId = this.value;
             if (kelasId) {
@@ -163,14 +164,18 @@
                     .then(data => {
                         const siswaList = document.getElementById('siswa_list');
                         siswaList.innerHTML = ''; // Clear previous list
+
+                        // Loop through the student data
                         data.forEach(siswa => {
+                            // Ensure the siswa.id is used for the checkbox
                             const row = `<tr>
-                                            <td><input type="checkbox" class="siswa_checkbox" value="${siswa.id}"></td>
-                                            <td>${siswa.user.name}</td>
-                                            <td>${siswa.nisn}</td>
-                                          </tr>`;
+                                    <td><input type="checkbox" class="siswa_checkbox" name="siswa_id[]" value="${siswa.id}" id="siswa_${siswa.id}"></td>
+                                    <td>${siswa.user.name}</td>
+                                    <td>${siswa.nisn}</td>
+                                  </tr>`;
                             siswaList.innerHTML += row;
                         });
+
                         // Initialize DataTables
                         $('#siswa_datatable').DataTable({
                             paging: true,
@@ -178,6 +183,7 @@
                             destroy: true
                         });
 
+                        // Display the siswa table
                         document.getElementById("siswa_table").style.display = "block";
                     })
                     .catch(err => console.error('Error fetching students:', err));
@@ -191,5 +197,6 @@
                 checkbox.checked = this.checked;
             });
         });
+
     </script>
 @endpush
