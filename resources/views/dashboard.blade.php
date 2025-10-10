@@ -3,10 +3,7 @@
 
 @section('content')
     <!-- Start Container Fluid -->
-
-        <div class="row">
-            <!-- Card Petugas -->
-            <!-- Card Petugas -->
+    <div class="row g-3 mb-4">
             <div class="col-lg-3 col-md-6">
                 <div class="card mini-stats">
                     <div class="card-body d-flex justify-content-between align-items-center">
