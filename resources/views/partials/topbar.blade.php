@@ -2,13 +2,13 @@
      <!-- Sidebar Logo -->
      <div class="logo-box">
           <a href="index.html" class="logo-dark">
-               <img src="{{ public_path('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-               <img src="{{ public_path('assets/images/videa.png') }}" class="logo-lg" alt="logo dark">
+               <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
+               <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo dark">
           </a>
 
           <a href="index.html" class="logo-light">
-               <img src="{{ public_path('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-               <img src="{{ public_path('assets/images/videa.png') }}" class="logo-lg" alt="logo light">
+               <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
+               <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo light">
           </a>
      </div>
 
