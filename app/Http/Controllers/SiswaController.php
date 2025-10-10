@@ -173,13 +173,13 @@ class SiswaController extends Controller
             $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
             $fileName = $siswa->nis . '.png';
             $path = 'qrcodes/' . $fileName;
-
-            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
-
-            $siswa->update([
-                'qrcode' => $qrcodeValue,
-                'qrcode_image' => $path,
-            ]);
+//
+//            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
+//
+//            $siswa->update([
+//                'qrcode' => $qrcodeValue,
+//                'qrcode_image' => $path,
+//            ]);
 
             // Buat saldo awal
             Saldo_keuangan::create([
