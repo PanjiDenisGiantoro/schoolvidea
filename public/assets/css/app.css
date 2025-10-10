@@ -19542,7 +19542,7 @@ th.fc-day-header {
 }
 
 .choices__inner {
-    padding: 0.5rem 1rem !important;
+    padding: 0.7rem 1rem !important;
     vertical-align: middle;
     background-color: var(--bs-secondary-bg);
     border: var(--bs-border-width) solid var(--bs-input-border-color);
