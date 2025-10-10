@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 use App\Models\Potongan;
 use App\Models\PotonganSiswa;
+use Illuminate\Support\Facades\Auth;
+
 class PotonganController extends Controller
 {
     public function index()
@@ -20,7 +22,9 @@ class PotonganController extends Controller
     public function create()
     {
         $units = Unit::get();
-        $kategoriTagihan = Kategoritagihan::get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function ($unit, $query){
+            $query('unit_id',$query->unit_id);
+        });
         return view('pages.potongan.potongan_create',compact('units','kategoriTagihan'));
 
     }
@@ -93,7 +97,7 @@ class PotonganController extends Controller
     public function show($id)
     {
         // Find the Potongan by ID and eager load related data
-        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan'])
+        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan','tagihan'])
             ->findOrFail($id);
 
 

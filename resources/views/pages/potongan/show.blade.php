@@ -41,24 +41,36 @@
                                 <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Kategori Tagihan</th>
                                     <th>Nama Tagihan</th>
                                     <th>Biaya Tagihan</th>
                                     <th>Nilai Potongan</th>
                                     <th>Nominal Potongan</th>
                                     <th>Keterangan Tambahan</th>
+                                    <th>Aksi</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 @foreach($potongan->potonganSiswa as $potonganSiswa)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $potonganSiswa->tagihan->kategoriTagihan->nama_kategori }}</td>
-                                        <td>{{ $potonganSiswa->tagihan->nama_tagihan }}</td>
+                                        <td>{{ $potongan->kategoritagihan->nama_kategori }}</td>
                                         <td>Rp {{ number_format($potonganSiswa->tagihan->jumlah, 2, ',', '.') }}</td>
                                         <td>Rp {{ number_format($potonganSiswa->nominal, 2, ',', '.') }}</td>
                                         <td>Rp {{ number_format($potonganSiswa->tagihan->jumlah - $potonganSiswa->nominal, 2, ',', '.') }}</td>
                                         <td>-</td> <!-- Keterangan Tambahan, adjust as needed -->
+                                        <td>
+                                            <div class="d-flex gap-3">
+
+                                            <a href="" class="link-warning text-muted">
+                                                <i class="ri-edit-line align-middle fs-20"></i>
+                                                Edit
+                                            </a>
+                                            <a href="" class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line align-middle fs-20"></i>
+                                                Hapus
+                                            </a>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                                 </tbody>

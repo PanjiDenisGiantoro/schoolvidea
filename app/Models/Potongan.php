@@ -28,4 +28,8 @@ class Potongan extends Model
     {
         return $this->hasMany(PotonganSiswa::class);
     }
+    public function tagihan()
+    {
+        return $this->belongsTo(Tagihan::class,'tagihan_id');
+    }
 }
