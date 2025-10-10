@@ -3,6 +3,8 @@
 @endphp
 @extends('layouts.app')
 @section('title', isset($officer->officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
 
 @section('content')
     @include('partials.page-title', [
@@ -195,15 +197,17 @@
                         <div class="col-md-3">
                             <div class="mb-4" id="jurusan-wrapper">
                                 <label for="jurusan" class="form-label">Jurusan</label>
-                                <select name="jurusan[]" id="jurusan"  class="form-select" data-choices data-choices-sorting-false required>
+                                <select name="jurusan[]" id="jurusan" class="form-control"  multiple>
                                     <option value="">--Pilih Jurusan--</option>
                                     @foreach ($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
-                                            {{ in_array($jurusan->id, old('jurusan', $jurusanArray ?? [])) ? 'selected' : '' }}>
+                                            {{ in_array($jurusan->id, old('jurusan', $officer->jurusan ?? [])) ? 'selected' : '' }}>
                                             {{ $jurusan->nama_jurusan }}
                                         </option>
                                     @endforeach
                                 </select>
+
+
                             </div>
                             <x-input-field type="text" name="no_rekening" label="No Rekening"
                                            placeholder="Masukkan Nomor Rekening" icon="bx bx-bank"
@@ -244,6 +248,15 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#jurusan').select2({
+                placeholder: "--Pilih Jurusan--", // Placeholder text
+                allowClear: true                // Allows clearing the selected values
+            });
+        });
+    </script>
 
 
     <script>
@@ -342,6 +355,7 @@
                     }
                 }
             }
+
 
 
             toggleJurusan(); // saat pertama load

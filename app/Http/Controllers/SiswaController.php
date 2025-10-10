@@ -91,7 +91,9 @@ class SiswaController extends Controller
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
             'no_rekening' => 'nullable|string|max:50',
-        ]);
+            'jurusan' => 'required|array|min:1',  // Make sure at least one jurusan is selected
+
+            ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
@@ -136,6 +138,7 @@ class SiswaController extends Controller
                 'no_hp_ortu'      => $request->no_hp_ortu,
                 'nama_ortu'       => $request->nama_ortu,
                 'bank'            => $request->bank,
+                'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'no_rekening'     => $request->no_rekening,
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
