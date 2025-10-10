@@ -3,6 +3,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 @endpush
+
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi Pembayaran',
@@ -109,7 +110,6 @@
                 </button>
             </div>
 
-            <!-- Header kartu -->
             <div class="custom-card-header">
                 <span><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</span>
                 <button id="btnProsesPembayaran" class="custom-btn-info">
@@ -158,7 +158,7 @@
                             <th>Periode Tagihan</th>
                             <th>Tagihan Kelas</th>
                             <th>Rincian Tagihan</th>
-                            <th>JML.Potongan</th>
+                            <th>Jml.Potongan</th>
                             <th>Jml.Tagihan</th>
                             <th>Jml.Bayar</th>
                             <th>Aksi</th>
@@ -202,6 +202,7 @@
                 </div>
             </div>
         </div>
+        <!-- Modal Catatan -->
         <!-- Modal Catatan -->
         <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -561,6 +562,7 @@
 
 
     </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const btnBelumLunas = document.getElementById('btnBelumLunas');
