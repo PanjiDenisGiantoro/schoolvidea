@@ -37,7 +37,7 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm">
+                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
@@ -46,13 +46,13 @@
                     </div>
                     <div class="col-md-6">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-select rounded-pill shadow-sm">
+                        <select id="siswa_id" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="kategori_tagihan" class="form-label fw-semibold">Jenis Tagihan</label>
-                        <select id="kategori_tagihan" class="form-select rounded-pill shadow-sm">
+                        <select id="kategori_tagihan" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Jenis Tagihan --</option>
                             <option value="perbulan">Per Bulan</option>
                             <option value="bebas">Bebas</option>
@@ -61,7 +61,7 @@
 
                     <div class="mb-3" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
-                        <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
+                        <select id="nama_tagihan" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
                     </div>

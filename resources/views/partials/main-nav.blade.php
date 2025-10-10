@@ -47,6 +47,7 @@
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan Staff</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Akun User</a></li>
                     </ul>
                 </div>
             </li>
