@@ -26,21 +26,21 @@
                                        placeholder="Email"
                                        icon="bx bx-envelope"
                                        :value="old('email', $siswa->user->email ?? '')"
-                                       readonly/>
+                                       readonly disabled/>
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username/NISN"
                                        placeholder="Username/NISN"
                                        icon="bx bx-user"
                                        :value="old('username', $siswa->user->username ?? '')"
-                                       readonly/>
+                                       readonly disabled/>
                     </div>
                     <div class="col-md-4">
 
                         <x-input-field type="text" id="password" name="password" label="Password"
                                        :placeholder="isset($officer) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
                                        icon="bx bx-lock"
-                                       :value="old('password')" readonly/>
+                                       :value="old('password')" readonly disabled/>
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@
                                        :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required/>
                     </div>
                     <div class="col-md-3 mt-4">
-                        <labes"status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></labes>
+                        <label for="status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></label>
                         <select name="status" id="status" class="form-select" required>
                             <option value="">-- Pilih Status --</option>
                             <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
@@ -174,8 +174,8 @@
                     <!-- Colom - 1 -->
                     <div class="col-md-3">
                         <div class="mb-4">
-                            <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
+                            <label for="unit_id" class="form-label">Unit <span style="color: #dc3545 !important;">*</span></label>
+                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}"
@@ -226,7 +226,7 @@
 
                         <div class="mb-4" id="jurusan-wrapper">
                             <label for="jurusan" class="form-label">Jurusan</label>
-                            <select name="jurusan[]" id="jurusan" class="form-select" data-choices data-choices-sorting-false>
+                            <select name="jurusan" id="jurusan" class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Jurusan --</option>
                                 @if(isset($jurusans))
                                     @foreach ($jurusans as $jurusan)
@@ -470,6 +470,7 @@
             const downloadBtn = document.getElementById('downloadQrBtn');
 
             let defaultLogo = "{{ asset('images/default-logo.png') }}";
+            vaInput.dispatchEvent(new Event('input'));
 
             const qrCode = new QRCodeStyling({
                 width: 150,
@@ -488,10 +489,12 @@
             });
 
             qrCode.append(qrContainer);
-
+            const qrTextInput = document.getElementById('qrcode-text');
             // Update QR code saat VA berubah
             vaInput.addEventListener('input', function() {
-                qrCode.update({ data: this.value || " " });
+                const value = this.value || " ";
+                qrCode.update({ data: value });
+                qrTextInput.value = value; // simpan nilai QR ke input hidden
             });
 
             // Update QR code saat unit berubah
@@ -548,11 +551,12 @@
                 const nisPart = normalize(nisInput?.value || '');
                 const nisnPart = normalize(nisnInput?.value || '');
                 if (nisPart.length === 8 && nisnPart.length === 8) {
-                    const va = nisPart + nisnPart;
+                    const va = nisnPart + nisPart;
                     vaInput.value = va;
                 } else {
                     vaInput.value = '';
                 }
+                vaInput.dispatchEvent(new Event('input'));
             }
 
             if (nisInput && nisnInput && vaInput) {

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', 'Tambah Transaksi Tabungan')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi Pembayaran',
@@ -97,19 +99,68 @@
 
         {{-- Daftar Tagihan --}}
         <div class="card shadow-sm rounded-4 border-0 mt-3">
-            <div class="card-header bg-primary text-white fw-bold">
-                <i class="fa fa-list"></i> Daftar Tagihan Per Bulan
+            <!-- Header tombol toggle -->
+            <div class="custom-toggle-header">
+                <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
+                    <i class="ri-money-dollar-circle-line"></i> Belum Lunas
+                </button>
+                <button id="btnSudahLunas" class="custom-btn-outline-primary">
+                    <i class="ri-file-list-3-line"></i> Sudah Lunas
+                </button>
             </div>
-            <div class="card-body p-0">
+
+            <!-- Header kartu -->
+            <div class="custom-card-header">
+                <span><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</span>
+                <button id="btnProsesPembayaran" class="custom-btn-info">
+                    <i class="ri-checkbox-multiple-line"></i> Proses Pembayaran
+                </button>
+                <button type="button" class="btn custom-btn-purple " data-bs-toggle="modal" data-bs-target="#catatanModal"> +
+                </button>
+            </div>
+
+
+            <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped align-middle mb-0">
                         <thead class="table-light text-center">
                         <tr>
-                            <th>Bulan</th>
-                            <th>Kategori</th>
-                            <th>Nominal</th>
-                            <th>Sisa Nominal</th>
-                            <th>Status</th>
+                            <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
+                            <th>#</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jumlah Potongan</th>
+                            <th>Jumlah Tagihan</th>
+                            <th>Jumlah Dibayar</th>
+                            <th>Jumlah Tunggakan</th>
+                            <th>Nominal Pembayaran</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody id="list_tagihan">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div  class="card-body p-0" id="tabelSudahLunas">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light items-center text-center">
+                        <tr>
+                            <th>#</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>JML.Potongan</th>
+                            <th>Jml.Tagihan</th>
+                            <th>Jml.Bayar</th>
                             <th>Aksi</th>
                         </tr>
                         </thead>
@@ -127,6 +178,9 @@
 
 
 
+
+
+
         {{-- Detail Siswa dan Form Tabungan --}}
         <div class="col-12">
             <div class="row g-4">
@@ -135,6 +189,7 @@
                 <div class="col-md-8">
                     <form action="" method="POST" id="formTagihan">
                         @csrf
+                        <input type="hidden" name="checkbox" id="checkbox">
                         <input type="hidden" name="tagihan_siswa_id" id="tagihan_hidden">
                         <input type="hidden" name="kategori_id" id="kategori_hidden">
                         <input type="hidden" name="bulan" id="bulan_hidden">
@@ -144,6 +199,32 @@
 
                     </form>
 
+                </div>
+            </div>
+        </div>
+        <!-- Modal Catatan -->
+        <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 rounded-4 shadow-lg">
+                    <div class="modal-header custom-modal-header">
+                        <h5 class="modal-title fw-semibold" id="catatanModalLabel">
+                            <i class="ri-sticky-note-line"></i> Tambah Catatan
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <form id="formCatatan">
+                            <div class="mb-3">
+                                <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
+                                <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn custom-btn-purple">Simpan Catatan</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -479,5 +560,35 @@
         }
 
 
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnBelumLunas = document.getElementById('btnBelumLunas');
+            const btnSudahLunas = document.getElementById('btnSudahLunas');
+            const tabelBelumLunas = document.getElementById('tabelBelumLunas');
+            const tabelSudahLunas = document.getElementById('tabelSudahLunas');
+            const btnProsesPembayaran = document.getElementById('btnProsesPembayaran');
+
+            btnBelumLunas.addEventListener('click', function () {
+                btnProsesPembayaran.style.display = 'inline-flex'; // tampil lagi
+            });
+
+            btnSudahLunas.addEventListener('click', function () {
+                btnProsesPembayaran.style.display = 'none'; // sembunyikan
+            });
+            btnBelumLunas.addEventListener('click', function() {
+                btnBelumLunas.classList.add('custom-active-btn');
+                btnSudahLunas.classList.remove('custom-active-btn');
+                tabelBelumLunas.style.display = 'block';
+                tabelSudahLunas.style.display = 'none';
+            });
+
+            btnSudahLunas.addEventListener('click', function() {
+                btnSudahLunas.classList.add('custom-active-btn');
+                btnBelumLunas.classList.remove('custom-active-btn');
+                tabelSudahLunas.style.display = 'block';
+                tabelBelumLunas.style.display = 'none';
+            });
+        });
     </script>
 @endpush

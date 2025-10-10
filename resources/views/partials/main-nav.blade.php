@@ -102,16 +102,26 @@
                     <span class="nav-text">E-Kantin</span>
                 </a>
             </li>
-
-
             <li class="menu-item">
-                <a class="menu-link" href="{{ url('pembayaran') }}">
-                         <span class="nav-icon">
-                              <i class="ri-mac-line"></i>
-                         </span>
+                <a class="menu-link menu-arrow" href="#sidebarPembayaran" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarPembayaran">
+        <span class="nav-icon">
+            <i class="ri-mac-line"></i>
+        </span>
                     <span class="nav-text"> Pembayaran </span>
                 </a>
+                <div class="collapse" id="sidebarPembayaran">
+                    <ul class="sub-menu-nav">
+
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('pembayaran') }}">Pembayaran Online
+                            </a></li>
+
+                    </ul>
+                </div>
             </li>
+
+
 
 
             <li class="menu-item">

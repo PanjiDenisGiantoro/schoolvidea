@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Siswa extends Model
 {
     protected $table = 'siswas';
-    protected $guarded = [];
+
+    protected $fillable = [
+        'nisn', 'nama', 'user_id', 'unit_id', 'kelas_id',
+        'status', 'va_siswa', 'rfid_no', 'nik', 'jenis_kelamin',
+        'agama', 'no_hp_ortu', 'nama_ortu', 'bank', 'no_rekening',
+        'nis', 'qrcode', 'qrcode_image', 'username', 'password'
+    ];
 
     // Cast JSON kolom 'va_siswa' menjadi array
     protected $casts = [

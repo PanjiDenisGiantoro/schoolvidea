@@ -73,26 +73,24 @@ class SiswaController extends Controller
             'kelas', 'yayasan', 'units', 'jurusans', 'logoUnit'
         ));
     }
-    public function store(Request $request)
+        public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn'            => 'required|unique:siswas,nisn',
-            'name'            => 'required|string|max:255',
-            'email'           => 'required|string|email|max:255',
-            'password'        => 'required|string|min:6',
-            'kelas_id'        => 'required',
-            'unit_id'         => 'required',
-            'status'          => 'required|in:0,1',
-            'rfid_no'         => 'nullable|string|max:255',
-            'va_siswa'        => 'nullable|string|max:255',
-            'nis'             => 'nullable|string|max:20|unique:siswas,nis',
-            'nik'             => 'nullable|string|max:20|unique:siswas,nik',
-            'jenis_kelamin'   => 'nullable|in:L,P',
-            'agama'           => 'nullable|string|max:50',
-            'no_hp_ortu'      => 'nullable|string|max:20',
-            'nama_ortu'       => 'nullable|string|max:100',
-            'bank'            => 'nullable|string|max:100',
-            'no_rekening'     => 'nullable|string|max:50',
+            'nisn' => 'required|unique:siswas,nisn',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'kelas_id' => 'required',
+            'unit_id' => 'required',
+            'rfid_no' => 'nullable|string|max:255',
+            'va_siswa' => 'nullable|string|max:255',
+            'nis' => 'nullable|string|max:20|unique:siswas,nis',
+            'nik' => 'nullable|string|max:20|unique:siswas,nik',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'agama' => 'nullable|string|max:50',
+            'no_hp_ortu' => 'nullable|string|max:20',
+            'nama_ortu' => 'nullable|string|max:100',
+            'bank' => 'nullable|string|max:100',
+            'no_rekening' => 'nullable|string|max:50',
         ]);
 
         if ($validator->fails()) {
