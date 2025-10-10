@@ -40,7 +40,7 @@ Route::post('/logout', function () {
     \Illuminate\Support\Facades\Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-    return redirect('/portal');
+    return redirect('/login');
 })->name('logout');
 
 Route::middleware(['auth'])->group(function () {
