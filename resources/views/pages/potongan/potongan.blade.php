@@ -42,9 +42,9 @@
                         <td>{{ $potongan->keterangan ?? '-' }}</td>
                         <td>
                             <!-- View Button -->
-{{--                            <a href="{{ route('potongan.show', $potongan->id) }}" class="btn btn-info btn-sm">--}}
-{{--                                <i class="fa fa-eye"></i> Lihat--}}
-{{--                            </a>--}}
+                            <a href="{{ route('potongan.show', $potongan->id) }}" class="btn btn-info btn-sm">
+                                <i class="fa fa-eye"></i> Lihat
+                            </a>
 {{--                            <!-- Edit Button -->--}}
 {{--                            <a href="{{ route('potongan.edit', $potongan->id) }}" class="btn btn-warning btn-sm">--}}
 {{--                                <i class="fa fa-edit"></i> Edit--}}

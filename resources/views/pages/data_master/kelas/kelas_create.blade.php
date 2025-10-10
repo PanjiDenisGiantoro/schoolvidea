@@ -135,7 +135,7 @@
     {{-- Konfirmasi Submit --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('userForm');
+            const form = document.getElementById('kelasForm');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();

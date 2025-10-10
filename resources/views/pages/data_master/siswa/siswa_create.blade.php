@@ -26,14 +26,14 @@
                                        placeholder="Email"
                                        icon="bx bx-envelope"
                                        :value="old('email', $siswa->user->email ?? '')"
-                                       required readonly/>
+                                       readonly/>
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username/NISN"
                                        placeholder="Username/NISN"
                                        icon="bx bx-user"
                                        :value="old('username', $siswa->user->username ?? '')"
-                                       required readonly/>
+                                       readonly/>
                     </div>
                     <div class="col-md-4">
 
@@ -48,119 +48,117 @@
                     <h5 class="card-title mb-0 mt-3">Data Lengkap Siswa <span style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></h5>
                     <p class="text-muted">Masukkan data lengkap siswa</p>
                     <hr>
-                    <!-- Colom - 1 -->
                     <div class="col-md-3">
-
                         <x-input-field type="number" name="nisn" label="NISN"
                                        placeholder="Masukkan NISN"
                                        icon="bx bx-id-card"
                                        :value="old('nisn', $siswa?->nisn ?? '')" required />
-                        <div class="mb-4">
-                            <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span style="color: #dc3545 !important;">*</span></label>
-                            <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
-                                <option value="">-- Pilih Jenis Kelamin --</option>
-                                <option value="L" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="P" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label">Alamat <span style="color: #dc3545 !important;">*</span></label>
-                            <textarea name="alamat" id="alamat" class="form-control" rows="2" required>{{ old('alamat', $siswa->siswa->alamat ?? '') }}</textarea>
-                        </div>
-
-
-
-                        <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
-                                       placeholder="Masukkan nama orang tua"
-                                       icon="bx bx-user"
-                                       :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required/>
-
-
                     </div>
-                    <!-- Colom - 2 -->
                     <div class="col-md-3">
                         <x-input-field type="number" name="nis" label="NIS"
                                        placeholder="Masukkan NIS"
                                        icon="bx bx-id-card"
                                        :value="old('nis', $siswa?->nis ?? '')" required/>
-                        <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
-                                       placeholder="Masukkan tempat lahir"
-                                       icon="bx bx-map"
-                                       :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
-                        <x-input-field type="number" name="no_hp" label="No. Telepon"
-                                       placeholder="Masukkan nomor telepon"
-                                       icon="bx bx-phone"
-                                       :value="old('no_hp', $siswa?->no_hp ?? '')" />
-                        <div class="mb-4">
-                            <label for="image-dropzone" class="form-label">Upload Foto Siswa</label>
-                            <div class="dropzone" id="image-dropzone"></div>
-                            <input type="hidden" name="image" id="image-hidden"
-                                   value="{{ old('image', $siswa?->image ?? '') }}">
-                            <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
-                        </div>
-
-
                     </div>
-                    <!-- Colom - 3 -->
                     <div class="col-md-3">
                         <x-input-field type="text" name="name" label="Nama Lengkap"
                                        placeholder="Masukkan nama lengkap"
                                        icon="bx bx-user"
                                        :value="old('name', $siswa->user->name ?? '')"
                                        required />
-                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
-                                       placeholder="Masukkan tanggal lahir"
-                                       :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
-                        <x-input-field type="number" name="no_hp_ortu" label="No. Telepon Orang Tua"
-                                       placeholder="Masukkan nomor telepon"
-                                       icon="bx bx-phone"
-                                       :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required/>
-
-
-
-
-                        <div class="mb-4">
-                            <labes"status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></labes>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="">-- Pilih Status --</option>
-                                <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
-                                <option value="0" {{ old('status', $siswa?->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
-                            </select>
-                        </div>
-
                     </div>
-                    <!-- Colom - 4 -->
                     <div class="col-md-3">
                         <x-input-field type="number" name="nik" label="NIK"
                                        placeholder="Masukkan NIK"
                                        icon="bx bx-id-card"
                                        :value="old('nik', $siswa?->nik ?? '')" required/>
-                        <div class="mb-4">
-                            <label for="agama" class="form-label">Agama <span style="color: #dc3545 !important;">*</span></label>
-                            <select name="agama" id="agama" class="form-select text-uppercase" required>
-                                <option value="">-- Pilih Agama --</option>
-                                <option value="ISLAM" {{ old('agama', $siswa?->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
-                                <option value="KRISTEN PROTESTAN" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN PROTESTAN</option>
-                                <option value="KRISTEN KATHOLIK" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN KATHOLIK</option>
-                                <option value="HINDU" {{ old('agama', $siswa?->agama ?? '') == 'HINDU' ? 'selected' : '' }}>HINDU</option>
-                                <option value="BUDDHA" {{ old('agama', $siswa?->agama ?? '') == 'BUDHHA' ? 'selected' : '' }}>BUDDHA</option>
-                                <option value="KONGHUCU" {{ old('agama', $siswa?->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
-                            </select>
-                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span style="color: #dc3545 !important;">*</span></label>
+                        <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
+                            <option value="">-- Pilih Jenis Kelamin --</option>
+                            <option value="L" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="P" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
+                                       placeholder="Masukkan tempat lahir"
+                                       icon="bx bx-map"
+                                       :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
+                    </div>
+                    <div class="col-md-3">
+                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
+                                       placeholder="Masukkan tanggal lahir"
+                                       :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="agama" class="form-label">Agama <span style="color: #dc3545 !important;">*</span></label>
+                        <select name="agama" id="agama" class="form-select text-uppercase" required>
+                            <option value="">-- Pilih Agama --</option>
+                            <option value="ISLAM" {{ old('agama', $siswa?->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
+                            <option value="KRISTEN PROTESTAN" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN PROTESTAN</option>
+                            <option value="KRISTEN KATHOLIK" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN KATHOLIK</option>
+                            <option value="HINDU" {{ old('agama', $siswa?->agama ?? '') == 'HINDU' ? 'selected' : '' }}>HINDU</option>
+                            <option value="BUDDHA" {{ old('agama', $siswa?->agama ?? '') == 'BUDHHA' ? 'selected' : '' }}>BUDDHA</option>
+                            <option value="KONGHUCU" {{ old('agama', $siswa?->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <x-input-field type="number" name="no_hp" label="No. Telepon Siswa"
+                                       placeholder="Masukkan nomor telepon"
+                                       icon="bx bx-phone"
+                                       :value="old('no_hp', $siswa?->no_hp ?? '')" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <x-input-field type="number" name="no_hp_ortu" label="No. Telepon Orang Tua"
+                                       placeholder="Masukkan nomor telepon"
+                                       icon="bx bx-phone"
+                                       :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required/>
+                    </div>
+
+                    <div class="col-md-3">
                         <x-input-field type="email" id="email_bottom" name="email" label="Email"
                                        placeholder="Masukkan email"
                                        icon="bx bx-envelope"
                                        :value="old('email', $siswa->user->email ?? '')"
                                        required />
+                    </div>
 
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
+                                       placeholder="Masukkan nama orang tua"
+                                       icon="bx bx-user"
+                                       :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required/>
+                    </div>
+                    <div class="col-md-3 mt-4">
+                        <labes"status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></labes>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="">-- Pilih Status --</option>
+                            <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
+                            <option value="0" {{ old('status', $siswa?->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="alamat" class="form-label">Alamat <span style="color: #dc3545 !important;">*</span></label>
+                        <textarea name="alamat" id="alamat" class="form-control" rows="2" required>{{ old('alamat', $siswa->siswa->alamat ?? '') }}</textarea>
+                    </div>
 
-
-
-                        <div class="modal fade" id="imageModal" tabindex="-1">
-                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-body text-center">
-                                        <img id="previewImage" src="" class="img-fluid rounded" />
+                    <div class="col-md-3">
+                        <label for="image-dropzone" class="form-label">Upload Foto Siswa</label>
+                        <div class="dropzone" id="image-dropzone"></div>
+                        <input type="hidden" name="image" id="image-hidden"
+                               value="{{ old('image', $siswa?->image ?? '') }}">
+                        <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
+                        <div >
+                            <div class="modal fade" id="imageModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-body text-center">
+                                            <img id="previewImage" src="" class="img-fluid rounded" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -188,12 +186,44 @@
                                 @endforeach
                             </select>
                         </div>
-                        <x-input-field type="text" name="rfid_no" label="RFID"
-                                       placeholder="Masukkan RFID"
-                                       :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
+                        <x-input-field type="text" name="va_siswa" label="VA Siswa"
+                                       placeholder="Masukkan VA Siswa" icon="bx bx-credit-card"
+                                       :value="old('va_siswa', $siswa?->va_siswa ?? '')" required/>
+
                     </div>
                     <!-- Colom - 2 -->
                     <div class="col-md-3">
+
+                        <div class="mb-4">
+                            <label for="kelas_id" class="form-label">Kelas <span style="color: #dc3545 !important;">*</span></label>
+                            <select name="kelas_id" id="kelas_id" class="form-select" data-choices data-choices-sorting-false required>
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}"
+                                        {{ old('kelas_id', $siswa?->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
+                                        {{ $k->nama_kelas }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <x-input-field type="text" name="bank" label="Bank"
+                                       placeholder="Masukkan nama bank"
+                                       icon="bx bx-bank"
+                                       :value="old('bank', $siswa?->bank ?? '')" />
+                    </div>
+                    <!-- Colom - 3 -->
+                    <div class="col-md-3">
+                        <x-input-field type="text" name="rfid_no" label="RFID"
+                                       placeholder="Masukkan RFID"
+                                       :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
+                        <x-input-field type="text" name="no_rekening" label="No Rekening Siswa"
+                                       placeholder="Masukkan nomor rekening siswa"
+                                       icon="bx bx-credit-card"
+                                       :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
+                    </div>
+                    <!-- Colom - 4 -->
+                    <div class="col-md-3">
+
                         <div class="mb-4" id="jurusan-wrapper">
                             <label for="jurusan" class="form-label">Jurusan</label>
                             <select name="jurusan[]" id="jurusan" class="form-select" data-choices data-choices-sorting-false>
@@ -208,38 +238,7 @@
                                 @endif
                             </select>
                         </div>
-
-                        <x-input-field type="text" name="bank" label="Bank"
-                                       placeholder="Masukkan nama bank"
-                                       icon="bx bx-bank"
-                                       :value="old('bank', $siswa?->bank ?? '')" />
-                    </div>
-                    <!-- Colom - 3 -->
-                    <div class="col-md-3">
-                        <div class="mb-4">
-                            <label for="kelas_id" class="form-label">Kelas <span style="color: #dc3545 !important;">*</span></label>
-                            <select name="kelas_id" id="kelas_id" class="form-select" data-choices data-choices-sorting-false required>
-                                <option value="">-- Pilih Kelas --</option>
-                                @foreach($kelas as $k)
-                                    <option value="{{ $k->id }}"
-                                        {{ old('kelas_id', $siswa?->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
-                                        {{ $k->nama_kelas }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <x-input-field type="text" name="no_rekening" label="No Rekening Siswa"
-                                       placeholder="Masukkan nomor rekening siswa"
-                                       icon="bx bx-credit-card"
-                                       :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
-                    </div>
-                    <!-- Colom - 4 -->
-                    <div class="col-md-3">
-                        <x-input-field type="text" name="va_siswa" label="VA Siswa"
-                                       placeholder="Masukkan VA Siswa" icon="bx bx-credit-card"
-                                       :value="old('va_siswa', $siswa?->va_siswa ?? '')" required/>
-
-                        <div class="text-center mt-3">
+                        <div class="text-start">
                             <label class="form-label d-block">QR Code Siswa</label>
                             @if(isset($show) && $show)
                                 @if(!empty($siswa->qrcode))
@@ -412,6 +411,7 @@
         </script>
     @endif
 
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const unitSelect = document.getElementById('unit_id');
@@ -419,8 +419,23 @@
             const jurusanSelect = document.getElementById('jurusan');
 
             function toggleJurusan() {
-                jurusanWrapper.style.display = unitSelect.value ? 'block' : 'none';
+                if (unitSelect.value) {
+                    jurusanSelect.disabled = false;
+                    jurusanSelect.classList.remove('disabled-select');
+                    // aktifkan tampilan Choices
+                    if (jurusanSelect.parentElement.querySelector('.choices')) {
+                        jurusanSelect.parentElement.querySelector('.choices').classList.remove('disabled-select');
+                    }
+                } else {
+                    jurusanSelect.disabled = true;
+                    jurusanSelect.classList.add('disabled-select');
+                    // nonaktifkan tampilan Choices
+                    if (jurusanSelect.parentElement.querySelector('.choices')) {
+                        jurusanSelect.parentElement.querySelector('.choices').classList.add('disabled-select');
+                    }
+                }
             }
+
 
             toggleJurusan(); // saat pertama load
 

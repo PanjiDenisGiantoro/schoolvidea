@@ -90,4 +90,14 @@ class PotonganController extends Controller
         }
         return 0;
     }
+    public function show($id)
+    {
+        // Find the Potongan by ID and eager load related data
+        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan'])
+            ->findOrFail($id);
+
+
+        // Return the show view with the Potongan data
+        return view('pages.potongan.show', compact('potongan'));
+    }
     }

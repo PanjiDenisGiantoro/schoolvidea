@@ -224,6 +224,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/', [PotonganController::class, 'index'])->name('potongan.index');
         Route::get('/create', [PotonganController::class, 'create'])->name('potongan.create');
         Route::post('/store', [PotonganController::class, 'store'])->name('potongan.store');
+        Route::get('/show/{id}',[PotonganController::class,'show'])->name('potongan.show');
     });
 
     Route::prefix('pembayaran')->group(function () {

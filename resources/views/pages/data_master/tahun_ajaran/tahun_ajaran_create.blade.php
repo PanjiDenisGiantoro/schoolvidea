@@ -24,22 +24,22 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="semester" class="form-label">Semester</label>
-                        <select name="semester" id="semester" class="form-select">
+                        <label for="semester" class="form-label">Semester <span style="color: #dc3545 !important;">*</span></label>
+                        <select name="semester" id="semester" class="form-select" required>
                             <option value="Ganjil" {{ old('semester', $tahun_ajaran->semester ?? '') == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
                             <option value="Genap" {{ old('semester', $tahun_ajaran->semester ?? '') == 'Genap' ? 'selected' : '' }}>Genap</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                        <label for="tanggal_mulai" class="form-label">Tanggal Mulai <span style="color: #dc3545 !important;">*</span></label>
                         <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="form-control form-control-lg rounded"
                                value="{{ old('tanggal_mulai', isset($tahun_ajaran->tanggal_mulai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_mulai)->format('Y-m-d') : '') }}"
                                required>
                     </div>
 
                     <div class="col-md-6">
-                        <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                        <label for="tanggal_selesai" class="form-label">Tanggal Selesai <span style="color: #dc3545 !important;">*</span></label>
                         <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="form-control form-control-lg rounded"
                                value="{{ old('tanggal_selesai', isset($tahun_ajaran->tanggal_selesai) ? \Carbon\Carbon::parse($tahun_ajaran->tanggal_selesai)->format('Y-m-d') : '') }}"
                                required>
@@ -49,8 +49,8 @@
 
 
                     <div class="col-md-6">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-select w-full">
+                        <label for="status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></label>
+                        <select name="status" id="status" class="form-select w-full" required>
                             <option value="1" {{ old('status', $tahun_ajaran->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
                             <option value="0" {{ old('status', $tahun_ajaran->status ?? '') == 0 ? 'selected' : '' }}>Tidak Aktif</option>
                         </select>
@@ -84,7 +84,7 @@
         @endif
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('tahunAjaranForm');
 
             form.addEventListener('submit', function(e) {
@@ -118,4 +118,34 @@
             });
         });
     </script>
+
+    {{-- Alert Sukses & Error --}}
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: `
+        <ul style="text-align:left;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+                </ul>
+`,
+                confirmButtonColor: '#d33',
+            });
+        </script>
+    @endif
 @endpush

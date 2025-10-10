@@ -3600,7 +3600,7 @@ textarea.form-control-lg {
 .input-group-lg > .input-group-text,
 .input-group-lg > .btn {
   padding: 0.625rem 0.75rem;
-  font-size: 1rem;
+  font-size: 0.7rem;
   border-radius: 0.5rem;
 }
 
@@ -18862,6 +18862,13 @@ th.gridjs-th-sort:focus, th.gridjs-th-sort:hover {
 .gridjs-summary {
   color: var(--bs-secondary-color);
   margin-top: 8px !important;
+}
+
+.disabled-select {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed;
+    opacity: 0.9;
 }
 
 .gridjs-pagination .gridjs-pages button {

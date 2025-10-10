@@ -187,7 +187,7 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('lembagaForm');
+            const form = document.getElementById('kelasForm');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault(); // cegah submit langsung
@@ -220,4 +220,34 @@
             });
         });
     </script>
+
+    {{-- Alert Sukses & Error --}}
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: `
+        <ul style="text-align:left;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+                </ul>
+`,
+                confirmButtonColor: '#d33',
+            });
+        </script>
+    @endif
 @endpush
