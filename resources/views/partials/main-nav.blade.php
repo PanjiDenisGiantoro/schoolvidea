@@ -47,78 +47,136 @@
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan Staff</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Akun</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Setting
-                                Akun</a></li>
-
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                                     href="{{ url('kategoritagihan') }}">Kategori</a></li>
                     </ul>
                 </div>
             </li>
 
             <li class="menu-item">
-                <a class="menu-link" href="orders.html">
-                         <span class="nav-icon">
-                              <i class="ri-shopping-cart-line"></i>
-                         </span>
+                <a class="menu-link menu-arrow" href="#sidebarKeuangan" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarKeuangan">
+                    <span class="nav-icon">
+                        <i class="ri-bank-line"></i>
+                    </span>
+                    <span class="nav-text"> Keuangan </span>
+                </a>
+                <div class="collapse" id="sidebarKeuangan">
+                    <ul class="sub-menu-nav">
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Set Akun</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Jenis Transaksi</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategoritagihan') }}">Kategori Tagihan</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="menu-item">
+                <a class="menu-link menu-arrow" href="#sidebarTransaksi" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarTransaksi">
+                    <span class="nav-icon">
+                        <i class="ri-exchange-dollar-line"></i>
+                    </span>    
                     <span class="nav-text"> Transaksi </span>
                 </a>
-            </li>
-
-
-            <li class="menu-item">
-                <a class="menu-link" href="{{ url('tabungan') }}">
-                         <span class="nav-icon">
-                              <i class="ri-store-3-line"></i>
-                         </span>
-                    <span class="nav-text">Tabungan</span>
-                </a>
-            </li>
-
-            <li class="menu-item">
-                <a class="menu-link menu-arrow" href="#sidebarTagihan" data-bs-toggle="collapse" role="button"
-                   aria-expanded="false" aria-controls="sidebarTagihan">
-        <span class="nav-icon">
-            <i class="ri-database-2-line"></i>
-        </span>
-                    <span class="nav-text"> Tagihan </span>
-                </a>
-                <div class="collapse" id="sidebarTagihan">
+                <div class="collapse" id="sidebarTransaksi">
                     <ul class="sub-menu-nav">
-
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('potongan') }}">Potongan</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tagihan') }}"> Kelola Data
-                            </a></li>
-
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('orders.html') }}">Daftar Transaksi</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a></li>
+                        <li class="sub-menu-item">
+                            <a class="sub-menu-item menu-link menu-arrow" href="#sidebarTagihan" data-bs-toggle="collapse" role="button"
+                                            aria-expanded="false" aria-controls="sidebarTagihan">
+                                Tagihan
+                            </a>
+                            <div class="collapse" id="sidebarTagihan">
+                                <ul class="sub-menu-nav">
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('potongan') }}">Potongan</a></li>
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tagihan') }}">Kelola Data</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a class="sub-menu-item menu-link menu-arrow" href="#sidebarPembayaran" data-bs-toggle="collapse" role="button"
+                                            aria-expanded="false" aria-controls="sidebarPembayaran">
+                                Pembayaran
+                            </a>
+                            <div class="collapse" id="sidebarPembayaran">
+                                <ul class="sub-menu-nav">
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('') }}">Pembayaran Online</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('') }}">Transaksi Lainnya</a></li>
                     </ul>
                 </div>
             </li>
-            <li class="menu-item">
-                <a class="menu-link" href="settings.html">
-                         <span class="nav-icon">
-                              <i class="ri-store-3-line"></i>
-                         </span>
-                    <span class="nav-text">E-Kantin</span>
-                </a>
-            </li>
-
 
             <li class="menu-item">
-                <a class="menu-link" href="{{ url('pembayaran') }}">
-                         <span class="nav-icon">
-                              <i class="ri-mac-line"></i>
-                         </span>
-                    <span class="nav-text"> Pembayaran </span>
+                <a class="menu-link menu-arrow" href="#sidebarPenggajian" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarPenggajian">
+                    <span class="nav-icon">
+                        <i class="ri-currency-line"></i>
+                    </span>
+                    <span class="nav-text"> Penggajian </span>
                 </a>
+                <div class="collapse" id="sidebarPenggajian">
+                    <ul class="sub-menu-nav">
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Setting</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Transaksi</a></li>
+                    </ul>
+                </div>
             </li>
 
+            <li class="menu-item">
+                <a class="menu-link menu-arrow" href="#sidebarEkantin" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarEkantin">
+                    <span class="nav-icon">
+                        <i class="ri-store-3-line"></i>
+                    </span>
+                    <span class="nav-text"> E-Kantin </span>
+                </a>
+                <div class="collapse" id="sidebarEkantin">
+                    <ul class="sub-menu-nav">
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Data Merchant</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Data Transaksi</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Penarikan Dana</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Akses Halaman</a></li>
+                        <li class="sub-menu-item">
+                            <a class="sub-menu-item menu-link menu-arrow" href="#sidebarSetEkantin" data-bs-toggle="collapse" role="button"
+                                            aria-expanded="false" aria-controls="sidebarSetEkantin">
+                                Setting
+                            </a>
+                            <div class="collapse" id="sidebarSetEkantin">
+                                <ul class="sub-menu-nav">
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Set. Umum</a></li>
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Set. Transaksi</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="menu-item">
+                <a class="menu-link menu-arrow" href="#sidebarDonasi" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="sidebarDonasi">
+                    <span class="nav-icon">
+                        <i class="ri-hand-coin-line"></i>
+                    </span>
+                    <span class="nav-text"> Donasi </span>
+                </a>
+                <div class="collapse" id="sidebarDonasi">
+                    <ul class="sub-menu-nav">
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Data Lembaga</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Riwayat Donasi</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Setting Donasi</a></li>
+                    </ul>
+                </div>
+            </li>
 
             <li class="menu-item">
                 <a class="menu-link menu-arrow" href="#sidebarReport" data-bs-toggle="collapse" role="button"
                    aria-expanded="false" aria-controls="sidebarReport">
         <span class="nav-icon">
-            <i class="ri-database-2-line"></i>
+            <i class="ri-file-chart-line"></i>
         </span>
                     <span class="nav-text"> Reports </span>
                 </a>
@@ -151,6 +209,14 @@
                 </a>
             </li>
 
+            <li class="menu-item">
+                <a class="menu-link" href="reports.html">
+                         <span class="nav-icon">
+                            <i class="ri-file-history-line"></i>
+                         </span>
+                    <span class="nav-text"> Logs Aktivitas  </span>
+                </a>
+            </li>
 
         </ul>
     </div>
