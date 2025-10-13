@@ -120,8 +120,10 @@
                 </a>
                 <div class="collapse" id="sidebarPenggajian">
                     <ul class="sub-menu-nav">
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Setting</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Transaksi</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('payroll_components') }}">Komponen Gaji</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('payroll_deductions') }}">Potongan</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Setting Gaji</a></li>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Pembayaran Gaji</a></li>
                     </ul>
                 </div>
             </li>

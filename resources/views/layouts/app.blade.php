@@ -4,6 +4,7 @@
 <head>
     @include('partials.head-css')
     @stack('styles')
+    @stack('script')
 </head>
 
 <body>

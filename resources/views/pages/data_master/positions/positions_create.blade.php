@@ -19,8 +19,8 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <x-input-field type="text" name="positions_name" label="Jabatan"
-                                       placeholder="Masukkan Jabatan" icon="bx bx-unit"
-                                       :value="old('positions_name', $positions->positions_name ?? '')" required />
+                                    placeholder="Masukkan Jabatan" icon="bx bx-unit"
+                                    :value="old('positions_name', $positions->positions_name ?? '')" required />
                     </div>
 
 
