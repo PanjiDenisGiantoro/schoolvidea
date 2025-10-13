@@ -35,24 +35,41 @@
         <div class="col-md-8">
             <div class="card p-4 shadow-sm rounded-4 border-0">
                 <div class="row g-3 align-items-center">
-                    <div class="col-md-6">
-                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
-                            @endforeach
-                        </select>
+                    {{-- Dropdown Kelas --}}
+                    <div class="mb-4">
+                        <label for="filter_kelas" class="form-label fw-semibold">Pilih Kelas</label>
+                        <div class="custom-dropdown" id="dropdownKelas">
+                            <input type="text" class="dropdown-input" placeholder="Cari atau Pilih Kelas..." readonly>
+                            <div class="dropdown-list">
+                                <div class="dropdown-search">
+                                    <input type="text" placeholder="Cari Kelas..." class="dropdown-search-input">
+                                </div>
+                                <ul class="dropdown-options">
+                                    @foreach ($kelas as $k)
+                                        <li data-value="{{ $k->id }}">{{ $k->nama_kelas }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
+                    {{-- Dropdown Siswa --}}
+                    <div class="mb-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
-                            <option value="">-- Pilih Siswa --</option>
-                        </select>
+                        <div class="custom-dropdown" id="dropdownSiswa">
+                            <input type="text" class="dropdown-input" placeholder="Cari atau Pilih Siswa..." readonly>
+                            <div class="dropdown-list">
+                                <div class="dropdown-search">
+                                    <input type="text" placeholder="Cari Siswa..." class="dropdown-search-input">
+                                </div>
+                                <ul class="dropdown-options">
+                                    <li class="disabled">Harus Pilih Kelas...</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="kategori_tagihan" class="form-label fw-semibold">Jenis Tagihan</label>
-                        <select id="kategori_tagihan" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="kategori_tagihan" class="form-select shadow-sm" >
                             <option value="">-- Pilih Jenis Tagihan --</option>
                             <option value="perbulan">Per Bulan</option>
                             <option value="bebas">Bebas</option>
@@ -61,7 +78,7 @@
 
                     <div class="mb-3" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
-                        <select id="nama_tagihan" class="form-select rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="nama_tagihan" class="form-select shadow-sm" data-choices>
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
                     </div>
@@ -588,6 +605,93 @@ document.addEventListener('DOMContentLoaded', function() {
         btnBelumLunas.classList.remove('custom-active-btn');
         tabelSudahLunas.style.display = 'block';
         tabelBelumLunas.style.display = 'none';
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Inisialisasi dropdown umum
+    document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+        const input = dropdown.querySelector('.dropdown-input');
+        const list = dropdown.querySelector('.dropdown-list');
+        const options = dropdown.querySelectorAll('.dropdown-options li');
+        const searchInput = dropdown.querySelector('.dropdown-search-input');
+
+        // toggle dropdown
+        input.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.dropdown-list').forEach(dl => {
+                if (dl !== list) dl.classList.remove('active');
+            });
+            list.classList.toggle('active');
+            searchInput.focus();
+        });
+
+        // klik di luar -> tutup
+        document.addEventListener('click', () => list.classList.remove('active'));
+
+        // klik item
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                if (!option.classList.contains('disabled')) {
+                    input.value = option.textContent;
+                    input.setAttribute('data-value', option.dataset.value);
+                    list.classList.remove('active');
+                    input.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        // search filter
+        searchInput.addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            options.forEach(option => {
+                option.style.display = option.textContent.toLowerCase().includes(term)
+                    ? 'block' : 'none';
+            });
+        });
+    });
+
+    // Dapatkan dropdown Kelas & Siswa
+    const dropdownKelas = document.querySelector('#dropdownKelas .dropdown-input');
+    const dropdownSiswa = document.querySelector('#dropdownSiswa .dropdown-input');
+    const siswaList = document.querySelector('#dropdownSiswa .dropdown-options');
+
+    // Fetch siswa berdasarkan kelas
+    dropdownKelas.addEventListener('change', async () => {
+        const kelasId = dropdownKelas.getAttribute('data-value');
+        if (!kelasId) return;
+
+        dropdownSiswa.value = "";
+        siswaList.innerHTML = '<li class="disabled">Memuat siswa...</li>';
+
+        try {
+            const res = await fetch(`/siswa/by-kelas/${kelasId}`);
+            const data = await res.json();
+            siswaList.innerHTML = '';
+
+            if (!data.length) {
+                siswaList.innerHTML = '<li class="disabled">Tidak ada siswa</li>';
+                return;
+            }
+
+            data.forEach(siswa => {
+                const li = document.createElement('li');
+                li.dataset.value = siswa.id;
+                li.textContent = siswa.user ? siswa.user.name : 'Nama tidak tersedia';
+                siswaList.appendChild(li);
+
+                li.addEventListener('click', () => {
+                    dropdownSiswa.value = li.textContent;
+                    dropdownSiswa.setAttribute('data-value', li.dataset.value);
+                    siswaList.closest('.dropdown-list').classList.remove('active');
+                });
+            });
+        } catch (err) {
+            siswaList.innerHTML = '<li class="disabled text-danger">Gagal memuat siswa</li>';
+            console.error(err);
+        }
     });
 });
 </script>
