@@ -22,7 +22,7 @@ use App\Http\Controllers\TipeunitController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
-
+use App\Http\Controllers\PayrollSettingController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -58,7 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('officer/update/{id}', [OfficerController::class, 'update'])->name('officer.update');
     Route::get('/delete/{id}', [OfficerController::class, 'destroy'])->name('officer.destroy');
     Route::get('/show/{id}', [OfficerController::class, 'show'])->name('officer.show');
-        Route::post('/upload', [OfficerController::class, 'upload'])->name('officer.upload');
+    Route::post('/upload', [OfficerController::class, 'upload'])->name('officer.upload');
+
 
 });
 Route::prefix('roles')->group(function () {
@@ -265,7 +266,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/delete/{id}', [PositionsController::class, 'destroy'])->name('positions.destroy');
         Route::get('/show/{id}', [PositionsController::class, 'show'])->name('positions.show');
     });
-    Route::prefix('payroll_components')->group(function() {
+    Route::prefix('payroll-components')->group(function() {
         Route::get('/', [PayrollComponentsController::class, 'index'])->name('payroll_components.index');
         Route::get('/create', [PayrollComponentsController::class, 'create'])->name('payroll_components.create');
         Route::post('/store', [PayrollComponentsController::class, 'store'])->name('payroll_components.store');
@@ -273,15 +274,37 @@ Route::prefix('tipe_unit')->group(function () {
         Route::put('payroll_components/update/{id}', [PayrollComponentsController::class, 'update'])->name('payroll_components.update');
         Route::get('/delete/{id}', [PayrollComponentsController::class, 'destroy'])->name('payroll_components.destroy');
         Route::get('/show/{id}', [PayrollComponentsController::class, 'show'])->name('payroll_components.show');
+        Route::get('/components/by-officer/{officerId}', [PayrollComponentsController::class, 'getByOfficer'])
+            ->name('components.byOfficer');
     });
-    Route::prefix('payroll_deductions')->group(function() {
+    Route::prefix('payroll-deductions')->group(function() {
         Route::get('/', [PayrollDeductionsController::class, 'index'])->name('payroll_deductions.index');
         Route::get('/create', [PayrollDeductionsController::class, 'create'])->name('payroll_deductions.create');
         Route::post('/store', [PayrollDeductionsController::class, 'store'])->name('payroll_deductions.store');
         Route::get('/edit/{id}', [PayrollDeductionsController::class, 'edit'])->name('payroll_deductions.edit');
-        Route::put('payroll_deductions/update/{id}', [PayrollDeductionsController::class, 'update'])->name('payroll_deductions.update');
+        Route::put('payroll-deductions/update/{id}', [PayrollDeductionsController::class, 'update'])->name('payroll_deductions.update');
         Route::get('/delete/{id}', [PayrollDeductionsController::class, 'destroy'])->name('payroll_deductions.destroy');
         Route::get('/show/{id}', [PayrollDeductionsController::class, 'show'])->name('payroll_deductions.show');
     });
+    Route::prefix('payroll-setting')->group(function() {
+        Route::get('/', [PayrollSettingController::class, 'index'])->name('payroll_settings.index');
+        Route::get('/create', [PayrollSettingController::class, 'create'])->name('payroll_settings.create');
+        Route::post('/store', [PayrollSettingController::class, 'store'])->name('payroll_settings.store');
+        Route::get('/edit/{id}', [PayrollSettingController::class, 'edit'])->name('payroll_settings.edit');
+        Route::put('payroll-setting/update/{id}', [PayrollSettingController::class, 'update'])->name('payroll_settings.update');
+        Route::get('/delete/{id}', [PayrollSettingController::class, 'destroy'])->name('payroll_settings.destroy');
+        Route::get('/show/{id}', [PayrollSettingController::class, 'show'])->name('payroll_settings.show');
 
+    // Ambil data payroll berdasarkan guru/staff (AJAX)
+        Route::get('/fetch/{officerId}', [PayrollSettingController::class, 'fetch'])
+            ->name('payroll_settings.fetch');
+
+    // Ambil daftar guru/staff berdasarkan unit (AJAX)
+        Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
+            ->name('officers.byUnit');
+    });
+    Route::get('/payroll-payment', function() {
+        return view('pages.penggajian.payroll_payment.payroll_payment');
+    });
+    
 });

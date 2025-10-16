@@ -20,10 +20,19 @@
                                    :value="old('name', $payroll_components->name ?? '')" required/>
                 </div>
                 <div class="col-md-6">
-                    <x-input-field type='number' name='price' label='Nilai Komponen'
-                                   placeholder='Masukkan Nilai Komponen' icon='bx bx-unit'
-                                   :value="old('price', $payroll_components->price ?? '')" required/>
+                    <x-input-field
+                        type="text"
+                        name="price_display"
+                        label="Nilai Komponen"
+                        placeholder="Masukkan Nilai Komponen"
+                        icon="bx bx-unit"
+                        value="{{ old('price', isset($payroll_components) ? number_format($payroll_components->price, 0, ',', '.') : '') }}"
+                        required
+                        oninput="formatNumberInput(this)"
+                        />
+                    <input type="hidden" name="price" id="price_hidden" value="{{ old('price', $payroll_components->price ?? '') }}">
                 </div>
+
                 <div class="col-md-6">
                     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                     <select name="status" id="status" class="form-select">
@@ -33,7 +42,9 @@
                 </div>
                 <div class="col-md-6">
                     <label for="description" class="form-label">Keterangan</label>
-                    <textarea name="description" id="description" class="form-control" rows="2">{{ old('description', $payroll_components->description ?? '') }}</textarea>
+                    <textarea name="description" id="description"
+                    style=" height: 45px; font-size: 0.95rem;"
+                    class="form-control" rows="2">{{ old('description', $payroll_components->description ?? '') }}</textarea>
                 </div>
             </div>
             <div class="m-4 text-end">
@@ -124,4 +135,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endif
+<script>
+function formatNumberInput(el) {
+    // Ambil angka tanpa karakter non-digit
+    let numericValue = el.value.replace(/\D/g, '');
+
+    // Format jadi ribuan pakai titik
+    el.value = new Intl.NumberFormat('id-ID').format(numericValue);
+
+    // Masukkan ke input hidden tanpa format
+    document.getElementById('price_hidden').value = numericValue;
+}
+</script>
+
 @endpush

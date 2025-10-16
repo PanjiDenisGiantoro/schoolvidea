@@ -290,5 +290,16 @@ class OfficerController extends Controller
             'filepath' => 'storage/' . $path
         ]);
     }
+    // app/Http/Controllers/OfficerController.php
+public function getByUnit($unitId)
+{
+    $officers = Officer::where('unit_id', $unitId)
+        ->with('user:id,name')
+        ->get(['id', 'user_id']);
+    
+
+    return response()->json($officers);
+}
+
 
 }

@@ -41,4 +41,8 @@ class Unit extends Model
     {
         return $this->belongsTo(Tipeunit::class, 'tipe_unit_id', 'id');
     }
+        public function payrollSettings()
+    {
+        return $this->hasMany(PayrollSetting::class, 'units_id');
+    }
 }

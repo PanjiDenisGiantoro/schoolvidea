@@ -75,17 +75,12 @@
                             <option value="bebas">Bebas</option>
                         </select>
                     </div>
-
                     <div class="mb-3" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
                         <select id="nama_tagihan" class="form-select shadow-sm" data-choices>
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
                     </div>
-
-
-
-
                 </div>
             </div>
         </div>
@@ -110,10 +105,7 @@
                 </ul>
             </div>
         </div>
-
         {{-- Ringkasan Tagihan --}}
-
-
         {{-- Daftar Tagihan --}}
         <div class="card shadow-sm rounded-4 border-0 mt-3">
             <!-- Header tombol toggle -->
@@ -125,7 +117,6 @@
                     <i class="ri-file-list-3-line"></i> Sudah Lunas
                 </button>
             </div>
-
             <!-- Header kartu -->
             <div class="custom-card-header">
                 <span><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</span>
@@ -135,8 +126,6 @@
                 <button type="button" class="btn custom-btn-purple " data-bs-toggle="modal" data-bs-target="#catatanModal"> +
                 </button>
             </div>
-
-            
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped align-middle mb-0">
@@ -192,12 +181,6 @@
                 </div>
             </div>
         </div>
-
-
-        
-
-
-
         {{-- Detail Siswa dan Form Tabungan --}}
         <div class="col-12">
             <div class="row g-4">
@@ -213,9 +196,7 @@
                         <input type="hidden" name="tahun" id="tahun_hidden">
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
-
                     </form>
-
                 </div>
             </div>
         </div>

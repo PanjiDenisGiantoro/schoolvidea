@@ -63,6 +63,10 @@ class Officer extends Model
             });
         });
     }
+        public function payrollSettings()
+    {
+        return $this->hasMany(PayrollSetting::class, 'units_id');
+    }
 
 
 
