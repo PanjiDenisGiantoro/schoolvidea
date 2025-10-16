@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Laravel\Telescope\Telescope;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (app()->environment('production')) {
+            Telescope::auth(function ($request) {
+                return auth()->check() && auth()->user()->is_admin;
+            });
+        }
+
     }
 }
