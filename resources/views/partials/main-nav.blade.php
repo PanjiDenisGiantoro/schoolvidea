@@ -214,7 +214,7 @@
             </li>
 
             <li class="menu-item">
-                <a class="menu-link" href="reports.html">
+                <a class="menu-link" href="{{ url('activity') }}">
                          <span class="nav-icon">
                             <i class="ri-file-history-line"></i>
                          </span>

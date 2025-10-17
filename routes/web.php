@@ -50,74 +50,74 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/', [AuthController::class, 'showupdate'])->name('profile.showupdate');
     Route::put('/profile/update-password', [AuthController::class, 'updatePassword'])->name('profile.updatePassword');
 
-    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class,'index'])->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::prefix('officer')->group(function () {
-    Route::get('/', [OfficerController::class, 'index'])->name('officer.index');
-    Route::get('/create', [OfficerController::class, 'create'])->name('officer.create');
-    Route::post('/store', [OfficerController::class, 'store'])->name('officer.store');
-    Route::get('/edit/{id}', [OfficerController::class, 'edit'])->name('officer.edit');
-    Route::put('officer/update/{id}', [OfficerController::class, 'update'])->name('officer.update');
-    Route::get('/delete/{id}', [OfficerController::class, 'destroy'])->name('officer.destroy');
-    Route::get('/show/{id}', [OfficerController::class, 'show'])->name('officer.show');
+        Route::get('/', [OfficerController::class, 'index'])->name('officer.index');
+        Route::get('/create', [OfficerController::class, 'create'])->name('officer.create');
+        Route::post('/store', [OfficerController::class, 'store'])->name('officer.store');
+        Route::get('/edit/{id}', [OfficerController::class, 'edit'])->name('officer.edit');
+        Route::put('officer/update/{id}', [OfficerController::class, 'update'])->name('officer.update');
+        Route::get('/delete/{id}', [OfficerController::class, 'destroy'])->name('officer.destroy');
+        Route::get('/show/{id}', [OfficerController::class, 'show'])->name('officer.show');
         Route::post('/upload', [OfficerController::class, 'upload'])->name('officer.upload');
 
-});
-Route::prefix('roles')->group(function () {
-    Route::get('/', [RolesController::class, 'index'])->name('roles.index');
-    Route::get('/create', [RolesController::class, 'create'])->name('roles.create');
-    Route::post('/store', [RolesController::class, 'store'])->name('roles.store');
-    Route::get('/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
-    Route::put('roles/update/{id}', [RolesController::class, 'update'])->name('roles.update');
-    Route::get('/delete/{id}', [RolesController::class, 'destroy'])->name('roles.destroy');
-    Route::get('/show/{id}', [RolesController::class, 'show'])->name('roles.show');
-    Route::get('/permissions/{id}', [RolesController::class, 'permissions'])->name('roles.permissions');
-    Route::get('roles/{id}/permissions', [RolesController::class, 'permissions'])->name('roles.permissions');
-    Route::post('roles/{id}/permissions', [RolesController::class, 'updatePermissions'])->name('roles.updatePermissions');
+    });
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RolesController::class, 'index'])->name('roles.index');
+        Route::get('/create', [RolesController::class, 'create'])->name('roles.create');
+        Route::post('/store', [RolesController::class, 'store'])->name('roles.store');
+        Route::get('/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
+        Route::put('roles/update/{id}', [RolesController::class, 'update'])->name('roles.update');
+        Route::get('/delete/{id}', [RolesController::class, 'destroy'])->name('roles.destroy');
+        Route::get('/show/{id}', [RolesController::class, 'show'])->name('roles.show');
+        Route::get('/permissions/{id}', [RolesController::class, 'permissions'])->name('roles.permissions');
+        Route::get('roles/{id}/permissions', [RolesController::class, 'permissions'])->name('roles.permissions');
+        Route::post('roles/{id}/permissions', [RolesController::class, 'updatePermissions'])->name('roles.updatePermissions');
 
-});
+    });
 
-Route::prefix('lembagaunit')->group(function () {
-    Route::get('/', [LembagaunitController::class, 'index'])->name('lembagaunit.index');
-    Route::get('/create', [LembagaunitController::class, 'create'])->name('lembagaunit.create');
-    Route::post('/store', [LembagaunitController::class, 'store'])->name('lembagaunit.store');
-    Route::get('/edit/{id}', [LembagaunitController::class, 'edit'])->name('lembagaunit.edit');
-    Route::put('lembagaunit/update/{id}', [LembagaUnitController::class, 'update'])->name('lembagaunit.update');
-    Route::get('/delete/{id}', [LembagaunitController::class, 'destroy'])->name('lembagaunit.destroy');
-    Route::get('/show/{id}', [LembagaunitController::class, 'show'])->name('lembagaunit.show');
-    Route::post('/upload', [LembagaUnitController::class, 'upload'])->name('lembagaunit.upload');
+    Route::prefix('lembagaunit')->group(function () {
+        Route::get('/', [LembagaunitController::class, 'index'])->name('lembagaunit.index');
+        Route::get('/create', [LembagaunitController::class, 'create'])->name('lembagaunit.create');
+        Route::post('/store', [LembagaunitController::class, 'store'])->name('lembagaunit.store');
+        Route::get('/edit/{id}', [LembagaunitController::class, 'edit'])->name('lembagaunit.edit');
+        Route::put('lembagaunit/update/{id}', [LembagaUnitController::class, 'update'])->name('lembagaunit.update');
+        Route::get('/delete/{id}', [LembagaunitController::class, 'destroy'])->name('lembagaunit.destroy');
+        Route::get('/show/{id}', [LembagaunitController::class, 'show'])->name('lembagaunit.show');
+        Route::post('/upload', [LembagaUnitController::class, 'upload'])->name('lembagaunit.upload');
 
-});
+    });
 
-Route::prefix('unit')->group(function () {
-    Route::get('/', [UnitController::class, 'index'])->name('unit.index');
-    Route::get('/create', [UnitController::class, 'create'])->name('unit.create');
-    Route::post('/store', [UnitController::class, 'store'])->name('unit.store');
-    Route::get('/edit/{id}', [UnitController::class, 'edit'])->name('unit.edit');
-    Route::put('unit/update/{id}', [UnitController::class, 'update'])->name('unit.update');
-    Route::get('/delete/{id}', [UnitController::class, 'destroy'])->name('unit.destroy');
-    Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
-    Route::post('/upload', [UnitController::class, 'upload'])->name('unit.upload');
-    Route::get('/{unitId}/kelas', [UnitController::class, 'listkelas'])->name('unit.kelas');
-});
+    Route::prefix('unit')->group(function () {
+        Route::get('/', [UnitController::class, 'index'])->name('unit.index');
+        Route::get('/create', [UnitController::class, 'create'])->name('unit.create');
+        Route::post('/store', [UnitController::class, 'store'])->name('unit.store');
+        Route::get('/edit/{id}', [UnitController::class, 'edit'])->name('unit.edit');
+        Route::put('unit/update/{id}', [UnitController::class, 'update'])->name('unit.update');
+        Route::get('/delete/{id}', [UnitController::class, 'destroy'])->name('unit.destroy');
+        Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
+        Route::post('/upload', [UnitController::class, 'upload'])->name('unit.upload');
+        Route::get('/{unitId}/kelas', [UnitController::class, 'listkelas'])->name('unit.kelas');
+    });
 
-Route::prefix('tahun_ajaran')->group(function () {
-    Route::get('/', [TahunajaranController::class, 'index'])->name('tahun_ajaran.index');
-    Route::get('/create', [TahunajaranController::class, 'create'])->name('tahun_ajaran.create');
-    Route::post('/store', [TahunajaranController::class, 'store'])->name('tahun_ajaran.store');
-    Route::get('/edit/{id}', [TahunajaranController::class, 'edit'])->name('tahun_ajaran.edit');
-    Route::put('tahun_ajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahun_ajaran.update');
-    Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahun_ajaran.destroy');
-    Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahun_ajaran.show');
-});
-Route::prefix('tipe_unit')->group(function () {
-    Route::get('/', [TipeunitController::class, 'index'])->name('tipe_unit.index');
-    Route::get('/create', [TipeunitController::class, 'create'])->name('tipe_unit.create');
-    Route::post('/store', [TipeunitController::class, 'store'])->name('tipe_unit.store');
-    Route::get('/edit/{id}', [TipeunitController::class, 'edit'])->name('tipe_unit.edit');
-    Route::put('tipe_unit/update/{id}', [TipeunitController::class, 'update'])->name('tipe_unit.update');
-    Route::get('/delete/{id}', [TipeunitController::class, 'destroy'])->name('tipe_unit.destroy');
-    Route::get('/show/{id}', [TipeunitController::class, 'show'])->name('tipe_unit.show');
-});
+    Route::prefix('tahun_ajaran')->group(function () {
+        Route::get('/', [TahunajaranController::class, 'index'])->name('tahun_ajaran.index');
+        Route::get('/create', [TahunajaranController::class, 'create'])->name('tahun_ajaran.create');
+        Route::post('/store', [TahunajaranController::class, 'store'])->name('tahun_ajaran.store');
+        Route::get('/edit/{id}', [TahunajaranController::class, 'edit'])->name('tahun_ajaran.edit');
+        Route::put('tahun_ajaran/update/{id}', [TahunajaranController::class, 'update'])->name('tahun_ajaran.update');
+        Route::get('/delete/{id}', [TahunajaranController::class, 'destroy'])->name('tahun_ajaran.destroy');
+        Route::get('/show/{id}', [TahunajaranController::class, 'show'])->name('tahun_ajaran.show');
+    });
+    Route::prefix('tipe_unit')->group(function () {
+        Route::get('/', [TipeunitController::class, 'index'])->name('tipe_unit.index');
+        Route::get('/create', [TipeunitController::class, 'create'])->name('tipe_unit.create');
+        Route::post('/store', [TipeunitController::class, 'store'])->name('tipe_unit.store');
+        Route::get('/edit/{id}', [TipeunitController::class, 'edit'])->name('tipe_unit.edit');
+        Route::put('tipe_unit/update/{id}', [TipeunitController::class, 'update'])->name('tipe_unit.update');
+        Route::get('/delete/{id}', [TipeunitController::class, 'destroy'])->name('tipe_unit.destroy');
+        Route::get('/show/{id}', [TipeunitController::class, 'show'])->name('tipe_unit.show');
+    });
 
 
     Route::prefix('report')->group(function () {
@@ -215,18 +215,18 @@ Route::prefix('tipe_unit')->group(function () {
         Route::post('/store', [TagihanController::class, 'store'])->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
-        Route::get('/perbulan/{id}',[TagihanController::class,'perbulan'])->name('tagihan.perbulan');
-        Route::get('/daftarTagihan/{id}',[TagihanController::class,'daftarTagihan'])->name('tagihan.daftarTagihan');
-        Route::get('/daftarTagihanBebas/{id}',[TagihanController::class,'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
+        Route::get('/perbulan/{id}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
+        Route::get('/daftarTagihan/{id}', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftarTagihan');
+        Route::get('/daftarTagihanBebas/{id}', [TagihanController::class, 'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
     });
 
-    Route::prefix('potongan')->group(function (){
+    Route::prefix('potongan')->group(function () {
         Route::get('/', [PotonganController::class, 'index'])->name('potongan.index');
         Route::get('/create', [PotonganController::class, 'create'])->name('potongan.create');
         Route::post('/store', [PotonganController::class, 'store'])->name('potongan.store');
-        Route::get('/show/{id}',[PotonganController::class,'show'])->name('potongan.show');
+        Route::get('/show/{id}', [PotonganController::class, 'show'])->name('potongan.show');
     });
 
     Route::prefix('pembayaran')->group(function () {
@@ -266,7 +266,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/delete/{id}', [PositionsController::class, 'destroy'])->name('positions.destroy');
         Route::get('/show/{id}', [PositionsController::class, 'show'])->name('positions.show');
     });
-    Route::prefix('payroll_components')->group(function() {
+    Route::prefix('payroll_components')->group(function () {
         Route::get('/', [PayrollComponentsController::class, 'index'])->name('payroll_components.index');
         Route::get('/create', [PayrollComponentsController::class, 'create'])->name('payroll_components.create');
         Route::post('/store', [PayrollComponentsController::class, 'store'])->name('payroll_components.store');
@@ -275,7 +275,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/delete/{id}', [PayrollComponentsController::class, 'destroy'])->name('payroll_components.destroy');
         Route::get('/show/{id}', [PayrollComponentsController::class, 'show'])->name('payroll_components.show');
     });
-    Route::prefix('payroll_deductions')->group(function() {
+    Route::prefix('payroll_deductions')->group(function () {
         Route::get('/', [PayrollDeductionsController::class, 'index'])->name('payroll_deductions.index');
         Route::get('/create', [PayrollDeductionsController::class, 'create'])->name('payroll_deductions.create');
         Route::post('/store', [PayrollDeductionsController::class, 'store'])->name('payroll_deductions.store');
@@ -285,4 +285,7 @@ Route::prefix('tipe_unit')->group(function () {
         Route::get('/show/{id}', [PayrollDeductionsController::class, 'show'])->name('payroll_deductions.show');
     });
 
+    Route::prefix('activity')->group(function () {
+        Route::get('/', [AuthController::class, 'activity'])->name('activity.index');
+    });
 });

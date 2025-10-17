@@ -9,6 +9,7 @@ use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Activitylog\Models\Activity;
 
 class AuthController extends Controller
 {
@@ -180,5 +181,11 @@ class AuthController extends Controller
 
         // Redirect dengan sukses
         return redirect()->route('profile.show')->with('success', 'Password berhasil diupdate.');
+    }
+    public function activity()
+    {
+        $activity = Activity::latest()->get();
+
+        return view('pages.activity_log.activity_log', compact('activity'));
     }
 }
