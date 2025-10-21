@@ -295,9 +295,14 @@ class TagihanController extends Controller
 
 
 
+
     public function perbulan($siswaId, $tagihanId)
     {
-        $tagihanSiswa = Tagihansiswa::with('siswa','tagihan.items.kategori')
+        $tagihanSiswa = Tagihansiswa::with([
+            'siswa',
+            'tagihan.items.kategori',
+            'potonganSiswa.potongan'
+        ])
             ->where('tagihan_id', $tagihanId)
             ->where('siswa_id', $siswaId)
             ->orderBy('bulan_ke')
@@ -314,29 +319,35 @@ class TagihanController extends Controller
         $bulanMulai = (int) $firstTagihan->bulan_mulai;
         $tahunMulai = (int) $firstTagihan->tahun_mulai;
 
-        $data = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori) {
+        $data = $tagihanSiswa->map(function ($ts, $index) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori) {
             $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
-            $statusLabels = [
-                0 => 'Belum Lunas',
-                1 => 'Lunas',
-                2 => 'Proses Cicilan',
-            ];
+
+            $totalPotongan = $ts->potonganSiswa->sum('nominal');
+            $jumlahTagihan = $nominal - $totalPotongan;
+            $jumlahDibayar = $jumlahTagihan - $ts->sisa_nominal;
+            $jumlahTunggakan = $ts->sisa_nominal;
 
             return [
-                'id'            => $ts->id,
-                'tagihan_id'    => $ts->tagihan_id,
-                'nama_kategori' => $namaKategori,
-                'bulan'         => $date->translatedFormat('F'),
-                'tahun'         => $date->year,
-                'nominal'       => $nominal,
-                'sisa_nominal'  => $ts->sisa_nominal, // ✅ tambahkan field ini
-                'status'        => $statusLabels[$ts->status] ?? '-',
-                'tanggal_bayar' => $ts->tanggal_bayar
+                'no'                => $index + 1,
+                'id'                => $ts->id,
+                'periode'           => $date->translatedFormat('F Y'),
+                'tagihan_kelas'     => $namaKategori,
+                'rincian_tagihan'   => (int) $nominal, // ✅ ubah ke integer
+                'jumlah_potongan'   => (int) $totalPotongan,
+                'jumlah_tagihan'    => (int) $jumlahTagihan,
+                'jumlah_dibayar'    => (int) $jumlahDibayar,
+                'jumlah_tunggakan'  => (int) $jumlahTunggakan,
+                'nominal_pembayaran'=> (int) $jumlahTagihan,
+                'catatan'           => $ts->catatan ?? '',
+                'status'            => $ts->status,
             ];
         });
 
         return response()->json($data);
     }
+
+
+
 
 
     public function daftarTagihan($siswaId)

@@ -441,26 +441,31 @@
                     }
 
                     listTagihan.innerHTML = data.map(tagihan => `
-    <tr>
-        <td class="text-center">${tagihan.bulan} ${tagihan.tahun}</td>
-        <td class="text-center">${tagihan.nama_kategori}</td>
-        <td class="fw-bold text-end">Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}</td>
-        <td class="fw-bold text-end">Rp ${parseInt(tagihan.sisa_nominal).toLocaleString('id-ID')}</td> <!-- ✅ kolom baru -->
-        <td class="text-center">
-            <span class="badge ${tagihan.status === 'Lunas' ? 'bg-success' : 'bg-warning'}">
-                ${tagihan.status.toUpperCase()}
-            </span>
-        </td>
-        <td class="text-center">
-            ${tagihan.status === 'Lunas'
-                        ? `<span class="text-success"><i class="fa fa-check-circle"></i> Lunas</span>`
+<tr>
+    <td class="text-center">
+        <input type="checkbox" name="select_tagihan[]" value="${tagihan.id}">
+    </td>
+    <td class="text-center">${tagihan.no}</td>
+    <td class="text-center">${tagihan.periode}</td>
+    <td class="text-center">${tagihan.tagihan_kelas}</td>
+    <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+    <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+    <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+    <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+    <td class="text-end text-warning">Rp ${parseInt(tagihan.jumlah_tunggakan).toLocaleString('id-ID')}</td>
+    <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+    <td class="text-center">${tagihan.catatan || '-'}</td>
+    <td class="text-center">
+        ${tagihan.status === 1
+                        ? `<span class="badge bg-success">LUNAS</span>`
                         : `<button type="button"
-                           class="btn btn-success btn-sm rounded-pill"
-                           onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', '${tagihan.nominal}', '${tagihan.id}')">
-                           <i class="fa fa-credit-card"></i> Bayar
-                       </button>`}
-        </td>
-    </tr>
+                class="btn btn-success btn-sm rounded-pill"
+              onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', ${tagihan.nominal}, ${tagihan.kategori_id})">
+                <i class="fa fa-credit-card"></i> Bayar
+              </button>`
+                    }
+    </td>
+</tr>
 `).join('');
 
                 });

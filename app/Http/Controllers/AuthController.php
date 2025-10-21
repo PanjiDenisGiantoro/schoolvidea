@@ -185,7 +185,6 @@ class AuthController extends Controller
     public function activity()
     {
         $activity = Activity::latest()->get();
-
         return view('pages.activity_log.activity_log', compact('activity'));
     }
 }

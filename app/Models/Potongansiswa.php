@@ -22,4 +22,5 @@ class Potongansiswa extends Model
     {
         return $this->belongsTo(TagihanSiswa::class);
     }
+
 }
