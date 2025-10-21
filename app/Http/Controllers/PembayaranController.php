@@ -60,7 +60,7 @@ class PembayaranController extends Controller
             // tentukan status baru
             if ($sisaSetelahBayar == '0') {
                 $statusTagihan = '1'; // Lunas
-                $sisaSetelahBayar = '0'; // jaga-jaga jangan negatif
+                $sisaSetelahBayar = 0; // jaga-jaga jangan negatif
                 $keterangan = "Lunas tagihan bulan {$request->bulan} {$request->tahun} sebesar Rp " . number_format($nominal, 0, ',', '.');
                 $tanggalBayar = now();
             } else {
@@ -86,14 +86,14 @@ class PembayaranController extends Controller
                 'sisa_nominal'  => $sisaSetelahBayar,
                 'tanggal_bayar' => $tanggalBayar,
             ]);
-            $allLunas = !Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
-                ->where('status', '!=', '1')
-                ->exists();
-
-            if ($allLunas) {
-                Tagihan::where('id', $tagihanSiswa->tagihan_id)
-                    ->update(['status_tagihan' => 1]);
-            }
+//            $hasUnpaid = Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
+//                ->where('status', '0') // 0 = Belum Lunas
+//                ->get();
+//
+//            if ($hasUnpaid->isEmpty()) {
+//                Tagihan::where('id', $tagihanSiswa->tagihan_id)
+//                    ->update(['status_tagihan' => 1]);
+//            }
 
             // catat transaksi keuangan
             $transaksi = Keuangan_transaksi::create([

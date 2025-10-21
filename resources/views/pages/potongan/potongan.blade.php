@@ -38,7 +38,17 @@
                         <td>{{ $potongan->kelas->nama_kelas }}</td>
                         <td>{{ $potongan->kategoriTagihan->nama_kategori }}</td>
                         <td>{{ $potongan->tipe_potongan }}</td>
-                        <td>Rp {{ number_format($potongan->nilai, 2, ',', '.') }}</td>
+
+                        <td>
+                            @php
+                                if ($potongan->tipe_potongan == 'Persen') {
+                                    $nilai = $potongan->nilai . '%';
+                                } else {
+                                    $nilai = 'Rp ' . number_format($potongan->nilai, 2, ',', '.');
+                                }
+                            @endphp
+                            {{ $nilai }}
+                        </td>
                         <td>{{ $potongan->keterangan ?? '-' }}</td>
                         <td>
                             <!-- View Button -->

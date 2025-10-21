@@ -132,8 +132,7 @@
                             <th>Rincian Tagihan</th>
                             <th>Jumlah Potongan</th>
                             <th>Jumlah Tagihan</th>
-                            <th>Jumlah Dibayar</th>
-                            <th>Jumlah Tunggakan</th>
+                            <th>Total Tunggakan</th>
                             <th>Nominal Pembayaran</th>
                             <th>Catatan</th>
                             <th>Aksi</th>
@@ -430,54 +429,75 @@
             fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (!data.length) {
+                    if (!data.belum_lunas.length && !data.sudah_lunas.length) {
                         listTagihan.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
-                        </td>
-                    </tr>`;
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
                         return;
                     }
 
-                    listTagihan.innerHTML = data.map(tagihan => `
-<tr>
-    <td class="text-center">
-        <input type="checkbox" name="select_tagihan[]" value="${tagihan.id}">
-    </td>
-    <td class="text-center">${tagihan.no}</td>
-    <td class="text-center">${tagihan.periode}</td>
-    <td class="text-center">${tagihan.tagihan_kelas}</td>
-    <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-    <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-    <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-    <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
-    <td class="text-end text-warning">Rp ${parseInt(tagihan.jumlah_tunggakan).toLocaleString('id-ID')}</td>
-    <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
-    <td class="text-center">${tagihan.catatan || '-'}</td>
-    <td class="text-center">
-        ${tagihan.status === 1
-                        ? `<span class="badge bg-success">LUNAS</span>`
-                        : `<button type="button"
-                class="btn btn-success btn-sm rounded-pill"
-              onclick="bayarTagihan(${tagihan.id}, '${tagihan.bulan}', '${tagihan.tahun}', ${tagihan.nominal}, ${tagihan.kategori_id})">
-                <i class="fa fa-credit-card"></i> Bayar
-              </button>`
-                    }
-    </td>
-</tr>
-`).join('');
+                    // Render Belum Lunas
+                    const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
+                    tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
+            <tr>
+                <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
+                <td class="text-center">${tagihan.no}</td>
+                <td class="text-center">${tagihan.periode}</td>
+                <td class="text-center">${tagihan.tagihan_kelas}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center">${tagihan.catatan || '-'}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-success btn-sm rounded-pill"
+                        onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.nominal_pembayaran}, ${tagihan.kategori_id || 1})">
+                        <i class="fa fa-credit-card"></i> Bayar
+                    </button>
+                </td>
+            </tr>
+        `).join('');
 
+                    // Render Sudah Lunas
+                    const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
+                    tabelLunas.innerHTML = data.sudah_lunas.map(tagihan => `
+            <tr>
+                <td class="text-center">${tagihan.no}</td>
+                <td class="text-center">${tagihan.periode}</td>
+                <td class="text-center">${tagihan.tagihan_kelas}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
+            </tr>
+        `).join('');
                 });
-        });
 
+        });
     </script>
     <script>
 
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
+            // Handle fallback values for bulan and tahun
+            const displayBulan = bulan && bulan !== 'N/A' ? bulan : 'Tagihan';
+            const displayTahun = tahun && tahun !== 'undefined' ? tahun : new Date().getFullYear();
+
+            // Ensure nominal is a valid number
+            const validNominal = parseInt(nominal) || 0;
+
+            if (validNominal <= 0) {
+                Swal.fire("Error!", "Nominal tagihan tidak valid.", "error");
+                return;
+            }
+
             Swal.fire({
-                title: `Bayar Tagihan ${bulan} ${tahun}`,
-                text: `Total: Rp ${parseInt(nominal).toLocaleString('id-ID')}`,
+                title: `Bayar Tagihan ${displayBulan} ${displayTahun}`,
+                text: `Total: Rp ${validNominal.toLocaleString('id-ID')}`,
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonText: "Bayar Full",
@@ -490,17 +510,17 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     // 🔹 Bayar Full
-                    kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, nominal);
+                    kirimPembayaran(tagihanId, bulan, tahun, validNominal, kategoriId, validNominal);
                 } else if (result.isDenied) {
                     // 🔹 Input Nominal untuk Bayar Sebagian
                     Swal.fire({
-                        title: "Masukkan Nominal Bayar",
+                        title: "Masukan Nominal Bayar",
                         input: "number",
                         inputAttributes: {
                             min: 1,
-                            max: nominal
+                            max: validNominal
                         },
-                        inputLabel: `Maksimal Rp ${parseInt(nominal).toLocaleString('id-ID')}`,
+                        inputLabel: `Maksimal Rp ${validNominal.toLocaleString('id-ID')}`,
                         inputPlaceholder: "Contoh: 500000",
                         showCancelButton: true,
                         confirmButtonText: "Bayar",
@@ -510,7 +530,7 @@
                                 Swal.showValidationMessage("Nominal harus lebih dari 0");
                                 return false;
                             }
-                            if (parseInt(val) > parseInt(nominal)) {
+                            if (parseInt(val) > validNominal) {
                                 Swal.showValidationMessage("Nominal tidak boleh lebih besar dari total tagihan!");
                                 return false;
                             }
@@ -518,13 +538,12 @@
                         }
                     }).then((res) => {
                         if (res.isConfirmed) {
-                            kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, res.value);
+                            kirimPembayaran(tagihanId, bulan, tahun, validNominal, kategoriId, res.value);
                         }
                     });
                 }
             });
         }
-
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
                 method: 'POST',

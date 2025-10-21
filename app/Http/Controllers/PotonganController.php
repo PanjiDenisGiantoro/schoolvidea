@@ -24,7 +24,7 @@ class PotonganController extends Controller
         $units = Unit::get();
         $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function ($unit, $query){
             $query('unit_id',$query->unit_id);
-        });
+        })->get();
         return view('pages.potongan.potongan_create',compact('units','kategoriTagihan'));
 
     }
