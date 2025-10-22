@@ -220,6 +220,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/daftarTagihanBebas/{id}', [TagihanController::class, 'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
+
     });
 
     Route::prefix('potongan')->group(function () {
@@ -232,6 +233,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pembayaran')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
+        Route::post('/catatan', [PembayaranController::class, 'simpanCatatan']);
+
     });
 
     Route::prefix('migrasi')->group(function () {

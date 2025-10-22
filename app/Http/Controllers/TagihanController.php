@@ -332,7 +332,7 @@ class TagihanController extends Controller
             $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
             $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
-            $jumlahDibayar = $jumlahTagihan - $ts->sisa_nominal;
+            $jumlahDibayar = $ts->sisa_nominal;
             $jumlahTunggakan = $ts->sisa_nominal;
 
             $row = [

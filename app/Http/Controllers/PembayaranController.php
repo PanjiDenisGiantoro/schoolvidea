@@ -142,5 +142,23 @@ class PembayaranController extends Controller
         }
     }
 
+    public function simpanCatatan(Request $request)
+    {
+        $request->validate([
+            'tagihan_id' => 'required|integer',
+            'catatan' => 'required|string|max:255'
+        ]);
+
+        $tagihan = TagihanSiswa::find($request->tagihan_id);
+        if (!$tagihan) {
+            return response()->json(['status' => 0, 'message' => 'Tagihan tidak ditemukan']);
+        }
+
+        $tagihan->catatan = $request->catatan;
+        $tagihan->save();
+
+        return response()->json(['status' => 1, 'message' => 'Catatan berhasil disimpan']);
+    }
+
 
 }
