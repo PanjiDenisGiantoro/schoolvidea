@@ -115,8 +115,6 @@
                 <button id="btnProsesPembayaran" class="custom-btn-info">
                     <i class="ri-checkbox-multiple-line"></i> Proses Pembayaran
                 </button>
-                <button type="button" class="btn custom-btn-purple " data-bs-toggle="modal" data-bs-target="#catatanModal"> +
-                </button>
             </div>
 
 
@@ -195,6 +193,8 @@
                         <input type="hidden" name="tahun" id="tahun_hidden">
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
+                        <input type="hidden" id="catatan_tagihan_id">
+
 
                     </form>
 
@@ -222,7 +222,8 @@
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn custom-btn-purple">Simpan Catatan</button>
+                        <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan Catatan</button>
+
                     </div>
                 </div>
             </div>
@@ -454,8 +455,12 @@
                 <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
                 <td class="text-center">${tagihan.catatan || '-'}</td>
                 <td class="text-center">
+                <button type="button" class="btn btn-warning btn-sm rounded-pill"
+                                onclick="tambahCatatan(${tagihan.id})">
+                                <i class="fa fa-sticky-note"></i> Catatan
+                            </button>
                     <button type="button" class="btn btn-success btn-sm rounded-pill"
-                        onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.nominal_pembayaran}, ${tagihan.kategori_id || 1})">
+                        onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.jumlah_dibayar}, ${tagihan.kategori_id || 1})">
                         <i class="fa fa-credit-card"></i> Bayar
                     </button>
                 </td>
@@ -472,7 +477,7 @@
                 <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
                 <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
@@ -614,5 +619,51 @@
                 tabelBelumLunas.style.display = 'none';
             });
         });
+        function tambahCatatan(tagihanId) {
+            document.getElementById('catatan_tagihan_id').value = tagihanId;
+            document.getElementById('isiCatatan').value = ''; // kosongkan sebelumnya
+            const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
+            modal.show();
+        }
+
+        function simpanCatatan() {
+            const tagihanId = document.getElementById('catatan_tagihan_id').value;
+            const isiCatatan = document.getElementById('isiCatatan').value.trim();
+
+            if (!isiCatatan) {
+                Swal.fire("Peringatan!", "Catatan tidak boleh kosong.", "warning");
+                return;
+            }
+
+            fetch('/pembayaran/catatan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_id: tagihanId,
+                    catatan: isiCatatan
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 1) {
+                        Swal.fire("Berhasil!", "Catatan berhasil disimpan.", "success");
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('catatanModal'));
+                        modal.hide();
+
+                        // reload tabel supaya catatan muncul
+                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                    } else {
+                        Swal.fire("Gagal!", data.message || "Tidak dapat menyimpan catatan.", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire("Error!", "Terjadi kesalahan saat menyimpan catatan.", "error");
+                });
+        }
+
     </script>
 @endpush
