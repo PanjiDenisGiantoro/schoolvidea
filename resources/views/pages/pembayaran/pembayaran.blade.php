@@ -116,7 +116,32 @@
                     <i class="ri-checkbox-multiple-line"></i> Proses Pembayaran
                 </button>
             </div>
+            <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 rounded-4 shadow-lg">
+                        <div class="modal-header custom-modal-header">
+                            <h5 class="modal-title fw-semibold" id="catatanModalLabel">
+                                <i class="ri-sticky-note-line"></i> Tambah Catatan
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
 
+                            <form id="formCatatan">
+                                <div class="mb-3">
+                                    <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
+                                    <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan Catatan</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
@@ -202,32 +227,7 @@
             </div>
         </div>
         <!-- Modal Catatan -->
-        <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 rounded-4 shadow-lg">
-                    <div class="modal-header custom-modal-header">
-                        <h5 class="modal-title fw-semibold" id="catatanModalLabel">
-                            <i class="ri-sticky-note-line"></i> Tambah Catatan
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
 
-                        <form id="formCatatan">
-                            <div class="mb-3">
-                                <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
-                                <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan Catatan</button>
-
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
 
