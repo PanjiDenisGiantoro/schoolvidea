@@ -222,5 +222,6 @@
                 confirmButtonColor: '#d33',
             });
         </script>
+        @endif
 
         @endpush
