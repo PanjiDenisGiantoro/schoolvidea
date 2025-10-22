@@ -71,7 +71,7 @@ class PotonganController extends Controller
                     $nominal = $this->calculateNominal($potongan, $tagihan);
 
                     // Store the PotonganSiswa entry
-                    PotonganSiswa::create([
+                    Potongansiswa::create([
                         'potongan_id' => $potongan->id,
                         'tagihan_id' => $tagihan->id,
                         'tagihan_siswa_id' => $tagihanSiswa->id,
