@@ -9,7 +9,7 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 
 use App\Models\Potongan;
-use App\Models\PotonganSiswa;
+use App\Models\Potongansiswa;
 use Illuminate\Support\Facades\Auth;
 
 class PotonganController extends Controller
