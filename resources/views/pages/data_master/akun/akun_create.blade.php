@@ -4,16 +4,15 @@
 @section('content')
     @include('partials.page-title', [
         'title' => isset($akun) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Akun'
+        'subTitle' => 'Akun',
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="akunForm"
-                  action="{{ isset($akun) ? route('akun.update', $akun->id) : route('akun.store') }}"
-                  method="POST">
+            <form id="akunForm" action="{{ isset($akun) ? route('akun.update', $akun->id) : route('akun.store') }}"
+                method="POST">
                 @csrf
-                @if(isset($akun))
+                @if (isset($akun))
                     @method('PUT')
                 @endif
 
@@ -22,9 +21,10 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-control" required data-choices data-choices-sorting-false>
+                            <select name="unit_id" id="unit_id" class="form-control" data-choices
+                                data-choices-sorting-false>
                                 <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
+                                @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
                                         {{ old('unit_id', $akun->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                         {{ $u->nama_unit }}
@@ -33,33 +33,35 @@
                             </select>
                         </div>
                     </div>
-                    {{--                    list kategori ada tabungan dan transaksi--}}
+                    {{--                    list kategori ada tabungan dan transaksi --}}
                     <div class="col-md-4">
                         <label for="kategori_akun" class="form-label">Kategori Akun</label>
-                        <select name="kategori_akun" id="kategori_akun" class="form-control" required data-choices data-choices-sorting-false>
+                        <select name="kategori_akun" id="kategori_akun" class="form-control" data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Kategori Akun --</option>
-                            <option value="tabungan" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
-                            <option value="transaksi" {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'transaksi' ? 'selected' : '' }}>Transaksi</option>
+                            <option value="tabungan"
+                                {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>
+                                Tabungan</option>
+                            <option value="transaksi"
+                                {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'transaksi' ? 'selected' : '' }}>
+                                Transaksi</option>
                         </select>
                     </div>
                     {{-- Kode Akun --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="kode_akun" label="Kode Akun"
-                                       placeholder="Masukkan Kode Akun" icon="bx bx-barcode"
-                                       :value="old('kode_akun', $akun->kode_akun ?? '')" required/>
+                        <x-input-field type="text" name="kode_akun" label="Kode Akun" placeholder="Masukkan Kode Akun"
+                            icon="bx bx-barcode" :value="old('kode_akun', $akun->kode_akun ?? '')" />
                     </div>
 
                     {{-- Nama Akun --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="nama_akun" label="Nama Akun"
-                                       placeholder="Masukkan Nama Akun" icon="bx bx-book"
-                                       :value="old('nama_akun', $akun->nama_akun ?? '')" required/>
+                        <x-input-field type="text" name="nama_akun" label="Nama Akun" placeholder="Masukkan Nama Akun"
+                            icon="bx bx-book" :value="old('nama_akun', $akun->nama_akun ?? '')" />
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2"
-                                      placeholder="Tambahkan keterangan">{{ old('keterangan', $akun->keterangan ?? '') }}</textarea>
+                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2" placeholder="Tambahkan keterangan">{{ old('keterangan', $akun->keterangan ?? '') }}</textarea>
                         </div>
                     </div>
                     {{-- Status --}}
@@ -67,8 +69,10 @@
                         <div class="mb-3">
                             <label for="status" class="form-label">Status</label>
                             <select name="status" id="status" class="form-select">
-                                <option value="1" {{ old('status', $akun->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>
-                                <option value="0" {{ old('status', $akun->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
+                                <option value="1" {{ old('status', $akun->status ?? '') == '1' ? 'selected' : '' }}>
+                                    Aktif</option>
+                                <option value="0" {{ old('status', $akun->status ?? '') == '0' ? 'selected' : '' }}>
+                                    Tidak Aktif</option>
                             </select>
                         </div>
                     </div>
@@ -77,12 +81,14 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="tipe" class="form-label">Tipe</label>
-                            <select name="tipe" id="tipe" class="form-control" required data-choices data-choices-sorting-false>
+                            <select name="tipe" id="tipe" class="form-control" data-choices
+                                data-choices-sorting-false>
                                 @php
                                     $types = ['ASET', 'LIABILITAS', 'EKUITAS', 'PENDAPATAN', 'BEBAN'];
                                 @endphp
-                                @foreach($types as $type)
-                                    <option value="{{ $type }}" {{ old('tipe', $akun->tipe ?? '') == $type ? 'selected' : '' }}>
+                                @foreach ($types as $type)
+                                    <option value="{{ $type }}"
+                                        {{ old('tipe', $akun->tipe ?? '') == $type ? 'selected' : '' }}>
                                         {{ $type }}
                                     </option>
                                 @endforeach
@@ -94,13 +100,13 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="parent_id" class="form-label">Parent</label>
-                            <select name="parent_id" id="parent_id" class="form-select"
-                                    data-choices data-choices-sorting-false>
+                            <select name="parent_id" id="parent_id" class="form-select" data-choices
+                                data-choices-sorting-false>
                                 <option value="" selected disabled>-- Pilih Parent --</option>
-                                @foreach($parents as $p)
-                                    @if(!isset($akun) || $p->id != ($akun->id ?? null))
+                                @foreach ($parents as $p)
+                                    @if (!isset($akun) || $p->id != ($akun->id ?? null))
                                         <option value="{{ $p->id }}"
-                                            {{ (string)old('parent_id', $akun->parent_id ?? '') === (string)$p->id ? 'selected' : '' }}>
+                                            {{ (string) old('parent_id', $akun->parent_id ?? '') === (string) $p->id ? 'selected' : '' }}>
                                             {{ $p->nama_akun }}
                                         </option>
                                     @endif
@@ -112,16 +118,16 @@
 
 
 
-                </div>
+                    </div>
 
-                <div class="mt-3 text-end">
-                    @if(!isset($show) || !$show)
-                        <button type="submit" class="btn btn-success">
-                            {{ isset($akun) ? 'Update' : 'Simpan' }}
-                        </button>
-                    @endif
-                    <a href="{{ route('akun.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                    <div class="mt-3 text-end">
+                        @if (!isset($show) || !$show)
+                            <button type="submit" class="btn btn-success">
+                                {{ isset($akun) ? 'Update' : 'Simpan' }}
+                            </button>
+                        @endif
+                        <a href="{{ route('akun.index') }}" class="btn btn-secondary">Batal</a>
+                    </div>
             </form>
         </div>
     </div>
@@ -132,10 +138,11 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @if(isset($show) && $show)
+    @if (isset($show) && $show)
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const formElements = document.querySelectorAll('#akunForm input, #akunForm select, #akunForm button[type="submit"]');
+            document.addEventListener('DOMContentLoaded', function() {
+                const formElements = document.querySelectorAll(
+                    '#akunForm input, #akunForm select, #akunForm button[type="submit"]');
                 formElements.forEach(el => {
                     el.disabled = true;
                     if (el.type === 'submit') el.style.display = 'none';
@@ -147,7 +154,7 @@
     {{-- SweetAlert tetap --}}
 
     <script>
-        (function initChoicesOnce(){
+        (function initChoicesOnce() {
             const init = () => {
                 document.querySelectorAll('select[data-choices]').forEach(el => {
                     if (el.dataset.choicesInited === '1') return; // cegah double init
@@ -156,7 +163,8 @@
                         shouldSort: false,
                         removeItemButton: false,
                         placeholder: true,
-                        placeholderValue: el.querySelector('option[disabled]')?.textContent ?? 'Pilih...'
+                        placeholderValue: el.querySelector('option[disabled]')?.textContent ??
+                            'Pilih...'
                     });
                     el.dataset.choicesInited = '1';
                 });
@@ -173,7 +181,7 @@
             const form = document.getElementById('akunForm');
             if (!form) return;
 
-            form.addEventListener('submit', function(e) {
+            const handleSubmit = function(e) {
                 e.preventDefault();
                 Swal.fire({
                     title: 'Apakah data sudah benar?',
@@ -186,41 +194,19 @@
                     cancelButtonColor: '#6c757d'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Swal.fire({title: 'Menyimpan...', allowOutsideClick:false, didOpen: Swal.showLoading});
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            allowOutsideClick: false,
+                            didOpen: Swal.showLoading
+                        });
+                        form.removeEventListener('submit', handleSubmit);
                         form.submit();
                     }
                 });
-            });
+            };
+
+            form.addEventListener('submit', handleSubmit);
         });
     </script>
 
-    {{-- Alert Sukses & Error --}}
-    @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: "{{ session('success') }}",
-                timer: 2000,
-                showConfirmButton: false
-            });
-        </script>
-    @endif
-
-    @if($errors->any())
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                html: `
-        <ul style="text-align:left;">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-                </ul>
-`,
-                confirmButtonColor: '#d33',
-            });
-        </script>
-
-        @endpush
+@endpush
