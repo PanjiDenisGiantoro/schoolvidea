@@ -9,7 +9,9 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 
 use App\Models\Potongan;
-use App\Models\PotonganSiswa;
+use App\Models\Potongansiswa;
+use Illuminate\Support\Facades\Auth;
+
 class PotonganController extends Controller
 {
     public function index()
@@ -20,7 +22,9 @@ class PotonganController extends Controller
     public function create()
     {
         $units = Unit::get();
-        $kategoriTagihan = Kategoritagihan::get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function ($unit, $query){
+            $query('unit_id',$query->unit_id);
+        })->get();
         return view('pages.potongan.potongan_create',compact('units','kategoriTagihan'));
 
     }
@@ -55,7 +59,7 @@ class PotonganController extends Controller
                 $tagihanSiswa = Tagihansiswa::where('siswa_id', $siswaId)
                     ->whereHas('tagihan', function($query) use ($request) {
                         $query->where('kelas_id', $request->kelas_id);
-                    })
+                    })->where('status','!=','1')
                     ->first();
 
                 // Ensure tagihan_siswa record is found
@@ -67,11 +71,16 @@ class PotonganController extends Controller
                     $nominal = $this->calculateNominal($potongan, $tagihan);
 
                     // Store the PotonganSiswa entry
-                    PotonganSiswa::create([
+                    Potongansiswa::create([
                         'potongan_id' => $potongan->id,
                         'tagihan_id' => $tagihan->id,
                         'tagihan_siswa_id' => $tagihanSiswa->id,
                         'nominal' => $nominal,
+                    ]);
+                    Tagihansiswa::where('id', $tagihanSiswa->id)
+                        ->where('status','!=','1')
+                        ->update([
+                        'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
                     ]);
                 }
             }
@@ -93,11 +102,22 @@ class PotonganController extends Controller
     public function show($id)
     {
         // Find the Potongan by ID and eager load related data
-        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan'])
+        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan','tagihan'])
             ->findOrFail($id);
 
 
         // Return the show view with the Potongan data
         return view('pages.potongan.show', compact('potongan'));
+    }
+    public function edit($id)
+    {
+
+        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan','tagihan'])
+            ->findOrFail($id);
+        $units = Unit::get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function ($unit, $query){
+            $query('unit_id',$query->unit_id);
+        })->get();
+        return view('pages.potongan.potongan_edit',compact('potongan','units','kategoriTagihan'));
     }
     }

@@ -36,16 +36,14 @@ class PayrollSetting extends Model
     public function components()
     {
         return $this->belongsToMany(PayrollComponents::class, 'payroll_setting_components', 'payroll_setting_id', 'component_id')
-                    ->withPivot('value')
-                    ->withTimestamps();
+            ->withPivot('value')
+            ->withTimestamps();
     }
 
     public function deductions()
     {
         return $this->belongsToMany(PayrollDeductions::class, 'payroll_setting_deductions', 'payroll_setting_id', 'deduction_id')
-                    ->withPivot('value')
-                    ->withTimestamps();
+            ->withPivot('value')
+            ->withTimestamps();
     }
-
-
 }

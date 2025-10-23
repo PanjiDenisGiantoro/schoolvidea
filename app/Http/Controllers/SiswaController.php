@@ -73,27 +73,27 @@ class SiswaController extends Controller
             'kelas', 'yayasan', 'units', 'jurusans', 'logoUnit'
         ));
     }
-    public function store(Request $request)
+        public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn'            => 'required|unique:siswas,nisn',
-            'name'            => 'required|string|max:255',
-            'email'           => 'required|string|email|max:255',
-            'password'        => 'required|string|min:6',
-            'kelas_id'        => 'required',
-            'unit_id'         => 'required',
-            'status'          => 'required|in:0,1',
-            'rfid_no'         => 'nullable|string|max:255',
-            'va_siswa'        => 'nullable|string|max:255',
-            'nis'             => 'nullable|string|max:20|unique:siswas,nis',
-            'nik'             => 'nullable|string|max:20|unique:siswas,nik',
-            'jenis_kelamin'   => 'nullable|in:L,P',
-            'agama'           => 'nullable|string|max:50',
-            'no_hp_ortu'      => 'nullable|string|max:20',
-            'nama_ortu'       => 'nullable|string|max:100',
-            'bank'            => 'nullable|string|max:100',
-            'no_rekening'     => 'nullable|string|max:50',
-        ]);
+            'nisn' => 'required|unique:siswas,nisn',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'kelas_id' => 'required',
+            'unit_id' => 'required',
+            'rfid_no' => 'nullable|string|max:255',
+            'va_siswa' => 'nullable|string|max:255',
+            'nis' => 'nullable|string|max:20|unique:siswas,nis',
+            'nik' => 'nullable|string|max:20|unique:siswas,nik',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'agama' => 'nullable|string|max:50',
+            'no_hp_ortu' => 'nullable|string|max:20',
+            'nama_ortu' => 'nullable|string|max:100',
+            'bank' => 'nullable|string|max:100',
+            'no_rekening' => 'nullable|string|max:50',
+            'jurusan' => 'required|array|min:1',  // Make sure at least one jurusan is selected
+
+            ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
@@ -138,6 +138,7 @@ class SiswaController extends Controller
                 'no_hp_ortu'      => $request->no_hp_ortu,
                 'nama_ortu'       => $request->nama_ortu,
                 'bank'            => $request->bank,
+                'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'no_rekening'     => $request->no_rekening,
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
@@ -172,13 +173,13 @@ class SiswaController extends Controller
             $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
             $fileName = $siswa->nis . '.png';
             $path = 'qrcodes/' . $fileName;
-
-            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
-
-            $siswa->update([
-                'qrcode' => $qrcodeValue,
-                'qrcode_image' => $path,
-            ]);
+//
+//            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
+//
+//            $siswa->update([
+//                'qrcode' => $qrcodeValue,
+//                'qrcode_image' => $path,
+//            ]);
 
             // Buat saldo awal
             Saldo_keuangan::create([

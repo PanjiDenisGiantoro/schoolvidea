@@ -53,21 +53,18 @@ class Officer extends Model
     {
         return $query->where('name', $role);
     }
-
-    public function scopeWali($query)
-    {
-        return $query->with(['user.userRoles'])
-        ->whereHas('user', function ($q) {
-            $q->whereHas('userRoles', function ($r) {
-                $r->where('name', 'walikelas');
-            });
-        });
-    }
-        public function payrollSettings()
+    public function payrollSettings()
     {
         return $this->hasMany(PayrollSetting::class, 'units_id');
     }
 
-
-
+    public function scopeWali($query)
+    {
+        return $query->with(['user.userRoles'])
+            ->whereHas('user', function ($q) {
+                $q->whereHas('userRoles', function ($r) {
+                    $r->where('name', 'walikelas');
+                });
+            });
+    }
 }

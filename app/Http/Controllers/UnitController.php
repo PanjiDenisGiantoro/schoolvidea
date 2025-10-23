@@ -57,7 +57,8 @@ class UnitController extends Controller
             'alamat' => 'nullable|string',
             'website' => 'nullable|string',
             'status' => 'required|in:0,1',
-            'tipe_unit_id' => 'nullable'
+            'tipe_unit_id' => 'nullable',
+            'nama_pimpinan_unit' => 'nullable|string',
         ]);
 
         $centralCode = $request->code;
@@ -74,7 +75,8 @@ class UnitController extends Controller
             'website' => $request->website,
             'yayasan_id' => $request->yayasan_id,
             'status' => $request->status,
-            'tipe_unit_id' => $request->tipe_unit_id
+            'tipe_unit_id' => $request->tipe_unit_id,
+            'nama_pimpinan_unit' => $request->nama_pimpinan_unit,
         ]);
 
         return redirect()->route('unit.index')

@@ -77,8 +77,8 @@
                     </div>
 
                     <div class="col-md-4">
-                        <x-input-field type="text" name="leader_name" label="Nama Pimpinan"
-                                       placeholder="Masukkan Nama Pimpinan" icon="bx bx-user"/>
+                        <x-input-field type="text" name="nama_pimpinan_unit" label="Nama Pimpinan"
+                                       placeholder="Masukkan Nama Pimpinan" icon="bx bx-user" :value="old('nama_pimpinan_unit', $unit->nama_pimpinan_unit ?? '')"/>
                         <!-- :value="old('no_hp', $unit->no_hp ?? '')" /> -->
                         <x-input-field type="text" name="no_hp" label="No. Telepon"
                                        placeholder="Masukkan Nomor Telepon" icon="bx bx-phone"

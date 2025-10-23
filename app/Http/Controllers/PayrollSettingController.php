@@ -41,7 +41,10 @@ class PayrollSettingController extends Controller
         $officers = Officer::with('user:id,name')->get();
 
         return view('pages.penggajian.payroll_setting.payroll_setting', compact(
-            'units', 'components', 'deductions', 'officers'
+            'units',
+            'components',
+            'deductions',
+            'officers'
         ));
     }
 
@@ -71,8 +74,10 @@ class PayrollSettingController extends Controller
 
         try {
             $mainData = collect($validated)->except([
-                'components_id', 'component_value',
-                'deductions_id', 'deduction_value'
+                'components_id',
+                'component_value',
+                'deductions_id',
+                'deduction_value'
             ])->toArray();
 
             $payrollSetting = PayrollSetting::updateOrCreate(
@@ -110,7 +115,6 @@ class PayrollSettingController extends Controller
             }
 
             return redirect()->route('payroll_settings.index')->with('success', 'Data payroll berhasil disimpan.');
-
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -128,7 +132,7 @@ class PayrollSettingController extends Controller
      * Tampilkan detail satu payroll setting.
      */
     public function show($id)
-    {   
+    {
         $units = Unit::all();
         $setting = PayrollSetting::with(['unit', 'officer.user', 'components', 'deductions'])
             ->findOrFail($id);
@@ -137,7 +141,6 @@ class PayrollSettingController extends Controller
         $deductions = PayrollDeductions::all();
 
         return view('pages.penggajian.payroll_setting.payroll_setting', compact('setting', 'officers', 'units', 'components', 'deductions'))->with('show', true);
-
     }
 
     /**
@@ -152,30 +155,34 @@ class PayrollSettingController extends Controller
         $officers = Officer::with('user:id,name')->get();
 
         return view('pages.penggajian.payroll_setting.payroll_setting', compact(
-            'setting', 'units', 'components', 'deductions', 'officers'
+            'setting',
+            'units',
+            'components',
+            'deductions',
+            'officers'
         ));
     }
 
     /**
      * Hapus payroll setting.
      */
-public function destroy($id)
-{
-    try {
-        // Cari data payroll_setting berdasarkan id
-        $setting = PayrollSetting::findOrFail($id);
+    public function destroy($id)
+    {
+        try {
+            // Cari data payroll_setting berdasarkan id
+            $setting = PayrollSetting::findOrFail($id);
 
-        // Hapus data
-        $setting->delete();
+            // Hapus data
+            $setting->delete();
 
-        // Kembali ke halaman index dengan pesan sukses
-        return redirect()->route('payroll_settings.index')
-                         ->with('success', 'Data payroll berhasil dihapus.');
-    } catch (\Throwable $e) {
-        // Jika terjadi error (misalnya data tidak ditemukan)
-        return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            // Kembali ke halaman index dengan pesan sukses
+            return redirect()->route('payroll_settings.index')
+                ->with('success', 'Data payroll berhasil dihapus.');
+        } catch (\Throwable $e) {
+            // Jika terjadi error (misalnya data tidak ditemukan)
+            return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
-}
 
 
 

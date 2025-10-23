@@ -9,6 +9,7 @@ use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Activitylog\Models\Activity;
 
 class AuthController extends Controller
 {
@@ -23,14 +24,21 @@ class AuthController extends Controller
         $lembaga = Unit::where('code', $request->kode_sekolah)->first();
 
         if (!$lembaga) {
+            activity()
+                ->withProperties(['kode_sekolah' => $request->kode_sekolah])
+                ->log('User memasukkan kode sekolah yang salah');
             return back()->with('error', 'Kode sekolah tidak ditemukan');
         }
 
         if ($lembaga->status == '0'){
+            activity()
+                ->withProperties(['kode_sekolah' => $request->kode_sekolah])
+                ->log('User memasukkan kode sekolah yang tidak aktif');
             return back()->with('error', 'Lembaga tidak aktif');
         }
         // simpan di session
         session(['lembaga_id' => $lembaga->id, 'kode_sekolah' => $lembaga->kode_sekolah]);
+
 
         return redirect()->route('login.form')->with('success', 'Kode sekolah valid, silakan login.');
     }
@@ -63,6 +71,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['email' => $request->email])
+                ->log('User berhasil login');
+
             return redirect()->route('dashboard');
         }
 
@@ -76,9 +89,14 @@ class AuthController extends Controller
     // Logout
     public function logout(Request $request)
     {
+        activity()
+            ->causedBy(Auth::user())
+            ->log('User logout');
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/login')->with('success', 'Anda telah logout');
     }
     public function registerpublic()
@@ -130,8 +148,9 @@ class AuthController extends Controller
             'yayasan_id'     => $yayasan_id,
             'status'         => 'active',  // Status default
         ]);
-
-        // Redirect kembali dengan sukses
+        activity()
+            ->withProperties(['email' => $data['email'], 'school' => $data['school_name']])
+            ->log('User melakukan pendaftaran publik');
         return redirect()
             ->route('landing') // Ganti dengan route yang sesuai
             ->with('success', 'Terima kasih! Data Anda sudah kami terima. Tim kami akan segera menghubungi Anda.');
@@ -150,11 +169,22 @@ class AuthController extends Controller
             'new_password' => 'required|string|min:6|confirmed',
         ]);
 
+
         $user = Auth::user();
         $user->password = Hash::make($request->new_password);
         $user->save();
 
+        activity()
+            ->causedBy($user)
+            ->withProperties(['user_id' => $user->id])
+            ->log('User mengubah password');
+
         // Redirect dengan sukses
         return redirect()->route('profile.show')->with('success', 'Password berhasil diupdate.');
+    }
+    public function activity()
+    {
+        $activity = Activity::latest()->get();
+        return view('pages.activity_log.activity_log', compact('activity'));
     }
 }

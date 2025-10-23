@@ -12,19 +12,22 @@
         "php": "^8.2",
         "aws/aws-sdk-php": "^3.356",
         "doctrine/dbal": "^4.3",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^12.35",
         "laravel/tinker": "^2.10.1",
         "livewire/volt": "^1.7.0",
         "maatwebsite/excel": "^3.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.21",
         "yajra/laravel-datatables-oracle": "^12.4"
     },
+
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
+        "laravel/telescope": "^5.14",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.5.3"

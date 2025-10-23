@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
 
 class TahunajaranController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $tahun_ajaran = Tahun_ajaran::get();
         $headers = [
             'No',
@@ -21,7 +22,7 @@ class TahunajaranController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran','headers'));
+        return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran', 'headers'));
     }
     public function create()
     {
@@ -59,8 +60,8 @@ class TahunajaranController extends Controller
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $data = $request->all();
-        $data['tanggal_mulai']   = $request->tanggal_mulai ? $request->tanggal_mulai . '-01' : null;
-        $data['tanggal_selesai'] = $request->tanggal_selesai ? $request->tanggal_selesai . '-01' : null;
+        $data['tanggal_mulai']   = $request->tanggal_mulai ? $request->tanggal_mulai  : null;
+        $data['tanggal_selesai'] = $request->tanggal_selesai ? $request->tanggal_selesai  : null;
 
         $tahun_ajaran->update($data);
         return redirect()->route('tahun_ajaran.index')
@@ -77,6 +78,6 @@ class TahunajaranController extends Controller
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $show = true;
-        return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran','show'));
+        return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran', 'show'));
     }
 }

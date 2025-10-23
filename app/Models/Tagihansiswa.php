@@ -22,4 +22,9 @@ class Tagihansiswa extends Model
     {
         return $this->hasMany(Pembayarantagihan::class, 'tagihan_siswa_id');
     }
+    public function potonganSiswa()
+    {
+        return $this->hasMany(Potongansiswa::class, 'tagihan_siswa_id', 'id');
+    }
+
 }

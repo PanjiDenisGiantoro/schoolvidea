@@ -23,14 +23,15 @@ class Unit extends Model
             }
         });
     }
-//$allUnits = Unit::withoutGlobalScope('user_units')->get();
+    //$allUnits = Unit::withoutGlobalScope('user_units')->get();
 
 
     public function yayasan()
     {
         return $this->belongsTo(Yayasan::class, 'yayasan_id', 'id');
     }
-    public function getStatusAttribute($value){
+    public function getStatusAttribute($value)
+    {
         return $value == 1 ? 'Aktif' : 'Tidak Aktif';
     }
     public function scopeIsactive($query)
@@ -41,7 +42,7 @@ class Unit extends Model
     {
         return $this->belongsTo(Tipeunit::class, 'tipe_unit_id', 'id');
     }
-        public function payrollSettings()
+    public function payrollSettings()
     {
         return $this->hasMany(PayrollSetting::class, 'units_id');
     }

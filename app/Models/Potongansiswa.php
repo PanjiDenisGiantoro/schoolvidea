@@ -20,6 +20,7 @@ class Potongansiswa extends Model
 
     public function tagihanSiswa()
     {
-        return $this->belongsTo(TagihanSiswa::class);
+        return $this->belongsTo(Tagihansiswa::class);
     }
+
 }

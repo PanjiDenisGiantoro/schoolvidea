@@ -2,20 +2,22 @@
     $jabatanSelected = old('jabatan_id', $officer->position_id ?? $officer->officer->position_id ?? '');
 @endphp
 @extends('layouts.app')
-@section('title', isset($officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+@section('title', isset($officer->officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
 
 @section('content')
     @include('partials.page-title', [
-        'title' => isset($officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
+        'title' => isset($officer->officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
         'subTitle' => 'Guru & Staff'
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action="{{ isset($officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
+            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
-                @if(isset($officer))
+                @if(isset($officer->officer))
                     @method('PUT')
                 @endif
 
@@ -195,15 +197,17 @@
                         <div class="col-md-3">
                             <div class="mb-4" id="jurusan-wrapper">
                                 <label for="jurusan" class="form-label">Jurusan</label>
-                                <select name="jurusan[]" id="jurusan"  class="form-select" data-choices data-choices-sorting-false required>
+                                <select name="jurusan[]" id="jurusan" class="form-control"  multiple>
                                     <option value="">--Pilih Jurusan--</option>
                                     @foreach ($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
-                                            {{ in_array($jurusan->id, old('jurusan', $jurusanArray ?? [])) ? 'selected' : '' }}>
+                                            {{ in_array($jurusan->id, old('jurusan', $officer->jurusan ?? [])) ? 'selected' : '' }}>
                                             {{ $jurusan->nama_jurusan }}
                                         </option>
                                     @endforeach
                                 </select>
+
+
                             </div>
                             <x-input-field type="text" name="no_rekening" label="No Rekening"
                                            placeholder="Masukkan Nomor Rekening" icon="bx bx-bank"
@@ -221,17 +225,16 @@
 
 
                         </div>
-                    </div>
 
-                    <div class="mt-3 text-end">
-                        <button type="button" class="btn btn-primary" id="downloadQrBtn" style="display:none;">
-                            Download QR Code
-                        </button>
-                        <button type="submit" class="btn btn-success">
-                            {{ isset($officer) ? 'Update' : 'Simpan' }}
-                        </button>
-                        <a href="{{ url('officer/') }}" class="btn btn-secondary">Batal</a>
-                    </div>
+                        <div class="mt-3 text-end">
+                            <button type="button" class="btn btn-primary" id="downloadQrBtn" style="display:none;">
+                                Download QR Code
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                {{ isset($officer) ? 'Update' : 'Simpan' }}
+                            </button>
+                            <a href="{{ url('officer/') }}" class="btn btn-secondary">Batal</a>
+                        </div>
             </form>
         </div>
     </div>
@@ -245,6 +248,15 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#jurusan').select2({
+                placeholder: "--Pilih Jurusan--", // Placeholder text
+                allowClear: true                // Allows clearing the selected values
+            });
+        });
+    </script>
 
 
     <script>
@@ -304,7 +316,7 @@
         });
 
         // Kalau edit, preload gambar lama
-        @if(isset($officer) && $officer->iamge)
+        @if(isset($officer->officer) && $officer->officer->image)
 
         let mockFile = {
             name: "Current Image",
@@ -314,7 +326,7 @@
         };
 
         myDropzone.emit("addedfile", mockFile);
-        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->iamge) }}");
+        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->officer->image) }}");
         myDropzone.emit("complete", mockFile);
         myDropzone.files.push(mockFile);
         @endif
@@ -343,6 +355,7 @@
                     }
                 }
             }
+
 
 
             toggleJurusan(); // saat pertama load
@@ -444,8 +457,8 @@
             vaInput.dispatchEvent(new Event('input'));
 
             const qrCode = new QRCodeStyling({
-                width: 155,
-                height: 155,
+                width: 150,
+                height: 150,
                 data: vaInput.value || " ",
                 image: defaultLogo,
                 dotsOptions: { color: "#000", type: "rounded" },
@@ -460,10 +473,12 @@
             });
 
             qrCode.append(qrContainer);
-
+            const qrTextInput = document.getElementById('qrcode-text');
             // Update QR code saat VA berubah
             vaInput.addEventListener('input', function() {
-                qrCode.update({ data: this.value || " " });
+                const value = this.value || " ";
+                qrCode.update({ data: value });
+                qrTextInput.value = value; // simpan nilai QR ke input hidden
             });
 
             // Update QR code saat unit berubah
@@ -493,8 +508,57 @@
                 qrCode.download({ name: fileName, extension: "png" });
             });
         });
-
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nisInput = document.querySelector('input[name="nip"]');
+            const nisnInput = document.querySelector('input[name="nik"]');
+            const vaInput = document.querySelector('input[name="va_guru"]');
+
+            // Jika user mengetik manual, kita tandai agar tidak auto-overwrite
+            let manualVA = false;
+
+            function normalize(num) {
+                if (!num) return '';
+                num = num.toString().trim();
+                if (num.startsWith('0')) {
+                    return num.substring(1, 9); // ambil digit ke-2 sampai ke-9
+                }
+                return num.substring(0, 8); // ambil 8 digit pertama
+            }
+
+            function generateVA() {
+                // Kalau user sudah input manual, jangan auto-generate lagi
+                if (manualVA) return;
+
+                const nisPart = normalize(nisInput?.value || '');
+                const nisnPart = normalize(nisnInput?.value || '');
+                if (nisPart.length === 8 && nisnPart.length === 8) {
+                    const va = nisnPart + nisPart;
+                    vaInput.value = va;
+                } else {
+                    vaInput.value = '';
+                }
+                vaInput.dispatchEvent(new Event('input'));
+            }
+
+            if (nisInput && nisnInput && vaInput) {
+                // kalau user mengetik di VA, berarti dia ingin manual
+                vaInput.addEventListener('input', function() {
+                    manualVA = vaInput.value.trim() !== '';
+                });
+
+                // generate hanya kalau user belum input manual
+                nisInput.addEventListener('input', generateVA);
+                nisnInput.addEventListener('input', generateVA);
+
+                // saat pertama kali load
+                generateVA();
+            }
+        });
+    </script>
+
     @if(!isset($officer)) // Hanya saat create
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -511,25 +575,20 @@
                 emailTop.value = emailBottom.value;
             }
 
-            const nipInput = document.getElementById('nip');
+            const nisnInput = document.getElementById('nip');
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
 
-            if(nipInput && usernameInput && passwordInput){
-                nipInput.addEventListener('input', function () {
-                    const nipValue = this.value.trim();
-                    usernameInput.value = nipValue;
-                    passwordInput.value = nipValue;
+            if(nisnInput && usernameInput && passwordInput){
+                nisnInput.addEventListener('input', function () {
+                    const nisnValue = this.value.trim();
+                    usernameInput.value = nisnValue;
+                    passwordInput.value = nisnValue;
                 });
             }
-            const vaInput = document.querySelector('input[name="va_guru"]');
-
-            if(!vaInput.value) {
-                vaInput.value = '' + Date.now();
-            }
-            vaInput.dispatchEvent(new Event('input'));
         });
     </script>
+
     @endif
 
 @endpush
