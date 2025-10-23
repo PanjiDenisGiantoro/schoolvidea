@@ -230,6 +230,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [PotonganController::class, 'create'])->name('potongan.create');
         Route::post('/store', [PotonganController::class, 'store'])->name('potongan.store');
         Route::get('/show/{id}', [PotonganController::class, 'show'])->name('potongan.show');
+        Route::get('/edit/{id}', [PotonganController::class, 'edit'])->name('potongan.edit');
+        Route::put('potongan/update/{id}', [PotonganController::class, 'update'])->name('potongan.update');
+        Route::get('/delete/{id}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
     });
 
     Route::prefix('pembayaran')->group(function () {

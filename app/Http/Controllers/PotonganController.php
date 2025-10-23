@@ -59,7 +59,7 @@ class PotonganController extends Controller
                 $tagihanSiswa = Tagihansiswa::where('siswa_id', $siswaId)
                     ->whereHas('tagihan', function($query) use ($request) {
                         $query->where('kelas_id', $request->kelas_id);
-                    })
+                    })->where('status','!=','1')
                     ->first();
 
                 // Ensure tagihan_siswa record is found
@@ -108,5 +108,16 @@ class PotonganController extends Controller
 
         // Return the show view with the Potongan data
         return view('pages.potongan.show', compact('potongan'));
+    }
+    public function edit($id)
+    {
+
+        $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan','tagihan'])
+            ->findOrFail($id);
+        $units = Unit::get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function ($unit, $query){
+            $query('unit_id',$query->unit_id);
+        })->get();
+        return view('pages.potongan.potongan_edit',compact('potongan','units','kategoriTagihan'));
     }
     }
