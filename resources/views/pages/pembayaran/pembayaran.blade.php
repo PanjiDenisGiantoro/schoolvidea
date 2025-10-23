@@ -178,11 +178,8 @@
 
 
 
-        {{-- Detail Siswa dan Form Tabungan --}}
         <div class="col-12">
             <div class="row g-4">
-                {{-- Detail Siswa --}}
-                {{-- Form Transaksi --}}
                 <div class="col-md-8">
                     <form action="" method="POST" id="formTagihan">
                         @csrf
@@ -201,7 +198,6 @@
                 </div>
             </div>
         </div>
-        <!-- Modal Catatan -->
         <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content border-0 rounded-4 shadow-lg">

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Laravel\Telescope\Telescope;
+use Carbon\Carbon;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
                 return auth()->check() && auth()->user()->is_admin;
             });
         }
+        Carbon::setLocale('id');
+
+
 
     }
 }

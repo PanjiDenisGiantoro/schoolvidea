@@ -20,11 +20,6 @@
                                        :value="old('name', $payroll_deductions->name ?? '')" required/>
                     </div>
                     <div class="col-md-6">
-                        <x-input-field type='number' name='price' label='Nilai potongan'
-                                       placeholder='Masukkan Nilai potongan' icon='bx bx-unit'
-                                       :value="old('price', $payroll_deductions->price ?? '')" required/>
-                    </div>
-                    <div class="col-md-6">
                         <label for="type" class="form-label">Jenis Potongan <span class="text-danger">*</span></label>
                         <select name="type" id="type" class="form-select">
                             <option value="">-- Pilih Jenis Potongan --</option>
@@ -33,13 +28,26 @@
                         </select>
                     </div>
                     <div class="col-md-6">
+                        <x-input-field
+                            type="text"
+                            name="price_display"
+                            label="Nilai Potongan"
+                            placeholder="Masukkan Nilai Potongan"
+                            icon="bx bx-unit"
+                            value="{{ old('price', isset($payroll_deductions) ? number_format($payroll_deductions->price, 0, ',', '.') : '') }}"
+                            required
+                            oninput="formatNumberInput(this)"
+                        />
+                        <input type="hidden" name="price" id="price_hidden" value="{{ old('price', $payroll_deductions->price ?? '') }}">
+                    </div>
+                    <div class="col-md-6">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" id="status" class="form-select">
                             <option value="1" {{ old('status', $payroll_deductions->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>
                             <option value="0" {{ old('status', $payroll_deductions->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
                         </select>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-12 mt-4">
                         <label for="description" class="form-label">Keterangan</label>
                         <textarea name="description" id="description" class="form-control" rows="2">{{ old('description', $payroll_deductions->description ?? '') }}</textarea>
                     </div>
@@ -60,6 +68,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('deductionForm');
+            const typeSelect = document.getElementById('type');
+            const priceInput = document.querySelector('input[name="price_display"]');
+            const hiddenPrice = document.getElementById('price_hidden');
+
+            // ✅ Saat pertama kali halaman dimuat
+            togglePriceInput(typeSelect.value);
 
             // ✅ Mode Lihat Data
             @if (isset($show) && $show)
@@ -68,6 +82,47 @@
                 if (el.type === 'submit') el.style.display = 'none';
             });
             @endif
+
+            // ✅ Event: Saat jenis potongan berubah
+            typeSelect.addEventListener('change', e => {
+                togglePriceInput(e.target.value);
+                priceInput.value = '';
+                hiddenPrice.value = '';
+            });
+
+            // ✅ Fungsi untuk menonaktifkan/mengaktifkan input nilai
+            function togglePriceInput(type) {
+                if (!type) {
+                    priceInput.disabled = true;
+                    priceInput.placeholder = 'Pilih jenis potongan terlebih dahulu';
+                    priceInput.style.backgroundColor = '#f8f9fa';
+                    return;
+                }
+
+                priceInput.disabled = false;
+                priceInput.style.backgroundColor = 'white';
+
+                if (type === 'persen') {
+                    priceInput.placeholder = 'Masukkan nilai persentase (1 - 100)';
+                    priceInput.max = 100;
+                    priceInput.min = 1;
+                    priceInput.oninput = function() {
+                        let value = this.value.replace(/\D/g, '');
+                        if (value > 100) value = 100;
+                        this.value = value + ' %';
+                        hiddenPrice.value = value;
+                    };
+                } else {
+                    priceInput.placeholder = 'Masukkan Nilai Potongan (angka saja)';
+                    priceInput.removeAttribute('max');
+                    priceInput.removeAttribute('min');
+                    priceInput.oninput = function() {
+                        let numericValue = this.value.replace(/\D/g, '');
+                        this.value = new Intl.NumberFormat('id-ID').format(numericValue);
+                        hiddenPrice.value = numericValue;
+                    };
+                }
+            }
 
             // ✅ Konfirmasi sebelum submit
             if (form) {

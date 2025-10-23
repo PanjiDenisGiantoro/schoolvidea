@@ -16,8 +16,8 @@
                     </a>
                 </div>
                 <div class="table-responsive">
-                    <table id="datatable" class="table table-bordered table-striped">
-                        <thead>
+                    <table id="datatable" class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
                         @if(!empty($headers) && is_array($headers))
                             @foreach($headers as $header)
                                 <th>{{ $header }}</th>
@@ -31,12 +31,22 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->name }}</td>
-                                <td>{{ $item->type }}</td>
-                                <td>{{ 'Rp ' . number_format($item->price, 2, ',', '.') }}</td>
+                                <td class="text-capitalize">{{ $item->type }}</td>
+
+                                {{-- ✅ Format harga sesuai jenis --}}
+                                <td>
+                                    @if($item->type === 'nominal')
+                                        Rp {{ number_format($item->price, 0, ',', '.') }}
+                                    @elseif($item->type === 'persen')
+                                        {{ (int) $item->price }} %
+                                    @else
+                                        -
+                                    @endif
+                                </td>
 
                                 <td>
-                                <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">
-                                {{ $item->status == 1 ? 'Aktif' : 'Tidak Aktif' }}
+                                <span class="badge {{ $item->status == '1' ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $item->status == 1 ? 'Aktif' : 'Tidak Aktif' }}
                                 </span>
                                 </td>
                                 <td>

@@ -17,6 +17,69 @@
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
 
+#tabelBelumLunas {
+    display: block;
+}
+
+.custom-presensi-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.custom-presensi-wrapper input {
+    width: 45px;
+    height: 35px;
+    text-align: center;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.custom-presensi-wrapper input:focus {
+    outline: none;
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.custom-input-presensi.hadir {
+    background-color: #d1e7dd; /* hijau muda */
+}
+
+.custom-input-presensi.izin {
+    background-color: #fff3cd; /* kuning muda */
+}
+
+.custom-input-presensi.alpha {
+    background-color: #f8d7da; /* merah muda */
+}
+
+.custom-presensi-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.custom-presensi-header span {
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+table th:first-child,
+table td:first-child {
+    text-align: center;
+    vertical-align: middle;
+}
+
 /* .dropdown-input:hover {
     border-color: #3b82f6;
 } */

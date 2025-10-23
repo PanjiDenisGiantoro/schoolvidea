@@ -53,6 +53,10 @@ class Officer extends Model
     {
         return $query->where('name', $role);
     }
+    public function payrollSettings()
+    {
+        return $this->hasMany(PayrollSetting::class, 'units_id');
+    }
 
     public function scopeWali($query)
     {
@@ -63,6 +67,7 @@ class Officer extends Model
             });
         });
     }
+
 
 
 

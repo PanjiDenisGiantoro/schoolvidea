@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PayrollComponents;
 use Illuminate\Http\Request;
+use App\Models\Officer;
 
 class PayrollComponentsController extends Controller
 {
@@ -97,5 +98,25 @@ class PayrollComponentsController extends Controller
 
         return redirect()->route('payroll_components.index')
             ->with('success', 'Data berhasil dihapus');
+    }
+    public function getByOfficer($officerId)
+    {
+        // Ambil jabatan guru/staff
+        $officer = Officer::with('position')->find($officerId);
+        if (!$officer || !$officer->position) {
+            return response()->json(['status' => 'error', 'message' => 'Officer atau jabatan tidak ditemukan']);
+        }
+
+        $positionId = $officer->position->id;
+
+        // Ambil semua komponen gaji berdasarkan jabatan
+        $components = PayrollComponents::where('position_id', $positionId)
+            ->get(['id', 'name', 'value']);
+
+        return response()->json([
+            'status' => 'success',
+            'position_name' => $officer->position->name,
+            'components' => $components,
+        ]);
     }
 }

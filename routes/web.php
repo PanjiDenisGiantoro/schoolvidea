@@ -22,6 +22,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
+use App\Http\Controllers\PayrollSettingController;
+
 
 
 
@@ -286,9 +288,32 @@ Route::middleware(['auth'])->group(function () {
         Route::put('payroll_deductions/update/{id}', [PayrollDeductionsController::class, 'update'])->name('payroll_deductions.update');
         Route::get('/delete/{id}', [PayrollDeductionsController::class, 'destroy'])->name('payroll_deductions.destroy');
         Route::get('/show/{id}', [PayrollDeductionsController::class, 'show'])->name('payroll_deductions.show');
+        Route::put('payroll-deductions/update/{id}', [PayrollDeductionsController::class, 'update'])->name('payroll_deductions.update');
     });
 
     Route::prefix('activity')->group(function () {
         Route::get('/', [AuthController::class, 'activity'])->name('activity.index');
     });
+
+    Route::prefix('payroll-setting')->group(function() {
+        Route::get('/', [PayrollSettingController::class, 'index'])->name('payroll_settings.index');
+        Route::get('/create', [PayrollSettingController::class, 'create'])->name('payroll_settings.create');
+        Route::post('/store', [PayrollSettingController::class, 'store'])->name('payroll_settings.store');
+        Route::get('/edit/{id}', [PayrollSettingController::class, 'edit'])->name('payroll_settings.edit');
+        Route::put('payroll-setting/update/{id}', [PayrollSettingController::class, 'update'])->name('payroll_settings.update');
+        Route::get('/delete/{id}', [PayrollSettingController::class, 'destroy'])->name('payroll_settings.destroy');
+        Route::get('/show/{id}', [PayrollSettingController::class, 'show'])->name('payroll_settings.show');
+
+        // Ambil data payroll berdasarkan guru/staff (AJAX)
+        Route::get('/fetch/{officerId}', [PayrollSettingController::class, 'fetch'])
+            ->name('payroll_settings.fetch');
+
+        // Ambil daftar guru/staff berdasarkan unit (AJAX)
+        Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
+            ->name('officers.byUnit');
+    });
+    Route::get('/payroll-payment', function() {
+        return view('pages.penggajian.payroll_payment.payroll_payment');
+    });
+
 });
