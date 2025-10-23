@@ -21,12 +21,12 @@ class Potongan extends Model
 
     public function kategoriTagihan()
     {
-        return $this->belongsTo(KategoriTagihan::class);
+        return $this->belongsTo(Kategoritagihan::class);
     }
 
     public function potonganSiswa()
     {
-        return $this->hasMany(PotonganSiswa::class);
+        return $this->hasMany(Potongansiswa::class);
     }
     public function tagihan()
     {

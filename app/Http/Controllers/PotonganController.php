@@ -9,7 +9,7 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 
 use App\Models\Potongan;
-use App\Models\PotonganSiswa;
+use App\Models\Potongansiswa;
 use Illuminate\Support\Facades\Auth;
 
 class PotonganController extends Controller
@@ -71,7 +71,7 @@ class PotonganController extends Controller
                     $nominal = $this->calculateNominal($potongan, $tagihan);
 
                     // Store the PotonganSiswa entry
-                    PotonganSiswa::create([
+                    Potongansiswa::create([
                         'potongan_id' => $potongan->id,
                         'tagihan_id' => $tagihan->id,
                         'tagihan_siswa_id' => $tagihanSiswa->id,
