@@ -2,22 +2,22 @@
     $jabatanSelected = old('jabatan_id', $officer->position_id ?? $officer->officer->position_id ?? '');
 @endphp
 @extends('layouts.app')
-@section('title', isset($officer->officer) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
+@section('title', isset($officer->id) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
 
 @section('content')
     @include('partials.page-title', [
-        'title' => isset($officer->officer) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
+        'title' => isset($officer->id) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
         'subTitle' => 'Guru & Staff'
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
+            <form id="userForm" action="{{ isset($officer->id) ? route('officer.update', $officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
-                @if(isset($officer->officer))
+                @if(isset($officer->id))
                     @method('PUT')
                 @endif
 
