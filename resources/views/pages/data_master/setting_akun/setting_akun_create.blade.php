@@ -35,9 +35,14 @@
                     </div>
                     {{-- Kategori --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="kategori" label="Kategori"
-                                       placeholder="Masukkan Kategori" icon="bx bx-list-ul"
-                                       :value="old('kategori', $setting->kategori ?? '')" required/>
+                        <select name="kategori" id="kategori" class="form-select" data-choices data-choices-sorting-false>
+                            <option value="">-- Pilih Kategori --</option>
+                            <option value="tagihan-masuk" {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Tagihan Masuk</option>
+                            <option value="tagihan-keluar" {{ old('kategori', $setting->kategori ?? '') == 'tagihan-keluar' ? 'selected' : '' }}>Tagihan Keluar</option>
+                            <option value="tabungan-masuk" {{ old('kategori', $setting->kategori ?? '') == 'tabungan-masuk' ? 'selected' : '' }}>Tabungan Masuk</option>
+                            <option value="tabungan-tarik" {{ old('kategori', $setting->kategori ?? '') == 'tabungan-tarik' ? 'selected' : '' }}>Tabungan Tarik</option>
+                            <option value="tabungan" {{ old('kategori', $setting->kategori ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
+                        </select>
                     </div>
                     {{-- Akun --}}
                     <div class="col-md-4">
