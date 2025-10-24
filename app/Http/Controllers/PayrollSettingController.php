@@ -8,6 +8,7 @@ use App\Models\PayrollComponents;
 use App\Models\PayrollDeductions;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PayrollSettingController extends Controller
 {
@@ -20,10 +21,12 @@ class PayrollSettingController extends Controller
             'No',
             'Unit',
             'Nama Guru & Staff',
+            'Jabatan', // Tambahkan kolom Jabatan di headers
             'Aksi'
         ];
-        // Ambil semua data PayrollSetting beserta relasinya
-        $settings = PayrollSetting::with(['unit', 'officer.user'])
+
+        // PERBAIKAN: Tambahkan 'officer.position'
+        $settings = PayrollSetting::with(['unit', 'officer.user', 'officer.position'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -38,7 +41,9 @@ class PayrollSettingController extends Controller
         $units = Unit::all();
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
-        $officers = Officer::with('user:id,name')->get();
+
+        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
+        $officers = Officer::with(['user:id,name', 'position'])->get();
 
         return view('pages.penggajian.payroll_setting.payroll_setting', compact(
             'units',
@@ -53,6 +58,7 @@ class PayrollSettingController extends Controller
      */
     public function store(Request $request)
     {
+        // ... (Logika validasi dan penyimpanan tidak berubah)
         $validated = $request->validate([
             'units_id' => 'required|exists:units,id',
             'officers_id' => 'required|exists:officers,id',
@@ -116,6 +122,7 @@ class PayrollSettingController extends Controller
 
             return redirect()->route('payroll_settings.index')->with('success', 'Data payroll berhasil disimpan.');
         } catch (\Throwable $e) {
+            Log::error('Payroll Setting Store Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -134,9 +141,12 @@ class PayrollSettingController extends Controller
     public function show($id)
     {
         $units = Unit::all();
-        $setting = PayrollSetting::with(['unit', 'officer.user', 'components', 'deductions'])
+        // PERBAIKAN: Tambahkan 'officer.position'
+        $setting = PayrollSetting::with(['unit', 'officer.user', 'officer.position', 'components', 'deductions'])
             ->findOrFail($id);
-        $officers = Officer::with('user:id,name')->get();
+
+        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
+        $officers = Officer::with(['user:id,name', 'position'])->get();
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
 
@@ -148,11 +158,14 @@ class PayrollSettingController extends Controller
      */
     public function edit($id)
     {
-        $setting = PayrollSetting::with(['components', 'deductions'])->findOrFail($id);
+        // PERBAIKAN: Tambahkan 'officer.position'
+        $setting = PayrollSetting::with(['officer.position', 'components', 'deductions'])->findOrFail($id);
         $units = Unit::all();
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
-        $officers = Officer::with('user:id,name')->get();
+
+        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
+        $officers = Officer::with(['user:id,name', 'position'])->get();
 
         return view('pages.penggajian.payroll_setting.payroll_setting', compact(
             'setting',
@@ -180,19 +193,18 @@ class PayrollSettingController extends Controller
                 ->with('success', 'Data payroll berhasil dihapus.');
         } catch (\Throwable $e) {
             // Jika terjadi error (misalnya data tidak ditemukan)
+            Log::error('Payroll Setting Destroy Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 
-
-
     /**
      * Ambil data payroll berdasarkan officer (guru/staff).
-     * Jika tidak ada payroll_setting, ambil dari master components & deductions.
      */
     public function fetch($officerId)
     {
-        $officer = Officer::with('position')->find($officerId);
+        // Logika ini sudah benar karena memuat 'position'
+        $officer = Officer::with(['position'])->find($officerId);
 
         if (!$officer) {
             return response()->json([
@@ -205,8 +217,18 @@ class PayrollSettingController extends Controller
             ->where('officers_id', $officerId)
             ->first();
 
+        // Menggunakan optional chaining (?->) untuk akses data yang aman
+        $positionName = $officer->position?->positions_name ?? 'Tidak ada jabatan';
+
+        $data = [
+            'status' => $setting ? 'found' : 'default',
+            'position_id' => $officer->position_id,
+            'positions_name' => $positionName,
+        ];
+
         if ($setting) {
-            $components = $setting->components->map(function ($c) {
+            // Jika setting ditemukan, ambil komponen dan potongan dari relasi many-to-many
+            $data['components'] = $setting->components->map(function ($c) {
                 return [
                     'id' => $c->id,
                     'name' => $c->name,
@@ -214,32 +236,20 @@ class PayrollSettingController extends Controller
                 ];
             });
 
-            $deductions = $setting->deductions->map(function ($d) {
+            $data['deductions'] = $setting->deductions->map(function ($d) {
                 return [
                     'id' => $d->id,
                     'name' => $d->name,
                     'value' => $d->pivot->value,
                 ];
             });
-
-            return response()->json([
-                'status' => 'found',
-                'position_name' => $officer->position->name ?? '-',
-                'components' => $components,
-                'deductions' => $deductions,
-            ]);
+        } else {
+            // Jika setting tidak ditemukan, ambil data default
+            $data['components'] = PayrollComponents::select('id', 'name', 'price as value')->get();
+            $data['deductions'] = PayrollDeductions::select('id', 'name', 'price as value')->get();
         }
 
-        // Default ambil master data
-        $defaultComponents = PayrollComponents::select('id', 'name', 'price as value')->get();
-        $defaultDeductions = PayrollDeductions::select('id', 'name', 'price as value')->get();
-
-        return response()->json([
-            'status' => 'default',
-            'position_name' => $officer->position->name ?? '-',
-            'components' => $defaultComponents,
-            'deductions' => $defaultDeductions,
-        ]);
+        return response()->json($data);
     }
 
     /**
@@ -247,8 +257,11 @@ class PayrollSettingController extends Controller
      */
     public function getByUnit($unit_id)
     {
-        $officers = Officer::where('unit_id', $unit_id)
-            ->with('user:id,name')
+        $officers = Officer::whereHas('unit', function ($query) use ($unit_id) {
+            $query->where('id', $unit_id);
+        })
+            // PERBAIKAN: Tambahkan 'position' untuk form
+            ->with(['user:id,name', 'position'])
             ->get(['id', 'user_id']);
 
         return response()->json($officers);

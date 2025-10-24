@@ -10,9 +10,9 @@
 
 /* Tombol toggle */
 .custom-btn-outline-primary {
-    border: 1px solid #663ffa;
-    color: #663ffa;
-    background-color: #fff;
+    border: 1px solid #2596be;
+    color: #fff;
+    background-color: #2596be;
     font-weight: 500;
     font-size: 0.875rem; /* lebih kecil */
     padding: 6px 12px; /* lebih kecil juga */
@@ -21,22 +21,22 @@
 }
 
 .custom-btn-outline-primary:not(:last-child) {
-    border-right: 1px solid #663ffa;
+    border-right: 1px solid #2596be;
 }
 
 .custom-btn-outline-primary:hover {
-    background-color: #663ffa;
+    background-color: #2596be;
     color: white !important;
 }
 
 /* Saat tombol aktif */
 .custom-active-btn {
-    background-color: #663ffa;
-    color: #fff;
+    background-color: #ffff;
+    color: #2596be;
 }
 /* Header card (judul Daftar Tagihan) */
 .custom-card-header {
-    background-color: #663ffa;
+    background-color: #2596be;
     color: white;
     font-weight: 600;
     font-size: 1rem;
@@ -53,11 +53,12 @@
 /* Tombol proses pembayaran */
 .custom-btn-info {
     background-color: #fff;
-    color: #28bd43;
+    color: black;
     border: none;
     transition: all 0.3s ease-in-out;
     border-radius: 0.5rem;
     font-weight: 500;
+    font-size: small;
     padding: 6px 12px;
 }
 
@@ -69,10 +70,10 @@
 }
 
 #tabelSudahLunas {
-    display: none;
+    display: block;
 }
 #tabelBelumLunas {
-    display: block;
+    display: none;
 }
 
 .custom-checkbox {
@@ -80,15 +81,15 @@
     height: 20px;
     border-radius: 30%;
     appearance: none; /* Hilangkan style bawaan browser */
-    border: 2px solid #663ffa;
+    border: 2px solid #2596be;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease-in-out;
 }
 
 .custom-checkbox:checked {
-    background-color: #663ffa;
-    border-color: #663ffa;
+    background-color: #2596be;
+    border-color: #2596be;
 }
 
 /* Biar ada centang putih di tengah */
@@ -105,7 +106,7 @@
 /* Tombol ungu */
 
 .custom-btn-purple {
-    background-color: #663ffa;
+    background-color: #2596be;
     color: #fff !important;
     border: none;
     border-radius: 0.4rem; /* kotak tapi sedikit rounded biar halus */
@@ -119,13 +120,13 @@
 }
 
 .custom-btn-purple:hover {
-    background-color: #542dd9;
+    background-color: #2596be;
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(102, 63, 250, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 204, 255, 0.5);
 }
 
 .custom-btn-purple i {
-    color: #fff !important;
+    color: #2596be !important;
     font-size: 18px;
 }
 
@@ -138,7 +139,7 @@
 
 /* Header modal */
 .custom-modal-header {
-    color: #663ffa;
+    color: #2596be;
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
     text-align: center;

@@ -128,20 +128,20 @@
     <div class="crd rounded-4 mt-3 border-0 shadow-sm">
         <div class="custom-toggle-header">
             <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
-                <i class="ri-money-dollar-circle-line"></i> Belum Lunas
+                <i class="ri-money-dollar-circle-line"></i> Belum Dibayar
             </button>
             <button id="btnSudahLunas" class="custom-btn-outline-primary custom-active-btn">
-                <i class="ri-money-dollar-circle-line"></i> Sudah Lunas
+                <i class="ri-money-dollar-circle-line"></i> Terbayar
             </button>
         </div>
 
         <div class="custom-card-header">
-            <span><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</span>
-            <div class="row" id="button-info">
-                <div class="col-md-5">
-                    <button id="btnSinkron" class="custom-btn-info">Sinkron Pembayaran</button>
+            <span><i class="fa fa-list"></i> Daftar Pembayaran Gaji</span>
+            <div class="d-flex gap-3" id="button-info">
+                <div class="">
+                    <button id="btnSinkron" class="custom-btn-info">Sinkronkan Presensi</button>
                 </div>
-                <div class="col-md-5">
+                <div class="">
                     <button id="btnProses" class="custom-btn-info">Proses Pembayaran</button>
                 </div>
             </div>
@@ -407,51 +407,51 @@
 
     {{-- Skrip cadangan yang dikomentari --}}
     <!--
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inisialisasi dropdown umum
-            document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
-                const input = dropdown.querySelector('.dropdown-input');
-                const list = dropdown.querySelector('.dropdown-list');
-                const options = dropdown.querySelectorAll('.dropdown-options li');
-                const searchInput = dropdown.querySelector('.dropdown-search-input');
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', () => {
+                                                        // Inisialisasi dropdown umum
+                                                        document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+                                                            const input = dropdown.querySelector('.dropdown-input');
+                                                            const list = dropdown.querySelector('.dropdown-list');
+                                                            const options = dropdown.querySelectorAll('.dropdown-options li');
+                                                            const searchInput = dropdown.querySelector('.dropdown-search-input');
 
-                // toggle dropdown
-                input.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.dropdown-list').forEach(dl => {
-                        if (dl !== list) dl.classList.remove('active');
-                    });
-                    list.classList.toggle('active');
-                    searchInput.focus();
-                });
+                                                            // toggle dropdown
+                                                            input.addEventListener('click', (e) => {
+                                                                e.stopPropagation();
+                                                                document.querySelectorAll('.dropdown-list').forEach(dl => {
+                                                                    if (dl !== list) dl.classList.remove('active');
+                                                                });
+                                                                list.classList.toggle('active');
+                                                                searchInput.focus();
+                                                            });
 
-                // klik di luar -> tutup
-                document.addEventListener('click', () => list.classList.remove('active'));
+                                                            // klik di luar -> tutup
+                                                            document.addEventListener('click', () => list.classList.remove('active'));
 
-                // klik item
-                options.forEach(option => {
-                    option.addEventListener('click', () => {
-                        if (!option.classList.contains('disabled')) {
-                            input.value = option.textContent;
-                            input.setAttribute('data-value', option.dataset.value);
-                            list.classList.remove('active');
-                            input.dispatchEvent(new Event('change'));
-                        }
-                    });
-                });
+                                                            // klik item
+                                                            options.forEach(option => {
+                                                                option.addEventListener('click', () => {
+                                                                    if (!option.classList.contains('disabled')) {
+                                                                        input.value = option.textContent;
+                                                                        input.setAttribute('data-value', option.dataset.value);
+                                                                        list.classList.remove('active');
+                                                                        input.dispatchEvent(new Event('change'));
+                                                                    }
+                                                                });
+                                                            });
 
-                // search filter
-                searchInput.addEventListener('keyup', function() {
-                    const term = this.value.toLowerCase();
-                    options.forEach(option => {
-                        option.style.display = option.textContent.toLowerCase().includes(
-                                term) ?
-                            'block' : 'none';
-                    });
-                });
-            });
-        });
-    </script>
-    -->
+                                                            // search filter
+                                                            searchInput.addEventListener('keyup', function() {
+                                                                const term = this.value.toLowerCase();
+                                                                options.forEach(option => {
+                                                                    option.style.display = option.textContent.toLowerCase().includes(
+                                                                            term) ?
+                                                                        'block' : 'none';
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                </script>
+                                                -->
 @endpush

@@ -40,7 +40,7 @@ class Officer extends Model
     }
     public function position()
     {
-        return $this->belongsTo(Positions::class);
+        return $this->belongsTo(Positions::class, 'position_id');
     }
 
 
@@ -55,7 +55,7 @@ class Officer extends Model
     }
     public function payrollSettings()
     {
-        return $this->hasMany(PayrollSetting::class, 'units_id');
+        return $this->hasMany(PayrollSetting::class, 'units_id', 'officers_id');
     }
 
     public function scopeWali($query)

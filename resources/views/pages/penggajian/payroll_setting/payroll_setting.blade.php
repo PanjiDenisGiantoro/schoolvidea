@@ -54,6 +54,14 @@
                 {{-- ======================== FORM DETAIL ======================== --}}
                 <div id="form-section" style="{{ isset($setting) ? 'display: block;' : 'display: none;' }}">
 
+                    {{-- POSITION DISPLAY --}}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <x-input-field type="text" id="position_display" name="position_display" label="Jabatan"
+                                readonly :disabled="true" value="" />
+                        </div>
+                    </div>
+
                     {{-- GAJI DASAR --}}
                     <div class="row mb-3">
                         <div class="col-md-2">
@@ -98,7 +106,7 @@
                         @endforeach
                     </div>
 
-                    {{-- ======================== KOMONEN GAJI ======================== --}}
+                    {{-- ======================== KOMPONEN GAJI ======================== --}}
                     <hr class="my-4">
                     <h5 class="fw-semibold mb-3">Komponen Gaji</h5>
                     <div id="component-container">
@@ -107,7 +115,8 @@
                                 <div class="row g-3 component-row">
                                     <div class="col-md-4">
                                         <x-input-field type="text" name="position" label="Jabatan" readonly
-                                            :disabled="isset($show)" value="{{ $setting->officer->position->name ?? '-' }}" />
+                                            :disabled="true"
+                                            value="{{ $setting->officer?->position?->position_name ?? '' }}" />
                                     </div>
                                     <div class="col-md-4">
                                         <label for="components_id" class="form-label">Nama Komponen <span
@@ -117,7 +126,7 @@
                                             @foreach ($components as $c)
                                                 <option value="{{ $c->id }}"
                                                     {{ $c->id == $comp->id ? 'selected' : '' }}
-                                                    data-value="{{ $c->value }}">{{ $c->name }}</option>
+                                                    data-value="{{ $c->price }}">{{ $c->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -148,8 +157,8 @@
                     <template id="component-template">
                         <div class="row g-3 component-row">
                             <div class="col-md-4">
-                                <x-input-field readonly :disabled="isset($show)" type="text" name="position" label="Jabatan"
-                                    readonly value="-" />
+                                <x-input-field type="text" name="position" label="Jabatan" readonly :disabled="true"
+                                    value="" />
                             </div>
                             <div class="col-md-4">
                                 <label for="components_id" class="form-label">Nama Komponen <span
@@ -259,7 +268,6 @@
                                     <option {{ isset($setting) && $setting->billing_period == $i ? 'selected' : '' }}
                                         value="{{ $i }}">{{ $i }} Bulan</option>
                                 @endforeach
-
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -341,6 +349,8 @@
 
                     try {
                         const res = await fetch(`/payroll-setting/officers/by-unit/${unitId}`);
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
                         const data = await res.json();
                         officerSelect.disabled = false;
                         data.forEach(o => {
@@ -350,7 +360,7 @@
                             officerSelect.appendChild(opt);
                         });
                     } catch (err) {
-                        console.error(err);
+                        console.error('Error fetching officers:', err);
                     }
                 });
 
@@ -379,37 +389,66 @@
 
                     try {
                         const res = await fetch(`/payroll-setting/fetch/${officerId}`);
-                        const data = await res.json();
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-                        document.querySelector('[name="position"]').value = data.position_name || '-';
+                        const data = await res.json();
+                        console.log("Data dari server:", data);
+
+                        if (data.status === 'error') {
+                            console.error('Error from server:', data.message);
+                            return;
+                        }
+
+                        // Isi position display dan hidden field
+                        document.getElementById('position_display').value = data.position_name || '-';
+
+                        let hiddenInput = document.querySelector('[name="position_id"]');
+                        if (!hiddenInput) {
+                            hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'position_id';
+                            officerSelect.closest('form').appendChild(hiddenInput);
+                        }
+                        hiddenInput.value = data.position_id || '';
 
                         // Isi komponen gaji
                         const compSelects = document.querySelectorAll('.component-select');
                         compSelects.forEach(select => {
                             select.innerHTML = '<option value="">-- Pilih Komponen --</option>';
-                            data.components.forEach(c => {
-                                const opt = document.createElement('option');
-                                opt.value = c.id;
-                                opt.dataset.value = c.value;
-                                opt.textContent = c.name;
-                                select.appendChild(opt);
-                            });
+                            if (data.components && Array.isArray(data.components)) {
+                                data.components.forEach(c => {
+                                    const opt = document.createElement('option');
+                                    opt.value = c.id;
+                                    opt.dataset.value = c.value;
+                                    opt.textContent = c.name;
+                                    select.appendChild(opt);
+                                });
+                            }
                         });
 
                         // Isi potongan
                         const dedSelects = document.querySelectorAll('.deduction-select');
                         dedSelects.forEach(select => {
                             select.innerHTML = '<option value="">-- Pilih Potongan --</option>';
-                            data.deductions.forEach(d => {
-                                const opt = document.createElement('option');
-                                opt.value = d.id;
-                                opt.dataset.value = d.value;
-                                opt.textContent = d.name;
-                                select.appendChild(opt);
-                            });
+                            if (data.deductions && Array.isArray(data.deductions)) {
+                                data.deductions.forEach(d => {
+                                    const opt = document.createElement('option');
+                                    opt.value = d.id;
+                                    opt.dataset.value = d.value;
+                                    opt.dataset.type = d.type || '-';
+                                    opt.textContent = d.name;
+                                    select.appendChild(opt);
+                                });
+                            }
                         });
+
+                        // Update position di existing component rows
+                        document.querySelectorAll('.component-row [name="position"]').forEach(input => {
+                            input.value = data.position_name || '-';
+                        });
+
                     } catch (err) {
-                        console.error(err);
+                        console.error('Error fetching officer data:', err);
                     }
                 });
 
@@ -419,6 +458,14 @@
                         const container = document.querySelector('#component-container');
                         const template = document.querySelector('#component-template');
                         const clone = template.content.cloneNode(true);
+
+                        // Isi position dari data yang sudah di-load
+                        const positionValue = document.getElementById('position_display').value;
+                        const positionInput = clone.querySelector('[name="position"]');
+                        if (positionInput) {
+                            positionInput.value = positionValue;
+                        }
+
                         const addBtn = container.querySelector('.add-component').closest('.col-md-3');
                         container.insertBefore(clone, addBtn);
                     }
@@ -440,51 +487,31 @@
                         formatCurrencyInput(input);
                     }
                     if (e.target.classList.contains('deduction-select')) {
-                        const val = e.target.selectedOptions[0].dataset.value || '';
-                        const input = e.target.closest('.deduction-row').querySelector('.deduction-value');
-                        input.value = val;
-                        formatCurrencyInput(input);
+                        const selectedOption = e.target.selectedOptions[0];
+                        const val = selectedOption.dataset.value || '';
+                        const type = selectedOption.dataset.type || '-';
+
+                        const row = e.target.closest('.deduction-row');
+                        const inputValue = row.querySelector('.deduction-value');
+                        const inputType = row.querySelector('input[name="type_deduction"]');
+
+                        // Isi tipe potongan & nilai potongan otomatis
+                        inputType.value = type;
+                        inputValue.value = val;
+                        formatCurrencyInput(inputValue);
                     }
                 });
 
             });
-        </script>
-        <script>
+
             function formatCurrencyInput(input) {
-                // Ambil hanya angka
                 let value = input.value.replace(/[^\d]/g, '');
                 if (value === '') {
                     input.value = '';
                     return;
                 }
-
-                // Format ribuan
                 input.value = new Intl.NumberFormat('id-ID').format(value);
             }
-
-            // Saat dropdown berubah → isi & format otomatis
-            document.addEventListener('change', e => {
-                if (e.target.classList.contains('component-select')) {
-                    const val = e.target.selectedOptions[0].dataset.value || '';
-                    const input = e.target.closest('.component-row').querySelector('.component-value');
-                    input.value = val;
-                    formatCurrencyInput(input);
-                }
-                if (e.target.classList.contains('deduction-select')) {
-                    const selectedOption = e.target.selectedOptions[0];
-                    const val = selectedOption.dataset.value || '';
-                    const type = selectedOption.dataset.type || '-';
-
-                    const row = e.target.closest('.deduction-row');
-                    const inputValue = row.querySelector('.deduction-value');
-                    const inputType = row.querySelector('input[name="type_deduction"]');
-
-                    // Isi tipe potongan & nilai potongan otomatis
-                    inputType.value = type;
-                    inputValue.value = val;
-                    formatCurrencyInput(inputValue);
-                }
-            });
 
             // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
             document.addEventListener('submit', function(e) {

@@ -92,6 +92,7 @@ class OfficerController extends Controller
             'no_kartu_rfid'   => 'nullable|string|max:100',
             'qr_code'         => 'nullable|string|max:100',
             'va_guru'         => 'nullable|string|max:100',
+
         ]);
 
         DB::beginTransaction();
@@ -138,6 +139,7 @@ class OfficerController extends Controller
                 'qr_code'         => $request->qr_code,
                 'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'va_guru'         => $request->va_guru,
+                'position_id'     => $request->position_id
             ]);
             DB::commit();
 
@@ -242,6 +244,7 @@ class OfficerController extends Controller
                 'qr_code'         => $request->qr_code,
                 'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'va_guru'         => $request->va_guru,
+                'position_id'     => $request->position_id
             ]);
 
             DB::commit();
