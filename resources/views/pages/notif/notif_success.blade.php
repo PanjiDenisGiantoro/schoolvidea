@@ -45,7 +45,7 @@
 
                             {{-- Lanjutkan Login Button --}}
                             <div class="text-center d-grid">
-                                <a href="{{ url('portal') }}" class="btn btn-primary">Lanjutkan untuk Login</a>
+                                <a href="{{ url('login') }}" class="btn btn-primary">Lanjutkan untuk Login</a>
                             </div>
 
                             {{-- Footer text --}}
