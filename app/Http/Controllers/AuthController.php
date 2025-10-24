@@ -59,7 +59,7 @@ class AuthController extends Controller
     }
 
     // Proses login
-    public function login(Request $request)
+    public function portal(Request $request)
     {
         $request->validate([
             'email'    => 'required|email',
