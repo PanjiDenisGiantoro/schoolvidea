@@ -37,6 +37,10 @@ class TahunajaranController extends Controller
             'semester' => 'required',
             'status' => 'required|in:0,1',
         ]);
+
+        if ($request->status == '1') {
+            Tahun_ajaran::where('status', '1')->update(['status' => '0']);
+        }
         $tanggal_mulai = $request->tanggal_mulai ? $request->tanggal_mulai . '' : null;
         $tanggal_selesai = $request->tanggal_selesai ? $request->tanggal_selesai . '' : null;
         Tahun_ajaran::create([
@@ -59,9 +63,15 @@ class TahunajaranController extends Controller
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $data = $request->all();
-        $data['tanggal_mulai']   = $request->tanggal_mulai ? $request->tanggal_mulai . '-01' : null;
-        $data['tanggal_selesai'] = $request->tanggal_selesai ? $request->tanggal_selesai . '-01' : null;
 
+        $data['tanggal_mulai']   = $request->tanggal_mulai ?: null;
+        $data['tanggal_selesai'] = $request->tanggal_selesai ?: null;
+
+        if ($request->status == '1') {
+            Tahun_ajaran::where('id', '!=', $id)
+                ->where('status', '1')
+                ->update(['status' => '0']);
+        }
         $tahun_ajaran->update($data);
         return redirect()->route('tahun_ajaran.index')
             ->with('success', 'Data berhasil diupdate');

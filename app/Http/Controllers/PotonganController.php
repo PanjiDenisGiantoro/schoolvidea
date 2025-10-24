@@ -78,7 +78,8 @@ class PotonganController extends Controller
                         'nominal' => $nominal,
                     ]);
                     Tagihansiswa::where('id', $tagihanSiswa->id)
-                        ->where('status','!=','1')
+                        ->where('status','=','0')
+                        ->orWhere('status','=','2')
                         ->update([
                         'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
                     ]);

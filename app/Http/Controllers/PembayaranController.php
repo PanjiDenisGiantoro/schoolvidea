@@ -84,16 +84,18 @@ class PembayaranController extends Controller
             $tagihanSiswa->update([
                 'status'        => $statusTagihan,
                 'sisa_nominal'  => $sisaSetelahBayar,
-                'tanggal_bayar' => $tanggalBayar,
             ]);
-//            $hasUnpaid = Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
-//                ->where('status', '0') // 0 = Belum Lunas
-//                ->get();
-//
-//            if ($hasUnpaid->isEmpty()) {
-//                Tagihan::where('id', $tagihanSiswa->tagihan_id)
-//                    ->update(['status_tagihan' => 1]);
-//            }
+
+            // Cek apakah masih ada tagihan siswa yang belum lunas untuk tagihan ini
+            $hasUnpaid = Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
+                ->where('status', '0') // 0 = Belum Lunas
+                ->exists();
+
+            // Jika tidak ada lagi yang belum lunas, update status tagihan utama menjadi lunas
+            if (!$hasUnpaid) {
+                Tagihan::where('id', $tagihanSiswa->tagihan_id)
+                    ->update(['status_tagihan' => 1]); // 1 = Lunas
+            }
 
             // catat transaksi keuangan
             $transaksi = Keuangan_transaksi::create([
@@ -105,7 +107,6 @@ class PembayaranController extends Controller
                 'created_by'      => Auth::id(),
             ]);
 
-            $kategori =
             // jurnal debit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
@@ -141,24 +142,6 @@ class PembayaranController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $th->getMessage()
             ], 500);
         }
-    }
-
-    public function simpanCatatan(Request $request)
-    {
-        $request->validate([
-            'tagihan_id' => 'required|integer',
-            'catatan' => 'required|string|max:255'
-        ]);
-
-        $tagihan = TagihanSiswa::find($request->tagihan_id);
-        if (!$tagihan) {
-            return response()->json(['status' => 0, 'message' => 'Tagihan tidak ditemukan']);
-        }
-
-        $tagihan->catatan = $request->catatan;
-        $tagihan->save();
-
-        return response()->json(['status' => 1, 'message' => 'Catatan berhasil disimpan']);
     }
 
 
