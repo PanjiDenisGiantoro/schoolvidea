@@ -59,6 +59,9 @@
                             <a href="{{ route('potongan.edit', $potongan->id) }}" class="btn btn-warning btn-sm">
                                 <i class="fa fa-edit"></i> Edit
                             </a>
+                            <a href="{{ route('potongan.destroy', $potongan->id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')">
+                                <i class="fa fa-trash"></i> Hapus
+                            </a>
 {{--                            <!-- Delete Button -->--}}
 {{--                            <form action="{{ route('potongan.destroy', $potongan->id) }}" method="POST" style="display:inline;">--}}
 {{--                                @csrf--}}

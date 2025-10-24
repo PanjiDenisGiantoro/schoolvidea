@@ -14,7 +14,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->officer->id) : route('officer.store') }}"
+            <form id="userForm" action="{{ isset($officer->officer) ? route('officer.update', $officer->id) : route('officer.store') }}"
                   method="POST">
                 @csrf
                 @if(isset($officer->officer))
@@ -29,12 +29,12 @@
                     <div class="col-md-4">
                         <x-input-field type="email" id="email_top" name="email" label="Email"
                                        placeholder="Email" icon="bx bx-envelope"
-                                       :value="old('email', $officer->email ?? '')" required readonly/>
+                                       :value="old('email', $officer->user->email ?? '')" required readonly/>
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" name="username" label="Username"
                                        placeholder="Username" icon="bx bx-user"
-                                       :value="old('username', $officer->username ?? '')" required readonly />
+                                       :value="old('username', $officer->user->username ?? '')" required readonly />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" name="password" label="Password"
@@ -53,66 +53,66 @@
                     <div class="col-md-3">
                         <x-input-field type="number" name="nip" label="NIP" class="text-uppercase"
                                        placeholder="Masukkan NIP" icon="bx bx-id-card"
-                                       :value="old('nip', $officer->officer->nip ?? '')" required/>
+                                       :value="old('nip', $officer->nip ?? '')" required/>
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" name="nuptk" label="NUPTK"
                                        placeholder="Masukkan NUPTK" icon="bx bx-id-card"
-                                       :value="old('nuptk', $officer->officer->nuptk ?? '')" required/>
+                                       :value="old('nuptk', $officer->nuptk ?? '')" required/>
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" name="name" label="Nama Lengkap"
                                        placeholder="Masukkan nama lengkap" icon="bx bx-user"
-                                       :value="old('name', $officer->name ?? '')" required />
+                                       :value="old('name', $officer->user->name ?? '')" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" name="nik" label="NIK"
                                        placeholder="Masukkan NIK" icon="bx bx-id-card"
-                                       :value="old('nik', $officer->officer->nik ?? '')" required/>
+                                       :value="old('nik', $officer->nik ?? '')" required/>
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span style="color: #dc3545 !important;">*</span></label>
                         <select required name="jenis_kelamin" class="form-select">
                             <option value="">-- Pilih Jenis Kelamin --</option>
-                            <option value="Laki-laki" {{ old('jenis_kelamin', $officer->officer->jenis_kelamin ?? '') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="Perempuan" {{ old('jenis_kelamin', $officer->officer->jenis_kelamin ?? '') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            <option value="Laki-laki" {{ old('jenis_kelamin', $officer->jenis_kelamin ?? '') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Perempuan" {{ old('jenis_kelamin', $officer->jenis_kelamin ?? '') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
                                        placeholder="Masukkan tempat lahir" icon="bx bx-map"
-                                       :value="old('tempat_lahir', $officer->officer->tempat_lahir ?? '')" />
+                                       :value="old('tempat_lahir', $officer->tempat_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
                                        icon=""
-                                       :value="old('tanggal_lahir', $officer->officer->tanggal_lahir ?? '')" />
+                                       :value="old('tanggal_lahir', $officer->tanggal_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
                         <label for="agama" class="form-label">Agama <span style="color: #dc3545 !important;">*</span></label>
                         <select name="agama" id="agama" class="form-select text-uppercase" required>
                             <option value="">-- Pilih Agama --</option>
-                            <option value="ISLAM" {{ old('agama', $officer->officer->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
-                            <option value="KRISTEN PROTESTAN" {{ old('agama', $officer->officer->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN PROTESTAN</option>
-                            <option value="KRISTEN KATHOLIK" {{ old('agama', $officer->officer->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN KATHOLIK</option>
-                            <option value="HINDU" {{ old('agama', $officer->officer->agama ?? '') == 'HINDU' ? 'selected' : '' }}>HINDU</option>
-                            <option value="BUDDHA" {{ old('agama', $officer->officer->agama ?? '') == 'BUDDHA' ? 'selected' : '' }}>BUDDHA</option>
-                            <option value="KONGHUCU" {{ old('agama', $officer->officer->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
+                            <option value="ISLAM" {{ old('agama', $officer->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
+                            <option value="KRISTEN PROTESTAN" {{ old('agama', $officer->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN PROTESTAN</option>
+                            <option value="KRISTEN KATHOLIK" {{ old('agama', $officer->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN KATHOLIK</option>
+                            <option value="HINDU" {{ old('agama', $officer->agama ?? '') == 'HINDU' ? 'selected' : '' }}>HINDU</option>
+                            <option value="BUDDHA" {{ old('agama', $officer->agama ?? '') == 'BUDDHA' ? 'selected' : '' }}>BUDDHA</option>
+                            <option value="KONGHUCU" {{ old('agama', $officer->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="email" id="email_bottom" name="email" label="Email"
                                        placeholder="Email" icon="bx bx-envelope"
-                                       :value="old('email', $officer->email ?? '')" required />
+                                       :value="old('email', $officer->user->email ?? '')" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" name="no_hp" label="No. Telepon"
                                        placeholder="Masukkan Nomor Telepon" icon="bx bx-phone"
-                                       :value="old('no_hp', $officer->officer->no_hp ?? '')" required/>
+                                       :value="old('no_hp', $officer->no_hp ?? '')" required/>
                     </div>
                     <div class="col-md-3">
                         <label for="alamat" class="form-label">Alamat <span style="color: #dc3545 !important;">*</span></label>
-                        <textarea required name="alamat" id="alamat" class="form-control" rows="2">{{ old('alamat', $officer->officer->alamat ?? '') }}</textarea>
+                        <textarea required name="alamat" id="alamat" class="form-control" rows="2">{{ old('alamat', $officer->alamat ?? '') }}</textarea>
                     </div>
                     <div class="col-md-3">
                         <label for="image-dropzone" class="form-label">Upload Foto Guru</label>
@@ -145,7 +145,7 @@
                                     <option value="">-- Pilih Unit --</option>
                                     @foreach($units as $u)
                                         <option value="{{ $u->id }}" data-logo="{{ asset($u->image ?? 'images/default-logo.png') }}"
-                                            {{ old('unit_id', $officer->officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                            {{ old('unit_id', $officer->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                             {{ $u->nama_unit }}
                                         </option>
                                     @endforeach
@@ -153,10 +153,10 @@
                             </div>
                             <x-input-field type="text" name="va_guru" label="No. VA Guru & Staff"
                                            placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card"
-                                           :value="old('va_guru', $officer->va_guru ?? $officer->officer->va_guru ?? '')" required/>
+                                           :value="old('va_guru', $officer->va_guru ?? $officer->va_guru ?? '')" required/>
                             <x-input-field type="text" name="no_kartu_rfid" label="No Kartu RFID"
                                            placeholder="Masukkan Nomor RFID" icon="bx bx-barcode"
-                                           :value="old('no_kartu_rfid', $officer->officer->no_kartu_rfid ?? '')" />
+                                           :value="old('no_kartu_rfid', $officer->no_kartu_rfid ?? '')" />
 
 
 
@@ -169,7 +169,7 @@
                                 <select name="role_id" class="form-select" data-choices data-choices-sorting-false required>
                                     <option value="">-- Pilih Role --</option>
                                     @foreach($roles as $r)
-                                        <option value="{{ $r->id }}" {{ ($officer->officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
+                                        <option value="{{ $r->id }}" {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
                                             {{ $r->name }}
                                         </option>
                                     @endforeach
@@ -201,7 +201,7 @@
                                     <option value="">--Pilih Jurusan--</option>
                                     @foreach ($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
-                                            {{ in_array($jurusan->id, old('jurusan', $officer->jurusan ?? [])) ? 'selected' : '' }}>
+                                            {{ in_array($jurusan->id, old('jurusan', isset($officer->jurusan) ? (is_array($officer->jurusan) ? $officer->jurusan : explode(',', $officer->jurusan)) : [])) ? 'selected' : '' }}>
                                             {{ $jurusan->nama_jurusan }}
                                         </option>
                                     @endforeach
@@ -211,7 +211,7 @@
                             </div>
                             <x-input-field type="text" name="no_rekening" label="No Rekening"
                                            placeholder="Masukkan Nomor Rekening" icon="bx bx-bank"
-                                           :value="old('no_rekening', $officer->officer->no_rekening ?? '')" />
+                                           :value="old('no_rekening', $officer->no_rekening ?? '')" />
 
                         </div>
 

@@ -277,8 +277,17 @@ class OfficerController extends Controller
     {
         $officer = Officer::with(['user', 'rolePetugas', 'unit', 'tahunAjaran'])->findOrFail($id);
         $show = true;
+        $units = Unit::all();
+        $roles = Roles_petugas::all();
+        $jurusans = Jurusan::all();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
+        $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
+        $positions = Positions::all();
 
-        return view('pages.data_master.officer.officer_create', compact('officer', 'show'));
+
+        // Ambil logo dari unit milik officer
+        $logoUnit = $officer->unit->image ?? null;
+        return view('pages.data_master.officer.officer_create', compact('officer', 'show', 'units', 'roles', 'jurusans', 'tahun_ajaran', 'tahun_ajaran_selected', 'positions', 'logoUnit'));
     }
     public function upload(Request $request)
     {

@@ -22,6 +22,7 @@ class PotonganController extends Controller
         return view('pages.potongan.potongan', compact('potongans'));
     }
 
+
     public function create()
     {
         $units = Unit::get();
@@ -63,7 +64,7 @@ class PotonganController extends Controller
             // Store PotonganSiswa for each selected siswa
             foreach ($request->siswa_id as $siswaId) {
                 // Fetch the related tagihan_id from the tagihan_siswa table
-                $tagihanSiswa = Tagihansiswa::where('siswa_id', $siswaId)
+                $tagihanSiswa = Tagihansiswa::with('siswa')->where('siswa_id', $siswaId)
                     ->whereHas('tagihan', function ($query) use ($request) {
                         $query->where('kelas_id', $request->kelas_id);
                     })->where('status', '=', '0')
@@ -82,7 +83,7 @@ class PotonganController extends Controller
                     Potongansiswa::create([
                         'potongan_id' => $potongan->id,
                         'tagihan_id' => $tagihan->id,
-                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'tagihan_siswa_id' => $tagihanSiswa->siswa->id,
                         'nominal' => $nominal,
                     ]);
                     Tagihansiswa::where('siswa_id', $tagihanSiswa->siswa_id)
@@ -146,11 +147,47 @@ class PotonganController extends Controller
         foreach ($tagihansiswa as $tagihansiswa) {
             Tagihansiswa::where('id', $tagihansiswa->tagihan_siswa_id)
                 ->update([
-                    'sisa_nominal' => $tagihansiswa->tagihan_siswa->sisa_nominal + $tagihansiswa->nominal,
+                    'sisa_nominal' => $tagihansiswa->sisa_nominal + $tagihansiswa->nominal,
                 ]);
         }
 
         $potongan->delete();
         return redirect()->route('potongan.index')->with('success', 'Potongan successfully deleted.');
+    }
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nilai' => 'required|numeric',
+            'keterangan' => 'nullable|string|max:64',
+        ]);
+
+        try {
+            // Update potongan
+            $potongan = Potongan::findOrFail($id);
+            $potongan->nilai = $request->nilai;
+            $potongan->keterangan = $request->keterangan;
+            $potongan->save();
+
+            // Update setiap potongan_siswa dan tagihan_siswa terkait
+            $potonganSiswas = Potongansiswa::where('potongan_id', $potongan->id)->get();
+            foreach ($potonganSiswas as $potonganSiswa) {
+                $tagihanSiswa = Tagihansiswa::where('siswa_id', $potonganSiswa->tagihan_siswa_id)->where('tagihan_id', $potongan->kategori_tagihan_id)->first();
+                $nominalPotonganSiswa = intval($potonganSiswa->nominal); // atau gunakan (int) $potonganSiswa->nominal
+                $nominalTagihanSisa = intval($tagihanSiswa->sisa_nominal);
+
+                $nominalBaru = $this->calculateNominal($potongan, $nominalTagihanSisa + $nominalPotonganSiswa);
+                // Update nominal di potongan_siswa
+                $potonganSiswa->nominal = $nominalBaru;
+                $potonganSiswa->save();
+
+                // Update sisa_nominal di tagihan_siswa
+                $tagihanSiswa->sisa_nominal = (intval($tagihanSiswa->sisa_nominal) + intval($potonganSiswa->nominal)) - $nominalBaru;
+                $tagihanSiswa->save();
+            }
+
+            return redirect()->route('potongan.index')->with('success', 'Potongan dan potongan siswa berhasil diupdate.');
+        } catch (\Exception $e) {
+            return redirect()->route('potongan.index')->with('danger', $e->getMessage());
+        }
     }
 }
