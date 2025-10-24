@@ -35,6 +35,7 @@
                     </div>
                     {{-- Kategori --}}
                     <div class="col-md-4">
+                        <label for="kategori" class="form-label">Kategori</label>
                         <select name="kategori" id="kategori" class="form-select" data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Kategori --</option>
                             <option value="tagihan-masuk" {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Tagihan Masuk</option>
