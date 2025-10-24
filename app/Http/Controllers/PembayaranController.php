@@ -105,6 +105,7 @@ class PembayaranController extends Controller
                 'created_by'      => Auth::id(),
             ]);
 
+            $kategori =
             // jurnal debit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,

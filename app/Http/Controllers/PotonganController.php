@@ -87,7 +87,8 @@ class PotonganController extends Controller
 
             return redirect()->route('potongan.index')->with('success', 'Potongan successfully created.');
         } catch(\Exception $e) {
-            dd($e->getMessage());
+            return redirect()->route('potongan.index')->with('danger', $e->getMessage());
+
         }
     }
     private function calculateNominal(Potongan $potongan, Tagihan $tagihan)

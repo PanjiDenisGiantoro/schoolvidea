@@ -160,6 +160,7 @@ class TagihanController extends Controller
                             'bulan_ke'      => $i,
                             'tanggal_bayar' => null,
                             'sisa_nominal'  => $total_tagihan,
+                            'status'        => '0'
                         ]);
                     }
                 } else {
