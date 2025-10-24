@@ -59,7 +59,8 @@ class PotonganController extends Controller
                 $tagihanSiswa = Tagihansiswa::where('siswa_id', $siswaId)
                     ->whereHas('tagihan', function($query) use ($request) {
                         $query->where('kelas_id', $request->kelas_id);
-                    })->where('status','!=','1')
+                    })->where('status','=','0')
+                    ->orWhere('status','=','2')
                     ->first();
 
                 // Ensure tagihan_siswa record is found
@@ -68,7 +69,7 @@ class PotonganController extends Controller
                     $tagihan = $tagihanSiswa->tagihan;
 
                     // Calculate the nominal for the discount (potongan)
-                    $nominal = $this->calculateNominal($potongan, $tagihan);
+                    $nominal = $this->calculateNominal($potongan, $tagihanSiswa->sisa_nominal);
 
                     // Store the PotonganSiswa entry
                     Potongansiswa::create([
@@ -77,7 +78,8 @@ class PotonganController extends Controller
                         'tagihan_siswa_id' => $tagihanSiswa->id,
                         'nominal' => $nominal,
                     ]);
-                    Tagihansiswa::where('id', $tagihanSiswa->id)
+                    Tagihansiswa::where('siswa_id', $tagihanSiswa->siswa_id)
+                        ->where('tagihan_id', $tagihan->id)
                         ->where('status','=','0')
                         ->orWhere('status','=','2')
                         ->update([
@@ -92,12 +94,12 @@ class PotonganController extends Controller
 
         }
     }
-    private function calculateNominal(Potongan $potongan, Tagihan $tagihan)
+    private function calculateNominal($potongan, $tagihan)
     {
         if ($potongan->tipe_potongan == 'nominal') {
             return $potongan->nilai; // Fixed value for Harga type
         } elseif ($potongan->tipe_potongan == 'persentase') {
-            return ($potongan->nilai / 100) * $tagihan->nominal; // Percentage of the tagihan nominal
+            return ($potongan->nilai / 100) * $tagihan; // Percentage of the tagihan nominal
         }
         return 0;
     }
