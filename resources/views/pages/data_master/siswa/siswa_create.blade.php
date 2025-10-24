@@ -497,11 +497,11 @@
                 data: vaInput.value || " ",
                 image: defaultLogo,
                 dotsOptions: {
-                    color: "#000",
-                    type: "rounded"
+                    color: "#000000",
+                    type: "square"
                 },
                 backgroundOptions: {
-                    color: "#fff"
+                    color: "#eeeee"
                 },
                 imageOptions: {
                     crossOrigin: "anonymous",
@@ -513,7 +513,12 @@
             });
 
             console.log("QR instance:", qrCode);
-
+            if (qrContainer) {
+                qrCode.append(qrContainer);
+                console.log("✅ QR appended successfully!");
+            } else {
+                console.error("❌ QR container not found in DOM!");
+            }
             // 🟢 bagian penting: render QR ke halaman
             setTimeout(() => {
                 try {
