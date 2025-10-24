@@ -145,6 +145,28 @@
     align-items: center;
 }
 
+/* Pastikan modal benar-benar di tengah layar */
+#modalCatatan .modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 1rem);
+    margin: 0 auto !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#modalCatatan .modal-content {
+    margin: auto;
+    max-width: 500px; /* biar modalnya tidak terlalu besar */
+    width: 100%;
+    border-radius: 1rem;
+}
+
+
 .custom-dropdown {
     position: relative;
     width: 100%;

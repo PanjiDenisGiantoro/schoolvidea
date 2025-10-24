@@ -37,7 +37,7 @@
 
     <div class="row g-4">
         <div class="col-md-8">
-            <div class="card p-4 shadow-sm rounded-4 border-0">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
@@ -77,10 +77,10 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-4 shadow-sm rounded-4 border-0">
-                <div class="text-center mb-3">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
+                <div class="mb-3 text-center">
                     <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                        class="img-fluid rounded-circle shadow-sm border" width="120">
+                        class="img-fluid rounded-circle border shadow-sm" width="120">
                 </div>
                 <ul class="list-unstyled small">
                     <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
@@ -100,7 +100,7 @@
 
 
         {{-- Daftar Tagihan --}}
-        <div class="card shadow-sm rounded-4 border-0 mt-3">
+        <div class="card rounded-4 mt-3 border-0 shadow-sm">
             <!-- Header tombol toggle -->
             <div class="custom-toggle-header">
                 <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
@@ -122,7 +122,7 @@
 
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle mb-0">
+                    <table class="table-hover table-striped mb-0 table align-middle">
                         <thead class="table-light text-center">
                             <tr>
                                 <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
@@ -140,7 +140,7 @@
                         </thead>
                         <tbody id="list_tagihan">
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
+                                <td colspan="5" class="text-muted py-4 text-center">
                                     <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
                                 </td>
                             </tr>
@@ -150,7 +150,7 @@
             </div>
             <div class="card-body p-0" id="tabelSudahLunas">
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle mb-0">
+                    <table class="table-hover table-striped mb-0 table align-middle">
                         <thead class="table-light items-center text-center">
                             <tr>
                                 <th>#</th>
@@ -165,7 +165,7 @@
                         </thead>
                         <tbody id="list_tagihan">
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
+                                <td colspan="5" class="text-muted py-4 text-center">
                                     <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
                                 </td>
                             </tr>
@@ -203,32 +203,31 @@
                 </div>
             </div>
         </div>
-        <!-- Modal Catatan -->
-        <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 rounded-4 shadow-lg">
-                    <div class="modal-header custom-modal-header">
-                        <h5 class="modal-title fw-semibold" id="catatanModalLabel">
-                            <i class="ri-sticky-note-line"></i> Tambah Catatan
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
+    </div>
+    <!-- Modal Catatan -->
+    <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title fw-semibold" id="catatanModalLabel">
+                        <i class="ri-sticky-note-line"></i> Tambah Catatan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
 
-                        <form id="formCatatan">
-                            <div class="mb-3">
-                                <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
-                                <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan
-                            Catatan</button>
+                    <form id="formCatatan">
+                        <div class="mb-3">
+                            <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
+                            <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan
+                        Catatan</button>
 
-                    </div>
                 </div>
             </div>
         </div>
@@ -376,7 +375,7 @@
             </td>
         </tr>`;
             document.getElementById('nama_tagihan').innerHTML =
-            '<option value="">-- Pilih Tagihan --</option>'; // Reset nama tagihan
+                '<option value="">-- Pilih Tagihan --</option>'; // Reset nama tagihan
 
 
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
@@ -466,12 +465,13 @@
                 <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
                 <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
-                <td class="text-center">${tagihan.catatan || '-'}</td>
                 <td class="text-center">
-                <button type="button" class="btn btn-warning btn-sm rounded-pill"
+                    <button type="button" class="btn btn-warning btn-sm rounded-pill"
                                 onclick="tambahCatatan(${tagihan.id})">
                                 <i class="fa fa-sticky-note"></i> Catatan
-                            </button>
+                            </button></td>
+                <td class="text-center">
+
                     <button type="button" class="btn btn-success btn-sm rounded-pill"
                         onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.jumlah_dibayar}, ${tagihan.kategori_id || 1})">
                         <i class="fa fa-credit-card"></i> Bayar
@@ -633,11 +633,20 @@
         });
 
         function tambahCatatan(tagihanId) {
+            // 1️⃣ Simpan ID ke hidden input
             document.getElementById('catatan_tagihan_id').value = tagihanId;
-            document.getElementById('isiCatatan').value = ''; // kosongkan sebelumnya
+
+            // 2️⃣ Ambil data tagihan dari window.tagihanData (hasil fetch sebelumnya)
+            const tagihan = window.tagihanData?.find(t => t.id === tagihanId);
+
+            // 3️⃣ Isi catatan kalau ada, kosong kalau tidak
+            document.getElementById('isiCatatan').value = tagihan?.catatan || '';
+
+            // 4️⃣ Tampilkan modal
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
         }
+
 
         function simpanCatatan() {
             const tagihanId = document.getElementById('catatan_tagihan_id').value;
@@ -675,7 +684,69 @@
                 .catch(err => {
                     console.error(err);
                     Swal.fire("Error!", "Terjadi kesalahan saat menyimpan catatan.", "error");
+
                 });
         }
+    </script>
+    <script>
+        function bukaCatatanModal(catatan) {
+            const textarea = document.getElementById('isiCatatan');
+            textarea.value = catatan || ''; // jika null/undefined → kosongkan
+
+            const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
+            modal.show();
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkAll = document.getElementById('checkAll');
+            const btnProsesPembayaran = document.getElementById('btnProsesPembayaran');
+            const hiddenInput = document.getElementById('checkbox');
+
+            // 🔹 Fitur "Centang Semua"
+            if (checkAll) {
+                checkAll.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll(
+                        '#tabelBelumLunas tbody input[type="checkbox"]');
+                    checkboxes.forEach(cb => {
+                        cb.checked = checkAll.checked;
+                    });
+                });
+            }
+
+            // 🔹 Saat klik "Proses Pembayaran"
+            if (btnProsesPembayaran) {
+                btnProsesPembayaran.addEventListener('click', function() {
+                    const selected = Array.from(
+                        document.querySelectorAll(
+                            '#tabelBelumLunas tbody input[type="checkbox"]:checked')
+                    ).map(cb => cb.value);
+
+                    if (selected.length === 0) {
+                        Swal.fire("Peringatan!", "Silakan pilih minimal satu tagihan terlebih dahulu.",
+                            "warning");
+                        return;
+                    }
+
+                    // isi ke input hidden
+                    hiddenInput.value = selected.join(',');
+
+                    // optional: tampilkan konfirmasi
+                    Swal.fire({
+                        title: "Konfirmasi Pembayaran",
+                        text: `Anda akan memproses ${selected.length} tagihan.`,
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "Lanjutkan",
+                        cancelButtonText: "Batal"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // kirim form (pastikan form punya id, misal "formTagihan")
+                            document.getElementById('formTagihan').submit();
+                        }
+                    });
+                });
+            }
+        });
     </script>
 @endpush

@@ -245,7 +245,8 @@
                             @else
                                 <div id="qrcode" style="width:150px; height:150px; border:1px solid #ddd;"></div>
                                 <input type="hidden" name="qrcode" id="qrcode-text"
-                                    value="old('qrcode', $siswa?->qrcode ?? '')">
+                                    value="{{ old('qrcode', $siswa?->qrcode ?? '') }}">
+
 
                             @endif
                         </div>
@@ -291,7 +292,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const formElements = document.querySelectorAll(
                     '#siswaForm input, #siswaForm textarea, #siswaForm select, #siswaForm button[type="submit"]'
-                    );
+                );
                 formElements.forEach(el => {
                     el.disabled = true;
                     if (el.type === 'submit') {
@@ -469,8 +470,9 @@
             });
         });
     </script>
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vaInput = document.querySelector('input[name="va_siswa"]');
@@ -480,6 +482,14 @@
 
             let defaultLogo = "{{ asset('images/default-logo.png') }}";
             vaInput.dispatchEvent(new Event('input'));
+
+            console.log("QR container:", qrContainer);
+            console.log("VA:", vaInput?.value);
+
+            if (!qrContainer || !vaInput) {
+                console.warn("❌ Tidak ditemukan elemen target atau input VA");
+                return;
+            }
 
             const qrCode = new QRCodeStyling({
                 width: 150,
@@ -501,6 +511,21 @@
                     imageCornerRadius: 100
                 }
             });
+
+            console.log("QR instance:", qrCode);
+
+            // 🟢 bagian penting: render QR ke halaman
+            setTimeout(() => {
+                try {
+                    qrCode.append(qrContainer); // 👉 tempelkan QR ke <div id="qrcode">
+                    qrCode.update(); // 👉 paksa render (penting di beberapa versi)
+                    console.log("✅ QR appended successfully!");
+                } catch (err) {
+                    console.error("❌ QR append error:", err);
+                }
+            }, 200);
+
+
 
             qrCode.append(qrContainer);
             const qrTextInput = document.getElementById('qrcode-text');
