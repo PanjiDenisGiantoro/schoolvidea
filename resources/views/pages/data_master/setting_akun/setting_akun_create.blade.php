@@ -40,9 +40,8 @@
                             <option value="">-- Pilih Kategori --</option>
                             <option value="tagihan-masuk" {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Tagihan Masuk</option>
                             <option value="tagihan-keluar" {{ old('kategori', $setting->kategori ?? '') == 'tagihan-keluar' ? 'selected' : '' }}>Tagihan Keluar</option>
-                            <option value="tabungan-masuk" {{ old('kategori', $setting->kategori ?? '') == 'tabungan-masuk' ? 'selected' : '' }}>Tabungan Masuk</option>
                             <option value="tabungan-tarik" {{ old('kategori', $setting->kategori ?? '') == 'tabungan-tarik' ? 'selected' : '' }}>Tabungan Tarik</option>
-                            <option value="tabungan" {{ old('kategori', $setting->kategori ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan</option>
+                            <option value="tabungan" {{ old('kategori', $setting->kategori ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan Masuk</option>
                         </select>
                     </div>
                     {{-- Akun --}}
