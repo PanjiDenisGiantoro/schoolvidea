@@ -53,7 +53,7 @@ class AuthController extends Controller
         return view('pages.login');
     }
     // Halaman login
-    public function logincentral()
+    public function portalcentral()
     {
         return view('pages.login');
     }

@@ -38,7 +38,7 @@ Route::prefix('landing')->group(function () {
 });
 Route::get('/login', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
-Route::get('/login-central', [AuthController::class, 'portal'])->name('logincentral.form');
+Route::get('/login-central', [AuthController::class, 'portalcentral'])->name('logincentral.form');
 Route::post('/loginprocess', [AuthController::class, 'portal'])->name('login.process');
 Route::get('/portal', [AuthController::class, 'loginForm'])->name('login.form');
 
