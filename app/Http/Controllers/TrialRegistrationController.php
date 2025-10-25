@@ -74,6 +74,21 @@ class TrialRegistrationController extends Controller
 //        dd($request->all());
         $trialUser = TrialRegistration::where('id', $id)->firstOrFail();
 
+        $yayasan_id = null;
+        if ($request->has('yayasan_id') && !empty($request->yayasan_id)) {
+            $codeyayasan = 'Y'.strtoupper(Str::random(7));
+            $yayasan = Yayasan::create([
+                'central_code' => $codeyayasan,
+                'nama_yayasan' => $request->yayasan_id,
+                'nama_pimpinan' => '',
+                'no_hp' => 'xxx',
+                'email' => '',
+                'alamat' => '',
+                'website' =>'',
+                'status' => '0',
+            ]);
+            $yayasan_id = $yayasan->id;
+        }
         $centralCode = 'U' . strtoupper(Str::random(7));
         $unit = Unit::create([
             'nama_unit' => $request->school_name,   // Menggunakan nama sekolah
@@ -85,23 +100,8 @@ class TrialRegistrationController extends Controller
             'website' => '',         // Website, jika ada
             'tipe_unit_id' => $trialUser->tipe_unit_id,
             'status' => 1,                          // Status aktif
+            'yayasan_id' => $yayasan->id
         ]);
-//
-//        $yayasan_id = null;
-//        if ($request->has('yayasan_id') && !empty($request->yayasan_id)) {
-//            $yayasan = Yayasan::create([
-//                'nama_yayasan' => $request->yayasan_name, // Nama yayasan
-//                'nama_pimpinan' => $request->yayasan_leader, // Nama pimpinan yayasan
-//                'central_code' => strtoupper(uniqid()), // Generate central code
-//                'image' => null, // Set image null
-//                'no_hp' => $data['no_hp'],
-//                'email' => $data['email'],
-//                'alamat' => $request->address, // Alamat yayasan
-//                'website' => $request->website, // Website yayasan
-//                'status' => 'active',
-//            ]);
-//            $yayasan_id = $yayasan->id;
-//        }
 
         // Buat User sebagai admin
         $user = User::create([

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('yayasans', function (Blueprint $table) {
-            $table->string('status')->default('1');
+        Schema::table('units', function (Blueprint $table) {
+            $table->string('nama_pimpinan_unit')->nullable()->after('website');
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('yayasans', function (Blueprint $table) {
+        Schema::table('units', function (Blueprint $table) {
             //
         });
     }
