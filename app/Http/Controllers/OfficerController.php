@@ -157,9 +157,13 @@ class OfficerController extends Controller
     public function edit($id)
     {
         $officer = Officer::with('user')->findOrFail($id);
-        $units = Unit::all();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
+        })->where('status', '1')->get();
         $roles = Roles_petugas::all();
-        $jurusans = Jurusan::all();
+        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->where('status', '1')->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $positions = Positions::all();
