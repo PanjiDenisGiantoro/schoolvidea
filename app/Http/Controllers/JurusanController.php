@@ -78,8 +78,7 @@ class JurusanController extends Controller
         $jurusan = Jurusan::findOrFail($id);
         $units = Unit::when(Auth::user()->unit_id,function ($query, $unit_id){
             $query->where('unit_id', $unit_id);
-        })
-        ->isactive()->get();
+        })->where('status','1')->get();
         $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
