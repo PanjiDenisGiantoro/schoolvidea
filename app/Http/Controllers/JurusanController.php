@@ -38,7 +38,7 @@ class JurusanController extends Controller
                 $query->whereHas('units', function ($q) use ($unitId) {
                     $q->where('id', $unitId);
                 });
-            })->active()->get();
+            })->where('status','1')->get();
         $units = Unit::when(Auth::user()->unit_id,function ($query, $unitId) {
           $query->where('id', $unitId);
         })
