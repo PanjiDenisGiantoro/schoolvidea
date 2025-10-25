@@ -66,7 +66,7 @@ class TabunganController extends Controller
             'keterangan'     => 'nullable|string',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Ambil data siswa
@@ -143,11 +143,11 @@ class TabunganController extends Controller
                 'dilakukan_pada'=> now(),
             ]);
             $saldoSiswa->increment('saldo_akhir', $request->jumlah);
-//            DB::commit();
+            DB::commit();
 
             return redirect()->route('tabungan.index')->with('success', 'Transaksi berhasil disimpan.');
         } catch (\Exception $e) {
-//            DB::rollBack();
+            DB::rollBack();
             return back()->with('danger', $e->getMessage());
         }
     }

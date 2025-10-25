@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tagihan_siswa', function (Blueprint $table) {
-            $table->enum('status', ['0', '1','2'])->default(0)->after('siswa_id')->comment('0 = Belum Lunas, 1 = Lunas');
-            $table->date('tanggal_bayar')->nullable()->after('status');
-
+        Schema::table('units', function (Blueprint $table) {
+            $table->string('status')->default('1');
         });
     }
 
@@ -23,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tagihan_siswa', function (Blueprint $table) {
+        Schema::table('units', function (Blueprint $table) {
             //
         });
     }

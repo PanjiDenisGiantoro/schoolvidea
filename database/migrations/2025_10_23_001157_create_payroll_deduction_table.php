@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payroll_deduction', function (Blueprint $table) {
+        Schema::create('payroll_deductions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->decimal('price', 12, 2)->default(0.0);

@@ -30,10 +30,7 @@ return new class extends Migration
                 $table->string('password')->nullable()->after('username');
             }
 
-            // Hapus kolom tahun_ajaran_id (jika ada)
-            if (Schema::hasColumn('siswas', 'tahun_ajaran_id')) {
-                $table->dropColumn('tahun_ajaran_id');
-            }
+
         });
 
         // Ubah kolom tanggal_lahir menjadi tipe DATE (PostgreSQL-style)

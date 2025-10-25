@@ -47,19 +47,24 @@ class AuthController extends Controller
     public function loginForm()
     {
         if (!session()->has('lembaga_id')) {
-            return redirect()->route('portal.form')->with('error' , 'Masukkan kode sekolah terlebih dahulu');
+            return redirect()->route('login.form')->with('error' , 'Masukkan kode sekolah terlebih dahulu');
         }
 
         return view('pages.login');
     }
     // Halaman login
-    public function logincentral()
+    public function portalcentral()
+    {
+        return view('pages.login');
+    }
+    public function loginunit()
     {
         return view('pages.login');
     }
 
+
     // Proses login
-    public function login(Request $request)
+    public function portal(Request $request)
     {
         $request->validate([
             'email'    => 'required|email',

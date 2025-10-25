@@ -39,44 +39,43 @@
                                 <td>{{ $potongan->kategoriTagihan->nama_kategori }}</td>
                                 <td>{{ $potongan->tipe_potongan }}</td>
 
-                                <td>
-                                    @php
-                                        if ($potongan->tipe_potongan == 'Persen') {
-                                            $nilai = $potongan->nilai . '%';
-                                        } else {
-                                            $nilai = 'Rp ' . number_format($potongan->nilai, 2, ',', '.');
-                                        }
-                                    @endphp
-                                    {{ $nilai }}
-                                </td>
-                                <td>{{ $potongan->keterangan ?? '-' }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <!-- View Button -->
-                                        <a href="{{ route('potongan.show', $potongan->id) }}" class="btn btn-info btn-sm">
-                                            <i class="fa fa-eye"></i> Lihat
-                                        </a>
-                                        {{--                            <!-- Edit Button --> --}}
-                                        <a href="{{ route('potongan.edit', $potongan->id) }}"
-                                            class="btn btn-warning btn-sm">
-                                            <i class="fa fa-edit"></i> Edit
-                                        </a>
-                                    </div>
-
-                                    {{--                            <!-- Delete Button --> --}}
-                                    {{--                            <form action="{{ route('potongan.destroy', $potongan->id) }}" method="POST" style="display:inline;"> --}}
-                                    {{--                                @csrf --}}
-                                    {{--                                @method('DELETE') --}}
-                                    {{--                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')"> --}}
-                                    {{--                                    <i class="fa fa-trash"></i> Hapus --}}
-                                    {{--                                </button> --}}
-                                    {{--                            </form> --}}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                        <td>
+                            @php
+                                if ($potongan->tipe_potongan == 'Persen') {
+                                    $nilai = $potongan->nilai . '%';
+                                } else {
+                                    $nilai = 'Rp ' . number_format($potongan->nilai, 2, ',', '.');
+                                }
+                            @endphp
+                            {{ $nilai }}
+                        </td>
+                        <td>{{ $potongan->keterangan ?? '-' }}</td>
+                        <td>
+                            <!-- View Button -->
+                            <a href="{{ route('potongan.show', $potongan->id) }}" class="btn btn-info btn-sm">
+                                <i class="fa fa-eye"></i> Lihat
+                            </a>
+{{--                            <!-- Edit Button -->--}}
+                            <a href="{{ route('potongan.edit', $potongan->id) }}" class="btn btn-warning btn-sm">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                            <a href="{{ route('potongan.destroy', $potongan->id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')">
+                                <i class="fa fa-trash"></i> Hapus
+                            </a>
+{{--                            <!-- Delete Button -->--}}
+{{--                            <form action="{{ route('potongan.destroy', $potongan->id) }}" method="POST" style="display:inline;">--}}
+{{--                                @csrf--}}
+{{--                                @method('DELETE')--}}
+{{--                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')">--}}
+{{--                                    <i class="fa fa-trash"></i> Hapus--}}
+{{--                                </button>--}}
+{{--                            </form>--}}
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
         </div>
     </div>
 
