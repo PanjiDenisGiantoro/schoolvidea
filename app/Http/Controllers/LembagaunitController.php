@@ -68,6 +68,7 @@ class LembagaunitController extends Controller
             'image'        => $request->image,
             'status'       => $request->status,
             'nama_pimpinan' => $request->nama_pimpinan,
+            'unit_id' => Auth::user()->unit_id ? Auth::user()->unit_id : null,
         ]);
 
         return redirect()->route('lembagaunit.index')
@@ -82,6 +83,9 @@ class LembagaunitController extends Controller
     public function update(Request $request, $id)
     {
         $lembagaunit = Yayasan::findOrFail($id);
+        $request->merge([
+            'unit_id' => Auth::user()->unit_id ? Auth::user()->unit_id : null,
+        ]);
         $lembagaunit->update($request->all());
         return redirect()->route('lembagaunit.index')
             ->with('success', 'Data berhasil diupdate');
