@@ -8,7 +8,8 @@ class Positions extends Model
 {
     protected $table = 'positions';
     protected $fillable = [
-        'positions_name'
+        'positions_name',
+        'status',
     ];
     protected $guarded = [];
     public function officers()
