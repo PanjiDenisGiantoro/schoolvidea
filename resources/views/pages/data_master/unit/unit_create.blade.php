@@ -22,7 +22,7 @@
                         <hr>
                         <div class="mb-3">
                             <label for="yayasan_id" class="form-label">Yayasan</label>
-                            <select name="yayasan_id"  id="choices-single-no-sorting"  class="form-select" data-choices data-choices-false required>
+                            <select name="yayasan_id"  id="choices-single-no-sorting"  class="form-select" data-choices data-choices-false >
                                 <option value="">-- Pilih Yayasan --</option>
                                 @foreach($yayasan as $y)
                                     <option value="{{ $y->id }}"

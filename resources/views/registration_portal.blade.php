@@ -69,13 +69,6 @@
                                                    :value="old('no_hp')"/> {{-- Email --}}
                                     <x-input-field type="email" name="email" label="Email" placeholder="Email"
                                                    :value="old('email')"/> {{-- Jenis Kelamin --}}
-                                    <x-input-field type="text" name="gender" label="Jenis Kelamin" placeholder="Jenis Kelamin"
-                                                   :value="old('gender')"/> {{-- Tempat Lahir --}}
-                                    <x-input-field type="text" name="place_of_birth" label="Tempat Lahir" placeholder="Tempat Lahir"
-                                                   :value="old('place_of_birth')"/> {{-- Tanggal Lahir --}}
-                                    <x-input-field type="date" name="dob" label="Tanggal Lahir" placeholder="dd/mm/yyyy"
-                                                   :value="old('dob')"/> {{-- Agama --}}
-                                    <x-input-field type="text" name="religion" label="Agama" placeholder="Agama" :value="old('religion')"/>
                                     <button type="submit" class="btn btn-primary">Lanjutkan</button>
                                 </form>
 

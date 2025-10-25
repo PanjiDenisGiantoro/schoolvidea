@@ -15,6 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class TrialRegistrationController extends Controller
 {
@@ -67,62 +70,85 @@ class TrialRegistrationController extends Controller
     }
 
 
-        public function storePortal(Request $request, $id)
+    public function storePortal(Request $request, $id)
     {
-        // Buat Unit berdasarkan data yang disubmit
+        try {
+            DB::beginTransaction();
 
-//        dd($request->all());
-        $trialUser = TrialRegistration::where('id', $id)->firstOrFail();
+            $trialUser = TrialRegistration::where('id', $id)->firstOrFail();
 
-        $yayasan_id = null;
-        if ($request->has('yayasan_id') && !empty($request->yayasan_id)) {
-            $codeyayasan = 'Y'.strtoupper(Str::random(7));
-            $yayasan = Yayasan::create([
-                'central_code' => $codeyayasan,
-                'nama_yayasan' => $request->yayasan_id,
-                'nama_pimpinan' => '',
-                'no_hp' => 'xxx',
-                'email' => '',
-                'alamat' => '',
-                'website' =>'',
-                'status' => '0',
+            $yayasan_id = null;
+
+            if (!empty($trialUser->yayasan_id)) {
+                $codeyayasan = 'Y' . strtoupper(Str::random(7));
+
+                $yayasan = Yayasan::create([
+                    'central_code' => $codeyayasan,
+                    'nama_yayasan' => $trialUser->yayasan_id,
+                    'nama_pimpinan' => $trialUser->full_name ?? '',
+                    'no_hp' => $trialUser->no_hp ?? '',
+                    'email' => $trialUser->email ?? '',
+                    'alamat' => $trialUser->address ?? '',
+                    'website' => '',
+                    'status' => '0',
+                ]);
+
+                $yayasan_id = $yayasan->id; // simpan ID-nya di variabel terpisah
+            }
+
+            $centralCode = 'U' . strtoupper(Str::random(7));
+
+            $unit = Unit::create([
+                'nama_unit' => $request->school_name,
+                'code' => $centralCode,
+                'image' => null,
+                'no_hp' => $request->no_hp,
+                'email' => $request->email,
+                'alamat' => $request->address,
+                'website' => '',
+                'tipe_unit_id' => $trialUser->tipe_unit_id,
+                'status' => 1,
+                'yayasan_id' => $yayasan_id, // ✅ pakai variabel yang aman
             ]);
-            $yayasan_id = $yayasan->id;
-        }
-        $centralCode = 'U' . strtoupper(Str::random(7));
-        $unit = Unit::create([
-            'nama_unit' => $request->school_name,   // Menggunakan nama sekolah
-            'code' => $centralCode,         // Generate kode unik untuk unit
-            'image' => null,                        // Set image null
-            'no_hp' => $request->no_hp,
-            'email' => $request->email,
-            'alamat' => $request->address,          // Alamat
-            'website' => '',         // Website, jika ada
-            'tipe_unit_id' => $trialUser->tipe_unit_id,
-            'status' => 1,                          // Status aktif
-            'yayasan_id' => $yayasan->id
-        ]);
 
-        // Buat User sebagai admin
-        $user = User::create([
-            'name' => $request->username,
-            'unit_id' =>$unit->id,
-            'password' => Hash::make('123456'), // Menggunakan hash untuk password
-            'email' => $request->email,
-        ]);
 
+            // Buat user admin
+            $user = User::create([
+                'name' => $request->username,
+                'unit_id' => $unit->id,
+                'password' => Hash::make('123456'),
+                'email' => $request->email,
+            ]);
+
+            // Role Spatie
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => 'admin'],
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
 
+            // Update trial registration
             $trialUser->update([
                 'status' => '1',
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
+
+            // Kirim email
             Mail::to($user->email)->send(new TrialRegistrationConfirmationnext($user, $unit));
-            return redirect()->route('landing.success') // Atau ke halaman yang sesuai
-        ->with('success', 'Penyiapan portal berhasil!');
+
+            DB::commit();
+
+            return redirect()->route('landing.success')
+                ->with('success', 'Penyiapan portal berhasil!');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error storePortal: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyiapkan portal: ' . $e->getMessage());
+        }
     }
 }
