@@ -345,7 +345,7 @@ class SiswaController extends Controller
     public function getJurusanByUnit($unitId)
     {
         $jurusans = Jurusan::where('unit_id', $unitId)
-            ->where('status', 1)
+            ->where('status', '1')
             ->get();
         return response()->json($jurusans);
     }

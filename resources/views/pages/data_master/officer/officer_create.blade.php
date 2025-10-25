@@ -213,11 +213,12 @@
                                     <option value="">--Pilih Jurusan--</option>
                                     @foreach ($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
-                                            {{ in_array($jurusan->id, old('jurusan', isset($officer->jurusan) ? (is_array($officer->jurusan) ? $officer->jurusan : explode(',', $officer->jurusan)) : [])) ? 'selected' : '' }}>
+                                            {{ in_array($jurusan->id, old('jurusan', $officer->jurusan ?? [])) ? 'selected' : '' }}>
                                             {{ $jurusan->nama_jurusan }}
                                         </option>
                                     @endforeach
                                 </select>
+
 
 
                             </div>
