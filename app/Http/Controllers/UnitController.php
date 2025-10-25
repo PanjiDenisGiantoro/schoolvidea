@@ -36,12 +36,9 @@ class UnitController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::with('units')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('units', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
-            })->where('status', '1')->get();
+        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
 
         $tipeunit = Tipeunit::where('status','1')->get();
         return view('pages.data_master.unit.unit_create', compact('yayasan','tipeunit'));
@@ -85,12 +82,10 @@ class UnitController extends Controller
     public function edit($id)
     {
         $unit = Unit::findOrFail($id);
-        $yayasan = Yayasan::where('status','1')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('units', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
-            })->get();
+        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('unit_id', $unitId);
+        })->get();
+
         $tipeunit = Tipeunit::where('status','1')->get();
 
         return view('pages.data_master.unit.unit_create', compact('unit','yayasan','tipeunit'));
