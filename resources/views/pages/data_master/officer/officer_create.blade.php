@@ -1,5 +1,5 @@
 @php
-    $jabatanSelected = old('jabatan_id', $officer->position_id ?? $officer->officer->position_id ?? '');
+    $jabatanSelected = old('jabatan_id', $officer->position_id ?? ($officer->officer->position_id ?? ''));
 @endphp
 @extends('layouts.app')
 @section('title', isset($officer->id) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
@@ -8,6 +8,7 @@
 
 @section('content')
     @include('partials.page-title', [
+
         'title' => isset($officer->id) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
         'subTitle' => 'Guru & Staff'
     ])
@@ -37,15 +38,16 @@
                                        :value="old('username', $officer->user->username ?? '')" required readonly />
                     </div>
                     <div class="col-md-4">
-                        <x-input-field type="text" name="password" label="Password"
-                                       :placeholder="isset($officer) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
-                                       icon="bx bx-lock"
-                                       :value="old('password')" readonly/>
+                        <x-input-field type="text" name="password" label="Password" :placeholder="isset($officer)
+                            ? 'Kosongkan jika tidak ingin mengubah password'
+                            : 'Masukkan Password'" icon="bx bx-lock"
+                            :value="old('password')" readonly />
                     </div>
                 </div>
 
                 {{-- Data Lengkap --}}
-                <div class="card-title mb-0 mt-4">Data Lengkap Guru & Staff <span style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></div>
+                <div class="card-title mb-0 mt-4">Data Lengkap Guru & Staff <span
+                        style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></div>
                 <p class="text-muted">Masukkan informasi detail petugas</p>
                 <hr>
                 <div class="row">
@@ -71,7 +73,8 @@
                                        :value="old('nik', $officer->nik ?? '')" required/>
                     </div>
                     <div class="col-md-3">
-                        <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <select required name="jenis_kelamin" class="form-select">
                             <option value="">-- Pilih Jenis Kelamin --</option>
                             <option value="Laki-laki" {{ old('jenis_kelamin', $officer->jenis_kelamin ?? '') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
@@ -89,7 +92,8 @@
                                        :value="old('tanggal_lahir', $officer->tanggal_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
-                        <label for="agama" class="form-label">Agama <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="agama" class="form-label">Agama <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <select name="agama" id="agama" class="form-select text-uppercase" required>
                             <option value="">-- Pilih Agama --</option>
                             <option value="ISLAM" {{ old('agama', $officer->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
@@ -118,7 +122,7 @@
                         <label for="image-dropzone" class="form-label">Upload Foto Guru</label>
                         <div class="dropzone" id="image-dropzone"></div>
                         <input type="hidden" name="image" id="image-hidden"
-                               value="{{ old('image', $officer->image ?? '') }}">
+                            value="{{ old('image', $officer->image ?? '') }}">
                         <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
                     </div>
                     <div class="modal fade" id="imageModal" tabindex="-1">
@@ -134,14 +138,18 @@
 
                     {{-- Data Tambahan --}}
                     <div class="row mt-4">
-                        <h5 class="card-title mb-0 mt-3">Data Tambahan Guru & Staff <span style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></h5>
+                        <h5 class="card-title mb-0 mt-3">Data Tambahan Guru & Staff <span
+                                style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small>
+                        </h5>
                         <p class="text-muted">Masukkan data tambahan guru & staff</p>
                         <hr>
                         <!-- Colom - 1 -->
                         <div class="col-md-3">
                             <div class="mb-4">
-                                <label for="unit_id" class="form-label">Unit <span style="color: #dc3545 !important;">*</span></label>
-                                <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                                <label for="unit_id" class="form-label">Unit <span
+                                        style="color: #dc3545 !important;">*</span></label>
+                                <select name="unit_id" id="unit_id" class="form-select" data-choices
+                                    data-choices-sorting-false required>
                                     <option value="">-- Pilih Unit --</option>
                                     @foreach($units as $u)
                                         <option value="{{ $u->id }}" data-logo="{{ asset($u->image ?? 'images/default-logo.png') }}"
@@ -165,8 +173,10 @@
                         <!-- Colom - 2 -->
                         <div class="col-md-3">
                             <div class="mb-4">
-                                <label for="role_id" class="form-label">Role <span style="color: #dc3545 !important;">*</span></label>
-                                <select name="role_id" class="form-select" data-choices data-choices-sorting-false required>
+                                <label for="role_id" class="form-label">Role <span
+                                        style="color: #dc3545 !important;">*</span></label>
+                                <select name="role_id" class="form-select" data-choices data-choices-sorting-false
+                                    required>
                                     <option value="">-- Pilih Role --</option>
                                     @foreach($roles as $r)
                                         <option value="{{ $r->id }}" {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
@@ -175,19 +185,21 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <x-input-field type="text" name="bank" label="Bank"
-                                           placeholder="Masukkan Nama Bank" icon="bx bx-bank"
-                                           :value="old('bank', $officer->officer->bank ?? '')" />
+                            <x-input-field type="text" name="bank" label="Bank" placeholder="Masukkan Nama Bank"
+                                icon="bx bx-bank" :value="old('bank', $officer->officer->bank ?? '')" />
                             <div class="mb-4">
                                 <label for="jabatan_id" class="form-label">Jabatan</label>
-                                <select name="jabatan_id" id="jabatan_id" class="form-select" data-choices data-choices-sorting-false>
+                                <select name="position_id" id="position_id" class="form-select" data-choices
+                                    data-choices-sorting-false>
                                     <option value="">-- Pilih Jabatan --</option>
-                                    @foreach($positions as $position)
-                                        <option value="{{ $position->id }}" {{ $jabatanSelected == $position->id ? 'selected' : '' }}>
+                                    @foreach ($positions as $position)
+                                        <option value="{{ $position->id }}"
+                                            {{ isset($officer) && $officer->position_id == $position->id ? 'selected' : '' }}>
                                             {{ strtoupper($position->positions_name) }}
                                         </option>
                                     @endforeach
                                 </select>
+
                             </div>
 
 
@@ -197,7 +209,7 @@
                         <div class="col-md-3">
                             <div class="mb-4" id="jurusan-wrapper">
                                 <label for="jurusan" class="form-label">Jurusan</label>
-                                <select name="jurusan[]" id="jurusan" class="form-control"  multiple>
+                                <select name="jurusan[]" id="jurusan" class="form-control" multiple>
                                     <option value="">--Pilih Jurusan--</option>
                                     @foreach ($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
@@ -253,23 +265,24 @@
         $(document).ready(function() {
             $('#jurusan').select2({
                 placeholder: "--Pilih Jurusan--", // Placeholder text
-                allowClear: true                // Allows clearing the selected values
+                allowClear: true // Allows clearing the selected values
             });
         });
     </script>
 
 
     <script>
-        @if(isset($show) && $show)
-        document.addEventListener('DOMContentLoaded', function() {
-            const formElements = document.querySelectorAll('#userForm input, #userForm textarea, #userForm select, #userForm button[type="submit"]');
-            formElements.forEach(el => {
-                el.disabled = true;
-                if(el.type === 'submit'){
-                    el.style.display = 'none';
-                }
+        @if (isset($show) && $show)
+            document.addEventListener('DOMContentLoaded', function() {
+                const formElements = document.querySelectorAll(
+                    '#userForm input, #userForm textarea, #userForm select, #userForm button[type="submit"]');
+                formElements.forEach(el => {
+                    el.disabled = true;
+                    if (el.type === 'submit') {
+                        el.style.display = 'none';
+                    }
+                });
             });
-        });
         @endif
     </script>
     <script>
@@ -280,9 +293,9 @@
             maxFilesize: 1,
             acceptedFiles: "image/*",
             addRemoveLinks: true,
-            init: function () {
-                this.on("addedfile", function (file) {
-                    file.previewElement.addEventListener("click", function () {
+            init: function() {
+                this.on("addedfile", function(file) {
+                    file.previewElement.addEventListener("click", function() {
                         // ambil url preview
                         let imgSrc = file.dataURL;
                         document.getElementById("previewImage").src = imgSrc;
@@ -301,12 +314,12 @@
             maxFilesize: 1, // MB
             acceptedFiles: ".jpg,.jpeg,.png",
             addRemoveLinks: true,
-            thumbnailWidth: 200,  // ubah default (120px)
+            thumbnailWidth: 200, // ubah default (120px)
             thumbnailHeight: 200, // biar lebih proporsional
             headers: {
                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
             },
-            success: function (file, response) {
+            success: function(file, response) {
                 document.querySelector("#image-hidden").value = response.filepath;
             },
             removedfile: function(file) {
@@ -316,21 +329,20 @@
         });
 
         // Kalau edit, preload gambar lama
-        @if(isset($officer->officer) && $officer->officer->image)
+        @if (isset($officer->officer) && $officer->officer->image)
 
-        let mockFile = {
-            name: "Current Image",
-            size: 12345,
-            type: 'image/jpeg', // bisa disesuaikan
-            accepted: true
-        };
+            let mockFile = {
+                name: "Current Image",
+                size: 12345,
+                type: 'image/jpeg', // bisa disesuaikan
+                accepted: true
+            };
 
-        myDropzone.emit("addedfile", mockFile);
-        myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->officer->image) }}");
-        myDropzone.emit("complete", mockFile);
-        myDropzone.files.push(mockFile);
+            myDropzone.emit("addedfile", mockFile);
+            myDropzone.emit("thumbnail", mockFile, "{{ asset($officer->officer->image) }}");
+            myDropzone.emit("complete", mockFile);
+            myDropzone.files.push(mockFile);
         @endif
-
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -415,7 +427,7 @@
     </script>
 
     {{-- Alert Sukses & Error --}}
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',
@@ -427,14 +439,14 @@
         </script>
     @endif
 
-    @if($errors->any())
+    @if ($errors->any())
         <script>
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal!',
                 html: `
         <ul style="text-align:left;">
-            @foreach($errors->all() as $error)
+            @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
                 </ul>
@@ -461,8 +473,13 @@
                 height: 150,
                 data: vaInput.value || " ",
                 image: defaultLogo,
-                dotsOptions: { color: "#000", type: "rounded" },
-                backgroundOptions: { color: "#fff" },
+                dotsOptions: {
+                    color: "#000",
+                    type: "rounded"
+                },
+                backgroundOptions: {
+                    color: "#fff"
+                },
                 imageOptions: {
                     crossOrigin: "anonymous",
                     margin: 4,
@@ -477,7 +494,9 @@
             // Update QR code saat VA berubah
             vaInput.addEventListener('input', function() {
                 const value = this.value || " ";
-                qrCode.update({ data: value });
+                qrCode.update({
+                    data: value
+                });
                 qrTextInput.value = value; // simpan nilai QR ke input hidden
             });
 
@@ -487,11 +506,15 @@
                 if (!selectedOption.value) {
                     // sembunyikan tombol kalau unit belum dipilih
                     downloadBtn.style.display = 'none';
-                    qrCode.update({ image: defaultLogo });
+                    qrCode.update({
+                        image: defaultLogo
+                    });
                     return;
                 }
                 const logo = selectedOption.getAttribute('data-logo') || defaultLogo;
-                qrCode.update({ image: logo });
+                qrCode.update({
+                    image: logo
+                });
 
                 // tampilkan tombol download
                 downloadBtn.style.display = 'inline-block';
@@ -505,7 +528,10 @@
             // Tombol Download
             downloadBtn.addEventListener('click', function() {
                 const fileName = 'qr-' + (vaInput.value || 'code') + '.png';
-                qrCode.download({ name: fileName, extension: "png" });
+                qrCode.download({
+                    name: fileName,
+                    extension: "png"
+                });
             });
         });
     </script>
@@ -559,36 +585,36 @@
         });
     </script>
 
-    @if(!isset($officer)) // Hanya saat create
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const emailBottom = document.querySelector('#email_bottom');
-            const emailTop = document.querySelector('#email_top');
+    @if (!isset($officer))
+        // Hanya saat create
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const emailBottom = document.querySelector('#email_bottom');
+                const emailTop = document.querySelector('#email_top');
 
-            if(emailBottom && emailTop){
-                // update email atas saat mengetik di bawah
-                emailBottom.addEventListener('input', function () {
-                    emailTop.value = this.value;
-                });
+                if (emailBottom && emailTop) {
+                    // update email atas saat mengetik di bawah
+                    emailBottom.addEventListener('input', function() {
+                        emailTop.value = this.value;
+                    });
 
-                // set email atas saat load halaman
-                emailTop.value = emailBottom.value;
-            }
+                    // set email atas saat load halaman
+                    emailTop.value = emailBottom.value;
+                }
 
-            const nisnInput = document.getElementById('nip');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
+                const nisnInput = document.getElementById('nip');
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
 
-            if(nisnInput && usernameInput && passwordInput){
-                nisnInput.addEventListener('input', function () {
-                    const nisnValue = this.value.trim();
-                    usernameInput.value = nisnValue;
-                    passwordInput.value = nisnValue;
-                });
-            }
-        });
-    </script>
-
+                if (nisnInput && usernameInput && passwordInput) {
+                    nisnInput.addEventListener('input', function() {
+                        const nisnValue = this.value.trim();
+                        usernameInput.value = nisnValue;
+                        passwordInput.value = nisnValue;
+                    });
+                }
+            });
+        </script>
     @endif
 
 @endpush

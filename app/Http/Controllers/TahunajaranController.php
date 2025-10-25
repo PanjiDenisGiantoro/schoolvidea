@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
 
 class TahunajaranController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $tahun_ajaran = Tahun_ajaran::get();
         $headers = [
             'No',
@@ -21,7 +22,7 @@ class TahunajaranController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran','headers'));
+        return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran', 'headers'));
     }
     public function create()
     {
@@ -87,6 +88,6 @@ class TahunajaranController extends Controller
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $show = true;
-        return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran','show'));
+        return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran', 'show'));
     }
 }

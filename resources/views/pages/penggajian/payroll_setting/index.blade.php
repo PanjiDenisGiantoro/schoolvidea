@@ -3,7 +3,7 @@
 @section('content')
     @include('partials.page-title', [
         'title' => 'Setting Penggajian',
-        'subTitle' => 'Daftar Pengaturan Gaji'
+        'subTitle' => 'Daftar Pengaturan Gaji',
     ])
 
     <div class="card">
@@ -17,45 +17,48 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table id="datatable" class="table table-bordered table-striped align-middle">
+                    <table id="datatable" class="table-bordered table-striped table align-middle">
                         <thead class="table-light text-center">
-                        <tr>
-                            <th>No</th>
-                            <th>Unit</th>
-                            <th>Nama Guru & Staff</th>
-                            <th>Periode Gaji</th>
-                            <th>Gaji Pokok</th>
-                            <th>Aksi</th>
-                        </tr>
+                            <tr>
+                                <th>No</th>
+                                <th>Unit</th>
+                                <th>Nama Guru & Staff</th>
+                                <th>Periode Gaji</th>
+                                <th>Gaji Pokok</th>
+                                <th>Aksi</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        @forelse($settings as $item)
-                            <tr>
-                                <td class="text-center">{{ $loop->iteration }}</td>
-                                <td>{{ $item->unit->nama_unit ?? '-' }}</td>
-                                <td>{{ $item->officer->user->name ?? '-' }}</td>
-                                <td>{{ $item->billing_period ? "$item->billing_period Bulan" :'-'  }}</td>
-                                <td>Rp {{ number_format($item->salary ?? 0, 0, ',', '.') }}</td>
+                            @forelse($settings as $item)
+                                <tr>
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>{{ $item->unit->nama_unit ?? '-' }}</td>
+                                    <td>{{ $item->officer->user->name ?? '-' }}</td>
+                                    <td>{{ $item->billing_period ? "$item->billing_period Bulan" : '-' }}</td>
+                                    <td>Rp {{ number_format($item->salary ?? 0, 0, ',', '.') }}</td>
 
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('payroll_settings.show', $item->id) }}" class="link-primary text-muted">
-                                            <i class="ri-eye-line align-middle fs-20"></i> Show
-                                        </a>
-                                        <a href="{{ route('payroll_settings.edit', $item->id) }}" class="link-warning text-muted">
-                                            <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                        </a>
-                                        <a href="{{ route('payroll_settings.destroy', $item->id) }}" class="link-danger text-muted">
-                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="text-center text-muted">Tidak ada data ditemukan</td>
-                            </tr>
-                        @endforelse
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="{{ route('payroll_settings.show', $item->id) }}"
+                                                class="link-primary text-muted">
+                                                <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                            </a>
+                                            <a href="{{ route('payroll_settings.edit', $item->id) }}"
+                                                class="link-warning text-muted">
+                                                <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                            </a>
+                                            <a href="{{ route('payroll_settings.destroy', $item->id) }}"
+                                                class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-muted text-center">Tidak ada data ditemukan</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -65,14 +68,14 @@
 @endsection
 
 @push('scripts')
-    @if($settings->isNotEmpty())
+    @if ($settings->isNotEmpty())
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 $('#datatable').DataTable({
                     responsive: true,
                     pageLength: 10,
                     language: {
-                        url: '{{ asset("assets/datatables/id.json") }}'
+                        url: '{{ asset('assets/datatables/id.json') }}'
                     }
                 });
 

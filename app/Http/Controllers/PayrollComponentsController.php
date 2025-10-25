@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Officer;
 use App\Models\PayrollComponents;
 use Illuminate\Http\Request;
-use App\Models\Officer;
 
 class PayrollComponentsController extends Controller
 {

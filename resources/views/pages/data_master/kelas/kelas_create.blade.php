@@ -18,20 +18,7 @@
                 @endif
 
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="unit_id" class="form-label">Nama Unit</label>
-                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
-                                <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
-                                    <option value="{{ $u->id }}"
-                                        {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
+                        <div class="col-md-4">
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
                             <select name="tahun_ajaran_id"  id="choices-single-no-sorting"  data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
@@ -43,7 +30,45 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <div class="col-md-4">
+                            <label for="unit_id" class="form-label">Nama Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false>
+                                <option value="">-- Pilih Unit --</option>
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}"
+                                        {{ old('unit_id', $kelas->unit_id ?? '') == $u->id ? 'selected' : '' }}>
+                                        {{ $u->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <x-input-field type="text" name="kode_kelas" label="Kode Kelas"
+                                           placeholder="Masukkan Kode Kelas" icon="bx bx-book"
+                                           :value="old('kode_kelas', $kelas->kode_kelas ?? '')" required />
+                        </div>
+                        <div class="col-md-4">
+                            <x-input-field type="text" name="nama_kelas" label="Nama Kelas"
+                                        placeholder="Masukkan Nama Kelas" icon="bx bx-book"
+                                           :value="old('nama_kelas', $kelas->nama_kelas ?? '')" required />
+                        </div>
+
+
+
+
+
+                        <div class="col-md-4">
+                            <label for="officer_id" class="form-label">Wali Kelas</label>
+                            <select name="officer_id" id="officer_id" class="form-select" data-choices data-choices-sorting-false required>
+                                <option value="">-- Pilih Wali Kelas --</option>
+                                @foreach($wali as $w)
+                                    <option value="{{ $w->id }}" {{ old('officer_id', $kelas->officer_id ?? '') == $w->id ? 'selected' : '' }}>
+                                        {{ $w->user->name ?? 'Tanpa Nama' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label for="status" class="form-label">Status</label>
                             <select name="status" id="status" class="form-select">
                                 <option value="">-- Pilih Status --</option>
@@ -51,16 +76,7 @@
                                 <option value="0" {{ old('status', $kelas->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>Non Aktif</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <x-input-field type="text" name="kode_kelas" label="Kode Kelas"
-                                           placeholder="Masukkan Kode Kelas" icon="bx bx-book"
-                                           :value="old('kode_kelas', $kelas->kode_kelas ?? '')" required />
-                        </div>
-
-                        <div class="mb-3">
+                        <div class="col-md-4">
                             <label for="jurusan_id">Jurusan</label>
                             <select name="jurusan_id" id="jurusan_id"  class="form-select" data-choices data-choices-sorting-false>
                                 <option value="">-- Pilih Jurusan --</option>
@@ -73,42 +89,11 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <x-input-field type="text" name="nama_kelas" label="Nama Kelas"
-                                           placeholder="Masukkan Nama Kelas" icon="bx bx-book"
-                                           :value="old('nama_kelas', $kelas->nama_kelas ?? '')" required />
-                        </div>
-                        <div class="mb-3">
-                            <label for="officer_id" class="form-label">Wali Kelas</label>
-                            <select name="officer_id" id="officer_id" class="form-select" data-choices data-choices-sorting-false required>
-                                <option value="">-- Pilih Wali Kelas --</option>
-                                @foreach($wali as $w)
-                                    <option value="{{ $w->id }}" {{ old('officer_id', $kelas->officer_id ?? '') == $w->id ? 'selected' : '' }}>
-                                        {{ $w->user->name ?? 'Tanpa Nama' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-
-
-
-
-
-
-
-
-
-
                 </div>
 
                 <div class="mt-3 text-end">
                     <button type="submit" class="btn btn-success">
-                        {{ isset($kelas) ? 'Update' : 'Simpan' }}
+                  {{ isset($kelas) ? 'Update' : 'Simpan' }}
                     </button>
                     <a href="{{ url('kelas/') }}" class="btn btn-secondary">Batal</a>
                 </div>

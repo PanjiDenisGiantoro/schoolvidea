@@ -1,50 +1,62 @@
 @extends('layouts.app')
-@section('title', isset($payroll_deductions) ? (isset($show) && $show ? 'Lihat Potongan' : 'Edit Potongan') : 'Tambah Potongan')
+@section('title',
+    isset($payroll_deductions)
+    ? (isset($show) && $show
+    ? 'Lihat Potongan'
+    : 'Edit Potongan')
+    : 'Tambah
+    Potongan')
 @section('content')
     @include('partials.page-title', [
-        'title' => isset($payroll_deductions) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Potongan'
+        'title' => isset($payroll_deductions)
+            ? (isset($show) && $show
+                ? 'Lihat Data'
+                : 'Edit Data')
+            : 'Tambah Data',
+        'subTitle' => 'Potongan',
     ])
     <div class="card">
         <div class="card-body">
             <form id="deductionForm" method="POST"
-                  action="{{ isset($payroll_deductions) ? route('payroll_deductions.update', $payroll_deductions->id) : route('payroll_deductions.store') }}">
+                action="{{ isset($payroll_deductions) ? route('payroll_deductions.update', $payroll_deductions->id) : route('payroll_deductions.store') }}">
                 @csrf
                 @if (isset($payroll_deductions))
                     @method('PUT')
                 @endif
                 <div class="row p-4">
                     <div class="col-md-6">
-                        <x-input-field type='text' name='name' label='Nama potongan'
-                                       placeholder='Masukkan Nama potongan' icon='bx bx-unit'
-                                       :value="old('name', $payroll_deductions->name ?? '')" required/>
+                        <x-input-field type='text' name='name' label='Nama potongan' placeholder='Masukkan Nama potongan'
+                            icon='bx bx-unit' :value="old('name', $payroll_deductions->name ?? '')" required />
                     </div>
                     <div class="col-md-6">
                         <label for="type" class="form-label">Jenis Potongan <span class="text-danger">*</span></label>
                         <select name="type" id="type" class="form-select">
                             <option value="">-- Pilih Jenis Potongan --</option>
-                            <option value="nominal" {{ old('type', $payroll_deductions->type ?? '') == 'nominal' ? 'selected' : ''}}>Nominal</option>
-                            <option value="persen" {{ old('type', $payroll_deductions->type ?? '') == 'persen' ? 'selected' : ''}}>Persen</option>
+                            <option value="nominal"
+                                {{ old('type', $payroll_deductions->type ?? '') == 'nominal' ? 'selected' : '' }}>Nominal
+                            </option>
+                            <option value="persen"
+                                {{ old('type', $payroll_deductions->type ?? '') == 'persen' ? 'selected' : '' }}>Persen
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <x-input-field
-                            type="text"
-                            name="price_display"
-                            label="Nilai Potongan"
-                            placeholder="Masukkan Nilai Potongan"
-                            icon="bx bx-unit"
+                        <x-input-field type="text" name="price_display" label="Nilai Potongan"
+                            placeholder="Masukkan Nilai Potongan" icon="bx bx-unit"
                             value="{{ old('price', isset($payroll_deductions) ? number_format($payroll_deductions->price, 0, ',', '.') : '') }}"
-                            required
-                            oninput="formatNumberInput(this)"
-                        />
-                        <input type="hidden" name="price" id="price_hidden" value="{{ old('price', $payroll_deductions->price ?? '') }}">
+                            required oninput="formatNumberInput(this)" :disabled="isset($show) && $show" />
+                        <input type="hidden" name="price" id="price_hidden"
+                            value="{{ old('price', $payroll_deductions->price ?? '') }}">
                     </div>
                     <div class="col-md-6">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" id="status" class="form-select">
-                            <option value="1" {{ old('status', $payroll_deductions->status ?? '') == '1' ? 'selected' : '' }}>Aktif</option>
-                            <option value="0" {{ old('status', $payroll_deductions->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
+                            <option value="1"
+                                {{ old('status', $payroll_deductions->status ?? '') == '1' ? 'selected' : '' }}>Aktif
+                            </option>
+                            <option value="0"
+                                {{ old('status', $payroll_deductions->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-12 mt-4">
@@ -77,10 +89,12 @@
 
             // ✅ Mode Lihat Data
             @if (isset($show) && $show)
-            document.querySelectorAll('#deductionForm input, #deductionForm select, #deductionForm textarea, #deductionForm button[type="submit"]').forEach(el => {
-                el.disabled = true;
-                if (el.type === 'submit') el.style.display = 'none';
-            });
+                document.querySelectorAll(
+                    '#deductionForm input, #deductionForm select, #deductionForm textarea, #deductionForm button[type="submit"]'
+                ).forEach(el => {
+                    el.disabled = true;
+                    if (el.type === 'submit') el.style.display = 'none';
+                });
             @endif
 
             // ✅ Event: Saat jenis potongan berubah
@@ -154,7 +168,7 @@
     </script>
 
     {{-- ✅ Alert Sukses --}}
-    @if(session('success'))
+    @if (session('success'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 Swal.fire({
@@ -169,7 +183,7 @@
     @endif
 
     {{-- ❌ Alert Error --}}
-    @if($errors->any())
+    @if ($errors->any())
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 Swal.fire({
@@ -177,11 +191,11 @@
                     title: 'Gagal!',
                     html: `
             <ul style="text-align:left;">
-                @foreach($errors->all() as $error)
+                @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
-                    </ul>
-`,
+            </ul>
+        `,
                     confirmButtonColor: '#d33'
                 });
             });

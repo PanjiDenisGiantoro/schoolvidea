@@ -26,7 +26,7 @@ class OfficerController extends Controller
                 $query->where('unit_id', $unitId);
             })
             ->whereHas('roles', function ($query) {
-                $query->whereNotIn('name', [ 'siswa', 'admin', 'user']);
+                $query->whereNotIn('name', ['siswa', 'admin', 'user']);
             })
             ->get();
         $headers = [
@@ -92,6 +92,7 @@ class OfficerController extends Controller
             'no_kartu_rfid'   => 'nullable|string|max:100',
             'qr_code'         => 'nullable|string|max:100',
             'va_guru'         => 'nullable|string|max:100',
+
         ]);
 
         DB::beginTransaction();
@@ -112,8 +113,8 @@ class OfficerController extends Controller
             );
             $user->assignRole($roleSpatie->name);
 
-            $tahunajaran = Tahun_ajaran::where('status','1')->orderBy('id', 'desc')->first();
-            if(empty($tahunajaran)){
+            $tahunajaran = Tahun_ajaran::where('status', '1')->orderBy('id', 'desc')->first();
+            if (empty($tahunajaran)) {
                 return redirect()->route('officer.index')->with('error', 'Tahun Ajaran Tidak Ditemukan');
             }
 
@@ -138,12 +139,12 @@ class OfficerController extends Controller
                 'qr_code'         => $request->qr_code,
                 'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'va_guru'         => $request->va_guru,
+                'position_id'     => $request->position_id
             ]);
             DB::commit();
 
             return redirect()->route('officer.index')
                 ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
@@ -244,14 +245,15 @@ class OfficerController extends Controller
                 'qr_code'         => $request->qr_code,
                 'jurusan' => json_encode($request->jurusan),  // Menyimpan sebagai JSON
                 'va_guru'         => $request->va_guru,
+                'position_id'     => $request->position_id
             ]);
 
             DB::commit();
             return redirect()->route('officer.index')->with('success', 'Officer berhasil diupdate');
         } catch (\Exception $e) {
-//            dd($e->getMessage());
+            //            dd($e->getMessage());
             DB::rollBack();
-            return back()->with('error','Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -314,5 +316,4 @@ class OfficerController extends Controller
 
         return response()->json($officers);
     }
-
 }

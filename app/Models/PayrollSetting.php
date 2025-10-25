@@ -46,6 +46,4 @@ class PayrollSetting extends Model
             ->withPivot('value')
             ->withTimestamps();
     }
-
-
 }

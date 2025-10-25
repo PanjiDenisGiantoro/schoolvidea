@@ -5,7 +5,7 @@
 @section('content')
     @include('partials.page-title', [
         'title' => 'Daftar Potongan',
-        'subTitle' => 'Potongan'
+        'subTitle' => 'Potongan',
     ])
 
     <div class="card">
@@ -17,27 +17,27 @@
 
             <!-- Potongan Table -->
             <div class="table-responsive">
-            <table id="potongan_table" class="table table-striped table-bordered">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Unit</th>
-                    <th>Kelas</th>
-                    <th>Kategori Tagihan</th>
-                    <th>Tipe Potongan</th>
-                    <th>Nilai</th>
-                    <th>Keterangan</th>
-                    <th>Aksi</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($potongans as $potongan)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $potongan->unit->nama_unit }}</td>
-                        <td>{{ $potongan->kelas->nama_kelas }}</td>
-                        <td>{{ $potongan->kategoriTagihan->nama_kategori }}</td>
-                        <td>{{ $potongan->tipe_potongan }}</td>
+                <table id="potongan_table" class="table-striped table-bordered table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Unit</th>
+                            <th>Kelas</th>
+                            <th>Kategori Tagihan</th>
+                            <th>Tipe Potongan</th>
+                            <th>Nilai</th>
+                            <th>Keterangan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($potongans as $potongan)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $potongan->unit->nama_unit }}</td>
+                                <td>{{ $potongan->kelas->nama_kelas }}</td>
+                                <td>{{ $potongan->kategoriTagihan->nama_kategori }}</td>
+                                <td>{{ $potongan->tipe_potongan }}</td>
 
                         <td>
                             @php

@@ -40,7 +40,7 @@ class Officer extends Model
     }
     public function position()
     {
-        return $this->belongsTo(Positions::class);
+        return $this->belongsTo(Positions::class, 'position_id');
     }
 
 
@@ -55,20 +55,16 @@ class Officer extends Model
     }
     public function payrollSettings()
     {
-        return $this->hasMany(PayrollSetting::class, 'units_id');
+        return $this->hasMany(PayrollSetting::class, 'units_id', 'officers_id');
     }
 
     public function scopeWali($query)
     {
         return $query->with(['user.userRoles'])
-        ->whereHas('user', function ($q) {
-            $q->whereHas('userRoles', function ($r) {
-                $r->where('name', 'walikelas');
+            ->whereHas('user', function ($q) {
+                $q->whereHas('userRoles', function ($r) {
+                    $r->where('name', 'walikelas');
+                });
             });
-        });
     }
-
-
-
-
 }

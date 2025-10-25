@@ -5,16 +5,15 @@
 @section('content')
     @include('partials.page-title', [
         'title' => isset($siswa) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Siswa'
+        'subTitle' => 'Siswa',
     ])
 
     <div class="card">
         <div class="card-body">
-            <form id="siswaForm"
-                  action="{{ isset($siswa) ? route('siswa.update', $siswa->id) : route('siswa.store') }}"
-                  method="POST" enctype="multipart/form-data">
+            <form id="siswaForm" action="{{ isset($siswa) ? route('siswa.update', $siswa->id) : route('siswa.store') }}"
+                method="POST" enctype="multipart/form-data">
                 @csrf
-                @if(isset($siswa))
+                @if (isset($siswa))
                     @method('PUT')
                 @endif
 
@@ -23,127 +22,119 @@
                     <p class="text-muted">Masukkan data login untuk siswa</p>
                     <hr>
                     <div class="col-md-4">
-                        <x-input-field type="email" id="email_top" name="" label="Email"
-                                       placeholder="Email"
-                                       icon="bx bx-envelope"
-                                       :value="old('email', $siswa->user->email ?? '')"
-                                       readonly disabled/>
+                        <x-input-field type="email" id="email_top" name="" label="Email" placeholder="Email"
+                            icon="bx bx-envelope" :value="old('email', $siswa->user->email ?? '')" readonly disabled />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username/NISN"
-                                       placeholder="Username/NISN"
-                                       icon="bx bx-user"
-                                       :value="old('username', $siswa->user->username ?? '')"
-                                       readonly disabled/>
+                            placeholder="Username/NISN" icon="bx bx-user" :value="old('username', $siswa->user->username ?? '')" readonly disabled />
                     </div>
                     <div class="col-md-4">
 
-                        <x-input-field type="text" id="password" name="password" label="Password"
-                                       :placeholder="isset($officer) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
-                                       icon="bx bx-lock"
-                                       :value="old('password')" readonly disabled/>
+                        <x-input-field type="text" id="password" name="password" label="Password" :placeholder="isset($officer)
+                            ? 'Kosongkan jika tidak ingin mengubah password'
+                            : 'Masukkan Password'"
+                            icon="bx bx-lock" :value="old('password')" readonly disabled />
                     </div>
                 </div>
 
                 <div class="row g-3 mt-4">
-                    <h5 class="card-title mb-0 mt-3">Data Lengkap Siswa <span style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></h5>
+                    <h5 class="card-title mb-0 mt-3">Data Lengkap Siswa <span
+                            style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></h5>
                     <p class="text-muted">Masukkan data lengkap siswa</p>
                     <hr>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nisn" label="NISN"
-                                       placeholder="Masukkan NISN"
-                                       icon="bx bx-id-card"
-                                       :value="old('nisn', $siswa?->nisn ?? '')" required />
+                        <x-input-field type="number" name="nisn" label="NISN" placeholder="Masukkan NISN"
+                            icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nis" label="NIS"
-                                       placeholder="Masukkan NIS"
-                                       icon="bx bx-id-card"
-                                       :value="old('nis', $siswa?->nis ?? '')" required/>
+                        <x-input-field type="number" name="nis" label="NIS" placeholder="Masukkan NIS"
+                            icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" name="name" label="Nama Lengkap"
-                                       placeholder="Masukkan nama lengkap"
-                                       icon="bx bx-user"
-                                       :value="old('name', $siswa->user->name ?? '')"
-                                       required />
+                            placeholder="Masukkan nama lengkap" icon="bx bx-user" :value="old('name', $siswa->user->name ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nik" label="NIK"
-                                       placeholder="Masukkan NIK"
-                                       icon="bx bx-id-card"
-                                       :value="old('nik', $siswa?->nik ?? '')" required/>
+                        <x-input-field type="number" name="nik" label="NIK" placeholder="Masukkan NIK"
+                            icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
                             <option value="">-- Pilih Jenis Kelamin --</option>
-                            <option value="L" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="P" {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                            <option value="L"
+                                {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki
+                            </option>
+                            <option value="P"
+                                {{ old('jenis_kelamin', $siswa?->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
-                                       placeholder="Masukkan tempat lahir"
-                                       icon="bx bx-map"
-                                       :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
+                            placeholder="Masukkan tempat lahir" icon="bx bx-map" :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
-                                       placeholder="Masukkan tanggal lahir"
-                                       :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
+                            placeholder="Masukkan tanggal lahir" :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
-                        <label for="agama" class="form-label">Agama <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="agama" class="form-label">Agama <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <select name="agama" id="agama" class="form-select text-uppercase" required>
                             <option value="">-- Pilih Agama --</option>
-                            <option value="ISLAM" {{ old('agama', $siswa?->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>ISLAM</option>
-                            <option value="KRISTEN PROTESTAN" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN PROTESTAN</option>
-                            <option value="KRISTEN KATHOLIK" {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN KATHOLIK</option>
-                            <option value="HINDU" {{ old('agama', $siswa?->agama ?? '') == 'HINDU' ? 'selected' : '' }}>HINDU</option>
-                            <option value="BUDDHA" {{ old('agama', $siswa?->agama ?? '') == 'BUDHHA' ? 'selected' : '' }}>BUDDHA</option>
-                            <option value="KONGHUCU" {{ old('agama', $siswa?->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
+                            <option value="ISLAM" {{ old('agama', $siswa?->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>
+                                ISLAM</option>
+                            <option value="KRISTEN PROTESTAN"
+                                {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN
+                                PROTESTAN</option>
+                            <option value="KRISTEN KATHOLIK"
+                                {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN
+                                KATHOLIK</option>
+                            <option value="HINDU" {{ old('agama', $siswa?->agama ?? '') == 'HINDU' ? 'selected' : '' }}>
+                                HINDU</option>
+                            <option value="BUDDHA" {{ old('agama', $siswa?->agama ?? '') == 'BUDHHA' ? 'selected' : '' }}>
+                                BUDDHA</option>
+                            <option value="KONGHUCU"
+                                {{ old('agama', $siswa?->agama ?? '') == 'KONGHUCU' ? 'selected' : '' }}>KONGHUCU</option>
                         </select>
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="number" name="no_hp" label="No. Telepon Siswa"
-                                       placeholder="Masukkan nomor telepon"
-                                       icon="bx bx-phone"
-                                       :value="old('no_hp', $siswa?->no_hp ?? '')" />
+                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp', $siswa?->no_hp ?? '')" />
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="number" name="no_hp_ortu" label="No. Telepon Orang Tua"
-                                       placeholder="Masukkan nomor telepon"
-                                       icon="bx bx-phone"
-                                       :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required/>
+                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required />
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="email" id="email_bottom" name="email" label="Email"
-                                       placeholder="Masukkan email"
-                                       icon="bx bx-envelope"
-                                       :value="old('email', $siswa->user->email ?? '')"
-                                       required />
+                            placeholder="Masukkan email" icon="bx bx-envelope" :value="old('email', $siswa->user->email ?? '')" required />
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
-                                       placeholder="Masukkan nama orang tua"
-                                       icon="bx bx-user"
-                                       :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required/>
+                            placeholder="Masukkan nama orang tua" icon="bx bx-user" :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required />
                     </div>
                     <div class="col-md-3 mt-4">
-                        <label for="status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="status" class="form-label">Status <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <select name="status" id="status" class="form-select" required>
                             <option value="">-- Pilih Status --</option>
-                            <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
-                            <option value="0" {{ old('status', $siswa?->status ?? '') == 0 ? 'selected' : '' }}>Non Aktif</option>
+                            <option value="1" {{ old('status', $siswa?->status ?? '') == 1 ? 'selected' : '' }}>Aktif
+                            </option>
+                            <option value="0" {{ old('status', $siswa?->status ?? '') == 0 ? 'selected' : '' }}>Non
+                                Aktif</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label for="alamat" class="form-label">Alamat <span style="color: #dc3545 !important;">*</span></label>
+                        <label for="alamat" class="form-label">Alamat <span
+                                style="color: #dc3545 !important;">*</span></label>
                         <textarea name="alamat" id="alamat" class="form-control" rows="2" required>{{ old('alamat', $siswa->siswa->alamat ?? '') }}</textarea>
                     </div>
 
@@ -151,9 +142,9 @@
                         <label for="image-dropzone" class="form-label">Upload Foto Siswa</label>
                         <div class="dropzone" id="image-dropzone"></div>
                         <input type="hidden" name="image" id="image-hidden"
-                               value="{{ old('image', $siswa?->image ?? '') }}">
+                            value="{{ old('image', $siswa?->image ?? '') }}">
                         <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
-                        <div >
+                        <div>
                             <div class="modal fade" id="imageModal" tabindex="-1">
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
                                     <div class="modal-content">
@@ -169,37 +160,42 @@
 
 
                 <div class="row g-3 mt-4">
-                    <h5 class="card-title mb-0 mt-3">Data Tambahan Siswa <span style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small></h5>
+                    <h5 class="card-title mb-0 mt-3">Data Tambahan Siswa <span
+                            style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small>
+                    </h5>
                     <p class="text-muted">Masukkan data tambahan siswa</p>
                     <hr>
                     <!-- Colom - 1 -->
                     <div class="col-md-3">
                         <div class="mb-4">
-                            <label for="unit_id" class="form-label">Unit <span style="color: #dc3545 !important;">*</span></label>
-                            <select name="unit_id" id="unit_id" class="form-select" data-choices data-choices-sorting-false required>
+                            <label for="unit_id" class="form-label">Unit <span
+                                    style="color: #dc3545 !important;">*</span></label>
+                            <select name="unit_id" id="unit_id" class="form-select" data-choices
+                                data-choices-sorting-false required>
                                 <option value="">-- Pilih Unit --</option>
-                                @foreach($units as $u)
+                                @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
-                                            data-logo="{{ asset($u->image ?? 'images/default-logo.png') }}"
+                                        data-logo="{{ asset($u->image ?? 'images/default-logo.png') }}"
                                         {{ old('unit_id', $siswa->unit_id ?? '') == $u->id ? 'selected' : '' }}>
                                         {{ $u->nama_unit }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        <x-input-field type="text" name="va_siswa" label="VA Siswa"
-                                       placeholder="Masukkan VA Siswa" icon="bx bx-credit-card"
-                                       :value="old('va_siswa', $siswa?->va_siswa ?? '')" required/>
+                        <x-input-field type="text" name="va_siswa" label="VA Siswa" placeholder="Masukkan VA Siswa"
+                            icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')" required />
 
                     </div>
                     <!-- Colom - 2 -->
                     <div class="col-md-3">
 
                         <div class="mb-4">
-                            <label for="kelas_id" class="form-label">Kelas <span style="color: #dc3545 !important;">*</span></label>
-                            <select name="kelas_id" id="kelas_id" class="form-select" data-choices data-choices-sorting-false required>
+                            <label for="kelas_id" class="form-label">Kelas <span
+                                    style="color: #dc3545 !important;">*</span></label>
+                            <select name="kelas_id" id="kelas_id" class="form-select" data-choices
+                                data-choices-sorting-false required>
                                 <option value="">-- Pilih Kelas --</option>
-                                @foreach($kelas as $k)
+                                @foreach ($kelas as $k)
                                     <option value="{{ $k->id }}"
                                         {{ old('kelas_id', $siswa?->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
                                         {{ $k->nama_kelas }}
@@ -207,27 +203,22 @@
                                 @endforeach
                             </select>
                         </div>
-                        <x-input-field type="text" name="bank" label="Bank"
-                                       placeholder="Masukkan nama bank"
-                                       icon="bx bx-bank"
-                                       :value="old('bank', $siswa?->bank ?? '')" />
+                        <x-input-field type="text" name="bank" label="Bank" placeholder="Masukkan nama bank"
+                            icon="bx bx-bank" :value="old('bank', $siswa?->bank ?? '')" />
                     </div>
                     <!-- Colom - 3 -->
                     <div class="col-md-3">
-                        <x-input-field type="text" name="rfid_no" label="RFID"
-                                       placeholder="Masukkan RFID"
-                                       :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
+                        <x-input-field type="text" name="rfid_no" label="RFID" placeholder="Masukkan RFID"
+                            :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
                         <x-input-field type="text" name="no_rekening" label="No Rekening Siswa"
-                                       placeholder="Masukkan nomor rekening siswa"
-                                       icon="bx bx-credit-card"
-                                       :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
+                            placeholder="Masukkan nomor rekening siswa" icon="bx bx-credit-card" :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
                     </div>
                     <!-- Colom - 4 -->
                     <div class="col-md-3">
 
                         <div class="mb-4" id="jurusan-wrapper">
                             <label for="jurusan" class="form-label">Jurusan</label>
-                            <select name="jurusan[]" id="jurusan" class="form-control"  multiple>
+                            <select name="jurusan[]" id="jurusan" class="form-control" multiple>
                                 <option value="">--Pilih Jurusan--</option>
                                 @foreach ($jurusans as $jurusan)
                                     <option value="{{ $jurusan->id }}"
@@ -239,12 +230,13 @@
                         </div>
                         <div class="text-start">
                             <label class="form-label d-block">QR Code Siswa</label>
-                            @if(isset($show) && $show)
-                                @if(!empty($siswa->qrcode))
-                                    <img src="{{ asset('storage/' . $siswa->qrcode) }}"
-                                         alt="QR Siswa" class="img-fluid rounded border" width="150">
+                            @if (isset($show) && $show)
+                                @if (!empty($siswa->qrcode))
+                                    <img src="{{ asset('storage/' . $siswa->qrcode) }}" alt="QR Siswa"
+                                        class="img-fluid rounded border" width="150">
                                     <br>
-                                    <a href="{{ asset('storage/' . $siswa->qrcode) }}" download class="btn btn-sm btn-primary mt-2">
+                                    <a href="{{ asset('storage/' . $siswa->qrcode) }}" download
+                                        class="btn btn-sm btn-primary mt-2">
                                         <i class="bx bx-download"></i> Download QR
                                     </a>
                                 @else
@@ -253,7 +245,8 @@
                             @else
                                 <div id="qrcode" style="width:150px; height:150px; border:1px solid #ddd;"></div>
                                 <input type="hidden" name="qrcode" id="qrcode-text"
-                                       value="{{ old('qrcode', $siswa?->qrcode ?? '') }}">
+                                    value="{{ old('qrcode', $siswa?->qrcode ?? '') }}">
+
 
                             @endif
                         </div>
@@ -290,21 +283,23 @@
         $(document).ready(function() {
             $('#jurusan').select2({
                 placeholder: "--Pilih Jurusan--", // Placeholder text
-                allowClear: true                // Allows clearing the selected values
+                allowClear: true // Allows clearing the selected values
             });
         });
     </script>
     <script>
-        @if(isset($show) && $show)
-        document.addEventListener('DOMContentLoaded', function() {
-            const formElements = document.querySelectorAll('#siswaForm input, #siswaForm textarea, #siswaForm select, #siswaForm button[type="submit"]');
-            formElements.forEach(el => {
-                el.disabled = true;
-                if(el.type === 'submit'){
-                    el.style.display = 'none';
-                }
+        @if (isset($show) && $show)
+            document.addEventListener('DOMContentLoaded', function() {
+                const formElements = document.querySelectorAll(
+                    '#siswaForm input, #siswaForm textarea, #siswaForm select, #siswaForm button[type="submit"]'
+                );
+                formElements.forEach(el => {
+                    el.disabled = true;
+                    if (el.type === 'submit') {
+                        el.style.display = 'none';
+                    }
+                });
             });
-        });
         @endif
     </script>
 
@@ -316,9 +311,9 @@
             maxFilesize: 1,
             acceptedFiles: "image/*",
             addRemoveLinks: true,
-            init: function () {
-                this.on("addedfile", function (file) {
-                    file.previewElement.addEventListener("click", function () {
+            init: function() {
+                this.on("addedfile", function(file) {
+                    file.previewElement.addEventListener("click", function() {
                         let imgSrc = file.dataURL;
                         document.getElementById("previewImage").src = imgSrc;
                         var modal = new bootstrap.Modal(document.getElementById("imageModal"));
@@ -337,8 +332,10 @@
             addRemoveLinks: true,
             thumbnailWidth: 200,
             thumbnailHeight: 200,
-            headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"},
-            success: function (file, response) {
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function(file, response) {
                 document.querySelector("#image-hidden").value = response.filepath;
             },
             removedfile: function(file) {
@@ -348,11 +345,16 @@
         });
 
         @if (isset($siswa) && $siswa?->image)
-        let mockFile = { name: "Current Image", size: 12345, type: 'image/jpeg', accepted: true };
-        myDropzone.emit("addedfile", mockFile);
-        myDropzone.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
-        myDropzone.emit("complete", mockFile);
-        myDropzone.files.push(mockFile);
+            let mockFile = {
+                name: "Current Image",
+                size: 12345,
+                type: 'image/jpeg',
+                accepted: true
+            };
+            myDropzone.emit("addedfile", mockFile);
+            myDropzone.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
+            myDropzone.emit("complete", mockFile);
+            myDropzone.files.push(mockFile);
         @endif
     </script>
 
@@ -390,7 +392,7 @@
     </script>
 
     {{-- Alert Sukses & Error --}}
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',
@@ -402,18 +404,18 @@
         </script>
     @endif
 
-    @if($errors->any())
+    @if ($errors->any())
         <script>
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal!',
                 html: `
         <ul style="text-align:left;">
-            @foreach($errors->all() as $error)
+            @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
-                </ul>
-`,
+        </ul>
+    `,
                 confirmButtonColor: '#d33',
             });
         </script>
@@ -468,8 +470,9 @@
             });
         });
     </script>
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vaInput = document.querySelector('input[name="va_siswa"]');
@@ -480,13 +483,26 @@
             let defaultLogo = "{{ asset('images/default-logo.png') }}";
             vaInput.dispatchEvent(new Event('input'));
 
+            console.log("QR container:", qrContainer);
+            console.log("VA:", vaInput?.value);
+
+            if (!qrContainer || !vaInput) {
+                console.warn("❌ Tidak ditemukan elemen target atau input VA");
+                return;
+            }
+
             const qrCode = new QRCodeStyling({
                 width: 150,
                 height: 150,
                 data: vaInput.value || " ",
                 image: defaultLogo,
-                dotsOptions: { color: "#000", type: "rounded" },
-                backgroundOptions: { color: "#fff" },
+                dotsOptions: {
+                    color: "#000000",
+                    type: "square"
+                },
+                backgroundOptions: {
+                    color: "#eeeee"
+                },
                 imageOptions: {
                     crossOrigin: "anonymous",
                     margin: 4,
@@ -496,12 +512,34 @@
                 }
             });
 
+            console.log("QR instance:", qrCode);
+            if (qrContainer) {
+                qrCode.append(qrContainer);
+                console.log("✅ QR appended successfully!");
+            } else {
+                console.error("❌ QR container not found in DOM!");
+            }
+            // 🟢 bagian penting: render QR ke halaman
+            setTimeout(() => {
+                try {
+                    qrCode.append(qrContainer); // 👉 tempelkan QR ke <div id="qrcode">
+                    qrCode.update(); // 👉 paksa render (penting di beberapa versi)
+                    console.log("✅ QR appended successfully!");
+                } catch (err) {
+                    console.error("❌ QR append error:", err);
+                }
+            }, 200);
+
+
+
             qrCode.append(qrContainer);
             const qrTextInput = document.getElementById('qrcode-text');
             // Update QR code saat VA berubah
             vaInput.addEventListener('input', function() {
                 const value = this.value || " ";
-                qrCode.update({ data: value });
+                qrCode.update({
+                    data: value
+                });
                 qrTextInput.value = value; // simpan nilai QR ke input hidden
             });
 
@@ -511,11 +549,15 @@
                 if (!selectedOption.value) {
                     // sembunyikan tombol kalau unit belum dipilih
                     downloadBtn.style.display = 'none';
-                    qrCode.update({ image: defaultLogo });
+                    qrCode.update({
+                        image: defaultLogo
+                    });
                     return;
                 }
                 const logo = selectedOption.getAttribute('data-logo') || defaultLogo;
-                qrCode.update({ image: logo });
+                qrCode.update({
+                    image: logo
+                });
 
                 // tampilkan tombol download
                 downloadBtn.style.display = 'inline-block';
@@ -529,7 +571,10 @@
             // Tombol Download
             downloadBtn.addEventListener('click', function() {
                 const fileName = 'qr-' + (vaInput.value || 'code') + '.png';
-                qrCode.download({ name: fileName, extension: "png" });
+                qrCode.download({
+                    name: fileName,
+                    extension: "png"
+                });
             });
         });
     </script>
@@ -585,13 +630,13 @@
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const emailBottom = document.querySelector('#email_bottom');
             const emailTop = document.querySelector('#email_top');
 
-            if(emailBottom && emailTop){
+            if (emailBottom && emailTop) {
                 // update email atas saat mengetik di bawah
-                emailBottom.addEventListener('input', function () {
+                emailBottom.addEventListener('input', function() {
                     emailTop.value = this.value;
                 });
 
@@ -603,8 +648,8 @@
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
 
-            if(nisnInput && usernameInput && passwordInput){
-                nisnInput.addEventListener('input', function () {
+            if (nisnInput && usernameInput && passwordInput) {
+                nisnInput.addEventListener('input', function() {
                     const nisnValue = this.value.trim();
                     usernameInput.value = nisnValue;
                     passwordInput.value = nisnValue;
@@ -612,5 +657,4 @@
             }
         });
     </script>
-
 @endpush
