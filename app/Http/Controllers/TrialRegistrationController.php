@@ -31,38 +31,44 @@ class TrialRegistrationController extends Controller
 
     public function store(Request $request)
     {
+        try {
+            $data = $request->validate([
+                'school_name'    => 'required|string|max:150',
+                'npsn'           => 'required|string|max:30',
+                'address'        => 'required|string|max:255',
+                'full_name'      => 'required|string|max:150',
+                'email'          => 'required|email|max:150|unique:trial_registrations,email',
+                'no_hp'          => 'required|string|max:30',
+                'agree'          => 'accepted',
+                'tipe_unit_id'   => 'required|integer',
+                'yayasan_id'     => 'nullable',
+            ]);
+
+            $yayasan_id = $data['yayasan_id'] ?? null;
+            $trialRegistration =  TrialRegistration::create([
+                'school_name'    => $data['school_name'],
+                'npsn'           => $data['npsn'],
+                'address'        => $data['address'],
+                'full_name'      => $data['full_name'],
+                'email'          => $data['email'],
+                'no_hp'          => $data['no_hp'],
+                'tipe_unit_id'   => $data['tipe_unit_id'],
+                'yayasan_id'     => $yayasan_id,
+                'status'         => '0',  // Status default
+            ]);
+
+            Mail::to($trialRegistration->email)->send(new TrialRegistrationConfirmation($trialRegistration));
+            return redirect()
+                ->route('landing.registerpublic') // Sesuaikan dengan route yang sesuai
+                ->with('success', 'Pendaftaran berhasil! Kami akan segera menghubungi Anda.');
+
+        }catch (Exception $e) {
+            Log::error('Error in TrialRegistrationController@store: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+        }
         // Validasi input data
-        $data = $request->validate([
-            'school_name'    => 'required|string|max:150',
-            'npsn'           => 'required|string|max:30',
-            'address'        => 'required|string|max:255',
-            'full_name'      => 'required|string|max:150',
-            'email'          => 'required|email|max:150',
-            'no_hp'          => 'required|string|max:30',
-            'agree'          => 'accepted',
-            'tipe_unit_id'   => 'required|integer',
-            'yayasan_id'     => 'nullable',
-        ]);
 
-        $yayasan_id = $data['yayasan_id'] ?? null;
-        $trialRegistration =  TrialRegistration::create([
-            'school_name'    => $data['school_name'],
-            'npsn'           => $data['npsn'],
-            'address'        => $data['address'],
-            'full_name'      => $data['full_name'],
-            'email'          => $data['email'],
-            'no_hp'          => $data['no_hp'],
-            'tipe_unit_id'   => $data['tipe_unit_id'],
-            'yayasan_id'     => $yayasan_id,
-            'status'         => '0',  // Status default
-        ]);
-
-        Mail::to($trialRegistration->email)->send(new TrialRegistrationConfirmation($trialRegistration));
-
-        return redirect()
-            ->route('landing.registerpublic') // Sesuaikan dengan route yang sesuai
-            ->with('success', 'Pendaftaran berhasil! Kami akan segera menghubungi Anda.');
-    }
+        }
     public function registrationPortal($id)
     {
         $trialRegistration = TrialRegistration::findOrFail($id);
@@ -74,6 +80,7 @@ class TrialRegistrationController extends Controller
     {
         try {
             DB::beginTransaction();
+
 
             $trialUser = TrialRegistration::where('id', $id)->firstOrFail();
 
@@ -111,6 +118,11 @@ class TrialRegistrationController extends Controller
                 'yayasan_id' => $yayasan_id, // ✅ pakai variabel yang aman
             ]);
 
+            $usercek = User::where('email', $request->email)->first();
+
+            if ($usercek) {
+                return redirect()->back()->with('error', 'Email sudah terdaftar!');
+            }
 
             // Buat user admin
             $user = User::create([
