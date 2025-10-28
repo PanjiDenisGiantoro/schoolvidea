@@ -145,12 +145,25 @@ class PayrollSettingController extends Controller
         $setting = PayrollSetting::with(['unit', 'officer.user', 'officer.position', 'components', 'deductions'])
             ->findOrFail($id);
 
+        $data_period = PayrollSetting::findOrFail($id);
+        $startMonth = $data_period->start_month;
+        $startYear = $data_period->start_year;
+        $billingPeriod = $data_period->billing_period ?? 1;
+        $period_awal = \Carbon\Carbon::createFromDate($startYear, $startMonth, 1);
+        $period_details = collect(range(0, $billingPeriod - 1))->map(function ($i) use ($period_awal) {
+            $period = $period_awal->copy()->addMonth($i);
+            return [
+                'bulan' => $period->translatedFormat('F'),
+                'tahun' => $period->year
+            ];
+        });
+
         // PERBAIKAN: Tambahkan 'position' pada eager load Officer
         $officers = Officer::with(['user:id,name', 'position'])->get();
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
 
-        return view('pages.penggajian.payroll_setting.payroll_setting', compact('setting', 'officers', 'units', 'components', 'deductions'))->with('show', true);
+        return view('pages.penggajian.payroll_setting.payroll_setting', compact('setting', 'officers', 'units', 'components', 'deductions', 'period_details'))->with('show', true);
     }
 
     /**

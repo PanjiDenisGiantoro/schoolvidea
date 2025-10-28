@@ -23,18 +23,16 @@
                     <hr>
                     <div class="col-md-4">
                         <x-input-field type="email" id="email_top" name="" label="Email" placeholder="Email"
-                            icon="bx bx-envelope" :value="old('email', $siswa->user->email ?? '')" readonly disabled />
+                            icon="bx bx-envelope" :value="old('email', $siswa->user->email ?? '')" :disabled="(isset($siswa) && isset($show) && $show) || !isset($siswa)" />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username/NISN"
-                            placeholder="Username/NISN" icon="bx bx-user" :value="old('username', $siswa->user->username ?? '')" readonly disabled />
+                            placeholder="Username/NISN" icon="bx bx-user" :value="old('username', $siswa->user->username ?? '')" :disabled="(isset($siswa) && isset($show) && $show) || !isset($siswa)" />
                     </div>
                     <div class="col-md-4">
 
-                        <x-input-field type="text" id="password" name="password" label="Password" :placeholder="isset($officer)
-                            ? 'Kosongkan jika tidak ingin mengubah password'
-                            : 'Masukkan Password'"
-                            icon="bx bx-lock" :value="old('password')" readonly disabled />
+                        <x-input-field type="text" id="password" name="password" label="Password" :placeholder="isset($siswa) ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan Password'"
+                            icon="bx bx-lock" :value="old('password')" :disabled="(isset($siswa) && isset($show) && $show) || !isset($siswa)" />
                     </div>
                 </div>
 
@@ -44,20 +42,20 @@
                     <p class="text-muted">Masukkan data lengkap siswa</p>
                     <hr>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nisn" label="NISN" placeholder="Masukkan NISN"
-                            icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')" required />
+                        <x-input-field type="number" id="nisn" name="nisn" label="NISN"
+                            placeholder="Masukkan NISN" icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nis" label="NIS" placeholder="Masukkan NIS"
-                            icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')" required />
+                        <x-input-field type="number" id="nis" name="nis" label="NIS"
+                            placeholder="Masukkan NIS" icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="text" name="name" label="Nama Lengkap"
+                        <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
                             placeholder="Masukkan nama lengkap" icon="bx bx-user" :value="old('name', $siswa->user->name ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" name="nik" label="NIK" placeholder="Masukkan NIK"
-                            icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')" required />
+                        <x-input-field type="number" id="nik" name="nik" label="NIK"
+                            placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -73,11 +71,11 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="text" name="tempat_lahir" label="Tempat Lahir"
+                        <x-input-field type="text" id="tempat_lahir" name="tempat_lahir" label="Tempat Lahir"
                             placeholder="Masukkan tempat lahir" icon="bx bx-map" :value="old('tempat_lahir', $siswa?->tempat_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="date" name="tanggal_lahir" label="Tanggal Lahir"
+                        <x-input-field type="date" id="tanggal_lahir" name="tanggal_lahir" label="Tanggal Lahir"
                             placeholder="Masukkan tanggal lahir" :value="old('tanggal_lahir', $siswa?->tanggal_lahir ?? '')" />
                     </div>
                     <div class="col-md-3">
@@ -87,11 +85,11 @@
                             <option value="">-- Pilih Agama --</option>
                             <option value="ISLAM" {{ old('agama', $siswa?->agama ?? '') == 'ISLAM' ? 'selected' : '' }}>
                                 ISLAM</option>
-                            <option value="KRISTEN PROTESTAN"
-                                {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN PROTESTAN' ? 'selected' : '' }}>KRISTEN
+                            <option value="PROTESTAN"
+                                {{ old('agama', $siswa?->agama ?? '') == 'PROTESTAN' ? 'selected' : '' }}>
                                 PROTESTAN</option>
-                            <option value="KRISTEN KATHOLIK"
-                                {{ old('agama', $siswa?->agama ?? '') == 'KRISTEN KATHOLIK' ? 'selected' : '' }}>KRISTEN
+                            <option value="KATHOLIK"
+                                {{ old('agama', $siswa?->agama ?? '') == 'KATHOLIK' ? 'selected' : '' }}>
                                 KATHOLIK</option>
                             <option value="HINDU" {{ old('agama', $siswa?->agama ?? '') == 'HINDU' ? 'selected' : '' }}>
                                 HINDU</option>
@@ -103,12 +101,12 @@
                     </div>
 
                     <div class="col-md-3">
-                        <x-input-field type="number" name="no_hp" label="No. Telepon Siswa"
+                        <x-input-field type="number" id="no_hp" name="no_hp" label="No. Telepon Siswa"
                             placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp', $siswa?->no_hp ?? '')" />
                     </div>
 
                     <div class="col-md-3">
-                        <x-input-field type="number" name="no_hp_ortu" label="No. Telepon Orang Tua"
+                        <x-input-field type="number" id="no_hp_ortu" name="no_hp_ortu" label="No. Telepon Orang Tua"
                             placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required />
                     </div>
 
@@ -118,7 +116,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <x-input-field type="text" name="nama_ortu" label="Nama Orang Tua"
+                        <x-input-field type="text" id="nama_ortu" name="nama_ortu" label="Nama Orang Tua"
                             placeholder="Masukkan nama orang tua" icon="bx bx-user" :value="old('nama_ortu', $siswa?->nama_ortu ?? '')" required />
                     </div>
                     <div class="col-md-3 mt-4">
@@ -135,7 +133,7 @@
                     <div class="col-md-6">
                         <label for="alamat" class="form-label">Alamat <span
                                 style="color: #dc3545 !important;">*</span></label>
-                        <textarea name="alamat" id="alamat" class="form-control" rows="2" required>{{ old('alamat', $siswa->siswa->alamat ?? '') }}</textarea>
+                        <textarea name="alamat" id="alamat" class="form-control" rows="2" required>{{ old('alamat', $siswa->alamat ?? '') }}</textarea>
                     </div>
 
                     <div class="col-md-3">
@@ -171,7 +169,7 @@
                             <label for="unit_id" class="form-label">Unit <span
                                     style="color: #dc3545 !important;">*</span></label>
                             <select name="unit_id" id="unit_id" class="form-select" data-choices
-                                data-choices-sorting-false required>
+                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
@@ -182,8 +180,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        <x-input-field type="text" name="va_siswa" label="VA Siswa" placeholder="Masukkan VA Siswa"
-                            icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')" required />
+                        <x-input-field type="text" id="va_siswa" name="va_siswa" label="VA Siswa"
+                            placeholder="Masukkan VA Siswa" icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')" required />
 
                     </div>
                     <!-- Colom - 2 -->
@@ -192,8 +190,9 @@
                         <div class="mb-4">
                             <label for="kelas_id" class="form-label">Kelas <span
                                     style="color: #dc3545 !important;">*</span></label>
+
                             <select name="kelas_id" id="kelas_id" class="form-select" data-choices
-                                data-choices-sorting-false required>
+                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Kelas --</option>
                                 @foreach ($kelas as $k)
                                     <option value="{{ $k->id }}"
@@ -203,30 +202,32 @@
                                 @endforeach
                             </select>
                         </div>
-                        <x-input-field type="text" name="bank" label="Bank" placeholder="Masukkan nama bank"
-                            icon="bx bx-bank" :value="old('bank', $siswa?->bank ?? '')" />
+                        <x-input-field type="text" id="bank" name="bank" label="Bank"
+                            placeholder="Masukkan nama bank" icon="bx bx-bank" :value="old('bank', $siswa?->bank ?? '')" />
                     </div>
                     <!-- Colom - 3 -->
                     <div class="col-md-3">
-                        <x-input-field type="text" name="rfid_no" label="RFID" placeholder="Masukkan RFID"
-                            :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
+                        <x-input-field type="text" id="rfid_no" name="rfid_no" label="RFID"
+                            placeholder="Masukkan RFID" :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
                         <x-input-field type="text" name="no_rekening" label="No Rekening Siswa"
                             placeholder="Masukkan nomor rekening siswa" icon="bx bx-credit-card" :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
                     </div>
                     <!-- Colom - 4 -->
                     <div class="col-md-3">
 
-                        <div class="mb-4" id="jurusan-wrapper">
+                        <div class="mb-4">
                             <label for="jurusan" class="form-label">Jurusan</label>
-                            <select name="jurusan[]" id="jurusan" class="form-control" multiple>
-                                <option value="">--Pilih Jurusan--</option>
-                                @foreach ($jurusans as $jurusan)
-                                    <option value="{{ $jurusan->id }}"
-                                        {{ in_array($jurusan->id, old('jurusan', $siswa->jurusan ?? [])) ? 'selected' : '' }}>
-                                        {{ $jurusan->nama_jurusan }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if (isset($jurusans))
+                                <select name="jurusan_id" id="jurusan" class="form-select">
+                                    <option value="">--Pilih Jurusan--</option>
+                                    @foreach ($jurusans as $jurusan)
+                                        <option value="{{ $jurusan->id }}"
+                                            {{ old('jurusan_id', $siswa->jurusan_id ?? '') == $jurusan->id ? 'selected' : '' }}>
+                                            {{ $jurusan->nama_jurusan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                         <div class="text-start">
                             <label class="form-label d-block">QR Code Siswa</label>
@@ -250,12 +251,6 @@
 
                             @endif
                         </div>
-
-
-
-
-
-
                     </div>
                 </div>
 
@@ -276,17 +271,12 @@
 @endsection
 
 @push('scripts')
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            $('#jurusan').select2({
-                placeholder: "--Pilih Jurusan--", // Placeholder text
-                allowClear: true // Allows clearing the selected values
-            });
-        });
-    </script>
+
     <script>
         @if (isset($show) && $show)
             document.addEventListener('DOMContentLoaded', function() {
@@ -357,8 +347,6 @@
             myDropzone.files.push(mockFile);
         @endif
     </script>
-
-    {{-- Konfirmasi Submit --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('siswaForm');
@@ -376,6 +364,7 @@
                     cancelButtonColor: '#6c757d'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        Swal.close();
                         Swal.fire({
                             title: 'Menyimpan...',
                             text: 'Harap tunggu sebentar.',
@@ -422,57 +411,7 @@
     @endif
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const unitSelect = document.getElementById('unit_id');
-            const jurusanWrapper = document.getElementById('jurusan-wrapper');
-            const jurusanSelect = document.getElementById('jurusan');
 
-            function toggleJurusan() {
-                if (unitSelect.value) {
-                    jurusanSelect.disabled = false;
-                    jurusanSelect.classList.remove('disabled-select');
-                    // aktifkan tampilan Choices
-                    if (jurusanSelect.parentElement.querySelector('.choices')) {
-                        jurusanSelect.parentElement.querySelector('.choices').classList.remove('disabled-select');
-                    }
-                } else {
-                    jurusanSelect.disabled = true;
-                    jurusanSelect.classList.add('disabled-select');
-                    // nonaktifkan tampilan Choices
-                    if (jurusanSelect.parentElement.querySelector('.choices')) {
-                        jurusanSelect.parentElement.querySelector('.choices').classList.add('disabled-select');
-                    }
-                }
-            }
-
-
-            toggleJurusan(); // saat pertama load
-
-            // Fetch jurusan saat unit berubah
-            unitSelect.addEventListener('change', function() {
-                toggleJurusan();
-                const unitId = this.value;
-                jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>'; // reset
-
-                if (!unitId) return;
-
-                fetch(`/siswa/jurusan/by-unit/${unitId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        data.forEach(j => {
-                            const opt = document.createElement('option');
-                            opt.value = j.id;
-                            opt.textContent = j.nama_jurusan;
-                            jurusanSelect.appendChild(opt);
-                        });
-                    });
-            });
-        });
-    </script>
-    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vaInput = document.querySelector('input[name="va_siswa"]');
@@ -501,7 +440,7 @@
                     type: "square"
                 },
                 backgroundOptions: {
-                    color: "#eeeee"
+                    color: "#eeeeee"
                 },
                 imageOptions: {
                     crossOrigin: "anonymous",
@@ -628,33 +567,34 @@
         });
     </script>
 
+    @if (!isset($officer))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const emailBottom = document.querySelector('#email_bottom');
+                const emailTop = document.querySelector('#email_top');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const emailBottom = document.querySelector('#email_bottom');
-            const emailTop = document.querySelector('#email_top');
+                if (emailBottom && emailTop) {
+                    // update email atas saat mengetik di bawah
+                    emailBottom.addEventListener('input', function() {
+                        emailTop.value = this.value;
+                    });
 
-            if (emailBottom && emailTop) {
-                // update email atas saat mengetik di bawah
-                emailBottom.addEventListener('input', function() {
-                    emailTop.value = this.value;
-                });
+                    // set email atas saat load halaman
+                    emailTop.value = emailBottom.value;
+                }
 
-                // set email atas saat load halaman
-                emailTop.value = emailBottom.value;
-            }
+                const nisnInput = document.getElementById('nisn');
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
 
-            const nisnInput = document.getElementById('nisn');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-
-            if (nisnInput && usernameInput && passwordInput) {
-                nisnInput.addEventListener('input', function() {
-                    const nisnValue = this.value.trim();
-                    usernameInput.value = nisnValue;
-                    passwordInput.value = nisnValue;
-                });
-            }
-        });
-    </script>
+                if (nisnInput && usernameInput && passwordInput) {
+                    nisnInput.addEventListener('input', function() {
+                        const nisnValue = this.value.trim();
+                        usernameInput.value = nisnValue;
+                        passwordInput.value = nisnValue;
+                    });
+                }
+            });
+        </script>
+    @endif
 @endpush

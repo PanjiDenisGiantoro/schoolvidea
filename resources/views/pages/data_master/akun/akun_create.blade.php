@@ -22,7 +22,7 @@
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
                             <select name="unit_id" id="unit_id" class="form-control" data-choices
-                                data-choices-sorting-false>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
@@ -37,7 +37,7 @@
                     <div class="col-md-4">
                         <label for="kategori_akun" class="form-label">Kategori Akun</label>
                         <select name="kategori_akun" id="kategori_akun" class="form-control" data-choices
-                            data-choices-sorting-false>
+                            data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                             <option value="">-- Pilih Kategori Akun --</option>
                             <option value="tabungan"
                                 {{ old('kategori_akun', $akun->kategori_akun ?? '') == 'tabungan' ? 'selected' : '' }}>
@@ -82,7 +82,7 @@
                         <div class="mb-3">
                             <label for="tipe" class="form-label">Tipe</label>
                             <select name="tipe" id="tipe" class="form-control" data-choices
-                                data-choices-sorting-false>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 @php
                                     $types = ['ASET', 'LIABILITAS', 'EKUITAS', 'PENDAPATAN', 'BEBAN'];
                                 @endphp
@@ -101,7 +101,7 @@
                         <div class="mb-3">
                             <label for="parent_id" class="form-label">Parent</label>
                             <select name="parent_id" id="parent_id" class="form-select" data-choices
-                                data-choices-sorting-false>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="" selected disabled>-- Pilih Parent --</option>
                                 @foreach ($parents as $p)
                                     @if (!isset($akun) || $p->id != ($akun->id ?? null))
@@ -142,7 +142,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const formElements = document.querySelectorAll(
-                    '#akunForm input, #akunForm select, #akunForm button[type="submit"]');
+                    '#akunForm input, #akunForm select, #akunForm textarea, #akunForm button[type="submit"]');
                 formElements.forEach(el => {
                     el.disabled = true;
                     if (el.type === 'submit') el.style.display = 'none';

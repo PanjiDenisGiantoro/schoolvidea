@@ -25,8 +25,8 @@
 }
 
 .custom-btn-outline-primary:hover {
-    background-color: #2596be;
-    color: white !important;
+    background-color: white;
+    color: #2596be!important;
 }
 
 /* Saat tombol aktif */
@@ -70,10 +70,10 @@
 }
 
 #tabelSudahLunas {
-    display: block;
+    display: none;
 }
 #tabelBelumLunas {
-    display: none;
+    display: block;
 }
 
 .custom-checkbox {

@@ -9,11 +9,33 @@ class Siswa extends Model
     protected $table = 'siswas';
 
     protected $fillable = [
-        'nisn', 'nama', 'user_id', 'unit_id', 'kelas_id',
-        'status', 'va_siswa', 'rfid_no', 'nik', 'jenis_kelamin',
-        'agama', 'no_hp_ortu', 'nama_ortu', 'bank', 'no_rekening',
-        'nis', 'qrcode', 'qrcode_image', 'username', 'password'
+        'nisn',
+        'nama',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'no_hp',
+        'image',
+        'user_id',
+        'unit_id',
+        'kelas_id',
+        'tahun_ajaran_id',
+        'status',
+        'va_siswa',
+        'rfid_no',
+        'nik',
+        'jenis_kelamin',
+        'agama',
+        'no_hp_ortu',
+        'nama_ortu',
+        'bank',
+        'no_rekening',
+        'nis',
+        'qrcode',
+        'qrcode_image',
+        'jurusan_id',
+        'alamat'
     ];
+
 
     // Cast JSON kolom 'va_siswa' menjadi array
     protected $casts = [
@@ -39,6 +61,11 @@ class Siswa extends Model
     {
         return $this->hasOne(Saldo_keuangan::class, 'user_id');
     }
+    public function jurusan()
+    {
+        return $this->belongsTo(Jurusan::class, 'jurusan_id');
+    }
+
     public function pembayaran_tagihan()
     {
         return $this->hasMany(Tagihansiswa::class, 'siswa_id');

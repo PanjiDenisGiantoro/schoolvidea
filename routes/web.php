@@ -142,13 +142,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [SiswaController::class, 'create'])->name('siswa.create');
         Route::post('/store', [SiswaController::class, 'store'])->name('siswa.store');
         Route::get('/edit/{id}', [SiswaController::class, 'edit'])->name('siswa.edit');
-        Route::put('siswa/update/{id}', [SiswaController::class, 'update'])->name('siswa.update');
+        Route::put('/update/{id}', [SiswaController::class, 'update'])->name('siswa.update');
         Route::get('/delete/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
         Route::get('/show/{id}', [SiswaController::class, 'show'])->name('siswa.show');
         Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
         Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);
         Route::post('/upload', [SiswaController::class, 'upload'])->name('siswa.upload');
-        Route::get('/jurusan/by-unit/{unit}', [SiswaController::class, 'getJurusanByUnit']);
+        Route::get('/get-kelas/{unitId}', [SiswaController::class, 'getKelasByUnit'])->name('getKelasByUnit');
+        Route::get('/get-jurusan/{unitId}', [SiswaController::class, 'getJurusanByUnit'])->name('getJurusanByUnit');
     });
     Route::prefix('kategoritagihan')->group(function () {
         Route::get('/', [KategoritagihanController::class, 'index'])->name('kategoritagihan.index');
