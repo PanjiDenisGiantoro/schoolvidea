@@ -32,6 +32,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'rfid_no',
         'unit_id',
@@ -68,7 +69,7 @@ class User extends Authenticatable
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
     public function officer()
@@ -103,9 +104,4 @@ class User extends Authenticatable
     {
         return $this->hasOne(Saldo_keuangan::class, 'user_id');
     }
-
-
-
-
-
 }

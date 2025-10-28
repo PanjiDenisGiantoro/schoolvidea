@@ -13,9 +13,6 @@ class Officer extends Model
 {
     protected $table = 'officers';
     protected $guarded = [];
-    protected $casts = [
-        'jurusan' => 'array',
-    ];
     public function user()
     {
         return $this->belongsTo(User::class);
