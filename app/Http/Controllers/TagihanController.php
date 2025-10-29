@@ -22,21 +22,21 @@ class TagihanController extends Controller
 {
     public function create()
     {
-        $units = Unit::when(Auth::user()->unit_id,function($query,$unit_id){
-            $query->where('id',$unit_id);
-        })->where('status','1')->get();
-        $kelas = Kelas::when(Auth::user()->unit_id,function($query,$unit_id){
-            $query->where('unit_id',$unit_id);
-        })->where('status','1')->get();
-        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id,function($query,$unit_id){
-            $query->where('unit_id',$unit_id);
-        })->where('status','1')->get();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unit_id) {
+            $query->where('id', $unit_id);
+        })->where('status', '1')->get();
+        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unit_id) {
+            $query->where('unit_id', $unit_id);
+        })->where('status', '1')->get();
+        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id, function ($query, $unit_id) {
+            $query->where('unit_id', $unit_id);
+        })->where('status', '1')->get();
 
-        return view('pages.tagihan.create', compact('units','kelas','kategoriTagihan'));
+        return view('pages.tagihan.create', compact('units', 'kelas', 'kategoriTagihan'));
     }
     public function index()
     {
-//        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
+        //        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
 
         $tagihans = Tagihan::with([
             'unit',
@@ -44,31 +44,31 @@ class TagihanController extends Controller
             'items.kategori',
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.siswa.pembayaranTagihan'
-        ])->when(Auth::user()->unit_id,function($query,$unit_id){
-            $query->where('unit_id',$unit_id);
+        ])->when(Auth::user()->unit_id, function ($query, $unit_id) {
+            $query->where('unit_id', $unit_id);
         })->get();
 
-//        dd($tagihans);
+        //        dd($tagihans);
         $summary = [
             'jumlah_data' => $tagihans->count(),
-            'nominal_tagihan' => $tagihans->sum(function($t) {
+            'nominal_tagihan' => $tagihans->sum(function ($t) {
                 $total = $t->items->sum('nominal') * ($t->periode ?? 1);
                 return $total * $t->tagihanSiswa->count(); // total tagihan semua siswa
             }),
-            'sudah_dibayar' => $tagihans->sum(function($t) {
-                return $t->tagihanSiswa->sum(function($ts) {
+            'sudah_dibayar' => $tagihans->sum(function ($t) {
+                return $t->tagihanSiswa->sum(function ($ts) {
                     return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
                 });
             }),
-            'belum_dibayar' => $tagihans->sum(function($t) {
+            'belum_dibayar' => $tagihans->sum(function ($t) {
                 $total_tagihan = $t->items->sum('nominal') * ($t->periode ?? 1);
-                return $t->tagihanSiswa->sum(function($ts) use ($total_tagihan) {
+                return $t->tagihanSiswa->sum(function ($ts) use ($total_tagihan) {
                     $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
                     return $total_tagihan - $sudah_bayar;
                 });
             }),
         ];
-        return view('pages.tagihan.index', compact('tagihans','summary'));
+        return view('pages.tagihan.index', compact('tagihans', 'summary'));
     }
 
 
@@ -88,7 +88,7 @@ class TagihanController extends Controller
 
         DB::beginTransaction();
 
-        if($request->jenis_tagihan == ''){
+        if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
         }
 
@@ -333,6 +333,7 @@ class TagihanController extends Controller
             $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
             $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
+            $jumlahSudahDibayar = $ts->siswa->pembayaranTagihan->where('tagihan_siswa_id', $ts->id)->sum('jumlah_bayar');
             $jumlahDibayar = $ts->sisa_nominal;
             $jumlahTunggakan = $ts->sisa_nominal;
 
@@ -346,7 +347,7 @@ class TagihanController extends Controller
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
                 'jumlah_dibayar'    => (int) $jumlahDibayar,
                 'jumlah_tunggakan'  => (int) $jumlahTunggakan,
-                'nominal_pembayaran'=> (int) $jumlahTagihan,
+                'nominal_pembayaran' => (int) $jumlahSudahDibayar,
                 'catatan'           => $ts->catatan ?? '',
                 'status'            => $ts->status,
             ];
@@ -451,11 +452,11 @@ class TagihanController extends Controller
     {
         $data = Tagihansiswa::with('tagihan.items.kategori')
             ->where('siswa_id', $siswaId)
-            ->whereHas('tagihan', function($q) {
+            ->whereHas('tagihan', function ($q) {
                 $q->where('jenis_tagihan', 'bebas');
             })
             ->get()
-            ->map(function($ts) {
+            ->map(function ($ts) {
                 return [
                     'id' => $ts->id,
                     'nama_kategori' => optional($ts->tagihan->items->first()->kategori)->nama_kategori,
@@ -466,5 +467,21 @@ class TagihanController extends Controller
 
         return response()->json($data);
     }
+    public function simpanCatatan(Request $request)
+    {
+        $request->validate([
+            'tagihan_id' => 'required|exists:tagihan_siswa,id',
+            'catatan' => 'required|string|max:1000',
+        ]);
 
+        try {
+            $tagihan = \App\Models\Tagihansiswa::findOrFail($request->tagihan_id);
+            $tagihan->catatan = $request->catatan;
+            $tagihan->save();
+
+            return response()->json(['status' => 1, 'message' => 'Catatan berhasil disimpan']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'message' => 'Gagal menyimpan catatan: ' . $e->getMessage()]);
+        }
+    }
 }

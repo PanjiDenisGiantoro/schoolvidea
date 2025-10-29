@@ -227,7 +227,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pembayaran')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
-        Route::post('/catatan', [PembayaranController::class, 'simpanCatatan']);
+        // Route::post('/catatan', [PembayaranController::class, 'simpanCatatan']);
+        Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('tagihan.simpanCatatan');
     });
 
     Route::prefix('migrasi')->group(function () {

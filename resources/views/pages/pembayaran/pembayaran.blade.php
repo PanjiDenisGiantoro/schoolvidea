@@ -100,7 +100,7 @@
 
 
         {{-- Daftar Tagihan --}}
-        <div class="card rounded-4 mt-3 border-0 shadow-sm">
+        <div class="card rounded-4 mb-3 mt-3 border-0 shadow-sm">
             <!-- Header tombol toggle -->
             <div class="custom-toggle-header">
                 <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
@@ -133,7 +133,8 @@
                             <form id="formCatatan">
                                 <div class="mb-3">
                                     <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
-                                    <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
+                                    <textarea class="form-control" id="isiCatatan" name="isiCatatan" rows="4"
+                                        placeholder="Tulis keterangan tambahan di sini..."></textarea>
                                 </div>
                             </form>
                         </div>
@@ -159,8 +160,8 @@
                                 <th>Rincian Tagihan</th>
                                 <th>Jumlah Potongan</th>
                                 <th>Jumlah Tagihan</th>
+                                <th>Total Dibayar</th>
                                 <th>Total Tunggakan</th>
-                                <th>Nominal Pembayaran</th>
                                 <th>Catatan</th>
                                 <th>Aksi</th>
                             </tr>
@@ -172,6 +173,21 @@
                                 </td>
                             </tr>
                         </tbody>
+                        <tfoot class="fw-bold table-light text-center" style="font-size: 14px">
+                            <tr>
+                                <td></td>
+                                <td id="total"></td>
+                                <td id="total_periode"></td>
+                                <td id="tagihan_kelas"></td>
+                                <td id="totalRincian"></td>
+                                <td id="totalPotongan" class="text-danger"></td>
+                                <td id="totalTagihan"></td>
+                                <td id="totalDibayar"></td>
+                                <td id="totalTunggakan" class="text-success"></td>
+                                <td id="kosong"></td>
+                                <td id="kosong"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -461,17 +477,17 @@
                     tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
-                <td class="text-center">${tagihan.no}</td>
-                <td class="text-center">${tagihan.periode}</td>
-                <td class="text-center">${tagihan.tagihan_kelas}</td>
-                <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
-                <td class="text-center">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center" style="font-size: 14px">${tagihan.no}</td>
+                <td class="text-center" style="font-size: 14px">${tagihan.periode}</td>
+                <td class="text-center" style="font-size: 14px">${tagihan.tagihan_kelas}</td>
+                <td class="text-center" style="font-size: 14px">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-danger" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-center fw-bold" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center" style="font-size: 14px">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center text-success" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-warning btn-sm rounded-pill"
-                                onclick="tambahCatatan(${tagihan.id})">
+                                onclick="tambahCatatan(${tagihan.id}, '${tagihan.catatan}')">
                                 <i class="fa fa-sticky-note"></i> Catatan
                             </button></td>
                 <td class="text-center">
@@ -484,6 +500,38 @@
             </tr>
         `).join('');
 
+                    let totalRincian = 0;
+                    let totalPotongan = 0;
+                    let totalTagihan = 0;
+                    let totalDibayar = 0;
+                    let totalTunggakan = 0;
+                    let totalPeriode = new Set();
+                    let tagihanKelas = '';
+
+                    data.belum_lunas.forEach(item => {
+                        totalPeriode.add(item.periode);
+                        totalRincian += parseInt(item.rincian_tagihan || 0);
+                        totalPotongan += parseInt(item.jumlah_potongan || 0);
+                        totalTagihan += parseInt(item.jumlah_tagihan || 0);
+                        totalDibayar += parseInt(item.nominal_pembayaran || 0);
+                        totalTunggakan += parseInt(item.jumlah_dibayar || 0);
+                        tagihanKelas = item.tagihan_kelas;
+                    });
+                    document.getElementById('total').textContent = 'Total';
+                    document.getElementById('kosong').textContent = '-';
+                    document.getElementById('total_periode').textContent = totalPeriode.size + ' Bulan';
+                    document.getElementById('tagihan_kelas').textContent = tagihanKelas;
+                    document.getElementById('totalRincian').textContent = 'Rp ' + totalRincian.toLocaleString(
+                        'id-ID');
+                    document.getElementById('totalPotongan').textContent = 'Rp ' + totalPotongan.toLocaleString(
+                        'id-ID');
+                    document.getElementById('totalTagihan').textContent = 'Rp ' + totalTagihan.toLocaleString(
+                        'id-ID');
+                    document.getElementById('totalDibayar').textContent = 'Rp ' + totalDibayar.toLocaleString(
+                        'id-ID');
+                    document.getElementById('totalTunggakan').textContent = 'Rp ' + totalTunggakan
+                        .toLocaleString(
+                            'id-ID');
                     // Render Sudah Lunas
                     const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
                     tabelLunas.innerHTML = data.sudah_lunas.map(tagihan => `
@@ -663,16 +711,13 @@
             });
         });
 
-        function tambahCatatan(tagihanId) {
+        function tambahCatatan(tagihanId, isicatatan) {
             // 1️⃣ Simpan ID ke hidden input
             document.getElementById('catatan_tagihan_id').value = tagihanId;
-
             // 2️⃣ Ambil data tagihan dari window.tagihanData (hasil fetch sebelumnya)
             const tagihan = window.tagihanData?.find(t => t.id === tagihanId);
-
             // 3️⃣ Isi catatan kalau ada, kosong kalau tidak
-            document.getElementById('isiCatatan').value = tagihan?.catatan || '';
-
+            document.getElementById('isiCatatan').value = isicatatan || '';
             // 4️⃣ Tampilkan modal
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
