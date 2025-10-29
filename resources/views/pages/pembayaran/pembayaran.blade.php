@@ -121,7 +121,7 @@
 
             <div class="modal fade" id="catatanModal" tabindex="-1" aria-labelledby="catatanModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content border-0 rounded-4 shadow-lg">
+                    <div class="modal-content rounded-4 border-0 shadow-lg">
                         <div class="modal-header custom-modal-header">
                             <h5 class="modal-title fw-semibold" id="catatanModalLabel">
                                 <i class="ri-sticky-note-line"></i> Tambah Catatan
@@ -139,7 +139,8 @@
                         </div>
                         <div class="modal-footer border-0">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan Catatan</button>
+                            <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan
+                                Catatan</button>
 
                         </div>
                     </div>
@@ -186,6 +187,7 @@
                                 <th>Jml.Potongan</th>
                                 <th>Jml.Tagihan</th>
                                 <th>Jml.Bayar</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -309,6 +311,7 @@
 
                         // ⬇️ disini wrapper di-show
                         document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+
                         // simpan semua data
                         window.tagihanData = data.detail;
                     })
@@ -350,6 +353,8 @@
 
                         // ⬇️ disini wrapper di-show
                         document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+
+                        console.log('tagihan select', tagihanSelect)
                         // simpan semua data
                         window.tagihanData = data.detail;
                     })
@@ -459,11 +464,11 @@
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
-                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
-                <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-center">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-warning btn-sm rounded-pill"
                                 onclick="tambahCatatan(${tagihan.id})">
@@ -486,10 +491,10 @@
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
-                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
@@ -497,6 +502,27 @@
 
         });
     </script>
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+            );
+            inputs.forEach(input => {
+                input.value = input.value.replace(/\./g, '');
+            });
+        });
+    </script>
+
     <script>
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
             // Handle fallback values for bulan and tahun
@@ -531,27 +557,33 @@
                     // 🔹 Input Nominal untuk Bayar Sebagian
                     Swal.fire({
                         title: "Masukan Nominal Bayar",
-                        input: "number",
+                        input: "text",
                         inputAttributes: {
-                            min: 1,
-                            max: validNominal
+                            placeholder: "Contoh: 50.000",
+                            inputmode: "numeric",
+                            style: "text-align:center"
                         },
                         inputLabel: `Maksimal Rp ${validNominal.toLocaleString('id-ID')}`,
-                        inputPlaceholder: "Contoh: 500000",
+
                         showCancelButton: true,
                         confirmButtonText: "Bayar",
                         cancelButtonText: "Batal",
+                        didOpen: () => {
+                            const input = Swal.getInput();
+                            input.addEventListener('input', () => formatCurrencyInput(input));
+                        },
                         preConfirm: (val) => {
-                            if (!val || val <= 0) {
+                            const numericValue = parseInt(val.replace(/\./g, '')) || 0;
+                            if (numericValue <= 0) {
                                 Swal.showValidationMessage("Nominal harus lebih dari 0");
                                 return false;
                             }
-                            if (parseInt(val) > validNominal) {
+                            if (numericValue > validNominal) {
                                 Swal.showValidationMessage(
                                     "Nominal tidak boleh lebih besar dari total tagihan!");
                                 return false;
                             }
-                            return val;
+                            return numericValue;
                         }
                     }).then((res) => {
                         if (res.isConfirmed) {
@@ -645,7 +677,6 @@
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
         }
-
 
         function simpanCatatan() {
             const tagihanId = document.getElementById('catatan_tagihan_id').value;

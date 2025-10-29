@@ -69,8 +69,9 @@
 
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
-                        <x-input-field type="number" name="biaya_tagihan" label="Biaya Tagihan"
-                            placeholder="Masukkan Biaya Tagihan" icon="bx bx-money" :value="old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '')" required />
+                        <x-input-field type="text" name="biaya_tagihan" label="Biaya Tagihan"
+                            placeholder="Masukkan Biaya Tagihan" icon="bx bx-money" :value="old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '')"
+                            oninput="formatCurrencyInput(this)" required />
                     </div>
                     {{-- Status --}}
                     <div class="col-md-4">
@@ -188,4 +189,24 @@
             });
         </script>
     @endif
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+            );
+            inputs.forEach(input => {
+                input.value = input.value.replace(/\./g, '');
+            });
+        });
+    </script>
 @endpush
