@@ -149,6 +149,10 @@
                 </ul>
 
                 <div class="mt-3">
+                    <a href="{{ route('keuangan_transaksi.print_detail', $transaksi->id) }}" target="_blank"
+                       class="btn btn-primary w-100 rounded-pill shadow-sm mb-2">
+                        <i class="bx bx-printer"></i> Cetak Detail
+                    </a>
                     <a href="{{ route('keuangan_transaksi.index') }}" class="btn btn-secondary w-100 rounded-pill shadow-sm">
                         <i class="bx bx-arrow-back"></i> Kembali
                     </a>

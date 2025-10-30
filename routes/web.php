@@ -177,6 +177,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('keuangan-transaksi')->group(function () {
         Route::get('/', [KeuanganTransaksiController::class, 'index'])->name('keuangan_transaksi.index');
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
+        Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
+        Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
     });
 
     Route::prefix('akun')->group(function () {

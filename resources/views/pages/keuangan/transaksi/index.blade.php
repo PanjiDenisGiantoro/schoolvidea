@@ -40,7 +40,7 @@
         <div class="card-body">
             {{-- Action Buttons --}}
             <div class="d-flex justify-content-end mb-3 flex-wrap gap-2 text-end">
-                <a href="#" target="_blank"
+                <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
                     class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                     <i class="bx bx-printer"></i> Cetak Laporan
                 </a>
