@@ -42,7 +42,7 @@
 
                     <li class="mb-2">
                         <strong>Jumlah:</strong><br>
-                        @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran']))
+                        @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
                             <span class="text-success fw-bold fs-5">+ Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                         @else
                             <span class="text-danger fw-bold fs-5">- Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>

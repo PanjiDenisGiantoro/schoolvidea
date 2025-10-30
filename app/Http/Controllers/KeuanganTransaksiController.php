@@ -14,48 +14,143 @@ class KeuanganTransaksiController extends Controller
     /**
      * List semua transaksi keuangan
      */
-    public function index()
+    public function index(Request $request)
     {
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
                 'creator',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ])
-            ->when(Auth::user()->unit_id, function ($query, $unit_id) {
+            ->when($request->unit_id, function ($query, $unit_id) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($unit_id) {
                     $q->where('unit_id', $unit_id);
                 });
             })
+            ->when(!$request->unit_id && Auth::user()->unit_id, function ($query) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->when($request->jenis_transaksi, function ($query, $jenis) {
+                $query->where('jenis_transaksi', $jenis);
+            })
+            ->when($request->tagihan_id, function ($query, $tagihan_id) {
+                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
+                    $q->where('id', $tagihan_id);
+                });
+            })
+            ->when($request->kode_pembayaran, function ($query, $kode) {
+                $query->where('code_pembayaran', 'like', '%' . $kode . '%');
+            })
+            ->when($request->dari_tanggal, function ($query, $dari) {
+                $query->whereDate('tanggal_transaksi', '>=', $dari);
+            })
+            ->when($request->sampai_tanggal, function ($query, $sampai) {
+                $query->whereDate('tanggal_transaksi', '<=', $sampai);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
-        $total_pemasukan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran'])
-            ->when(Auth::user()->unit_id, function ($query, $unit_id) {
+
+        $total_pemasukan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
+            ->when($request->unit_id, function ($query, $unit_id) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($unit_id) {
                     $q->where('unit_id', $unit_id);
                 });
+            })
+            ->when(!$request->unit_id && Auth::user()->unit_id, function ($query) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->when($request->jenis_transaksi, function ($query, $jenis) {
+                $query->where('jenis_transaksi', $jenis);
+            })
+            ->when($request->tagihan_id, function ($query, $tagihan_id) {
+                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
+                    $q->where('id', $tagihan_id);
+                });
+            })
+            ->when($request->kode_pembayaran, function ($query, $kode) {
+                $query->where('code_pembayaran', 'like', '%' . $kode . '%');
+            })
+            ->when($request->dari_tanggal, function ($query, $dari) {
+                $query->whereDate('tanggal_transaksi', '>=', $dari);
+            })
+            ->when($request->sampai_tanggal, function ($query, $sampai) {
+                $query->whereDate('tanggal_transaksi', '<=', $sampai);
             })
             ->sum('jumlah');
 
         $total_pengeluaran = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan'])
-            ->when(Auth::user()->unit_id, function ($query, $unit_id) {
+            ->when($request->unit_id, function ($query, $unit_id) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($unit_id) {
                     $q->where('unit_id', $unit_id);
                 });
+            })
+            ->when(!$request->unit_id && Auth::user()->unit_id, function ($query) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->when($request->jenis_transaksi, function ($query, $jenis) {
+                $query->where('jenis_transaksi', $jenis);
+            })
+            ->when($request->tagihan_id, function ($query, $tagihan_id) {
+                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
+                    $q->where('id', $tagihan_id);
+                });
+            })
+            ->when($request->kode_pembayaran, function ($query, $kode) {
+                $query->where('code_pembayaran', 'like', '%' . $kode . '%');
+            })
+            ->when($request->dari_tanggal, function ($query, $dari) {
+                $query->whereDate('tanggal_transaksi', '>=', $dari);
+            })
+            ->when($request->sampai_tanggal, function ($query, $sampai) {
+                $query->whereDate('tanggal_transaksi', '<=', $sampai);
             })
             ->sum('jumlah');
 
-        $total_transaksi = Keuangan_transaksi::when(Auth::user()->unit_id, function ($query, $unit_id) {
+        $total_transaksi = Keuangan_transaksi::when($request->unit_id, function ($query, $unit_id) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($unit_id) {
                     $q->where('unit_id', $unit_id);
                 });
             })
+            ->when(!$request->unit_id && Auth::user()->unit_id, function ($query) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->when($request->jenis_transaksi, function ($query, $jenis) {
+                $query->where('jenis_transaksi', $jenis);
+            })
+            ->when($request->tagihan_id, function ($query, $tagihan_id) {
+                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
+                    $q->where('id', $tagihan_id);
+                });
+            })
+            ->when($request->kode_pembayaran, function ($query, $kode) {
+                $query->where('code_pembayaran', 'like', '%' . $kode . '%');
+            })
+            ->when($request->dari_tanggal, function ($query, $dari) {
+                $query->whereDate('tanggal_transaksi', '>=', $dari);
+            })
+            ->when($request->sampai_tanggal, function ($query, $sampai) {
+                $query->whereDate('tanggal_transaksi', '<=', $sampai);
+            })
             ->count();
+
+        // Get units and tagihans for filter options
+        $units = \App\Models\Unit::orderBy('nama_unit')->get();
+        $tagihans = \App\Models\Tagihan::orderBy('nama_tagihan')->get();
 
         return view('pages.keuangan.transaksi.index', compact(
             'transaksis',
             'total_pemasukan',
             'total_pengeluaran',
-            'total_transaksi'
+            'total_transaksi',
+            'units',
+            'tagihans'
         ));
     }
     /**

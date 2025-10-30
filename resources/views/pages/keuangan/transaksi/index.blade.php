@@ -35,6 +35,96 @@
         </div>
     </div>
 
+    {{-- Filter Card --}}
+    <div class="card rounded-3 border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-primary mb-3">
+                <i class="bx bx-filter"></i> Filter Transaksi
+            </h5>
+            <form action="{{ route('keuangan_transaksi.index') }}" method="GET">
+                <div class="row g-3">
+                    {{-- Filter Unit --}}
+                    <div class="col-md-3">
+                        <label for="unit_id" class="form-label">Unit</label>
+                        <select name="unit_id" id="unit_id" class="form-select">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    {{ $unit->nama_unit }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Jenis Transaksi --}}
+                    <div class="col-md-3">
+                        <label for="jenis_transaksi" class="form-label">Jenis Transaksi</label>
+                        <select name="jenis_transaksi" id="jenis_transaksi" class="form-select">
+                            <option value="">Semua Jenis</option>
+                            <option value="setoran_tabungan" {{ request('jenis_transaksi') == 'setoran_tabungan' ? 'selected' : '' }}>
+                                Setoran Tabungan
+                            </option>
+                            <option value="penarikan_tabungan" {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
+                                Penarikan Tabungan
+                            </option>
+                            <option value="pembayaran" {{ request('jenis_transaksi') == 'pembayaran' ? 'selected' : '' }}>
+                                Pembayaran
+                            </option>
+                            <option value="tagihan" {{ request('jenis_transaksi') == 'tagihan' ? 'selected' : '' }}>
+                                Pembayaran Tagihan
+                            </option>
+                        </select>
+                    </div>
+
+                    {{-- Filter Tagihan --}}
+                    <div class="col-md-3">
+                        <label for="tagihan_id" class="form-label">Jenis Tagihan</label>
+                        <select name="tagihan_id" id="tagihan_id" class="form-select">
+                            <option value="">Semua Tagihan</option>
+                            @foreach($tagihans as $tagihan)
+                                <option value="{{ $tagihan->id }}" {{ request('tagihan_id') == $tagihan->id ? 'selected' : '' }}>
+                                    {{ $tagihan->nama_tagihan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Kode Pembayaran --}}
+                    <div class="col-md-3">
+                        <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
+                        <input type="text" name="kode_pembayaran" id="kode_pembayaran"
+                               class="form-control" placeholder="Cari kode pembayaran"
+                               value="{{ request('kode_pembayaran') }}">
+                    </div>
+
+                    {{-- Filter Tanggal Dari --}}
+                    <div class="col-md-3">
+                        <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
+                        <input type="date" name="dari_tanggal" id="dari_tanggal"
+                               class="form-control" value="{{ request('dari_tanggal') }}">
+                    </div>
+
+                    {{-- Filter Tanggal Sampai --}}
+                    <div class="col-md-3">
+                        <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
+                        <input type="date" name="sampai_tanggal" id="sampai_tanggal"
+                               class="form-control" value="{{ request('sampai_tanggal') }}">
+                    </div>
+
+                    {{-- Tombol Filter --}}
+                    <div class="col-md-6 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-search"></i> Filter
+                        </button>
+                        <a href="{{ route('keuangan_transaksi.index') }}" class="btn btn-secondary">
+                            <i class="bx bx-refresh"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Card Utama --}}
     <div class="card rounded-3 border-0 shadow-sm">
         <div class="card-body">
@@ -121,7 +211,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran']))
+                                    @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
                                         <span class="text-success fw-bold">+ Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                                     @else
                                         <span class="text-danger fw-bold">- Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>

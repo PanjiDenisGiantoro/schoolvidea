@@ -75,14 +75,17 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
+            page-break-after: always;
+            page-break-inside: avoid;
         }
 
         .summary-card {
             background: #fff;
-            padding: 15px;
+            padding: 20px;
             border-radius: 5px;
-            border: 1px solid #dee2e6;
+            border: 2px solid #dee2e6;
             text-align: center;
+            page-break-inside: avoid;
         }
 
         .summary-card .label {
@@ -93,7 +96,7 @@
         }
 
         .summary-card .value {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
         }
 
@@ -204,7 +207,7 @@
         }
 
         .signature {
-            margin-top: 50px;
+            margin-top: 100px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 50px;
@@ -215,14 +218,22 @@
         }
 
         .signature-box .label {
-            margin-bottom: 60px;
-            font-size: 11px;
+            margin-bottom: 80px;
+            font-size: 12px;
         }
 
         .signature-box .name {
             border-top: 1px solid #333;
             padding-top: 5px;
             font-weight: 600;
+        }
+
+        .signature-title {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
         }
 
     </style>
@@ -344,15 +355,22 @@
             </tbody>
         </table>
 
-        <!-- Signature -->
-        <div class="signature">
-            <div class="signature-box">
-                <div class="label">Mengetahui,<br>Kepala Sekolah</div>
-                <div class="name">(__________________)</div>
+        <!-- Signature Page -->
+        <div style="page-break-before: always;">
+            <div class="signature-title">
+                LEMBAR PENGESAHAN<br>
+                LAPORAN TRANSAKSI KEUANGAN
             </div>
-            <div class="signature-box">
-                <div class="label">{{ \Carbon\Carbon::now()->format('d F Y') }}<br>Bendahara</div>
-                <div class="name">(__________________)</div>
+
+            <div class="signature">
+                <div class="signature-box">
+                    <div class="label">Mengetahui,<br>Kepala Sekolah</div>
+                    <div class="name">(__________________)</div>
+                </div>
+                <div class="signature-box">
+                    <div class="label">{{ \Carbon\Carbon::now()->format('d F Y') }}<br>Bendahara</div>
+                    <div class="name">(__________________)</div>
+                </div>
             </div>
         </div>
 
