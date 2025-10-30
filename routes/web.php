@@ -12,6 +12,7 @@ use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KategoritagihanController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TabunganController;
+use App\Http\Controllers\KeuanganTransaksiController;
 use App\Http\Controllers\SettingAkunController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\PayrollComponentsController;
@@ -172,6 +173,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
     });
+
+    Route::prefix('keuangan-transaksi')->group(function () {
+        Route::get('/', [KeuanganTransaksiController::class, 'index'])->name('keuangan_transaksi.index');
+        Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
+    });
+
     Route::prefix('akun')->group(function () {
         Route::get('/', [\App\Http\Controllers\AkunController::class, 'index'])->name('akun.index');
         Route::get('/create', [\App\Http\Controllers\AkunController::class, 'create'])->name('akun.create');
