@@ -87,7 +87,7 @@
                 </a>
                 <div class="collapse" id="sidebarTransaksi">
                     <ul class="sub-menu-nav">
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('orders.html') }}">Daftar
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
                                 Transaksi</a></li>
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a>
                         </li>
