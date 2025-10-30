@@ -225,70 +225,9 @@
             font-weight: 600;
         }
 
-        /* Print Styles */
-        .no-print {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .btn-print {
-            background: #3498db;
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .btn-print:hover {
-            background: #2980b9;
-        }
-
-        @media print {
-            body {
-                padding: 0;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            .summary {
-                page-break-inside: avoid;
-            }
-
-            table {
-                page-break-inside: auto;
-            }
-
-            table tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-
-            thead {
-                display: table-header-group;
-            }
-
-            tfoot {
-                display: table-footer-group;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Print Button -->
-        <div class="no-print">
-            <button class="btn-print" onclick="window.print()">
-                <i class="bx bx-printer"></i> Cetak / Save PDF
-            </button>
-            <button class="btn-print" style="background: #95a5a6; margin-left: 10px;" onclick="window.history.back()">
-                Kembali
-            </button>
-        </div>
 
         <!-- Header -->
         <div class="header">
@@ -422,11 +361,5 @@
             <p>Dokumen ini dicetak secara otomatis dari Sistem Informasi Keuangan</p>
             <p>{{ Auth::user()->unit->nama_unit ?? config('app.name') }}</p>
         </div>
-    </div>
-
-    <script>
-        // Auto print on load (optional, comment out if not needed)
-        // window.onload = function() { window.print(); }
-    </script>
 </body>
 </html>

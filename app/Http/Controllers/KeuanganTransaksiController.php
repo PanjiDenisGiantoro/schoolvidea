@@ -7,6 +7,7 @@ use App\Models\Keuangan_transaksi_logs;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Mpdf\Mpdf;
 
 class KeuanganTransaksiController extends Controller
 {
@@ -79,7 +80,7 @@ class KeuanganTransaksiController extends Controller
     }
 
     /**
-     * Print laporan transaksi
+     * Print laporan transaksi menggunakan mPDF
      */
     public function printLaporan(Request $request)
     {
@@ -113,18 +114,39 @@ class KeuanganTransaksiController extends Controller
         $dari_tanggal = $request->dari_tanggal ?? date('Y-m-01');
         $sampai_tanggal = $request->sampai_tanggal ?? date('Y-m-t');
 
-        return view('pages.keuangan.transaksi.print_laporan', compact(
+        // Generate HTML dari view
+        $html = view('pages.keuangan.transaksi.pdf_laporan', compact(
             'transaksis',
             'total_pemasukan',
             'total_pengeluaran',
             'total_transaksi',
             'dari_tanggal',
             'sampai_tanggal'
-        ));
+        ))->render();
+
+        // Konfigurasi mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'L', // Landscape untuk tabel lebar
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Laporan Transaksi Keuangan');
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Laporan-Transaksi-' . date('Ymd') . '.pdf', 'I');
     }
 
     /**
-     * Print detail transaksi
+     * Print detail transaksi menggunakan mPDF
      */
     public function printDetail($id)
     {
@@ -140,6 +162,27 @@ class KeuanganTransaksiController extends Controller
             ->orderBy('dilakukan_pada', 'desc')
             ->get();
 
-        return view('pages.keuangan.transaksi.print_detail', compact('transaksi', 'logs'));
+        // Generate HTML dari view
+        $html = view('pages.keuangan.transaksi.pdf_detail', compact('transaksi', 'logs'))->render();
+
+        // Konfigurasi mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P', // Portrait untuk detail
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Bukti Transaksi - ' . $transaksi->code_pembayaran);
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Bukti-Transaksi-' . $transaksi->code_pembayaran . '.pdf', 'I');
     }
 }
