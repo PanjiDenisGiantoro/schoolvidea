@@ -76,18 +76,6 @@
                         </select>
                     </div>
 
-                    {{-- Filter Tagihan --}}
-                    <div class="col-md-3">
-                        <label for="tagihan_id" class="form-label">Jenis Tagihan</label>
-                        <select name="tagihan_id" id="tagihan_id" class="form-select">
-                            <option value="">Semua Tagihan</option>
-                            @foreach($tagihans as $tagihan)
-                                <option value="{{ $tagihan->id }}" {{ request('tagihan_id') == $tagihan->id ? 'selected' : '' }}>
-                                    {{ $tagihan->nama_tagihan }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
 
                     {{-- Filter Kode Pembayaran --}}
                     <div class="col-md-3">

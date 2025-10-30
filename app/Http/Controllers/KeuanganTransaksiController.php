@@ -34,11 +34,7 @@ class KeuanganTransaksiController extends Controller
             ->when($request->jenis_transaksi, function ($query, $jenis) {
                 $query->where('jenis_transaksi', $jenis);
             })
-            ->when($request->tagihan_id, function ($query, $tagihan_id) {
-                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
-                    $q->where('id', $tagihan_id);
-                });
-            })
+
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
@@ -65,11 +61,6 @@ class KeuanganTransaksiController extends Controller
             ->when($request->jenis_transaksi, function ($query, $jenis) {
                 $query->where('jenis_transaksi', $jenis);
             })
-            ->when($request->tagihan_id, function ($query, $tagihan_id) {
-                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
-                    $q->where('id', $tagihan_id);
-                });
-            })
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
@@ -95,11 +86,7 @@ class KeuanganTransaksiController extends Controller
             ->when($request->jenis_transaksi, function ($query, $jenis) {
                 $query->where('jenis_transaksi', $jenis);
             })
-            ->when($request->tagihan_id, function ($query, $tagihan_id) {
-                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
-                    $q->where('id', $tagihan_id);
-                });
-            })
+
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
@@ -124,11 +111,7 @@ class KeuanganTransaksiController extends Controller
             ->when($request->jenis_transaksi, function ($query, $jenis) {
                 $query->where('jenis_transaksi', $jenis);
             })
-            ->when($request->tagihan_id, function ($query, $tagihan_id) {
-                $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($tagihan_id) {
-                    $q->where('id', $tagihan_id);
-                });
-            })
+
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
