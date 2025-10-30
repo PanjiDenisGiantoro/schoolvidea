@@ -142,7 +142,7 @@ class KeuanganTransaksiController extends Controller
 
         // Get units and tagihans for filter options
         $units = \App\Models\Unit::orderBy('nama_unit')->get();
-        $tagihans = \App\Models\Tagihan::orderBy('nama_tagihan')->get();
+        $tagihans = \App\Models\Tagihan::get();
 
         return view('pages.keuangan.transaksi.index', compact(
             'transaksis',
