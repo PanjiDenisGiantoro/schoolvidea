@@ -129,14 +129,14 @@
                                 </td>
                                 <td>
                                     @php
-                                        $metodeBadge = match($transaksi->pembayaranTagihan->metode_bayar) {
+                                        $metodeBadge = match($transaksi->metode) {
                                             'CASH' => 'primary',
                                             'TRANSFER' => 'info',
                                             'SALDO_TABUNGAN' => 'warning',
                                             default => 'secondary',
                                         };
                                     @endphp
-                                    <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->pembayaranTagihan->metode_bayar }}</span>
+                                    <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->metode }}</span>
                                 </td>
                                 <td>{{ $transaksi->creator->name ?? '-' }}</td>
                                 <td>
