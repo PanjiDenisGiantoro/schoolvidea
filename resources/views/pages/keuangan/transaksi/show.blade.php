@@ -84,6 +84,42 @@
 
                 <hr>
 
+                {{-- Detail Tagihan jika jenis transaksi adalah tagihan/pembayaran --}}
+                @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-receipt"></i> Detail Tagihan
+                </h6>
+                <ul class="list-unstyled small">
+                    @if($transaksi->pembayaranTagihan->tagihanSiswa)
+                        @php
+                            $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
+                            $tagihan = $tagihanSiswa->tagihan;
+                        @endphp
+                        <li><strong>Nama Tagihan:</strong> {{ $tagihan->nama_tagihan ?? '-' }}</li>
+                        <li><strong>Periode:</strong> {{ $tagihan->bulan ?? '-' }} {{ $tagihan->tahun ?? '' }}</li>
+                        <li><strong>Total Tagihan:</strong> Rp {{ number_format($tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</li>
+                        <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
+                        <li><strong>Sisa:</strong> Rp {{ number_format($tagihanSiswa->sisa_nominal ?? 0, 0, ',', '.') }}</li>
+
+                        @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
+                        <li class="mt-2"><strong>Kategori Tagihan:</strong></li>
+                        <ul class="mt-1">
+                            @foreach($tagihan->items as $item)
+                                <li>
+                                    {{ $item->kategori->nama_kategori ?? '-' }}
+                                    - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
+                                </li>
+                            @endforeach
+                        </ul>
+                        @endif
+                    @else
+                        <li class="text-muted">Detail tagihan tidak tersedia</li>
+                    @endif
+                </ul>
+
+                <hr>
+                @endif
+
                 <h6 class="fw-bold text-primary mb-2">
                     <i class="bx bx-user"></i> Penerima
                 </h6>

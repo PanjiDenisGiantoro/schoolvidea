@@ -76,18 +76,36 @@
                                             'setoran_tabungan' => 'success',
                                             'penarikan_tabungan' => 'warning',
                                             'pembayaran' => 'info',
+                                            'tagihan' => 'info',
                                             default => 'secondary',
                                         };
                                         $jenisText = match($transaksi->jenis_transaksi) {
                                             'setoran_tabungan' => 'Setoran Tabungan',
                                             'penarikan_tabungan' => 'Penarikan Tabungan',
                                             'pembayaran' => 'Pembayaran',
+                                            'tagihan' => 'Pembayaran Tagihan',
                                             default => ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)),
                                         };
                                     @endphp
                                     <span class="badge rounded-pill bg-{{ $badgeColor }}">
                                         {{ $jenisText }}
                                     </span>
+                                    @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                                        <br>
+                                        <small class="text-muted">
+                                            @if($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
+                                                {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-' }}
+                                            @endif
+                                        </small>
+                                        @if($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
+                                            <br>
+                                            <small class="text-muted">
+                                                @foreach($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
+                                                    <span class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
+                                                @endforeach
+                                            </small>
+                                        @endif
+                                    @endif
                                 </td>
                                 <td>
                                     @if($transaksi->penerima)

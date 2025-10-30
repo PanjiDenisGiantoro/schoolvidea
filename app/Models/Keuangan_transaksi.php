@@ -30,4 +30,9 @@ class Keuangan_transaksi extends Model
     {
         return $this->morphTo(__FUNCTION__, 'penerima_tipe', 'penerima_id');
     }
+
+    public function pembayaranTagihan()
+    {
+        return $this->belongsTo(Pembayarantagihan::class, 'referensi_tagihan_id');
+    }
 }

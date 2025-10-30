@@ -15,7 +15,11 @@ class KeuanganTransaksiController extends Controller
      */
     public function index()
     {
-        $transaksis = Keuangan_transaksi::with(['penerima', 'creator'])
+        $transaksis = Keuangan_transaksi::with([
+                'penerima',
+                'creator',
+                'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+            ])
             ->when(Auth::user()->unit_id, function ($query, $unit_id) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($unit_id) {
                     $q->where('unit_id', $unit_id);
@@ -61,7 +65,8 @@ class KeuanganTransaksiController extends Controller
         $transaksi = Keuangan_transaksi::with([
             'penerima',
             'creator',
-            'jurnals.akun'
+            'jurnals.akun',
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
         ])->findOrFail($id);
 
         // Ambil logs aktivitas
