@@ -21,7 +21,7 @@
                         <label class="form-label">Unit Pendidikan</label>
                         <select name="unit_id" class="form-control" required>
                             <option value="">-- Pilih Unit --</option>
-                            @foreach($units as $unit)
+                            @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}">{{ $unit->nama_unit }}</option>
                             @endforeach
                         </select>
@@ -30,16 +30,17 @@
                     {{-- Pilih Kelas --}}
                     <div class="mb-3">
                         <label for="kelas" class="form-label">Pilih Kelas</label>
-                        <select id="kelas" class="form-control" data-choices data-choices-sorting-false required name="kelas">
+                        <select id="kelas" class="form-control" data-choices data-choices-sorting-false required
+                            name="kelas">
                             <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
+                            @foreach ($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     {{-- Pilihan Semua / Per Siswa --}}
-                    <div id="pilihanSiswa" class="mb-3 d-none">
+                    <div id="pilihanSiswa" class="d-none mb-3">
                         <label class="form-label">Pilih Target</label><br>
                         <input type="radio" name="target" value="all" checked> Semua Siswa
                         <input type="radio" name="target" value="per"> Pilih Per Siswa
@@ -47,27 +48,27 @@
 
                     {{-- Tabel Siswa --}}
                     <div id="tableSiswaWrapper" class="d-none">
-                        <table class="table table-bordered">
+                        <table class="table-bordered table">
                             <thead>
-                            <tr>
-                                <th width="5%">
-                                    <input type="checkbox" id="checkAll">
-                                </th>
-                                <th>Nama Siswa</th>
-                                <th>Nomor Induk</th>
-                            </tr>
+                                <tr>
+                                    <th width="5%">
+                                        <input type="checkbox" id="checkAll">
+                                    </th>
+                                    <th>Nama Siswa</th>
+                                    <th>Nomor Induk</th>
+                                </tr>
                             </thead>
                             <tbody id="tableSiswa">
-                            {{-- Ajax isi disini --}}
+                                {{-- Ajax isi disini --}}
                             </tbody>
                         </table>
                     </div>
 
-
-                    <div class="mb-3">
+                    <div class="mb-3" hidden>
                         <label class="form-label">Jenis Tagihan</label><br>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="jenisTagihanSwitch" name="jenis_tagihan" value="bulanan" checked>
+                            <input class="form-check-input" type="checkbox" id="jenisTagihanSwitch" name="jenis_tagihan"
+                                value="bulanan" checked>
                             <label class="form-check-label" for="jenisTagihanSwitch">
                                 Bulanan <span class="text-muted">(matikan switch untuk Bebas)</span>
                             </label>
@@ -82,7 +83,7 @@
                         <select name="periode" class="form-control">
                             <option value="">-- Pilih Periode --</option>
                             <optgroup label="Bulan">
-                                @foreach(range(1,12) as $i)
+                                @foreach (range(1, 12) as $i)
                                     <option value="{{ $i }}">{{ $i }} Bulan</option>
                                 @endforeach
                             </optgroup>
@@ -93,26 +94,27 @@
                             </optgroup>
                         </select>
                     </div>
-                    <div id="bebasWrapper" class="mb-3 d-none">
+                    <div id="bebasWrapper" class="d-none mb-3">
                         <label class="form-label">Nominal Tagihan (Bebas)</label>
-                        <input type="number" name="nominal_bebas" class="form-control" placeholder="Masukkan nominal bebas">
+                        <input type="number" name="nominal_bebas" class="form-control"
+                            placeholder="Masukkan nominal bebas">
                     </div>
 
                     {{-- Bulan & Tahun Mulai --}}
-                    <div class="mb-3 row">
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Bulan Mulai</label>
                             <select name="bulan_mulai" class="form-control" required>
                                 <option value="">-- Pilih Bulan --</option>
-                                @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
-                                    <option value="{{ $i+1 }}">{{ $bulan }}</option>
+                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $bulan)
+                                    <option value="{{ $i + 1 }}">{{ $bulan }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tahun Mulai</label>
                             <select name="tahun_mulai" class="form-control" required>
-                                @for($y = date('Y'); $y <= date('Y')+5; $y++)
+                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                     <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
                             </select>
@@ -125,9 +127,9 @@
                             <label class="form-label">Item Tagihan 1</label>
                             <select name="items[0][id]" class="form-control">
                                 <option value="">-- Pilih Item --</option>
-                                @foreach($kategoriTagihan as $kat)
+                                @foreach ($kategoriTagihan as $kat)
                                     <option value="{{ $kat->id }}">
-                                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan,0,',','.') }}
+                                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
                                     </option>
                                 @endforeach
                             </select>
@@ -145,18 +147,17 @@
     </div>
 @endsection
 
-    @push('scripts')
-
+@push('scripts')
     <script>
         $(document).ready(function() {
 
-            $('#jenisTagihanSwitch').on('change', function(){
-                if($(this).is(':checked')){
+            $('#jenisTagihanSwitch').on('change', function() {
+                if ($(this).is(':checked')) {
                     // Mode bulanan
                     $('#periodeWrapper').removeClass('d-none');
                     $('#bebasWrapper').addClass('d-none');
                     $(this).val('bulanan');
-                }else{
+                } else {
                     // Mode bebas
                     $('#periodeWrapper').addClass('d-none');
                     $('#bebasWrapper').removeClass('d-none');
@@ -166,12 +167,12 @@
 
             $('#kelas').on('change', function() {
                 let kelasId = $(this).val();
-                if(kelasId){
+                if (kelasId) {
                     $('#pilihanSiswa').removeClass('d-none');
                     $('input[name="target"][value="all"]').prop('checked', true);
                     $('#tableSiswaWrapper').addClass('d-none'); // reset
                     loadSiswa(kelasId);
-                }else{
+                } else {
                     $('#pilihanSiswa').addClass('d-none');
                     $('#tableSiswaWrapper').addClass('d-none');
                 }
@@ -179,9 +180,9 @@
 
             // Radio toggle
             $('input[name="target"]').on('change', function() {
-                if($(this).val() === 'per'){
+                if ($(this).val() === 'per') {
                     $('#tableSiswaWrapper').removeClass('d-none');
-                }else{
+                } else {
                     $('#tableSiswaWrapper').addClass('d-none');
                 }
             });
@@ -193,7 +194,7 @@
         });
 
         // Ajax load siswa
-        function loadSiswa(kelasId){
+        function loadSiswa(kelasId) {
             $.get(`/kelas/${kelasId}/siswa`, function(data) {
                 let rows = '';
                 data.forEach((s, i) => {
@@ -220,9 +221,9 @@
             <label class="form-label">Item Tagihan ${itemCount+1}</label>
             <select name="items[${itemCount}][id]" class="form-control">
                 <option value="">-- Pilih Item --</option>
-                @foreach($kategoriTagihan as $kat)
+                @foreach ($kategoriTagihan as $kat)
             <option value="{{ $kat->id }}">
-                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan,0,',','.') }}
+                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
             </option>
 @endforeach
             </select>
@@ -241,7 +242,5 @@
                 siswaWrapper.classList.add('d-none');
             }
         });
-
-
     </script>
-    @endpush
+@endpush
