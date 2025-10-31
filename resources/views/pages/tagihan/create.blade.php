@@ -129,7 +129,8 @@
                                 <option value="">-- Pilih Item --</option>
                                 @foreach ($kategoriTagihan as $kat)
                                     <option value="{{ $kat->id }}">
-                                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
+                                        {{ $kat->nama_kategori }} - Rp
+                                        {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
                                     </option>
                                 @endforeach
                             </select>

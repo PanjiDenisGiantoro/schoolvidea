@@ -121,3 +121,29 @@
           </div>
      </div>
 </header>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleBtn = document.getElementById("light-dark-mode");
+
+    // Saat klik tombol
+    toggleBtn.addEventListener("click", function () {
+        document.body.classList.toggle("dark-theme");
+
+        // Simpan preferensi user
+        if (document.body.classList.contains("dark-theme")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+    });
+
+    // Saat reload halaman, terapkan tema sebelumnya
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-theme");
+    } else {
+        document.body.classList.remove("dark-theme");
+    }
+});
+</script>
+

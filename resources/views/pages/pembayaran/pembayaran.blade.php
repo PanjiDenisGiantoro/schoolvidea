@@ -138,7 +138,7 @@
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table-hover table-striped mb-0 table align-middle">
-                        <thead class="table-light text-center">
+                        <thead class="table-light text-center align-middle">
                             <tr>
                                 <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
                                 <th>#</th>
@@ -162,7 +162,7 @@
                         </tbody>
                         <tfoot class="fw-bold table-light text-center" style="font-size: 14px">
                             <tr>
-                                <td></td>
+                                <td colspan="11"></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -191,6 +191,11 @@
                                 </td>
                             </tr>
                         </tbody>
+                        <tfoot class="fw-bold table-light text-center" style="font-size: 14px">
+                            <tr>
+                                <td colspan="11"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -426,7 +431,7 @@
     <tr>
         <td class="text-center"><input type="checkbox" disabled></td>
         <td class="text-center fw-bold" style="font-size: 14px">Total</td>
-        <td class="text-center" style="font-size: 14px">${[...totalPeriode].join(', ')}</td>
+        <td class="text-center" style="font-size: 14px">${[totalPeriode.size].join(', ')}</td>
         <td class="text-center" style="font-size: 14px">${tagihanKelas}</td>
         <td class="text-center" style="font-size: 14px">Rp ${totalRincian.toLocaleString('id-ID')}</td>
         <td class="text-center text-danger" style="font-size: 14px">Rp ${totalPotongan.toLocaleString('id-ID')}</td>
@@ -449,8 +454,43 @@
                 <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
+<td class="text-center">
+    <a href="/tagihan/show/${tagihanId}/${siswaSelect.value}" class="btn btn-primary btn-sm rounded-pill">
+        <i class="fa fa-eye"></i> Lihat
+    </a>
+</td>
             </tr>
         `).join('');
+                    let tagihKelas = '';
+                    let rincianTagihan = 0;
+                    let jumlahPotongan = 0;
+                    let jumlahTagihan = 0;
+                    let jumlahBayar = 0;
+                    let ttlPeriode = new Set();
+
+
+                    data.sudah_lunas.forEach(item => {
+                        ttlPeriode.add(item.periode);
+                        rincianTagihan += parseInt(item.rincian_tagihan || 0);
+                        jumlahPotongan += parseInt(item.jumlah_potongan || 0);
+                        jumlahTagihan += parseInt(item.jumlah_tagihan || 0);
+                        jumlahBayar += parseInt(item.jumlah_tagihan || 0);
+                        tagihKelas = item.tagihan_kelas;
+                    });
+
+                    const tabelSudahLunasFoot = document.querySelector('#tabelSudahLunas tfoot');
+                    tabelSudahLunasFoot.innerHTML = `
+    <tr>
+        <td class="text-center fw-bold" style="font-size: 14px">Total</td>
+        <td class="text-center" style="font-size: 14px">${[ttlPeriode.size].join(', ')}</td>
+        <td class="text-center" style="font-size: 14px">${tagihKelas}</td>
+        <td class="text-center" style="font-size: 14px">Rp ${rincianTagihan.toLocaleString('id-ID')}</td>
+        <td class="text-center text-danger" style="font-size: 14px">Rp ${jumlahPotongan.toLocaleString('id-ID')}</td>
+        <td class="text-center fw-bold" style="font-size: 14px">Rp ${jumlahTagihan.toLocaleString('id-ID')}</td>
+        <td class="text-center text-success" style="font-size: 14px">Rp ${jumlahBayar.toLocaleString('id-ID')}</td>
+        <td class="text-center fw-bold" colspan="2" style="font-size: 14px">-</td>
+    </tr>
+`;
                 });
 
         });
