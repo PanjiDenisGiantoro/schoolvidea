@@ -54,17 +54,6 @@
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
-
-                    <div class="mb-3" id="nama_tagihan_wrapper">
-                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
-                        <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
-                            <option value="">-- Pilih Tagihan --</option>
-                        </select>
-                    </div>
-
-
-
-
                 </div>
             </div>
         </div>
@@ -158,8 +147,8 @@
                         </thead>
                         <tbody id="list_tagihan">
                             <tr>
-                                <td colspan="5" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                                <td colspan="11" class="text-muted py-4 text-center">
+                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa
                                 </td>
                             </tr>
                         </tbody>
@@ -183,8 +172,8 @@
                         </thead>
                         <tbody id="list_tagihan">
                             <tr>
-                                <td colspan="5" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                                <td colspan="11" class="text-muted py-4 text-center">
+                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa
                                 </td>
                             </tr>
                         </tbody>
@@ -263,14 +252,10 @@
             document.getElementById('list_tagihan').innerHTML = `
         <tr>
             <td colspan="5" class="text-center text-muted py-4">
-                <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                <i class="fa fa-info-circle"></i> Silakan pilih siswa
             </td>
         </tr>`;
-            document.getElementById('nama_tagihan').innerHTML =
-                '<option value="">-- Pilih Tagihan --</option>'; // Reset nama tagihan
 
-
-            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
             if (!kelasId) return;
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => {
@@ -325,44 +310,18 @@
                 })
                 .catch(err => console.error(err));
 
-            // Load daftar tagihan bulanan
-            fetch(`/tagihan/daftarTagihan/${siswaId}`)
-                .then(res => res.json())
-                .then(data => {
-                    const tagihanSelect = document.getElementById('nama_tagihan');
-                    tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
-
-                    if (!data.detail || !data.detail.length) {
-                        tagihanSelect.innerHTML += '<option value="">Tidak ada tagihan</option>';
-                        return;
-                    }
-
-                    // Isi dropdown nama tagihan
-                    data.detail.forEach((tagihan) => {
-                        const opt = document.createElement('option');
-                        opt.value = tagihan.id;
-                        opt.text = `${tagihan.nama_tagihan || 'Tagihan'} - Rp ${parseInt(tagihan.nominal || 0).toLocaleString('id-ID')}`;
-                        tagihanSelect.appendChild(opt);
-                    });
-
-                    // Simpan data untuk digunakan nanti
-                    window.tagihanData = data.detail;
-                })
-                .catch(err => console.error('Fetch tagihan error:', err));
+            // Load daftar tagihan bulanan langsung
+            loadTagihanPerbulan(siswaId);
         });
-        document.getElementById('nama_tagihan').addEventListener('change', function() {
-            const tagihanId = this.value;
-            const siswaId = siswaSelect.value;
 
-            if (!tagihanId) return;
-
-            fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
+        function loadTagihanPerbulan(siswaId) {
+            fetch(`/tagihan/perbulan/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data.belum_lunas.length && !data.sudah_lunas.length) {
                         listTagihan.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-4">
+                    <td colspan="11" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
                     </td>
                 </tr>`;
@@ -388,7 +347,6 @@
                                 <i class="fa fa-sticky-note"></i> Catatan
                             </button></td>
                 <td class="text-center">
-
                     <button type="button" class="btn btn-success btn-sm rounded-pill"
                         onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.jumlah_dibayar}, ${tagihan.kategori_id || 1})">
                         <i class="fa fa-credit-card"></i> Bayar
@@ -411,9 +369,9 @@
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
-                });
-
-        });
+                })
+                .catch(err => console.error('Fetch tagihan error:', err));
+        }
     </script>
     <script>
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
@@ -507,7 +465,10 @@
                             confirmButtonText: "OK"
                         }).then(() => {
                             // reload list tagihan supaya status berubah lunas / sebagian
-                            document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                            const siswaId = siswaSelect.value;
+                            if (siswaId) {
+                                loadTagihanPerbulan(siswaId);
+                            }
                         });
                     } else {
                         Swal.fire("Gagal!", data.message, "error");
@@ -550,16 +511,13 @@
         });
 
         function tambahCatatan(tagihanId) {
-            // 1️⃣ Simpan ID ke hidden input
+            // Simpan ID ke hidden input
             document.getElementById('catatan_tagihan_id').value = tagihanId;
 
-            // 2️⃣ Ambil data tagihan dari window.tagihanData (hasil fetch sebelumnya)
-            const tagihan = window.tagihanData?.find(t => t.id === tagihanId);
+            // Reset isi catatan (atau bisa dikosongkan)
+            document.getElementById('isiCatatan').value = '';
 
-            // 3️⃣ Isi catatan kalau ada, kosong kalau tidak
-            document.getElementById('isiCatatan').value = tagihan?.catatan || '';
-
-            // 4️⃣ Tampilkan modal
+            // Tampilkan modal
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
         }
@@ -593,7 +551,10 @@
                         modal.hide();
 
                         // reload tabel supaya catatan muncul
-                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                        const siswaId = siswaSelect.value;
+                        if (siswaId) {
+                            loadTagihanPerbulan(siswaId);
+                        }
                     } else {
                         Swal.fire("Gagal!", data.message || "Tidak dapat menyimpan catatan.", "error");
                     }
