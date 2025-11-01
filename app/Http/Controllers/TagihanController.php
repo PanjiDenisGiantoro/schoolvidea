@@ -295,6 +295,79 @@ class TagihanController extends Controller
     }
 
 
+    /**
+     * Get tagihan perbulan untuk siswa tertentu (semua tagihan)
+     */
+    public function perbulanAll($siswaId)
+    {
+        $tagihanSiswa = Tagihansiswa::with([
+            'siswa',
+            'tagihan.items.kategori',
+            'potonganSiswa.potongan'
+        ])
+            ->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function($query) {
+                $query->where('jenis_tagihan', 'bulanan');
+            })
+            ->orderBy('bulan_ke')
+            ->get();
+
+        if ($tagihanSiswa->isEmpty()) {
+            return response()->json([
+                'belum_lunas' => [],
+                'sudah_lunas' => []
+            ]);
+        }
+
+        // Bagi menjadi dua kelompok
+        $belumLunas = [];
+        $sudahLunas = [];
+        $counter = 1;
+
+        foreach ($tagihanSiswa as $ts) {
+            $tagihan = $ts->tagihan;
+            $nominal = $tagihan->items->sum('nominal');
+            $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+            $bulanMulai = (int) $tagihan->bulan_mulai;
+            $tahunMulai = (int) $tagihan->tahun_mulai;
+
+            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
+
+            // Total potongan untuk tagihan ini
+            $totalPotongan = $ts->potonganSiswa->sum('nominal');
+
+            $jumlahTagihan = $nominal - $totalPotongan;
+            $jumlahDibayar = $ts->sisa_nominal;
+
+            $row = [
+                'no'                => $counter++,
+                'id'                => $ts->id,
+                'periode'           => $date->translatedFormat('F'),
+                'tahun'             => $date->year,
+                'tagihan_kelas'     => $namaKategori,
+                'rincian_tagihan'   => (int) $nominal,
+                'jumlah_potongan'   => (int) $totalPotongan,
+                'jumlah_tagihan'    => (int) $jumlahTagihan,
+                'jumlah_dibayar'    => (int) $jumlahDibayar,
+                'nominal_pembayaran'=> (int) ($jumlahTagihan - $jumlahDibayar),
+                'catatan'           => $ts->catatan ?? '',
+                'status'            => $ts->status,
+                'kategori_id'       => $tagihan->items->first()->kategori_id ?? 1,
+            ];
+
+            if ($ts->status == 1) {
+                $sudahLunas[] = $row;
+            } else {
+                $belumLunas[] = $row;
+            }
+        }
+
+        return response()->json([
+            'belum_lunas' => $belumLunas,
+            'sudah_lunas' => $sudahLunas
+        ]);
+    }
+
     public function perbulan($siswaId, $tagihanId)
     {
         $tagihanSiswa = Tagihansiswa::with([

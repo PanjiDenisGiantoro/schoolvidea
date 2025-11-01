@@ -54,6 +54,25 @@
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label for="kategori_tagihan" class="form-label fw-semibold">Jenis Tagihan</label>
+                        <select id="kategori_tagihan" class="form-select rounded-pill shadow-sm">
+                            <option value="">-- Pilih Jenis Tagihan --</option>
+                            <option value="perbulan">Per Bulan</option>
+                            <option value="bebas">Bebas</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="nama_tagihan_wrapper" style="display: none;">
+                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
+                        <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
+                            <option value="">-- Pilih Tagihan --</option>
+                        </select>
+                    </div>
+
+
+
+
                 </div>
             </div>
         </div>
@@ -61,7 +80,7 @@
             <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="mb-3 text-center">
                     <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                        class="img-fluid rounded-circle border shadow-sm" width="120">
+                         class="img-fluid rounded-circle border shadow-sm" width="120">
                 </div>
                 <ul class="list-unstyled small">
                     <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
@@ -131,26 +150,26 @@
                 <div class="table-responsive">
                     <table class="table-hover table-striped mb-0 table align-middle">
                         <thead class="table-light text-center">
-                            <tr>
-                                <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
-                                <th>#</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jumlah Potongan</th>
-                                <th>Jumlah Tagihan</th>
-                                <th>Total Tunggakan</th>
-                                <th>Nominal Pembayaran</th>
-                                <th>Catatan</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
+                            <th>#</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jumlah Potongan</th>
+                            <th>Jumlah Tagihan</th>
+                            <th>Total Tunggakan</th>
+                            <th>Nominal Pembayaran</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="5" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -159,23 +178,23 @@
                 <div class="table-responsive">
                     <table class="table-hover table-striped mb-0 table align-middle">
                         <thead class="table-light items-center text-center">
-                            <tr>
-                                <th>#</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jml.Potongan</th>
-                                <th>Jml.Tagihan</th>
-                                <th>Jml.Bayar</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th>#</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jml.Potongan</th>
+                            <th>Jml.Tagihan</th>
+                            <th>Jml.Bayar</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="5" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -240,7 +259,104 @@
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
+        const kategoriSelect = document.getElementById('kategori_tagihan');
+        const listTagihanContainer = document.getElementById('list_tagihan_container');
         const listTagihan = document.getElementById('list_tagihan');
+
+        kategoriSelect.addEventListener('change', function() {
+            const kategori = this.value;
+            listTagihan.innerHTML = '';
+            if (!kategori) {
+                listTagihanContainer.style.display = 'none';
+                return;
+            }
+
+            if (kategori === 'perbulan') {
+                const siswaId = siswaSelect.value;
+                if (!siswaId) return;
+
+                fetch(`/tagihan/daftarTagihan/${siswaId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.detail || !data.detail.length) {
+                            listTagihan.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
+                        </td>
+                    </tr>`;
+                            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+                            return;
+                        }
+
+                        // isi dropdown nama tagihan
+                        const tagihanSelect = document.getElementById('nama_tagihan');
+                        tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
+                        data.detail.forEach((tagihan, idx) => {
+                            const opt = document.createElement('option');
+                            opt.value = tagihan.id;
+
+                            // ambil kategori pertama (kalau ada)
+                            const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ??
+                                'Tanpa Kategori';
+
+
+                            opt.text =
+                                ` ${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
+                            tagihanSelect.appendChild(opt);
+                        });
+
+
+                        // ⬇️ disini wrapper di-show
+                        document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+                        // simpan semua data
+                        window.tagihanData = data.detail;
+                    })
+                    .catch(err => console.error('Fetch tagihan error:', err));
+            } else if (kategori === 'bebas') {
+                const siswaId = siswaSelect.value;
+                if (!siswaId) return;
+
+                fetch(`/tagihan/daftarTagihanBebas/${siswaId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.detail || !data.detail.length) {
+                            listTagihan.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
+                        </td>
+                    </tr>`;
+                            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+                            return;
+                        }
+
+                        // isi dropdown nama tagihan
+                        const tagihanSelect = document.getElementById('nama_tagihan');
+                        tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
+                        data.detail.forEach((tagihan, idx) => {
+                            const opt = document.createElement('option');
+                            opt.value = tagihan.id;
+
+                            const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ??
+                                'Tanpa Kategori';
+
+
+                            opt.text =
+                                ` ${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
+                            tagihanSelect.appendChild(opt);
+                        });
+
+
+                        // ⬇️ disini wrapper di-show
+                        document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+                        // simpan semua data
+                        window.tagihanData = data.detail;
+                    })
+                    .catch(err => console.error('Fetch tagihan error:', err));
+            }
+
+        });
 
 
         // Load siswa berdasarkan kelas
@@ -249,13 +365,19 @@
             kelasHidden.value = kelasId;
 
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+            kategoriSelect.value = ''; // Reset kategori tagihan
             document.getElementById('list_tagihan').innerHTML = `
         <tr>
             <td colspan="5" class="text-center text-muted py-4">
-                <i class="fa fa-info-circle"></i> Silakan pilih siswa
+                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
             </td>
         </tr>`;
+            document.getElementById('nama_tagihan').innerHTML =
+                '<option value="">-- Pilih Tagihan --</option>'; // Reset nama tagihan
 
+
+            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
             if (!kelasId) return;
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => {
@@ -290,7 +412,6 @@
 
             if (!siswaId) return;
 
-            // Load detail siswa
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
@@ -307,21 +428,23 @@
                     if (data.foto) {
                         document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
                     }
+                    // update saldo awal
                 })
                 .catch(err => console.error(err));
-
-            // Load daftar tagihan bulanan langsung
-            loadTagihanPerbulan(siswaId);
         });
+        document.getElementById('nama_tagihan').addEventListener('change', function() {
+            const tagihanId = this.value;
+            const siswaId = siswaSelect.value;
 
-        function loadTagihanPerbulan(siswaId) {
-            fetch(`/tagihan/perbulan/${siswaId}`)
+            if (!tagihanId) return;
+
+            fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data.belum_lunas.length && !data.sudah_lunas.length) {
                         listTagihan.innerHTML = `
                 <tr>
-                    <td colspan="11" class="text-center text-muted py-4">
+                    <td colspan="5" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
                     </td>
                 </tr>`;
@@ -347,6 +470,7 @@
                                 <i class="fa fa-sticky-note"></i> Catatan
                             </button></td>
                 <td class="text-center">
+
                     <button type="button" class="btn btn-success btn-sm rounded-pill"
                         onclick="bayarTagihan(${tagihan.id}, '${tagihan.periode}', '${tagihan.tahun || new Date().getFullYear()}', ${tagihan.jumlah_dibayar}, ${tagihan.kategori_id || 1})">
                         <i class="fa fa-credit-card"></i> Bayar
@@ -369,9 +493,9 @@
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
-                })
-                .catch(err => console.error('Fetch tagihan error:', err));
-        }
+                });
+
+        });
     </script>
     <script>
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
@@ -440,21 +564,21 @@
 
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_siswa_id: tagihanId,
-                        bulan: bulan,
-                        tahun: tahun,
-                        nominal: nominal, // total tagihan
-                        jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
-                        kategori_id: kategoriId,
-                        metode: 'manual',
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal, // total tagihan
+                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
+                    kategori_id: kategoriId,
+                    metode: 'manual',
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {
@@ -465,10 +589,7 @@
                             confirmButtonText: "OK"
                         }).then(() => {
                             // reload list tagihan supaya status berubah lunas / sebagian
-                            const siswaId = siswaSelect.value;
-                            if (siswaId) {
-                                loadTagihanPerbulan(siswaId);
-                            }
+                            document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
                         });
                     } else {
                         Swal.fire("Gagal!", data.message, "error");
@@ -511,13 +632,16 @@
         });
 
         function tambahCatatan(tagihanId) {
-            // Simpan ID ke hidden input
+            // 1️⃣ Simpan ID ke hidden input
             document.getElementById('catatan_tagihan_id').value = tagihanId;
 
-            // Reset isi catatan (atau bisa dikosongkan)
-            document.getElementById('isiCatatan').value = '';
+            // 2️⃣ Ambil data tagihan dari window.tagihanData (hasil fetch sebelumnya)
+            const tagihan = window.tagihanData?.find(t => t.id === tagihanId);
 
-            // Tampilkan modal
+            // 3️⃣ Isi catatan kalau ada, kosong kalau tidak
+            document.getElementById('isiCatatan').value = tagihan?.catatan || '';
+
+            // 4️⃣ Tampilkan modal
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
         }
@@ -533,16 +657,16 @@
             }
 
             fetch('/pembayaran/catatan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_id: tagihanId,
-                        catatan: isiCatatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_id: tagihanId,
+                    catatan: isiCatatan
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 1) {
@@ -551,10 +675,7 @@
                         modal.hide();
 
                         // reload tabel supaya catatan muncul
-                        const siswaId = siswaSelect.value;
-                        if (siswaId) {
-                            loadTagihanPerbulan(siswaId);
-                        }
+                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
                     } else {
                         Swal.fire("Gagal!", data.message || "Tidak dapat menyimpan catatan.", "error");
                     }
