@@ -112,9 +112,8 @@ class RolePermissionSeeder extends Seeder
 
         // === Admin Role ===
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $adminPermissions = Permission::all()->except(['manage_permission_role'])->pluck('name');
-        $admin->syncPermissions($adminPermissions);
-        echo "✓ Admin (almost all permissions)\n";
+        $admin->syncPermissions(Permission::all());
+        echo "✓ Admin (all permissions)\n";
 
         // === Bendahara Role ===
         $bendahara = Role::firstOrCreate(['name' => 'bendahara', 'guard_name' => 'web']);
