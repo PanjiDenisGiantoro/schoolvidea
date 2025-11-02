@@ -10,15 +10,25 @@ use Spatie\Permission\Models\Role;
 
 class RolesController extends Controller
 {
-    public function index(){
-        // Gunakan Spatie Role untuk konsistensi
-        $roles = Role::withCount(['permissions', 'users'])->get();
+    public function index(Request $request){
+        // Build query
+        $query = Role::withCount(['permissions', 'users']);
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Paginate results
+        $roles = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Nama Role',
             'Total Permissions',
-            'Total Users',
-            'Action'
+//            'Total Users',
+//            'Action'
         ];
 
         return view('pages.data_master.roles.roles', compact('roles','headers'));

@@ -10,16 +10,39 @@ use Illuminate\Support\Facades\Auth;
 
 class KategoritagihanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $kategoritagihans = Kategoritagihan::with('unit')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                // Filter kategori berdasarkan unit_id dari relasi 'unit'
-                $query->whereHas('unit', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
-            })
-            ->get();
+        $units = Unit::all();
+
+        // Build query
+        $query = Kategoritagihan::with('unit');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->whereHas('unit', function ($q) {
+                $q->where('id', Auth::user()->unit_id);
+            });
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_kategori', 'like', "%{$search}%")
+                  ->orWhere('kode_kategori', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%")
+                  ->orWhere('biaya_tagihan', 'like', "%{$search}%")
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $kategoritagihans = $query->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -31,7 +54,7 @@ class KategoritagihanController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.kategori.kategori', compact('kategoritagihans', 'headers'));
+        return view('pages.data_master.kategori.kategori', compact('kategoritagihans', 'headers', 'units'));
     }
 
     public function create()

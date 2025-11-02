@@ -1,0 +1,759 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "School Management API",
+        "description": "API Documentation for School Management System",
+        "contact": {
+            "email": "admin@schoolmanagement.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "API V1"
+        }
+    ],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user",
+                "description": "Authenticate user and return JWT token",
+                "operationId": "985cd5203e2d0a820e113f2f4fdb2847",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "description": "Get current authenticated user details",
+                "operationId": "e339e0e74860c0647fd1d41bbbbc13b2",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get list of payments",
+                "description": "Returns paginated list of payments with filters",
+                "operationId": "a5bb0fe0d1690febc3b4f5c646bdea3c",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "siswa_id",
+                        "in": "query",
+                        "description": "Filter by student ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "kelas_id",
+                        "in": "query",
+                        "description": "Filter by class ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Start date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "End date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Process payment",
+                "description": "Process student payment for a bill",
+                "operationId": "11c45bdb8fd2b68b4335cf74986bcc6f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tagihan_siswa_id",
+                                    "jumlah_bayar"
+                                ],
+                                "properties": {
+                                    "tagihan_siswa_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "jumlah_bayar": {
+                                        "type": "integer",
+                                        "example": 500000
+                                    },
+                                    "metode": {
+                                        "description": "CASH, TRANSFER, QRIS, etc",
+                                        "type": "string",
+                                        "example": "CASH"
+                                    },
+                                    "keterangan": {
+                                        "type": "string",
+                                        "example": "Pembayaran SPP Januari 2024"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment successful"
+                    },
+                    "400": {
+                        "description": "Validation error or bill already paid"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran/{id}": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get payment detail",
+                "description": "Get detailed information about a specific payment",
+                "operationId": "ef71b2bcad4e5a3905a49ae342c2144d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Payment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran/siswa/{siswaId}": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get payment history by student",
+                "description": "Get all payment history for a specific student",
+                "operationId": "7d8e1a175319b2656bd4b546643afa30",
+                "parameters": [
+                    {
+                        "name": "siswaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran/kelas/{kelasId}": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get payments by class",
+                "description": "Get all payments for students in a specific class",
+                "operationId": "80580285f00d44f31a12717c2781a728",
+                "parameters": [
+                    {
+                        "name": "kelasId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran/tagihan-siswa/{tagihanSiswaId}": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get payments for specific student bill",
+                "description": "Get all payments made for a specific tagihan siswa",
+                "operationId": "1993d4f31c4b76cd29982052ef0a357e",
+                "parameters": [
+                    {
+                        "name": "tagihanSiswaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pembayaran/receipt/{id}": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Get payment receipt",
+                "description": "Get payment receipt data for printing",
+                "operationId": "e7434582ea081f51217f53fc2983e19b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/siswa": {
+            "get": {
+                "tags": [
+                    "Siswa"
+                ],
+                "summary": "Get list of siswa",
+                "description": "Returns paginated list of siswa with optional filters",
+                "operationId": "ed4f8f805763934b75f8ec4739c0501e",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by name, NIS, or NISN",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "kelas_id",
+                        "in": "query",
+                        "description": "Filter by class ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "unit_id",
+                        "in": "query",
+                        "description": "Filter by unit ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tagihan-siswa": {
+            "get": {
+                "tags": [
+                    "Tagihan Siswa"
+                ],
+                "summary": "Get list of student bills",
+                "description": "Returns paginated list of student bills with filters",
+                "operationId": "6f61f263691f72aa2d89dd8e4dc4ec3c",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "siswa_id",
+                        "in": "query",
+                        "description": "Filter by student ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "tagihan_id",
+                        "in": "query",
+                        "description": "Filter by tagihan ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (0=Belum Bayar, 1=Lunas, 2=Cicilan)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1,
+                                2
+                            ]
+                        }
+                    },
+                    {
+                        "name": "kelas_id",
+                        "in": "query",
+                        "description": "Filter by class ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tagihan-siswa/{id}": {
+            "get": {
+                "tags": [
+                    "Tagihan Siswa"
+                ],
+                "summary": "Get student bill detail",
+                "description": "Get detailed information about a specific student bill",
+                "operationId": "854361bcb0c32989efdc1451acadf09c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tagihan-siswa/siswa/{siswaId}": {
+            "get": {
+                "tags": [
+                    "Tagihan Siswa"
+                ],
+                "summary": "Get all bills for a student",
+                "description": "Get all bills for a specific student",
+                "operationId": "34c86632a53db5eb69b8cca49dd5d04b",
+                "parameters": [
+                    {
+                        "name": "siswaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1,
+                                2
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tagihan-siswa/kelas/{kelasId}": {
+            "get": {
+                "tags": [
+                    "Tagihan Siswa"
+                ],
+                "summary": "Get bills by class",
+                "description": "Get all bills for students in a specific class",
+                "operationId": "4bedadd4fa83f2f4eb325be8de879d79",
+                "parameters": [
+                    {
+                        "name": "kelasId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "tagihan_id",
+                        "in": "query",
+                        "description": "Filter by specific tagihan",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1,
+                                2
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tagihan-siswa/unpaid/{siswaId}": {
+            "get": {
+                "tags": [
+                    "Tagihan Siswa"
+                ],
+                "summary": "Get unpaid bills for student",
+                "description": "Get all unpaid bills for a specific student",
+                "operationId": "a3b027e0b350b542ba10df7d0e7c11fa",
+                "parameters": [
+                    {
+                        "name": "siswaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Pembayaran",
+            "description": "Pembayaran"
+        },
+        {
+            "name": "Siswa",
+            "description": "Siswa"
+        },
+        {
+            "name": "Tagihan Siswa",
+            "description": "Tagihan Siswa"
+        }
+    ]
+}
