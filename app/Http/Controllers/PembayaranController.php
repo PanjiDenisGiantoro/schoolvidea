@@ -99,12 +99,16 @@ class PembayaranController extends Controller
 
             // catat transaksi keuangan
             $transaksi = Keuangan_transaksi::create([
-                'penerima_id'     => $siswa->id,
-                'penerima_tipe'   => Siswa::class,
-                'jenis_transaksi' => 'tagihan',
-                'jumlah'          => $jumlahBayar,
-                'keterangan'      => $keterangan,
-                'created_by'      => Auth::id(),
+                'code_pembayaran'      => $pembayaran->code_pembayaran,
+                'penerima_id'          => $siswa->id,
+                'penerima_tipe'        => Siswa::class,
+                'jenis_transaksi'      => 'tagihan',
+                'jumlah'               => $jumlahBayar,
+                'metode'               => $request->metode ?? 'CASH',
+                'referensi_tagihan_id' => $pembayaran->id,
+                'tanggal_transaksi'    => now(),
+                'keterangan'           => $keterangan,
+                'created_by'           => Auth::id(),
             ]);
 
             // jurnal debit

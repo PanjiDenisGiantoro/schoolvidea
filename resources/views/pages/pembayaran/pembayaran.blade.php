@@ -60,6 +60,11 @@
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Hidden input untuk jenis tagihan (otomatis perbulan) -->
+                    <input type="hidden" id="kategori_tagihan" value="perbulan">
 
                 </div>
             </div>
@@ -68,7 +73,7 @@
             <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="mb-3 text-center">
                     <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                        class="img-fluid rounded-circle border shadow-sm" width="120">
+                         class="img-fluid rounded-circle border shadow-sm" width="120">
                 </div>
                 <ul class="list-unstyled small">
                     <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
@@ -344,7 +349,6 @@
                     if (data.foto) {
                         document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
                     }
-                    // update saldo awal
                 })
                 .catch(err => console.error(err));
             fetch(`/tagihan/daftarTagihan/${siswaId}`)
@@ -635,21 +639,21 @@
 
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_siswa_id: tagihanId,
-                        bulan: bulan,
-                        tahun: tahun,
-                        nominal: nominal, // total tagihan
-                        jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
-                        kategori_id: kategoriId,
-                        metode: 'manual',
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal, // total tagihan
+                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
+                    kategori_id: kategoriId,
+                    metode: 'manual',
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {
@@ -724,16 +728,16 @@
             }
 
             fetch('/pembayaran/catatan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_id: tagihanId,
-                        catatan: isiCatatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_id: tagihanId,
+                    catatan: isiCatatan
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 1) {

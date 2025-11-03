@@ -15,40 +15,62 @@
                 @csrf
                 <div class="row g-5">
                     <div class="col-lg-12">
-                        <h5 class="card-title mb-3">Permissions for Role: {{ $role->name }}</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Permissions for Role: {{ $role->name }}</h5>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-success" id="select-all-permissions">
+                                    <i class="ri-check-double-line"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" id="deselect-all-permissions">
+                                    <i class="ri-close-circle-line"></i> Deselect All
+                                </button>
+                            </div>
+                        </div>
 
                         <div class="table-responsive">
-                            @foreach ($modules as $module => $permissions)
-                                <div class="mb-4">
-                                    <h6 class="mb-3">{{ ucfirst($module) }} Permissions</h6>
-                                    <table class="table-bordered table-striped table">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <input type="checkbox" class="select-all-checkbox"
-                                                        data-module="{{ $module }}"
-                                                        id="select-all-{{ $module }}">
-                                                    <label for="select-all-{{ $module }}" class="ml-2">Select
-                                                        All</label>
-                                                </th>
-                                                <th>Permission Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($permissions as $permission)
-                                                <tr>
-                                                    <td>
-                                                        <input class="form-check-input permission-checkbox" type="checkbox"
-                                                            name="permissions[]" value="{{ $permission->id }}"
-                                                            @if (in_array($permission->id, $rolePermissions)) checked @endif
-                                                            data-module="{{ $module }}"
-                                                            id="permission-{{ $permission->id }}">
-                                                    </td>
-                                                    <td>{{ $permission->name }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                            @foreach ($permissionGroups as $groupName => $subGroups)
+                                <div class="mb-5">
+                                    <h5 class="mb-3 text-primary">{{ $groupName }}</h5>
+
+                                    @foreach ($subGroups as $subGroupName => $permissions)
+                                        @if($permissions->isNotEmpty())
+                                            <div class="mb-4">
+                                                <h6 class="mb-2">{{ is_numeric($subGroupName) ? '' : $subGroupName }}</h6>
+                                                <table class="table table-bordered table-striped table-sm">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th width="50">
+                                                                <input type="checkbox" class="select-all-checkbox form-check-input"
+                                                                    data-module="{{ Str::slug($groupName . '-' . $subGroupName) }}"
+                                                                    id="select-all-{{ Str::slug($groupName . '-' . $subGroupName) }}">
+                                                            </th>
+                                                            <th>Permission</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($permissions as $permission)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input class="form-check-input permission-checkbox"
+                                                                        type="checkbox"
+                                                                        name="permissions[]"
+                                                                        value="{{ $permission->name }}"
+                                                                        @if (in_array($permission->name, $rolePermissions)) checked @endif
+                                                                        data-module="{{ Str::slug($groupName . '-' . $subGroupName) }}"
+                                                                        id="permission-{{ $permission->id }}">
+                                                                </td>
+                                                                <td>
+                                                                    <label for="permission-{{ $permission->id }}" class="mb-0">
+                                                                        {{ $permission->name }}
+                                                                    </label>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @endif
+                                    @endforeach
                                 </div>
                             @endforeach
                         </div>
@@ -67,17 +89,52 @@
 
 @push('scripts')
     <script>
-        // Add "Select All" functionality for each module
+        // Select all permissions
+        document.getElementById('select-all-permissions').addEventListener('click', function() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            document.querySelectorAll('.select-all-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+
+        // Deselect all permissions
+        document.getElementById('deselect-all-permissions').addEventListener('click', function() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.querySelectorAll('.select-all-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
+
+        // Select/Deselect per module
         document.querySelectorAll('.select-all-checkbox').forEach(selectAllCheckbox => {
             selectAllCheckbox.addEventListener('change', function() {
                 const module = this.getAttribute('data-module');
                 const checkboxes = document.querySelectorAll(
                     `.permission-checkbox[data-module="${module}"]`);
 
-                // Check or uncheck all checkboxes based on the "Select All" checkbox
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = this.checked;
                 });
+            });
+        });
+
+        // Update module checkbox when individual permission changes
+        document.querySelectorAll('.permission-checkbox').forEach(permCheckbox => {
+            permCheckbox.addEventListener('change', function() {
+                const module = this.getAttribute('data-module');
+                const moduleCheckboxes = document.querySelectorAll(
+                    `.permission-checkbox[data-module="${module}"]`);
+                const selectAllCheckbox = document.getElementById(`select-all-${module}`);
+
+                // Check if all checkboxes in this module are checked
+                const allChecked = Array.from(moduleCheckboxes).every(cb => cb.checked);
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = allChecked;
+                }
             });
         });
     </script>

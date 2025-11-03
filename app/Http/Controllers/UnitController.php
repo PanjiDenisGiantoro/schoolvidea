@@ -12,12 +12,40 @@ use Illuminate\Support\Str;
 
 class UnitController extends Controller
 {
-    public function index(){
-        $unit = Unit::with('tipe_unit')->
-        when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })
-        ->get();
+    public function index(Request $request){
+        $units = Unit::all();
+
+        // Build query
+        $query = Unit::with('tipe_unit');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_unit', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('no_hp', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%")
+                  ->orWhere('website', 'like', "%{$search}%")
+                  ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
+                  ->orWhereHas('tipe_unit', function($q) use ($search) {
+                      $q->where('nama_tipe', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $unit = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Nama Yayasan',
@@ -32,7 +60,7 @@ class UnitController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.unit.unit', compact('unit','headers'));
+        return view('pages.data_master.unit.unit', compact('unit','headers','units'));
     }
     public function create()
     {
@@ -57,6 +85,8 @@ class UnitController extends Controller
             'tipe_unit_id' => 'nullable',
             'nama_pimpinan_unit' => 'nullable|string',
         ]);
+
+
 
         $centralCode = $request->code;
         if (empty($centralCode)) {

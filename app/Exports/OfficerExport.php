@@ -3,12 +3,31 @@ namespace App\Exports;
 
 use App\Models\Roles_petugas;  // Import RolePetugas model for role_id dropdown
 use App\Models\Jurusan;      // Import Jurusan model for jurusan dropdown
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
+use Illuminate\Support\Collection;
 
-class OfficerExport implements WithHeadings, WithEvents
+class OfficerExport implements FromCollection, WithHeadings, WithEvents
 {
+    public function collection()
+    {
+        // Return empty collection with 10 empty rows to show dropdown
+        return new Collection([
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        ]);
+    }
+
     public function headings(): array
     {
         return [
@@ -39,32 +58,38 @@ class OfficerExport implements WithHeadings, WithEvents
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                // Dropdown for `role_id` (Role from role_petugas table)
+                $sheet = $event->sheet->getDelegate();
+
+                // Ambil data untuk dropdown
                 $rolePetugas = Roles_petugas::pluck('name')->toArray();
-                $roleValidationList = implode(',', $rolePetugas);
+                $jenisKelamin = ['Laki-laki', 'Perempuan'];
+                $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
 
-                $event->sheet->getDelegate()->getDataValidation('D2:D1000')  // Assuming role_id is in column D
-                ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                // Dropdown untuk Role (Column D)
+                if (!empty($rolePetugas)) {
+                    // Escape values that contain commas or quotes
+                    $roleEscaped = array_map(function($item) {
+                        return str_replace('"', '""', $item);
+                    }, $rolePetugas);
+                    $roleValidationList = implode(',', $roleEscaped);
+
+                    $sheet->getDataValidation('D2:D1000')
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setFormula1('"' . $roleValidationList . '"');
+                }
+
+                // Dropdown untuk Jenis Kelamin (Column L)
+                $sheet->getDataValidation('L2:L1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
-                    ->setFormula1('"' . $roleValidationList . '"');
+                    ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
 
-                // Dropdown for `jenis_kelamin` (Gender options)
-                $jenisKelaminList = 'Laki-laki,Perempuan';
-
-                $event->sheet->getDelegate()->getDataValidation('L2:L1000')  // Assuming jenis_kelamin is in column L
-                ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                // Dropdown untuk Agama (Column M)
+                $sheet->getDataValidation('M2:M1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
-                    ->setFormula1('"' . $jenisKelaminList . '"');
-
-                // Dropdown for `agama` (Religion options)
-                $agamaList = 'Islam,Protestan,Katholik,Hindu,Buddha';
-
-                $event->sheet->getDelegate()->getDataValidation('M2:M1000')  // Assuming agama is in column M
-                ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . $agamaList . '"');
-
-
+                    ->setFormula1('"' . implode(',', $agama) . '"');
             },
         ];
     }

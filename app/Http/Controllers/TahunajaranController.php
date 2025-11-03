@@ -9,9 +9,25 @@ use Illuminate\Support\Str;
 
 class TahunajaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tahun_ajaran = Tahun_ajaran::get();
+        // Build query
+        $query = Tahun_ajaran::query();
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tahun_ajaran', 'like', "%{$search}%")
+                  ->orWhere('tanggal_mulai', 'like', "%{$search}%")
+                  ->orWhere('tanggal_selesai', 'like', "%{$search}%")
+                  ->orWhere('semester', 'like', "%{$search}%");
+            });
+        }
+
+        // Paginate results
+        $tahun_ajaran = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Tahun Ajaran',
@@ -22,6 +38,7 @@ class TahunajaranController extends Controller
             'Action'
         ];
 
+        // Note: Tahun ajaran doesn't have unit_id, so no unit filter needed
         return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran', 'headers'));
     }
     public function create()

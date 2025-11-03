@@ -14,17 +14,50 @@ use Illuminate\Support\Str;
 
 class OfficerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $officer = User::with('officer.unit', 'roles')
+        $units = Unit::all();
 
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('unit_id', $unitId);
-            })
+        // Build query
+        $query = User::with('officer.unit', 'roles')
             ->whereHas('roles', function ($query) {
                 $query->whereNotIn('name', ['siswa', 'admin', 'user']);
-            })
-            ->get();
+            });
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhereHas('officer', function($q) use ($search) {
+                      $q->where('nip', 'like', "%{$search}%")
+                        ->orWhere('nuptk', 'like', "%{$search}%")
+                        ->orWhere('nik', 'like', "%{$search}%")
+                        ->orWhere('va_guru', 'like', "%{$search}%")
+                        ->orWhere('no_hp', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('officer.unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('roles', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $officer = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Nama Unit',
@@ -36,7 +69,7 @@ class OfficerController extends Controller
             'Action',
         ];
 
-        return view('pages.data_master.officer.officer', compact('officer', 'headers'));
+        return view('pages.data_master.officer.officer', compact('officer', 'headers', 'units'));
     }
 
     public function create()

@@ -15,11 +15,44 @@ use Illuminate\Support\Facades\Auth;
 
 class PotonganController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $potongans = Potongan::with('unit', 'kelas', 'kategoriTagihan')->get();
+        $units = Unit::all();
 
-        return view('pages.potongan.potongan', compact('potongans'));
+        // Build query
+        $query = Potongan::with('unit', 'kelas', 'kategoriTagihan');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tipe_potongan', 'like', "%{$search}%")
+                  ->orWhere('nilai', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%")
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('kelas', function($q) use ($search) {
+                      $q->where('nama_kelas', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('kategoriTagihan', function($q) use ($search) {
+                      $q->where('nama_kategori', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $potongans = $query->paginate(15)->appends($request->except('page'));
+
+        return view('pages.potongan.potongan', compact('potongans', 'units'));
     }
 
 
