@@ -52,194 +52,221 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-            'code' => 'required|string',
-            'tahun' => 'required|string',
+            "email" => "required|string|email",
+            "password" => "required|string",
+            "code" => "required|string",
+            "tahun" => "required|string",
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Validation error",
+                    "errors" => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         // Validasi kode unit
-        $unit = \App\Models\Unit::where('code', $request->code)->first();
+        $unit = \App\Models\Unit::where("code", $request->code)->first();
         if (!$unit) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kode unit tidak valid'
-            ], 401);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Kode unit tidak valid",
+                ],
+                401,
+            );
         }
 
         // Validasi tahun ajaran
-        $tahunAjaran = \App\Models\Tahun_ajaran::where('tahun', $request->tahun)->first();
-        if (!$tahunAjaran) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tahun ajaran tidak valid'
-            ], 401);
-        }
+        // $tahunAjaran = \App\Models\Tahun_ajaran::where('tahun', $request->tahun)->first();
+        // if (!$tahunAjaran) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Tahun ajaran tidak valid'
+        //     ], 401);
+        // }
 
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->only("email", "password");
 
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email atau password salah'
-            ], 401);
+        if (!($token = auth("api")->attempt($credentials))) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Email atau password salah",
+                ],
+                401,
+            );
         }
 
         // Validasi unit_id user sesuai dengan kode unit
-        $user = auth('api')->user();
+        $user = auth("api")->user();
         if ($user->unit_id != $unit->id) {
-            auth('api')->logout();
-            return response()->json([
-                'success' => false,
-                'message' => 'User tidak terdaftar di unit ini'
-            ], 401);
+            auth("api")->logout();
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "User tidak terdaftar di unit ini",
+                ],
+                401,
+            );
         }
 
         // Ambil user yang baru login
-        $user = auth('api')->user();
+        $user = auth("api")->user();
 
         // Load roles
-        $user->load(['roles', 'permissions']);
+        $user->load(["roles", "permissions"]);
 
         // Ambil data profile berdasarkan role
         $profile = null;
         $userType = null;
 
         // Cek apakah user memiliki role siswa
-        if ($user->hasRole('siswa') || $user->siswa) {
-            $userType = 'siswa';
+        if ($user->hasRole("siswa") || $user->siswa) {
+            $userType = "siswa";
             $siswaQuery = \App\Models\Siswa::with([
-                'kelas',
-                'unit',
-                'tahun_ajaran',
-                'jurusan',
-                'saldo'
-            ])->where('user_id', $user->id);
+                "kelas",
+                "unit",
+                "tahun_ajaran",
+                "jurusan",
+                "saldo",
+            ])->where("user_id", $user->id);
 
             // Filter berdasarkan tahun jika parameter tahun dikirim
-            if ($request->tahun) {
-                $siswaQuery->whereHas('tahun_ajaran', function($q) use ($request) {
-                    $q->where('tahun', $request->tahun);
-                });
-            }
+            // if ($request->tahun) {
+            //     $siswaQuery->whereHas('tahun_ajaran', function($q) use ($request) {
+            //         $q->where('tahun', $request->tahun);
+            //     });
+            // }
 
             $profile = $siswaQuery->first();
 
             if ($profile) {
                 $profile = [
-                    'id' => $profile->id,
-                    'nisn' => $profile->nisn,
-                    'nis' => $profile->nis,
-                    'nama' => $profile->nama ?? $user->name,
-                    'tempat_lahir' => $profile->tempat_lahir,
-                    'tanggal_lahir' => $profile->tanggal_lahir,
-                    'jenis_kelamin' => $profile->jenis_kelamin,
-                    'agama' => $profile->agama,
-                    'alamat' => $profile->alamat,
-                    'no_hp' => $profile->no_hp,
-                    'no_hp_ortu' => $profile->no_hp_ortu,
-                    'nama_ortu' => $profile->nama_ortu,
-                    'nik' => $profile->nik,
-                    'rfid_no' => $profile->rfid_no,
-                    'va_siswa' => $profile->va_siswa,
-                    'bank' => $profile->bank,
-                    'no_rekening' => $profile->no_rekening,
-                    'image' => $profile->image,
-                    'qrcode' => $profile->qrcode,
-                    'status' => $profile->status,
-                    'kelas' => $profile->kelas ? [
-                        'id' => $profile->kelas->id,
-                        'nama_kelas' => $profile->kelas->nama_kelas,
-                    ] : null,
-                    'unit' => $profile->unit ? [
-                        'id' => $profile->unit->id,
-                        'nama_unit' => $profile->unit->nama_unit,
-                    ] : null,
-                    'tahun_ajaran' => $profile->tahun_ajaran ? [
-                        'id' => $profile->tahun_ajaran->id,
-                        'tahun' => $profile->tahun_ajaran->tahun,
-                        'semester' => $profile->tahun_ajaran->semester,
-                    ] : null,
-                    'jurusan' => $profile->jurusan ? [
-                        'id' => $profile->jurusan->id,
-                        'nama_jurusan' => $profile->jurusan->nama_jurusan,
-                        'kode_jurusan' => $profile->jurusan->kode_jurusan,
-                    ] : null,
-                    'saldo' => $profile->saldo ? [
-                        'saldo_akhir' => $profile->saldo->saldo_akhir ?? 0,
-                        'status' => $profile->saldo->status,
-                    ] : null,
+                    "id" => $profile->id,
+                    "nisn" => $profile->nisn,
+                    "nis" => $profile->nis,
+                    "nama" => $profile->nama ?? $user->name,
+                    "tempat_lahir" => $profile->tempat_lahir,
+                    "tanggal_lahir" => $profile->tanggal_lahir,
+                    "jenis_kelamin" => $profile->jenis_kelamin,
+                    "agama" => $profile->agama,
+                    "alamat" => $profile->alamat,
+                    "no_hp" => $profile->no_hp,
+                    "no_hp_ortu" => $profile->no_hp_ortu,
+                    "nama_ortu" => $profile->nama_ortu,
+                    "nik" => $profile->nik,
+                    "rfid_no" => $profile->rfid_no,
+                    "va_siswa" => $profile->va_siswa,
+                    "bank" => $profile->bank,
+                    "no_rekening" => $profile->no_rekening,
+                    "image" => $profile->image,
+                    "qrcode" => $profile->qrcode,
+                    "status" => $profile->status,
+                    "kelas" => $profile->kelas
+                        ? [
+                            "id" => $profile->kelas->id,
+                            "nama_kelas" => $profile->kelas->nama_kelas,
+                        ]
+                        : null,
+                    "unit" => $profile->unit
+                        ? [
+                            "id" => $profile->unit->id,
+                            "nama_unit" => $profile->unit->nama_unit,
+                        ]
+                        : null,
+                    // 'tahun_ajaran' => $profile->tahun_ajaran ? [
+                    //     'id' => $profile->tahun_ajaran->id,
+                    //     'tahun' => $profile->tahun_ajaran->tahun,
+                    //     'semester' => $profile->tahun_ajaran->semester,
+                    // ] : null,
+                    "jurusan" => $profile->jurusan
+                        ? [
+                            "id" => $profile->jurusan->id,
+                            "nama_jurusan" => $profile->jurusan->nama_jurusan,
+                            "kode_jurusan" => $profile->jurusan->kode_jurusan,
+                        ]
+                        : null,
+                    "saldo" => $profile->saldo
+                        ? [
+                            "saldo_akhir" => $profile->saldo->saldo_akhir ?? 0,
+                            "status" => $profile->saldo->status,
+                        ]
+                        : null,
                 ];
             }
         } else {
             // Jika bukan siswa, ambil data officer
-            $userType = 'officer';
+            $userType = "officer";
             $officerQuery = \App\Models\Officer::with([
-                'unit',
-                'position',
-                'tahunAjaran',
-                'rolePetugas',
-                'kelas'
-            ])->where('user_id', $user->id);
+                "unit",
+                "position",
+                "tahunAjaran",
+                "rolePetugas",
+                "kelas",
+            ])->where("user_id", $user->id);
 
             // Filter berdasarkan tahun jika parameter tahun dikirim
-            if ($request->tahun) {
-                $officerQuery->whereHas('tahunAjaran', function($q) use ($request) {
-                    $q->where('tahun', $request->tahun);
-                });
-            }
+            // if ($request->tahun) {
+            //     $officerQuery->whereHas('tahunAjaran', function($q) use ($request) {
+            //         $q->where('tahun', $request->tahun);
+            //     });
+            // }
 
             $profile = $officerQuery->first();
 
             if ($profile) {
                 $profile = [
-                    'id' => $profile->id,
-                    'nip' => $profile->nip,
-                    'nuptk' => $profile->nuptk,
-                    'nik' => $profile->nik,
-                    'tempat_lahir' => $profile->tempat_lahir,
-                    'tanggal_lahir' => $profile->tanggal_lahir,
-                    'jenis_kelamin' => $profile->jenis_kelamin,
-                    'agama' => $profile->agama,
-                    'alamat' => $profile->alamat,
-                    'no_hp' => $profile->no_hp,
-                    'rfid_no' => $profile->rfid_no,
-                    'no_kartu_rfid' => $profile->no_kartu_rfid,
-                    'bank' => $profile->bank,
-                    'no_rekening' => $profile->no_rekening,
-                    'va_guru' => $profile->va_guru,
-                    'image' => $profile->image,
-                    'qr_code' => $profile->qr_code,
-                    'status' => $profile->status,
-                    'unit' => $profile->unit ? [
-                        'id' => $profile->unit->id,
-                        'nama_unit' => $profile->unit->nama_unit,
-                    ] : null,
-                    'position' => $profile->position ? [
-                        'id' => $profile->position->id,
-                        'position_name' => $profile->position->position_name,
-                    ] : null,
-                    'tahun_ajaran' => $profile->tahunAjaran ? [
-                        'id' => $profile->tahunAjaran->id,
-                        'tahun' => $profile->tahunAjaran->tahun,
-                        'semester' => $profile->tahunAjaran->semester,
-                    ] : null,
-                    'role_petugas' => $profile->rolePetugas ? [
-                        'id' => $profile->rolePetugas->id,
-                        'name' => $profile->rolePetugas->name,
-                    ] : null,
-                    'kelas_diampu' => $profile->kelas->map(function($k) {
+                    "id" => $profile->id,
+                    "nip" => $profile->nip,
+                    "nuptk" => $profile->nuptk,
+                    "nik" => $profile->nik,
+                    "tempat_lahir" => $profile->tempat_lahir,
+                    "tanggal_lahir" => $profile->tanggal_lahir,
+                    "jenis_kelamin" => $profile->jenis_kelamin,
+                    "agama" => $profile->agama,
+                    "alamat" => $profile->alamat,
+                    "no_hp" => $profile->no_hp,
+                    "rfid_no" => $profile->rfid_no,
+                    "no_kartu_rfid" => $profile->no_kartu_rfid,
+                    "bank" => $profile->bank,
+                    "no_rekening" => $profile->no_rekening,
+                    "va_guru" => $profile->va_guru,
+                    "image" => $profile->image,
+                    "qr_code" => $profile->qr_code,
+                    "status" => $profile->status,
+                    "unit" => $profile->unit
+                        ? [
+                            "id" => $profile->unit->id,
+                            "nama_unit" => $profile->unit->nama_unit,
+                        ]
+                        : null,
+                    "position" => $profile->position
+                        ? [
+                            "id" => $profile->position->id,
+                            "position_name" =>
+                                $profile->position->position_name,
+                        ]
+                        : null,
+                    // 'tahun_ajaran' => $profile->tahunAjaran ? [
+                    //     'id' => $profile->tahunAjaran->id,
+                    //     'tahun' => $profile->tahunAjaran->tahun,
+                    //     'semester' => $profile->tahunAjaran->semester,
+                    // ] : null,
+                    "role_petugas" => $profile->rolePetugas
+                        ? [
+                            "id" => $profile->rolePetugas->id,
+                            "name" => $profile->rolePetugas->name,
+                        ]
+                        : null,
+                    "kelas_diampu" => $profile->kelas->map(function ($k) {
                         return [
-                            'id' => $k->id,
-                            'nama_kelas' => $k->nama_kelas,
+                            "id" => $k->id,
+                            "nama_kelas" => $k->nama_kelas,
                         ];
                     }),
                 ];
@@ -247,31 +274,31 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'username' => $user->username,
-                'rfid_no' => $user->rfid_no,
-                'roles' => $user->roles->pluck('name'),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+            "success" => true,
+            "access_token" => $token,
+            "token_type" => "bearer",
+            "expires_in" => auth("api")->factory()->getTTL() * 60,
+            "user" => [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "username" => $user->username,
+                "rfid_no" => $user->rfid_no,
+                "roles" => $user->roles->pluck("name"),
+                "permissions" => $user->getAllPermissions()->pluck("name"),
             ],
-            'user_type' => $userType,
-            'profile' => $profile,
-            'unit' => [
-                'id' => $unit->id,
-                'nama_unit' => $unit->nama_unit,
-                'code' => $unit->code,
+            "user_type" => $userType,
+            "profile" => $profile,
+            "unit" => [
+                "id" => $unit->id,
+                "nama_unit" => $unit->nama_unit,
+                "code" => $unit->code,
             ],
-            'tahun_ajaran' => [
-                'id' => $tahunAjaran->id,
-                'tahun' => $tahunAjaran->tahun,
-                'semester' => $tahunAjaran->semester ?? null,
-            ],
+            // 'tahun_ajaran' => [
+            //     'id' => $tahunAjaran->id,
+            //     'tahun' => $tahunAjaran->tahun,
+            //     'semester' => $tahunAjaran->semester ?? null,
+            // ],
         ]);
     }
 
@@ -284,37 +311,43 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-            'unit_id' => 'nullable|exists:units,id',
+            "name" => "required|string|max:255",
+            "email" => "required|string|email|max:255|unique:users",
+            "username" => "required|string|max:255|unique:users",
+            "password" => "required|string|min:6|confirmed",
+            "unit_id" => "nullable|exists:units,id",
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Validation error",
+                    "errors" => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'unit_id' => $request->unit_id,
+            "name" => $request->name,
+            "email" => $request->email,
+            "username" => $request->username,
+            "password" => Hash::make($request->password),
+            "unit_id" => $request->unit_id,
         ]);
 
-        $token = auth('api')->login($user);
+        $token = auth("api")->login($user);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        return response()->json(
+            [
+                "success" => true,
+                "message" => "User registered successfully",
+                "user" => $user,
+                "token" => $token,
+            ],
+            201,
+        );
     }
 
     /**
@@ -349,28 +382,30 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = auth('api')->user();
-        $user->load(['roles', 'permissions']);
+        $user = auth("api")->user();
+        $user->load(["roles", "permissions"]);
 
         // Ambil data profile berdasarkan role
         $profile = null;
         $userType = null;
 
         // Cek apakah user memiliki role siswa
-        if ($user->hasRole('siswa') || $user->siswa) {
-            $userType = 'siswa';
+        if ($user->hasRole("siswa") || $user->siswa) {
+            $userType = "siswa";
             $siswaQuery = \App\Models\Siswa::with([
-                'kelas',
-                'unit',
-                'tahun_ajaran',
-                'jurusan',
-                'saldo'
-            ])->where('user_id', $user->id);
+                "kelas",
+                "unit",
+                "tahun_ajaran",
+                "jurusan",
+                "saldo",
+            ])->where("user_id", $user->id);
 
             // Filter berdasarkan tahun jika parameter tahun dikirim
             if ($request->tahun) {
-                $siswaQuery->whereHas('tahun_ajaran', function($q) use ($request) {
-                    $q->where('tahun', $request->tahun);
+                $siswaQuery->whereHas("tahun_ajaran", function ($q) use (
+                    $request,
+                ) {
+                    $q->where("tahun", $request->tahun);
                 });
             }
 
@@ -378,65 +413,77 @@ class AuthController extends Controller
 
             if ($profile) {
                 $profile = [
-                    'id' => $profile->id,
-                    'nisn' => $profile->nisn,
-                    'nis' => $profile->nis,
-                    'nama' => $profile->nama ?? $user->name,
-                    'tempat_lahir' => $profile->tempat_lahir,
-                    'tanggal_lahir' => $profile->tanggal_lahir,
-                    'jenis_kelamin' => $profile->jenis_kelamin,
-                    'agama' => $profile->agama,
-                    'alamat' => $profile->alamat,
-                    'no_hp' => $profile->no_hp,
-                    'no_hp_ortu' => $profile->no_hp_ortu,
-                    'nama_ortu' => $profile->nama_ortu,
-                    'nik' => $profile->nik,
-                    'rfid_no' => $profile->rfid_no,
-                    'va_siswa' => $profile->va_siswa,
-                    'bank' => $profile->bank,
-                    'no_rekening' => $profile->no_rekening,
-                    'image' => $profile->image,
-                    'qrcode' => $profile->qrcode,
-                    'status' => $profile->status,
-                    'kelas' => $profile->kelas ? [
-                        'id' => $profile->kelas->id,
-                        'nama_kelas' => $profile->kelas->nama_kelas,
-                    ] : null,
-                    'unit' => $profile->unit ? [
-                        'id' => $profile->unit->id,
-                        'nama_unit' => $profile->unit->nama_unit,
-                    ] : null,
-                    'tahun_ajaran' => $profile->tahun_ajaran ? [
-                        'id' => $profile->tahun_ajaran->id,
-                        'tahun' => $profile->tahun_ajaran->tahun,
-                        'semester' => $profile->tahun_ajaran->semester,
-                    ] : null,
-                    'jurusan' => $profile->jurusan ? [
-                        'id' => $profile->jurusan->id,
-                        'nama_jurusan' => $profile->jurusan->nama_jurusan,
-                        'kode_jurusan' => $profile->jurusan->kode_jurusan,
-                    ] : null,
-                    'saldo' => $profile->saldo ? [
-                        'saldo_akhir' => $profile->saldo->saldo_akhir ?? 0,
-                        'status' => $profile->saldo->status,
-                    ] : null,
+                    "id" => $profile->id,
+                    "nisn" => $profile->nisn,
+                    "nis" => $profile->nis,
+                    "nama" => $profile->nama ?? $user->name,
+                    "tempat_lahir" => $profile->tempat_lahir,
+                    "tanggal_lahir" => $profile->tanggal_lahir,
+                    "jenis_kelamin" => $profile->jenis_kelamin,
+                    "agama" => $profile->agama,
+                    "alamat" => $profile->alamat,
+                    "no_hp" => $profile->no_hp,
+                    "no_hp_ortu" => $profile->no_hp_ortu,
+                    "nama_ortu" => $profile->nama_ortu,
+                    "nik" => $profile->nik,
+                    "rfid_no" => $profile->rfid_no,
+                    "va_siswa" => $profile->va_siswa,
+                    "bank" => $profile->bank,
+                    "no_rekening" => $profile->no_rekening,
+                    "image" => $profile->image,
+                    "qrcode" => $profile->qrcode,
+                    "status" => $profile->status,
+                    "kelas" => $profile->kelas
+                        ? [
+                            "id" => $profile->kelas->id,
+                            "nama_kelas" => $profile->kelas->nama_kelas,
+                        ]
+                        : null,
+                    "unit" => $profile->unit
+                        ? [
+                            "id" => $profile->unit->id,
+                            "nama_unit" => $profile->unit->nama_unit,
+                        ]
+                        : null,
+                    "tahun_ajaran" => $profile->tahun_ajaran
+                        ? [
+                            "id" => $profile->tahun_ajaran->id,
+                            "tahun" => $profile->tahun_ajaran->tahun,
+                            "semester" => $profile->tahun_ajaran->semester,
+                        ]
+                        : null,
+                    "jurusan" => $profile->jurusan
+                        ? [
+                            "id" => $profile->jurusan->id,
+                            "nama_jurusan" => $profile->jurusan->nama_jurusan,
+                            "kode_jurusan" => $profile->jurusan->kode_jurusan,
+                        ]
+                        : null,
+                    "saldo" => $profile->saldo
+                        ? [
+                            "saldo_akhir" => $profile->saldo->saldo_akhir ?? 0,
+                            "status" => $profile->saldo->status,
+                        ]
+                        : null,
                 ];
             }
         } else {
             // Jika bukan siswa, ambil data officer
-            $userType = 'officer';
+            $userType = "officer";
             $officerQuery = \App\Models\Officer::with([
-                'unit',
-                'position',
-                'tahunAjaran',
-                'rolePetugas',
-                'kelas'
-            ])->where('user_id', $user->id);
+                "unit",
+                "position",
+                "tahunAjaran",
+                "rolePetugas",
+                "kelas",
+            ])->where("user_id", $user->id);
 
             // Filter berdasarkan tahun jika parameter tahun dikirim
             if ($request->tahun) {
-                $officerQuery->whereHas('tahunAjaran', function($q) use ($request) {
-                    $q->where('tahun', $request->tahun);
+                $officerQuery->whereHas("tahunAjaran", function ($q) use (
+                    $request,
+                ) {
+                    $q->where("tahun", $request->tahun);
                 });
             }
 
@@ -444,45 +491,54 @@ class AuthController extends Controller
 
             if ($profile) {
                 $profile = [
-                    'id' => $profile->id,
-                    'nip' => $profile->nip,
-                    'nuptk' => $profile->nuptk,
-                    'nik' => $profile->nik,
-                    'tempat_lahir' => $profile->tempat_lahir,
-                    'tanggal_lahir' => $profile->tanggal_lahir,
-                    'jenis_kelamin' => $profile->jenis_kelamin,
-                    'agama' => $profile->agama,
-                    'alamat' => $profile->alamat,
-                    'no_hp' => $profile->no_hp,
-                    'rfid_no' => $profile->rfid_no,
-                    'no_kartu_rfid' => $profile->no_kartu_rfid,
-                    'bank' => $profile->bank,
-                    'no_rekening' => $profile->no_rekening,
-                    'va_guru' => $profile->va_guru,
-                    'image' => $profile->image,
-                    'qr_code' => $profile->qr_code,
-                    'status' => $profile->status,
-                    'unit' => $profile->unit ? [
-                        'id' => $profile->unit->id,
-                        'nama_unit' => $profile->unit->nama_unit,
-                    ] : null,
-                    'position' => $profile->position ? [
-                        'id' => $profile->position->id,
-                        'position_name' => $profile->position->position_name,
-                    ] : null,
-                    'tahun_ajaran' => $profile->tahunAjaran ? [
-                        'id' => $profile->tahunAjaran->id,
-                        'tahun' => $profile->tahunAjaran->tahun,
-                        'semester' => $profile->tahunAjaran->semester,
-                    ] : null,
-                    'role_petugas' => $profile->rolePetugas ? [
-                        'id' => $profile->rolePetugas->id,
-                        'name' => $profile->rolePetugas->name,
-                    ] : null,
-                    'kelas_diampu' => $profile->kelas->map(function($k) {
+                    "id" => $profile->id,
+                    "nip" => $profile->nip,
+                    "nuptk" => $profile->nuptk,
+                    "nik" => $profile->nik,
+                    "tempat_lahir" => $profile->tempat_lahir,
+                    "tanggal_lahir" => $profile->tanggal_lahir,
+                    "jenis_kelamin" => $profile->jenis_kelamin,
+                    "agama" => $profile->agama,
+                    "alamat" => $profile->alamat,
+                    "no_hp" => $profile->no_hp,
+                    "rfid_no" => $profile->rfid_no,
+                    "no_kartu_rfid" => $profile->no_kartu_rfid,
+                    "bank" => $profile->bank,
+                    "no_rekening" => $profile->no_rekening,
+                    "va_guru" => $profile->va_guru,
+                    "image" => $profile->image,
+                    "qr_code" => $profile->qr_code,
+                    "status" => $profile->status,
+                    "unit" => $profile->unit
+                        ? [
+                            "id" => $profile->unit->id,
+                            "nama_unit" => $profile->unit->nama_unit,
+                        ]
+                        : null,
+                    "position" => $profile->position
+                        ? [
+                            "id" => $profile->position->id,
+                            "position_name" =>
+                                $profile->position->position_name,
+                        ]
+                        : null,
+                    "tahun_ajaran" => $profile->tahunAjaran
+                        ? [
+                            "id" => $profile->tahunAjaran->id,
+                            "tahun" => $profile->tahunAjaran->tahun,
+                            "semester" => $profile->tahunAjaran->semester,
+                        ]
+                        : null,
+                    "role_petugas" => $profile->rolePetugas
+                        ? [
+                            "id" => $profile->rolePetugas->id,
+                            "name" => $profile->rolePetugas->name,
+                        ]
+                        : null,
+                    "kelas_diampu" => $profile->kelas->map(function ($k) {
                         return [
-                            'id' => $k->id,
-                            'nama_kelas' => $k->nama_kelas,
+                            "id" => $k->id,
+                            "nama_kelas" => $k->nama_kelas,
                         ];
                     }),
                 ];
@@ -490,18 +546,18 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'username' => $user->username,
-                'rfid_no' => $user->rfid_no,
-                'roles' => $user->roles->pluck('name'),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+            "success" => true,
+            "user" => [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "username" => $user->username,
+                "rfid_no" => $user->rfid_no,
+                "roles" => $user->roles->pluck("name"),
+                "permissions" => $user->getAllPermissions()->pluck("name"),
             ],
-            'user_type' => $userType,
-            'profile' => $profile,
+            "user_type" => $userType,
+            "profile" => $profile,
         ]);
     }
 
@@ -512,11 +568,11 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth('api')->logout();
+        auth("api")->logout();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Successfully logged out'
+            "success" => true,
+            "message" => "Successfully logged out",
         ]);
     }
 
@@ -527,7 +583,7 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth('api')->refresh());
+        return $this->respondWithToken(auth("api")->refresh());
     }
 
     /**
@@ -540,11 +596,11 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            'success' => true,
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => auth('api')->user()
+            "success" => true,
+            "access_token" => $token,
+            "token_type" => "bearer",
+            "expires_in" => auth("api")->factory()->getTTL() * 60,
+            "user" => auth("api")->user(),
         ]);
     }
 }
