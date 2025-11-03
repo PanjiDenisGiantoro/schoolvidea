@@ -299,7 +299,7 @@
                     </div>
                 </div>
 
-                @if ($show && !empty($period_details))
+                @if (isset($show) && $show && !empty($period_details))
                     <div class="card mt-3">
                         <div class="card-header">
                             <h6 class="m-0">Detail Periode</h6>

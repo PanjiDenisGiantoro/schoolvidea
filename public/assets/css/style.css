@@ -1,3 +1,5 @@
+
+/*Ligiht Theme*/
 .custom-toggle-header {
     display: flex;
     justify-content: flex-start;
@@ -323,3 +325,149 @@ table td:first-child {
     text-align: center;
     vertical-align: middle;
 }
+
+/* =============================== */
+/* 🌙 DARK THEME MODE */
+/* Aktifkan dengan menambahkan class "dark-theme" pada <body> */
+/* =============================== */
+
+body.dark-theme {
+    background-color: #1a1b1e;
+    color: #e0e0e0;
+}
+
+/* Card & Header */
+body.dark-theme .custom-card-header {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    border-bottom: 1px solid #374151;
+}
+
+body.dark-theme .card {
+    background-color: #25262b;
+    border: 1px solid #374151;
+    color: #e5e7eb;
+}
+
+/* Tombol toggle */
+body.dark-theme .custom-btn-outline-primary {
+    background-color: #111827;
+    color: #93c5fd;
+    border-color: #3b82f6;
+}
+
+body.dark-theme .custom-btn-outline-primary:hover {
+    background-color: #111827;
+    color: #fff !important;
+}
+
+body.dark-theme .custom-active-btn {
+    background-color: transparent;
+    color: #fff;
+}
+
+/* Tombol ungu */
+body.dark-theme .custom-btn-purple {
+    background-color: #3b82f6;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+body.dark-theme .custom-btn-purple:hover {
+    background-color: #2563eb;
+}
+
+/* Tombol info */
+body.dark-theme .custom-btn-info {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    border: 1px solid #3b82f6;
+}
+body.dark-theme .custom-btn-info:hover {
+    background-color: #10b981;
+    color: #fff;
+}
+
+/* Input, dropdown, dan search */
+body.dark-theme .dropdown-input,
+body.dark-theme .dropdown-search-input {
+    background-color: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+body.dark-theme .dropdown-input:focus,
+body.dark-theme .dropdown-search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+body.dark-theme .dropdown-list {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+body.dark-theme .dropdown-options li:hover {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+/* Checkbox */
+body.dark-theme .custom-checkbox {
+    border-color: #60a5fa;
+}
+body.dark-theme .custom-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Tabel */
+body.dark-theme table {
+    color: #e5e7eb;
+    background-color: #1f2937;
+}
+body.dark-theme table thead {
+    background-color: #111827;
+    color: #93c5fd;
+}
+body.dark-theme table tbody tr:hover {
+    background-color: #2d3748;
+}
+body.dark-theme td,
+body.dark-theme th {
+    border-color: #374151 !important;
+}
+
+/* Modal */
+body.dark-theme #modalCatatan .modal-content {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+}
+body.dark-theme .custom-modal-header {
+    color: #93c5fd;
+}
+
+/* Presensi input */
+body.dark-theme .custom-presensi-wrapper input {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #374151;
+}
+body.dark-theme .custom-presensi-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Warna latar belakang presensi */
+body.dark-theme .custom-input-presensi.hadir {
+    background-color: #064e3b;
+}
+body.dark-theme .custom-input-presensi.izin {
+    background-color: #78350f;
+}
+body.dark-theme .custom-input-presensi.alpha {
+    background-color: #7f1d1d;
+}
+
+/* Scrollbar */
+body.dark-theme ::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+}
+
