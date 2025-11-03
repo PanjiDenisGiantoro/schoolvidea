@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\V1\SiswaController;
 use App\Http\Controllers\Api\V1\KelasController;
 use App\Http\Controllers\Api\V1\OfficerController;
 use App\Http\Controllers\Api\V1\TagihanController;
+use App\Http\Controllers\Api\V1\DashboardTagihanController;
+use App\Http\Controllers\Api\V1\TabunganController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,5 +85,20 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('roles', \App\Http\Controllers\Api\V1\RolesController::class);
         Route::get('roles/{id}/permissions', [\App\Http\Controllers\Api\V1\RolesController::class, 'permissions']);
         Route::post('roles/{id}/permissions', [\App\Http\Controllers\Api\V1\RolesController::class, 'updatePermissions']);
+
+        // Dashboard Tagihan routes
+        Route::prefix('dashboard-tagihan')->group(function () {
+            Route::get('/', [DashboardTagihanController::class, 'dashboard']);
+            Route::get('/list', [DashboardTagihanController::class, 'listTagihan']);
+            Route::get('/detail/{id}', [DashboardTagihanController::class, 'detailTagihan']);
+        });
+
+        // Tabungan routes
+        Route::prefix('tabungan')->group(function () {
+            Route::get('/dashboard', [TabunganController::class, 'dashboard']);
+            Route::get('/transaksi', [TabunganController::class, 'transaksi']);
+            Route::get('/transaksi/{id}', [TabunganController::class, 'detailTransaksi']);
+            Route::get('/mutasi', [TabunganController::class, 'mutasiRekening']);
+        });
     });
 });

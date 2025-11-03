@@ -131,7 +131,7 @@
                             </div>
                             <input type="file" name="file" class="form-control mb-2" required>
                             <div class="d-flex justify-content-between">
-                                <a href="{{ route('import.template', 'kelas') }}" class="btn btn-outline-secondary">Download Template</a>
+                                <a href="{{ route('export.exportkelas') }}" class="btn btn-outline-secondary">Download Template</a>
                                 <button type="submit" class="btn btn-dark">Import</button>
                             </div>
                         </form>
