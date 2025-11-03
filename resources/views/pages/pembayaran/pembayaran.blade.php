@@ -160,7 +160,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot class="fw-bold table-light text-center" style="font-size: 14px">
+                        <tfoot id="foot_belum_lunas" class="fw-bold table-light text-center" style="font-size: 14px">
                             <tr>
                                 <td colspan="11"></td>
                             </tr>
@@ -191,9 +191,9 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot class="fw-bold table-light text-center" style="font-size: 14px">
+                        <tfoot id="foot_sudah_lunas" class="fw-bold table-light text-center" style="font-size: 14px">
                             <tr>
-                                <td colspan="11"></td>
+                                <td colspan="9"></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -256,7 +256,8 @@
 
         const listTagihanContainer = document.getElementById('list_tagihan_container');
         const listTagihan = document.getElementById('list_tagihan');
-
+        const footBelumLunas = document.getElementById('foot_belum_lunas');
+        const footSudahLunas = document.getElementById('foot_sudah_lunas');
 
 
         // Load siswa berdasarkan kelas
@@ -268,7 +269,7 @@
             document.getElementById('nama_tagihan_wrapper').style.display = 'block';
             document.getElementById('list_tagihan').innerHTML = `
         <tr>
-            <td colspan="5" class="text-center text-muted py-4">
+            <td colspan="11" class="text-center text-muted py-4">
                 <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
             </td>
         </tr>`;
@@ -277,6 +278,12 @@
 
 
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            footBelumLunas.innerHTML = `
+        <tr>
+            <td colspan="11" class="text-center text-muted py-4">
+
+            </td>
+        </tr>`;
             if (!kelasId) return;
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => {
@@ -308,6 +315,18 @@
         siswaSelect.addEventListener('change', function() {
             const siswaId = this.value;
             penerimaHidden.value = siswaId;
+                        listTagihan.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
+                        footBelumLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+
+                    </td>
+                </tr>`;
             if (!siswaId) return;
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
@@ -334,13 +353,13 @@
                     const tagihanSelect = document.getElementById('nama_tagihan');
                     const wrapper = document.getElementById('nama_tagihan_wrapper');
                     const listTagihan = document.getElementById('list_tagihan');
-                    listTagihan.innerHTML = '';
+                   // listTagihan.innerHTML = '';
 
 
                     if (!data.detail || !data.detail.length) {
                         listTagihan.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="11" class="text-center text-muted py-4">
                             <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
                         </td>
                     </tr>`;
@@ -379,7 +398,19 @@
                 </tr>`;
                         return;
                     }
-
+                    if (!data.belum_lunas.length) {
+                        listTagihan.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
+                        footBelumLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                    </td>
+                </tr>`;
+                    } else {
                     // Render Belum Lunas
                     const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
                     tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
@@ -440,7 +471,20 @@
         <td class="text-center text-success" style="font-size: 14px">Rp ${totalTunggakan.toLocaleString('id-ID')}</td>
         <td class="text-center" colspan="2">—</td>
     </tr>
-`;
+`;}
+                    if (!data.sudah_lunas.length) {
+                        listTagihan.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
+                        footSudahLunas.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                    </td>
+                </tr>`;
+                    } else {
                     // Render Sudah Lunas
                     const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
                     tabelLunas
@@ -461,7 +505,7 @@
 </td>
             </tr>
         `).join('');
-                    let tagihKelas = '';
+                   let tagihKelas = '';
                     let rincianTagihan = 0;
                     let jumlahPotongan = 0;
                     let jumlahTagihan = 0;
@@ -490,7 +534,7 @@
         <td class="text-center text-success" style="font-size: 14px">Rp ${jumlahBayar.toLocaleString('id-ID')}</td>
         <td class="text-center fw-bold" colspan="2" style="font-size: 14px">-</td>
     </tr>
-`;
+`;}
                 });
 
         });
@@ -502,8 +546,10 @@
                 input.value = '';
                 return;
             }
-            input.value = new Intl.NumberFormat('id-ID').format(value);
+            input.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
         }
+
+
 
         // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
         document.addEventListener('submit', function(e) {
@@ -511,7 +557,7 @@
                 '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
             );
             inputs.forEach(input => {
-                input.value = input.value.replace(/\./g, '');
+                input.value = input.value.replace(/[^\d]/g, '');
             });
         });
     </script>
@@ -552,7 +598,7 @@
                         title: "Masukan Nominal Bayar",
                         input: "text",
                         inputAttributes: {
-                            placeholder: "Contoh: 50.000",
+                            placeholder: "Contoh:Rp. 50.000",
                             inputmode: "numeric",
                             style: "text-align:center"
                         },
@@ -566,7 +612,7 @@
                             input.addEventListener('input', () => formatCurrencyInput(input));
                         },
                         preConfirm: (val) => {
-                            const numericValue = parseInt(val.replace(/\./g, '')) || 0;
+                            const numericValue = parseInt(val.replace(/[^\d]/g, '')) || 0;
                             if (numericValue <= 0) {
                                 Swal.showValidationMessage("Nominal harus lebih dari 0");
                                 return false;
