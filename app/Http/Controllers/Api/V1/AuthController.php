@@ -55,7 +55,6 @@ class AuthController extends Controller
             "email" => "required|string|email",
             "password" => "required|string",
             "code" => "required|string",
-            "tahun" => "required|string",
         ]);
 
         if ($validator->fails()) {
