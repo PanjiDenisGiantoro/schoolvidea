@@ -20,8 +20,8 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"username","password"},
-     *             @OA\Property(property="username", type="string", example="admin"),
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", example="admin@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123"),
      *             @OA\Property(property="tahun", type="string", example="2024", description="Optional tahun ajaran")
      *         )
@@ -51,7 +51,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
             'tahun' => 'nullable|string',
         ]);
@@ -64,7 +64,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('email', 'password');
 
         if (!$token = auth('api')->attempt($credentials)) {
             return response()->json([
