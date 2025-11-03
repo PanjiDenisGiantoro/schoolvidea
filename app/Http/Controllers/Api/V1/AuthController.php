@@ -20,10 +20,11 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"email","password"},
+     *             required={"email","password","code","tahun"},
      *             @OA\Property(property="email", type="string", example="admin@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123"),
-     *             @OA\Property(property="tahun", type="string", example="2024", description="Optional tahun ajaran")
+     *             @OA\Property(property="code", type="string", example="SCH001", description="Kode unit dari tabel units"),
+     *             @OA\Property(property="tahun", type="string", example="2024", description="Tahun ajaran")
      *         )
      *     ),
      *     @OA\Response(
@@ -53,7 +54,8 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
-            'tahun' => 'nullable|string',
+            'code' => 'required|string',
+            'tahun' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -64,12 +66,40 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Validasi kode unit
+        $unit = \App\Models\Unit::where('code', $request->code)->first();
+        if (!$unit) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode unit tidak valid'
+            ], 401);
+        }
+
+        // Validasi tahun ajaran
+        $tahunAjaran = \App\Models\Tahun_ajaran::where('tahun', $request->tahun)->first();
+        if (!$tahunAjaran) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tahun ajaran tidak valid'
+            ], 401);
+        }
+
         $credentials = $request->only('email', 'password');
 
         if (!$token = auth('api')->attempt($credentials)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Email atau password salah'
+            ], 401);
+        }
+
+        // Validasi unit_id user sesuai dengan kode unit
+        $user = auth('api')->user();
+        if ($user->unit_id != $unit->id) {
+            auth('api')->logout();
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak terdaftar di unit ini'
             ], 401);
         }
 
@@ -232,6 +262,16 @@ class AuthController extends Controller
             ],
             'user_type' => $userType,
             'profile' => $profile,
+            'unit' => [
+                'id' => $unit->id,
+                'nama_unit' => $unit->nama_unit,
+                'code' => $unit->code,
+            ],
+            'tahun_ajaran' => [
+                'id' => $tahunAjaran->id,
+                'tahun' => $tahunAjaran->tahun,
+                'semester' => $tahunAjaran->semester ?? null,
+            ],
         ]);
     }
 
