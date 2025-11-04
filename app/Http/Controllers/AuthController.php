@@ -30,7 +30,7 @@ class AuthController extends Controller
             return back()->with('error', 'Kode sekolah tidak ditemukan');
         }
 
-        if ($lembaga->status == '0'){
+        if ($lembaga->status == '0') {
             activity()
                 ->withProperties(['kode_sekolah' => $request->kode_sekolah])
                 ->log('User memasukkan kode sekolah yang tidak aktif');
@@ -47,7 +47,7 @@ class AuthController extends Controller
     public function loginForm()
     {
         if (!session()->has('lembaga_id')) {
-            return redirect()->route('login.form')->with('error' , 'Masukkan kode sekolah terlebih dahulu');
+            return redirect()->route('login.form')->with('error', 'Masukkan kode sekolah terlebih dahulu');
         }
 
         return view('pages.login');
@@ -67,29 +67,32 @@ class AuthController extends Controller
     public function portal(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email_username' => 'required',
             'password' => 'required',
         ]);
-
-        $credentials = $request->only('email', 'password');
+        $loginType = filter_var($request->email_username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $credentials = [
+            $loginType => $request->email_username,
+            'password' => $request->password,
+        ];
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             activity()
                 ->causedBy(Auth::user())
-                ->withProperties(['email' => $request->email])
+                ->withProperties([
+                    $loginType => $request->email_username
+                ])
                 ->log('User berhasil login');
 
             return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah',
+            'email_username' => 'Email/Username atau password salah',
         ]);
     }
-
-
 
     // Logout
     public function logout(Request $request)
@@ -107,7 +110,7 @@ class AuthController extends Controller
     public function registerpublic()
     {
         $tipeunit  = Tipeunit::all();
-        return view('registerpublic',compact('tipeunit'));
+        return view('registerpublic', compact('tipeunit'));
     }
     public function store(Request $request)
     {
@@ -127,7 +130,7 @@ class AuthController extends Controller
         // Jika tidak ada yayasan_id yang dipilih, maka atur menjadi null
         $yayasan_id = $data['yayasan_id'] ?? null;
 
-        if(!empty($data['yayasan_id'])){
+        if (!empty($data['yayasan_id'])) {
 
             $yayasan = Yayasan::create([
                 'nama_yayasan' => $data['yayasan_id'],

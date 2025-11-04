@@ -7,6 +7,7 @@ use App\Models\Positions;
 use App\Models\Roles_petugas;
 use App\Models\Unit;
 use App\Models\User;
+use App\Models\Tahun_ajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +55,7 @@ class OfficerController extends Controller
             'units',
             'roles',
             'logoUnit',
-            'positions'
+            'positions',
         ));
     }
 
@@ -84,7 +85,7 @@ class OfficerController extends Controller
             'no_kartu_rfid'   => 'nullable|string|max:100|unique:officers,no_kartu_rfid',
             'qr_code'         => 'nullable|string|max:100',
             'va_guru'         => 'nullable|string|max:100|unique:officers,va_guru',
-            'position_id'     => 'nullable|'
+            'position_id'     => 'nullable|',
         ]);
 
         DB::beginTransaction();
@@ -105,7 +106,7 @@ class OfficerController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-
+            $tahunAjaran = Tahun_ajaran::where('status', 1)->first();
 
             $officer =   Officer::create([
                 'nip'             => $request->nip,
@@ -128,6 +129,7 @@ class OfficerController extends Controller
                 'va_guru'         => $request->va_guru,
                 'position_id'     => $request->position_id,
                 'name'            => $request->name,
+                'tahun_ajaran_id' => $tahunAjaran->id
             ]);
             DB::commit();
 
@@ -282,7 +284,7 @@ class OfficerController extends Controller
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
-        return view('pages.data_master.officer.officer_create', compact('officer', 'show', 'units', 'roles',   'positions', 'logoUnit'));
+        return view('pages.data_master.officer.officer_create', compact('officer', 'show', 'units', 'roles', 'positions', 'logoUnit'));
     }
     public function upload(Request $request)
     {

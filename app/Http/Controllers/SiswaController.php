@@ -10,6 +10,7 @@ use App\Models\Siswa;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
+use App\Models\Tahun_ajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Log;
-
 
 class SiswaController extends Controller
 {
@@ -127,7 +127,7 @@ class SiswaController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-
+            $tahun_ajaran = Tahun_ajaran::where('status', 1)->first();
             // Buat siswa
             $siswa = Siswa::create([
                 'nisn'            => $request->nisn,
@@ -152,6 +152,7 @@ class SiswaController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'alamat'          => $request->alamat,
                 'name'            => $request->name,
+                'tahun_ajaran_id' => $tahun_ajaran->id
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
