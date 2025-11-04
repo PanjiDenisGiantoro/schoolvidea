@@ -14,12 +14,40 @@ use Illuminate\Support\Facades\Auth;
 
 class KelasController extends Controller
 {
-    public function index(){
-        $kelas = Kelas::with('unit','officer.user','jurusan')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('unit_id', $unitId);
-            })
-            ->get();
+    public function index(Request $request){
+        $units = Unit::all();
+
+        // Build query
+        $query = Kelas::with('unit','officer.user','jurusan');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_kelas', 'like', "%{$search}%")
+                  ->orWhere('kode_kelas', 'like', "%{$search}%")
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('officer.user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('jurusan', function($q) use ($search) {
+                      $q->where('nama_jurusan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $kelas = $query->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -31,7 +59,7 @@ class KelasController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.kelas.kelas', compact('kelas','headers'));
+        return view('pages.data_master.kelas.kelas', compact('kelas','headers','units'));
     }
     public function create()
     {

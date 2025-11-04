@@ -22,15 +22,52 @@ use Illuminate\Support\Facades\Log;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $units = Unit::all();
-        $siswa = Siswa::with('unit', 'kelas', 'user', 'jurusan')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('unit_id', $unitId);
-            })
-            ->where('status', '1')
-            ->get();
+
+        // Build query
+        $query = Siswa::with('unit', 'kelas', 'user', 'jurusan')
+            ->where('status', '1');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality across all columns
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nisn', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('va_siswa', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('no_hp', 'like', "%{$search}%")
+                  ->orWhere('tempat_lahir', 'like', "%{$search}%")
+                  ->orWhere('nama_ortu', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('kelas', function($q) use ($search) {
+                      $q->where('nama_kelas', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('jurusan', function($q) use ($search) {
+                      $q->where('nama_jurusan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $siswa = $query->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -45,7 +82,7 @@ class SiswaController extends Controller
 
         $logoUnit = $units->first()->image ?? null;
 
-        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit'));
+        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit', 'units'));
     }
     public function create()
     {
