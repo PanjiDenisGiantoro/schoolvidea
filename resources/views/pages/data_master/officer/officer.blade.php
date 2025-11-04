@@ -71,7 +71,7 @@
                             <td>
                                 <div class="d-flex gap-3">
                                     @if($item->officer)
-                                        <a href="{{ route('officer.show', $item->officer->id) }}" class="link-primary text-muted">
+                                        <a href="{{ url('officer/show/'.$item->officer->id) }}" class="link-primary text-muted">
                                             <i class="ri-eye-line align-middle fs-20"></i> Show
                                         </a>
                                         <a href="{{ route('officer.edit', $item->officer->id) }}" class="link-warning text-muted">
