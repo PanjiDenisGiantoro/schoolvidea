@@ -37,7 +37,7 @@ Route::prefix("v1")->group(function () {
     // Protected routes
     Route::middleware("auth:api")->group(function () {
         // Siswa routes
-        Route::apiResource("siswa", SiswaController::class);
+        // Route::apiResource("siswa", SiswaController::class);
         Route::get("siswa/kelas/{kelasId}", [
             SiswaController::class,
             "getByKelas",
@@ -73,10 +73,10 @@ Route::prefix("v1")->group(function () {
         // Route::apiResource('tagihan-siswa', \App\Http\Controllers\Api\V1\TagihanSiswaController::class)->only(['index', 'show']);
 
         // Unit routes
-        Route::apiResource(
-            "unit",
-            \App\Http\Controllers\Api\V1\UnitController::class,
-        );
+        // Route::apiResource(
+        //     "unit",
+        //     \App\Http\Controllers\Api\V1\UnitController::class,
+        // );
 
         // Tahun Ajaran routes
         // Route::apiResource('tahun-ajaran', \App\Http\Controllers\Api\V1\TahunAjaranController::class);
@@ -147,10 +147,10 @@ Route::prefix("v1")->group(function () {
         );
 
         // Roles routes
-        Route::apiResource(
-            "roles",
-            \App\Http\Controllers\Api\V1\RolesController::class,
-        );
+        // Route::apiResource(
+        //     "roles",
+        //     \App\Http\Controllers\Api\V1\RolesController::class,
+        // );
         Route::get("roles/{id}/permissions", [
             \App\Http\Controllers\Api\V1\RolesController::class,
             "permissions",
