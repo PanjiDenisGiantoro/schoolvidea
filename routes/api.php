@@ -75,10 +75,14 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('potongan', \App\Http\Controllers\Api\V1\PotonganController::class);
 
         // Pembayaran routes
+        Route::get('pembayaran/pending-approval', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'pendingApproval']);
         Route::get('pembayaran/siswa/{siswaId}', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'getBySiswa']);
         Route::get('pembayaran/kelas/{kelasId}', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'getByKelas']);
         Route::get('pembayaran/tagihan-siswa/{tagihanSiswaId}', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'getByTagihanSiswa']);
         Route::get('pembayaran/receipt/{id}', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'getReceipt']);
+        Route::post('pembayaran/{id}/upload-bukti', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'uploadBukti']);
+        Route::post('pembayaran/{id}/approve', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'approve']);
+        Route::post('pembayaran/{id}/reject', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'reject']);
         Route::apiResource('pembayaran', \App\Http\Controllers\Api\V1\PembayaranController::class);
 
         // Tagihan Siswa Mutasi routes

@@ -9,6 +9,11 @@ class Pembayarantagihan extends Model
     protected $table = 'pembayaran_tagihan';
     protected $guarded = [];
 
+    protected $casts = [
+        'tanggal_bayar' => 'date',
+        'approved_at' => 'datetime',
+    ];
+
     public function tagihanSiswa()
     {
         return $this->belongsTo(Tagihansiswa::class, 'tagihan_siswa_id');
@@ -17,6 +22,11 @@ class Pembayarantagihan extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'create_by');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function keuanganTransaksi()
