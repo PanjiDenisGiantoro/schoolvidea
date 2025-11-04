@@ -81,6 +81,12 @@ Route::prefix('v1')->group(function () {
         Route::get('pembayaran/receipt/{id}', [\App\Http\Controllers\Api\V1\PembayaranController::class, 'getReceipt']);
         Route::apiResource('pembayaran', \App\Http\Controllers\Api\V1\PembayaranController::class);
 
+        // Tagihan Siswa Mutasi routes
+        Route::get('tagihan-siswa-mutasi/siswa/{siswaId}', [\App\Http\Controllers\Api\V1\TagihanSiswaMutasiController::class, 'getBySiswa']);
+        Route::post('tagihan-siswa-mutasi/{id}/approve', [\App\Http\Controllers\Api\V1\TagihanSiswaMutasiController::class, 'approve']);
+        Route::post('tagihan-siswa-mutasi/{id}/reject', [\App\Http\Controllers\Api\V1\TagihanSiswaMutasiController::class, 'reject']);
+        Route::apiResource('tagihan-siswa-mutasi', \App\Http\Controllers\Api\V1\TagihanSiswaMutasiController::class);
+
         // Roles routes
         Route::apiResource('roles', \App\Http\Controllers\Api\V1\RolesController::class);
         Route::get('roles/{id}/permissions', [\App\Http\Controllers\Api\V1\RolesController::class, 'permissions']);
@@ -99,6 +105,8 @@ Route::prefix('v1')->group(function () {
             Route::get('/transaksi', [TabunganController::class, 'transaksi']);
             Route::get('/transaksi/{id}', [TabunganController::class, 'detailTransaksi']);
             Route::get('/mutasi', [TabunganController::class, 'mutasiRekening']);
+            Route::post('/setor', [TabunganController::class, 'setor']);
+            Route::post('/tarik', [TabunganController::class, 'tarik']);
         });
     });
 });

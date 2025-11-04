@@ -1,0 +1,849 @@
+{
+  "info": {
+    "name": "Tagihan Siswa & Pembayaran API",
+    "description": "Comprehensive API collection for Student Billing and Payment System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code_unit\": \"UNIT001\",\n  \"email\": \"admin@school.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tagihan Siswa",
+      "item": [
+        {
+          "name": "Get All Student Bills",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa?per_page=15&siswa_id=&tagihan_id=&status=&kelas_id=",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page (default: 15)"
+                },
+                {
+                  "key": "siswa_id",
+                  "value": "",
+                  "description": "Filter by student ID"
+                },
+                {
+                  "key": "tagihan_id",
+                  "value": "",
+                  "description": "Filter by tagihan ID"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (0=Belum Bayar, 1=Lunas, 2=Cicilan)"
+                },
+                {
+                  "key": "kelas_id",
+                  "value": "",
+                  "description": "Filter by class ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Bill Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa/:id",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Student bill ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bills by Student",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa/siswa/:siswaId?status=",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa", "siswa", ":siswaId"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (0=Belum Bayar, 1=Lunas, 2=Cicilan)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "siswaId",
+                  "value": "1",
+                  "description": "Student ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bills by Class",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa/kelas/:kelasId?tagihan_id=&status=",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa", "kelas", ":kelasId"],
+              "query": [
+                {
+                  "key": "tagihan_id",
+                  "value": "",
+                  "description": "Filter by specific tagihan ID"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "kelasId",
+                  "value": "1",
+                  "description": "Class ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unpaid Bills by Student",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa/unpaid/:siswaId",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa", "unpaid", ":siswaId"],
+              "variable": [
+                {
+                  "key": "siswaId",
+                  "value": "1",
+                  "description": "Student ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pembayaran",
+      "item": [
+        {
+          "name": "Get All Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran?per_page=15&siswa_id=&kelas_id=&start_date=&end_date=",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "siswa_id",
+                  "value": "",
+                  "description": "Filter by student ID"
+                },
+                {
+                  "key": "kelas_id",
+                  "value": "",
+                  "description": "Filter by class ID"
+                },
+                {
+                  "key": "start_date",
+                  "value": "",
+                  "description": "Start date (Y-m-d)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "",
+                  "description": "End date (Y-m-d)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment (Process Transaction)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jumlah_bayar\": 500000,\n  \"metode\": \"CASH\",\n  \"keterangan\": \"Pembayaran SPP Bulan Januari 2025\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment - Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jumlah_bayar\": 250000,\n  \"metode\": \"TRANSFER\",\n  \"keterangan\": \"Cicilan pertama SPP\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment - QRIS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jumlah_bayar\": 1000000,\n  \"metode\": \"QRIS\",\n  \"keterangan\": \"Pembayaran via QRIS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran/:id",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Payment ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment History by Student",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran/siswa/:siswaId",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran", "siswa", ":siswaId"],
+              "variable": [
+                {
+                  "key": "siswaId",
+                  "value": "1",
+                  "description": "Student ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payments by Class",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran/kelas/:kelasId?start_date=2025-01-01&end_date=2025-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran", "kelas", ":kelasId"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2025-01-01",
+                  "description": "Start date (Y-m-d)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2025-12-31",
+                  "description": "End date (Y-m-d)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "kelasId",
+                  "value": "1",
+                  "description": "Class ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payments by Student Bill",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran/tagihan-siswa/:tagihanSiswaId",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran", "tagihan-siswa", ":tagihanSiswaId"],
+              "variable": [
+                {
+                  "key": "tagihanSiswaId",
+                  "value": "1",
+                  "description": "Student bill ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Receipt",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pembayaran/receipt/:id",
+              "host": ["{{base_url}}"],
+              "path": ["pembayaran", "receipt", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Payment ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tagihan Siswa Mutasi",
+      "item": [
+        {
+          "name": "Get All Mutations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi?per_page=15&tagihan_siswa_id=&jenis_mutasi=&status_mutasi=",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "tagihan_siswa_id",
+                  "value": "",
+                  "description": "Filter by student bill ID"
+                },
+                {
+                  "key": "jenis_mutasi",
+                  "value": "",
+                  "description": "Filter by type: koreksi, diskon, denda, pembatalan, lainnya"
+                },
+                {
+                  "key": "status_mutasi",
+                  "value": "",
+                  "description": "Filter by status: pending, approved, rejected"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Mutation - Discount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jenis_mutasi\": \"diskon\",\n  \"nominal_perubahan\": -100000,\n  \"keterangan\": \"Diskon prestasi akademik juara 1\",\n  \"alasan\": \"Siswa mendapat juara 1 olimpiade matematika tingkat nasional\",\n  \"auto_approve\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Mutation - Correction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jenis_mutasi\": \"koreksi\",\n  \"nominal_perubahan\": -50000,\n  \"keterangan\": \"Koreksi kesalahan input nominal tagihan\",\n  \"alasan\": \"Terdapat kesalahan input pada saat pembuatan tagihan\",\n  \"auto_approve\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Mutation - Penalty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jenis_mutasi\": \"denda\",\n  \"nominal_perubahan\": 25000,\n  \"keterangan\": \"Denda keterlambatan pembayaran\",\n  \"alasan\": \"Pembayaran melewati batas waktu yang ditentukan\",\n  \"auto_approve\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Mutation - Pending Approval",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagihan_siswa_id\": 1,\n  \"jenis_mutasi\": \"diskon\",\n  \"nominal_perubahan\": -200000,\n  \"keterangan\": \"Diskon khusus keluarga\",\n  \"alasan\": \"Ada 3 saudara yang bersekolah di sekolah ini\",\n  \"auto_approve\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Mutation Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi/:id",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Mutation ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Mutations by Student",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi/siswa/:siswaId",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi", "siswa", ":siswaId"],
+              "variable": [
+                {
+                  "key": "siswaId",
+                  "value": "1",
+                  "description": "Student ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Mutation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi/:id/approve",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi", ":id", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Mutation ID to approve"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Mutation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alasan_penolakan\": \"Tidak memenuhi kriteria diskon yang berlaku\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tagihan-siswa-mutasi/:id/reject",
+              "host": ["{{base_url}}"],
+              "path": ["tagihan-siswa-mutasi", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Mutation ID to reject"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tabungan (Savings)",
+      "item": [
+        {
+          "name": "Get Dashboard Tabungan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tabungan/dashboard?siswa_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "dashboard"],
+              "query": [
+                {
+                  "key": "siswa_id",
+                  "value": "1",
+                  "description": "Student ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaksi Tabungan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tabungan/transaksi?siswa_id=1&jenis_transaksi=&start_date=&end_date=&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "transaksi"],
+              "query": [
+                {
+                  "key": "siswa_id",
+                  "value": "1",
+                  "description": "Student ID"
+                },
+                {
+                  "key": "jenis_transaksi",
+                  "value": "",
+                  "description": "setoran_tabungan or penarikan_tabungan"
+                },
+                {
+                  "key": "start_date",
+                  "value": "",
+                  "description": "Start date (Y-m-d)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "",
+                  "description": "End date (Y-m-d)"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Detail Transaksi",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tabungan/transaksi/:id",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "transaksi", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Transaction ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Mutasi Rekening",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tabungan/mutasi?siswa_id=1&start_date=&end_date=",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "mutasi"],
+              "query": [
+                {
+                  "key": "siswa_id",
+                  "value": "1",
+                  "description": "Student ID"
+                },
+                {
+                  "key": "start_date",
+                  "value": "",
+                  "description": "Start date filter"
+                },
+                {
+                  "key": "end_date",
+                  "value": "",
+                  "description": "End date filter"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setor Tabungan (Deposit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siswa_id\": 1,\n  \"jumlah\": 100000,\n  \"metode\": \"CASH\",\n  \"keterangan\": \"Setoran rutin bulanan\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tabungan/setor",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "setor"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setor Tabungan - Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siswa_id\": 1,\n  \"jumlah\": 200000,\n  \"metode\": \"TRANSFER\",\n  \"keterangan\": \"Setoran via transfer bank\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tabungan/setor",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "setor"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tarik Tabungan (Withdrawal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siswa_id\": 1,\n  \"jumlah\": 50000,\n  \"metode\": \"CASH\",\n  \"keterangan\": \"Penarikan untuk keperluan sekolah\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tabungan/tarik",
+              "host": ["{{base_url}}"],
+              "path": ["tabungan", "tarik"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
