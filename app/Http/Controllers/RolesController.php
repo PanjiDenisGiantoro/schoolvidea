@@ -27,8 +27,7 @@ class RolesController extends Controller
             'No',
             'Nama Role',
             'Total Permissions',
-//            'Total Users',
-//            'Action'
+            'Action'
         ];
 
         return view('pages.data_master.roles.roles', compact('roles','headers'));

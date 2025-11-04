@@ -18,8 +18,36 @@
                     </a>
                 </div>
 
+                <!-- Search and Filter Form -->
+                <div class="col-lg-12 mb-3">
+                    <form method="GET" action="{{ route('akun.index') }}" class="row g-3">
+                        @if(auth()->user()->unit_id === null)
+                            <!-- Unit Filter for Admin -->
+                            <div class="col-md-3">
+                                <select name="unit_id" class="form-select" onchange="this.form.submit()">
+                                    <option value="">-- Semua Unit --</option>
+                                    @foreach($units as $unit)
+                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                            {{ $unit->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <!-- Search Input -->
+                        <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
+                            <input type="text" name="search" class="form-control" placeholder="Cari akun (Kode, Nama, Kategori, dll...)" value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="ri-search-line"></i> Cari
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-responsive">
-                <table id="datatable" class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped">
                     <thead>
                     <tr>
                         <th>Kode Akun</th>
@@ -33,41 +61,55 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @php
-                        // Fungsi rekursif untuk menampilkan tree
-                        function renderTree($akuns, $parent_id = null, $level = 0) {
-                            foreach ($akuns->where('parent_id', $parent_id) as $akun) {
-                                echo '<tr>';
-                                echo '<td>' . $akun->kode_akun . '</td>';
-                                echo '<td>' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level) . ($level > 0 ? '└─ ' : '') . $akun->nama_akun . '</td>';
-                                echo '<td>' . $akun->kategori_akun ?? '-' . '</td>';
-                                echo '<td>' . $akun->tipe . '</td>';
-                                echo '<td>' . ($akun->parent?->nama_akun ?? '-') . '</td>';
-                                echo '<td>' . ($akun->unit?->nama_unit ?? '-') . '</td>';
-                                echo '<td><span class="badge ' . ($akun->status == '1' ? 'bg-success' : 'bg-danger') . '">' . ($akun->status == '1' ? 'Aktif' : 'Tidak Aktif') . '</span></td>';
-                                   echo '<td>
-                                        <div class="d-flex gap-3">
-                                            <a href="' . route('akun.show', $akun->id) . '" class="link-primary text-muted">
-                                                <i class="ri-eye-line align-middle fs-20"></i> Show
-                                            </a>
-                                            <a href="' . route('akun.edit', $akun->id) . '" class="link-warning text-muted">
-                                                <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                            </a>
-                                            <a href="' . route('akun.destroy', $akun->id) . '" class="link-danger text-muted" onclick="return confirm(\'Yakin hapus data ini?\');">
-                                                <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                            </a>
-                                        </div>
-                                      </td>';
-
-                                // Panggil rekursif untuk child
-                                renderTree($akuns, $akun->id, $level + 1);
-                            }
-                        }
-                    @endphp
-
-                    {!! renderTree($akuns) !!}
+                    @forelse($akuns as $index => $akun)
+                        <tr>
+                            <td>{{ $akuns->firstItem() + $index }}</td>
+                            <td>{{ $akun->kode_akun }}</td>
+                            <td>{{ $akun->nama_akun }}</td>
+                            <td>{{ $akun->kategori_akun ?? '-' }}</td>
+                            <td>{{ $akun->tipe }}</td>
+                            <td>{{ $akun->parent?->nama_akun ?? '-' }}</td>
+                            <td>{{ $akun->unit?->nama_unit ?? '-' }}</td>
+                            <td>
+                                @if($akun->status == 1)
+                                    <span class="badge bg-success">Aktif</span>
+                                @else
+                                    <span class="badge bg-danger">Tidak Aktif</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex gap-3">
+                                    <a href="{{ route('akun.show', $akun->id) }}" class="link-primary text-muted">
+                                        <i class="ri-eye-line align-middle fs-20"></i> Show
+                                    </a>
+                                    <a href="{{ route('akun.edit', $akun->id) }}" class="link-warning text-muted">
+                                        <i class="ri-edit-line align-middle fs-20"></i> Edit
+                                    </a>
+                                    <a href="{{ route('akun.destroy', $akun->id) }}" class="link-danger text-muted">
+                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
+
+                <!-- Pagination -->
+                <div class="col-lg-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            Menampilkan {{ $akuns->firstItem() ?? 0 }} sampai {{ $akuns->lastItem() ?? 0 }} dari {{ $akuns->total() }} data
+                        </div>
+                        <div>
+                            {{ $akuns->links() }}
+                        </div>
+                    </div>
+                </div>
             </div>
             </div>
         </div>
@@ -76,19 +118,40 @@
 @endsection
 
 @push('scripts')
-    @if($akuns->isNotEmpty())
-        <script>
-            $(document).ready(function () {
-                $('#datatable').DataTable({
-                    responsive: true,
-                    pageLength: 10,
-                    language: {
-                        url: '{{ asset("assets/datatables/id.json") }}'
-                    },
-                    "columnDefs": [
-                        { "orderable": false, "targets": [7] } // Action tidak bisa di-sort
-                    ]
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            // SweetAlert2 untuk hapus
+            $('.link-danger').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data akan dihapus permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
                 });
+            });
+        });
+    </script>
+
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
             });
         </script>
     @endif

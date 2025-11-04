@@ -10,8 +10,19 @@ use Illuminate\Support\Str;
 
 class TipeunitController extends Controller
 {
-    public function index(){
-        $tipe_unit = Tipeunit::get();
+    public function index(Request $request){
+        // Build query
+        $query = Tipeunit::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('nama_tipe_unit', 'like', "%{$search}%");
+        }
+
+        // Paginate results
+        $tipe_unit = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Nama Tipe Unit',

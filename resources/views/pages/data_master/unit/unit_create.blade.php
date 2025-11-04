@@ -104,7 +104,7 @@
                             <div class="dropzone" id="image-dropzone"></div>
                             <input type="hidden" name="image" id="image-hidden"
                                    value="{{ old('image', $unit->image ?? '') }}">
-                            <small class="text-muted">Format: JPG, PNG, GIF | Max: 2MB</small>
+                            <small class="text-muted">Format: JPG, PNG, GIF | Max: 1MB</small>
                         </div>
                     </div>
                 </div>

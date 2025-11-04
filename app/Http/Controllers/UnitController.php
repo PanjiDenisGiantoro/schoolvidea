@@ -21,11 +21,7 @@ class UnitController extends Controller
         // Filter by unit_id if user has unit_id OR if admin selects a unit
         if (Auth::user()->unit_id) {
             $query->where('id', Auth::user()->unit_id);
-        } elseif ($request->filled('unit_id')) {
-            // Admin user filtering by unit
-            $query->where('id', $request->unit_id);
         }
-
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
@@ -38,7 +34,7 @@ class UnitController extends Controller
                   ->orWhere('website', 'like', "%{$search}%")
                   ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
                   ->orWhereHas('tipe_unit', function($q) use ($search) {
-                      $q->where('nama_tipe', 'like', "%{$search}%");
+                      $q->where('nama_tipe_unit', 'like', "%{$search}%");
                   });
             });
         }

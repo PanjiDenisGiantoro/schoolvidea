@@ -9,10 +9,35 @@ use Illuminate\Support\Str;
 
 class LembagaunitController extends Controller
 {
-    public function index(){
-        $lembagaunit = Yayasan::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->where('status', '1')->get();
+    public function index(Request $request){
+        $units = \App\Models\Unit::all();
+
+        // Build query
+        $query = Yayasan::query();
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_yayasan', 'like', "%{$search}%")
+                  ->orWhere('central_code', 'like', "%{$search}%")
+                  ->orWhere('no_hp', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%")
+                  ->orWhere('website', 'like', "%{$search}%")
+                  ->orWhere('nama_pimpinan', 'like', "%{$search}%");
+            });
+        }
+
+        // Paginate results
+        $lembagaunit = $query->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -27,7 +52,7 @@ class LembagaunitController extends Controller
             'Action'
         ];
 
-            return view('pages.data_master.kode_lembaga.kode_lembaga', compact('lembagaunit','headers'));
+        return view('pages.data_master.kode_lembaga.kode_lembaga', compact('lembagaunit','headers','units'));
     }
     public function create()
     {

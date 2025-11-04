@@ -19,7 +19,35 @@
                     </a>
                 </div>
 
-                <table id="datatable" class="table table-bordered table-striped">
+                <!-- Search and Filter Form -->
+                <div class="col-lg-12 mb-3">
+                    <form method="GET" action="{{ route('jurusan.index') }}" class="row g-3">
+                        @if(auth()->user()->unit_id === null)
+                            <!-- Unit Filter for Admin -->
+                            <div class="col-md-3">
+                                <select name="unit_id" class="form-select" onchange="this.form.submit()">
+                                    <option value="">-- Semua Unit --</option>
+                                    @foreach($units as $unit)
+                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                            {{ $unit->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <!-- Search Input -->
+                        <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
+                            <input type="text" name="search" class="form-control" placeholder="Cari jurusan (Nama, Kode, Unit...)" value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="ri-search-line"></i> Cari
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="table table-bordered table-striped">
                     <thead>
                     @if(!empty($headers) && is_array($headers))
                         @foreach($headers as $header)
@@ -30,17 +58,19 @@
                     @endif
                     </thead>
                     <tbody>
-                    @forelse($jurusan as $item)
+                    @forelse($jurusan as $index => $item)
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $jurusan->firstItem() + $index }}</td>
                             <td>{{ $item->nama_jurusan }}</td>
                             <td>{{ $item->kode_jurusan }}</td>
                             <td>{{ $item->keterangan ?? '' }}</td>
                             <td>{{ $item->unit->nama_unit ?? '' }}</td>
                             <td>
-                                <span class="badge {{ $item->status === 'Aktif' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $item->status }}
-                                </span>
+                                @if($item->status == 1)
+                                    <span class="badge bg-success">Aktif</span>
+                                @else
+                                    <span class="badge bg-danger">Tidak Aktif</span>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex gap-3">
@@ -61,49 +91,64 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                            <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
                         </tr>
                     @endforelse
                     </tbody>
                 </table>
+
+                <!-- Pagination -->
+                <div class="col-lg-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            Menampilkan {{ $jurusan->firstItem() ?? 0 }} sampai {{ $jurusan->lastItem() ?? 0 }} dari {{ $jurusan->total() }} data
+                        </div>
+                        <div>
+                            {{ $jurusan->links() }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
 @endsection
+
 @push('scripts')
-    @if($jurusan->isNotEmpty())
-        <script>
-            $(document).ready(function () {
-                $('#datatable').DataTable({
-                    responsive: true,
-                    pageLength: 10,
-                    language: {
-                        url: '{{ asset("assets/datatables/id.json") }}'
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            // SweetAlert2 untuk hapus
+            $('.link-danger').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data akan dihapus permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
                     }
                 });
+            });
+        });
+    </script>
 
-                // SweetAlert2 untuk hapus
-                $('.link-danger').on('click', function(e) {
-                    e.preventDefault(); // cegah link langsung ke href
-                    var url = $(this).attr('href');
-
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: "Data akan dihapus permanen!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya, Hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // redirect ke URL hapus
-                            window.location.href = url;
-                        }
-                    });
-                });
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
             });
         </script>
     @endif

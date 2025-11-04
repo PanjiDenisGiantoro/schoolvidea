@@ -10,14 +10,43 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title mb-0">List Rekening</h5>
-                <a href="{{ route('rekening.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus me-1"></i> Tambah Rekening
-                </a>
-            </div>
+            <div class="row g-5">
+                <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">List Rekening</h5>
+                    <a href="{{ route('rekening.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus me-1"></i> Tambah Rekening
+                    </a>
+                </div>
 
-            <table id="datatable" class="table table-bordered table-striped">
+                <!-- Search and Filter Form -->
+                <div class="col-lg-12 mb-3">
+                    <form method="GET" action="{{ route('rekening.index') }}" class="row g-3">
+                        @if(auth()->user()->unit_id === null)
+                            <!-- Unit Filter for Admin -->
+                            <div class="col-md-3">
+                                <select name="unit_id" class="form-select" onchange="this.form.submit()">
+                                    <option value="">-- Semua Unit --</option>
+                                    @foreach($units as $unit)
+                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                            {{ $unit->nama_unit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <!-- Search Input -->
+                        <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
+                            <input type="text" name="search" class="form-control" placeholder="Cari rekening (Nama, No Rekening, Bank, dll...)" value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="ri-search-line"></i> Cari
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
                     <th>No</th>
@@ -33,9 +62,9 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($rekenings as $item)
+                @forelse($rekenings as $index => $item)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $rekenings->firstItem() + $index }}</td>
                         <td>{{ $item->type_rekening ?? '-' }}</td>
                         <td>{{ $item->nama_rekening ?? '-' }}</td>
                         <td>{{ $item->no_rekening ?? '-' }}</td>
@@ -67,9 +96,26 @@
                         </td>
 
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="10" class="text-center">Tidak ada data ditemukan</td>
+                    </tr>
+                @endforelse
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div class="col-lg-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        Menampilkan {{ $rekenings->firstItem() ?? 0 }} sampai {{ $rekenings->lastItem() ?? 0 }} dari {{ $rekenings->total() }} data
+                    </div>
+                    <div>
+                        {{ $rekenings->links() }}
+                    </div>
+                </div>
+            </div>
+            </div>
         </div>
     </div>
 
@@ -80,14 +126,8 @@
 
     <script>
         $(document).ready(function () {
-            $('#datatable').DataTable({
-                responsive: true,
-                language: {
-                    url: '{{ asset("assets/datatables/id.json") }}'
-                }
-            });
             $('.link-danger').on('click', function(e) {
-                e.preventDefault(); // cegah link langsung ke href
+                e.preventDefault();
                 var url = $(this).attr('href');
 
                 Swal.fire({
@@ -101,11 +141,22 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // redirect ke URL hapus
                         window.location.href = url;
                     }
                 });
             });
         });
     </script>
+
+    @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
 @endpush
