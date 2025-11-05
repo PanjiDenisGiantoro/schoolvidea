@@ -21,7 +21,7 @@ class OfficerController extends Controller
         // Build query
         $query = User::with('officer.unit', 'roles')
             ->whereHas('roles', function ($query) {
-                $query->whereNotIn('name', ['siswa', 'admin', 'user']);
+                $query->whereNotIn('name', ['siswa', 'user']);
             });
 
         // Filter by unit_id if user has unit_id OR if admin selects a unit

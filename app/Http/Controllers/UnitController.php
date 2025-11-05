@@ -27,15 +27,15 @@ class UnitController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_unit', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('no_hp', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('website', 'like', "%{$search}%")
-                  ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
-                  ->orWhereHas('tipe_unit', function($q) use ($search) {
-                      $q->where('nama_tipe_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('website', 'like', "%{$search}%")
+                    ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
+                    ->orWhereHas('tipe_unit', function($q) use ($search) {
+                        $q->where('nama_tipe_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -108,9 +108,15 @@ class UnitController extends Controller
     public function edit($id)
     {
         $unit = Unit::findOrFail($id);
-        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
+
+        if(Auth::user()->unit_id){
+            $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
+                $query->where('id', $yayasanId);
+            })->get();
+        }else{
+            $yayasan = Yayasan::where('status', '1')->get();
+        }
+
 
         $tipeunit = Tipeunit::where('status','1')->get();
 
