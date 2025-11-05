@@ -441,41 +441,53 @@ class TagihanController extends Controller
         }
 
         $firstTagihan = $tagihanSiswa->first()->tagihan;
-        $nominal = $firstTagihan->items->sum('nominal');
-        $namaKategori = $firstTagihan->items->pluck('kategori.nama_kategori')->implode(', ');
         $bulanMulai = (int) $firstTagihan->bulan_mulai;
         $tahunMulai = (int) $firstTagihan->tahun_mulai;
-
-        // Total potongan semua bulan
-        $totalPotonganSemuaBulan = $tagihanSiswa->flatMap(function ($ts) {
-            return $ts->potonganSiswa;
-        })->sum('nominal');
 
         // Bagi menjadi dua kelompok
         $belumLunas = [];
         $sudahLunas = [];
+        $counter = 1;
 
-        foreach ($tagihanSiswa as $index => $ts) {
-            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
+        // Loop setiap tagihan_siswa (setiap record adalah 1 item untuk 1 bulan)
+        foreach ($tagihanSiswa as $ts) {
+            // Ambil item tagihan yang sesuai dari sisa_nominal (karena sekarang 1 tagihan_siswa = 1 item)
+            $nominalItem = $ts->sisa_nominal; // ini sudah nominal per item
 
-            $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
+            // Cari kategori item dari tagihan items berdasarkan nominal
+            $tagihanItem = $firstTagihan->items->first(); // ambil item pertama sebagai default
+            $namaKategori = $tagihanItem->kategori->nama_kategori ?? 'Tagihan';
+
+            // Hitung bulan untuk label
+            $bulanKe = $ts->bulan_ke ?? 1;
+            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1);
+
+            // Total potongan untuk tagihan_siswa ini
+            $totalPotongan = $ts->potonganSiswa->sum('nominal');
+
+            // Hitung jumlah yang sudah dibayar
             $jumlahSudahDibayar = $ts->siswa->pembayaranTagihan->where('tagihan_siswa_id', $ts->id)->sum('jumlah_bayar');
-            $jumlahDibayar = $ts->sisa_nominal;
-            $jumlahTunggakan = $ts->sisa_nominal;
+
+            // Nominal asli sebelum ada pembayaran (dari transaksi keuangan atau bisa dicari dari tagihanitem)
+            $nominalAsli = $nominalItem + $jumlahSudahDibayar;
+
+            $jumlahTagihan = $nominalAsli - $totalPotongan;
+            $sisaTagihan = $ts->sisa_nominal; // sisa yang belum dibayar
 
             $row = [
-                'no'                => $index + 1,
+                'no'                => $counter++,
                 'id'                => $ts->id,
                 'periode'           => $date->translatedFormat('F Y'),
                 'tagihan_kelas'     => $namaKategori,
-                'rincian_tagihan'   => (int) $nominal,
-                'jumlah_potongan'   => (int) $totalPotonganSemuaBulan,
+                'rincian_tagihan'   => (int) $nominalAsli,
+                'jumlah_potongan'   => (int) $totalPotongan,
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
-                'jumlah_dibayar'    => (int) $jumlahDibayar,
-                'jumlah_tunggakan'  => (int) $jumlahTunggakan,
-                'nominal_pembayaran' => (int) $jumlahSudahDibayar,
+                'jumlah_dibayar'    => (int) $sisaTagihan, // sisa yang belum dibayar
+                'jumlah_tunggakan'  => (int) $sisaTagihan,
+                'nominal_pembayaran' => (int) $jumlahSudahDibayar, // yang sudah dibayar
                 'catatan'           => $ts->catatan ?? '',
                 'status'            => $ts->status,
+                'kategori_id'       => $tagihanItem->kategori_id ?? 1,
             ];
 
             if ($ts->status == 1) {
