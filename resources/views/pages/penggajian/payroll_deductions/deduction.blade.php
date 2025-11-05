@@ -16,7 +16,7 @@
                     </a>
                 </div>
                 <div class="table-responsive">
-                    <table id="datatable" class="table-bordered table-striped table align-middle">
+                    <table class="table table-bordered table-striped align-middle">
                         <thead class="table-light">
                             @if (!empty($headers) && is_array($headers))
                                 @foreach ($headers as $header)
@@ -27,9 +27,9 @@
                             @endif
                         </thead>
                         <tbody>
-                            @forelse($payroll_deductions as $item)
+                            @forelse($payroll_deductions as $index => $item)
                                 <tr>
-                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td class="text-center">{{ $payroll_deductions->firstItem() + $index }}</td>
                                     <td class="text-center">{{ $item->name }}</td>
                                     <td class="text-capitalize text-center">{{ $item->type }}</td>
 
@@ -73,11 +73,21 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                                    <td colspan="6" class="text-center">Tidak ada data ditemukan</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-wrapper mt-3">
+                    <div class="pagination-info">
+                        Menampilkan {{ $payroll_deductions->firstItem() ?? 0 }} sampai {{ $payroll_deductions->lastItem() ?? 0 }} dari {{ $payroll_deductions->total() }} data
+                    </div>
+                    <div>
+                        {{ $payroll_deductions->links('vendor.pagination.custom') }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -86,39 +96,29 @@
 
 @endsection
 @push('scripts')
-    @if ($payroll_deductions->isNotEmpty())
-        <script>
-            $(document).ready(function() {
-                $('#datatable').DataTable({
-                    responsive: true,
-                    pageLength: 10,
-                    language: {
-                        url: '{{ asset('assets/datatables/id.json') }}'
+    <script>
+        $(document).ready(function() {
+            // SweetAlert2 untuk hapus
+            $('.link-danger').on('click', function(e) {
+                e.preventDefault(); // cegah link langsung ke href
+                var url = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data akan dihapus permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // redirect ke URL hapus
+                        window.location.href = url;
                     }
                 });
-
-                // SweetAlert2 untuk hapus
-                $('.link-danger').on('click', function(e) {
-                    e.preventDefault(); // cegah link langsung ke href
-                    var url = $(this).attr('href');
-
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: "Data akan dihapus permanen!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya, Hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // redirect ke URL hapus
-                            window.location.href = url;
-                        }
-                    });
-                });
             });
-        </script>
-    @endif
+        });
+    </script>
 @endpush

@@ -12,7 +12,7 @@ class PayrollDeductionsController extends Controller
      */
     public function index()
     {
-        $payroll_deductions = PayrollDeductions::all();
+        $payroll_deductions = PayrollDeductions::paginate(10);
         $headers = [
             'No',
             'Nama Potongan',
