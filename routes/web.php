@@ -33,6 +33,9 @@ Route::prefix('landing')->group(function () {
     Route::get('/success', function () {
         return view('pages.notif.notif_success');
     })->name('landing.success');
+    Route::get('/successregister', function () {
+        return view('pages.notif.notif_register_success');
+    })->name('landing.successregister');
 });
 Route::get('/login', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
