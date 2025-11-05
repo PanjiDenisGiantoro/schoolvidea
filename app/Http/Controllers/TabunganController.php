@@ -113,16 +113,27 @@ class TabunganController extends Controller
                 'created_by'      => Auth::id(),
             ]);
 
-            $settings = setting_akun::where('kategori', 'tabungan')
-                ->when(Auth::user()->unit_id,function ($query,$unit_id){
-                    $query->where('unit_id',$unit_id);
-                })
-                ->where('status','1')
-                ->get();
+            $settings = setting_akun::where('kategori', 'tabungan');
 
+            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+            if (Auth::user()->yayasan_id) {
+                // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+                $settings->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            } elseif (Auth::user()->unit_id) {
+                // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
+                $settings->where('unit_id', Auth::user()->unit_id);
+            } elseif ($request->filled('unit_id')) {
+                // Admin user filtering by unit
+                $settings->where('unit_id', $request->unit_id);
+            }
+
+            $settings = $settings->where('status','1')->get();
 
             $akun_debit  = $settings->where('debit', 1)->first()?->akun_id;
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id;
+
 
             if (!$akun_debit || !$akun_kredit) {
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
