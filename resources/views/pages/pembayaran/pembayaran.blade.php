@@ -189,7 +189,7 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="list_tagihan">
+                        <tbody id="list_tagihan_lunas">
                             <tr>
                                 <td colspan="9" class="text-muted py-4 text-center">
                                     <i class="fa fa-info-circle"></i> Silakan pilih kelas & siswa
@@ -416,7 +416,7 @@
                 </tr>`;
                     } else {
                     // Render Belum Lunas
-                    const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
+                    const tabelBelum = document.getElementById('list_tagihan');
                     tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
@@ -477,7 +477,8 @@
     </tr>
 `;}
                     if (!data.sudah_lunas.length) {
-                        listTagihan.innerHTML = `
+                        const listTagihanLunas = document.getElementById('list_tagihan_lunas');
+                        listTagihanLunas.innerHTML = `
                 <tr>
                     <td colspan="9" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
@@ -490,7 +491,7 @@
                 </tr>`;
                     } else {
                     // Render Sudah Lunas
-                    const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
+                    const tabelLunas = document.getElementById('list_tagihan_lunas');
                     tabelLunas
                         .innerHTML = data.sudah_lunas.map(tagihan => `
             <tr>
