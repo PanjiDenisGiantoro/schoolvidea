@@ -62,15 +62,16 @@ class LembagaunitController extends Controller
     }
     public function create()
     {
+        $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
+        if($ceknotdoubleunit){
+            return redirect()->route('lembagaunit.index')
+                ->with('danger', 'Unit ini sudah memiliki yayasan, silahkan hubungi admin');
+        }
         return view('pages.data_master.kode_lembaga.kode_lembaga_create');
     }
     public function store(Request $request)
     {
-        $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
-        if($ceknotdoubleunit){
-            return redirect()->route('lembagaunit.index')
-            ->with('danger', 'Unit ini sudah memiliki yayasan, silahkan hubungi admin');
-        }
+
 
             $request->validate([
             'nama_yayasan' => 'required|string|max:255',
