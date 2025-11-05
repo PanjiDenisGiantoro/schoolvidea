@@ -103,7 +103,7 @@ class TrialRegistrationController extends Controller
             $centralCode = 'U' . strtoupper(Str::random(7));
 
             $unit = Unit::create([
-                'nama_unit' => $request->school_name,
+                'nama_unit' => $trialUser->school_name,
                 'code' => $centralCode,
                 'image' => null,
                 'no_hp' => $request->no_hp,
