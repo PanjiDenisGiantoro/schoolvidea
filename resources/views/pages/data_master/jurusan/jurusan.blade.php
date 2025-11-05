@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 @section('title', 'Dashboard')
 
@@ -6,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Jurusan'
+        'subTitle' => 'Data Jurusan',
     ])
 
     <div class="card">
@@ -22,13 +21,14 @@
                 <!-- Search and Filter Form -->
                 <div class="col-lg-12 mb-3">
                     <form method="GET" action="{{ route('jurusan.index') }}" class="row g-3">
-                        @if(auth()->user()->unit_id === null)
+                        @if (auth()->user()->unit_id === null)
                             <!-- Unit Filter for Admin -->
                             <div class="col-md-3">
                                 <select name="unit_id" class="form-select" onchange="this.form.submit()">
                                     <option value="">-- Semua Unit --</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}"
+                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                             {{ $unit->nama_unit }}
                                         </option>
                                     @endforeach
@@ -37,7 +37,8 @@
                         @endif
                         <!-- Search Input -->
                         <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
-                            <input type="text" name="search" class="form-control" placeholder="Cari jurusan (Nama, Kode, Unit...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" style="font-size: 14px"
+                                placeholder="Cari jurusan (Nama, Kode, Unit...)" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -47,15 +48,15 @@
                     </form>
                 </div>
 
-                <table class="table table-bordered table-striped">
+                <table class="table-bordered table-striped table">
                     <thead>
-                    @if(!empty($headers) && is_array($headers))
-                        @foreach($headers as $header)
-                            <th>{{ $header }}</th>
-                        @endforeach
-                    @else
-                        <th>No data</th>
-                    @endif
+                        @if (!empty($headers) && is_array($headers))
+                            @foreach ($headers as $header)
+                                <th>{{ $header }}</th>
+                            @endforeach
+                        @else
+                            <th>No data</th>
+                        @endif
                     </thead>
                     <tbody>
                     @forelse($jurusan as $index => $item)
@@ -66,7 +67,7 @@
                             <td>{{ $item->keterangan ?? '' }}</td>
                             <td>{{ $item->unit->nama_unit ?? '' }}</td>
                             <td>
-                                @if($item->status == '1')
+                                @if($item->status == 1)
                                     <span class="badge bg-success">Aktif</span>
                                 @else
                                     <span class="badge bg-danger">Tidak Aktif</span>
@@ -102,7 +103,8 @@
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
 
-                            Menampilkan {{ $jurusan->firstItem() ?? 0 }} sampai {{ $jurusan->lastItem() ?? 0 }} dari {{ $jurusan->total() }} data
+                            Menampilkan {{ $jurusan->firstItem() ?? 0 }} sampai {{ $jurusan->lastItem() ?? 0 }} dari
+                            {{ $jurusan->total() }} data
                         </div>
                         <div>
                             {{ $jurusan->links('vendor.pagination.custom') }}
@@ -118,7 +120,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -142,7 +144,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

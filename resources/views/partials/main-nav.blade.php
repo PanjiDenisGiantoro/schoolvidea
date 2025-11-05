@@ -85,7 +85,7 @@
                         @endhasPermission
 
                         @hasPermission('view_user')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun-user') }}">Akun User</a>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Akun User</a>
                         </li>
                         @endhasPermission
                     </ul>
@@ -167,21 +167,21 @@
                         @endcanViewMenu
 
                         @hasPermission('view_pembayaran')
-                        <li class="sub-menu-item">
-                            <a class="sub-menu-item menu-link menu-arrow" href="#sidebarPembayaran"
-                                data-bs-toggle="collapse" role="button" aria-expanded="false"
-                                aria-controls="sidebarPembayaran">
-                                Pembayaran
-                            </a>
-                            <div class="collapse" id="sidebarPembayaran">
-                                <ul class="sub-menu-nav">
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('') }}">Pembayaran Online</a></li>
-                                </ul>
-                            </div>
-                        </li>
+                            <li class="sub-menu-item">
+                                <a class="sub-menu-item menu-link menu-arrow" href="#sidebarPembayaran"
+                                    data-bs-toggle="collapse" role="button" aria-expanded="false"
+                                    aria-controls="sidebarPembayaran">
+                                    Pembayaran
+                                </a>
+                                <div class="collapse" id="sidebarPembayaran">
+                                    <ul class="sub-menu-nav">
+                                        <li class="sub-menu-item"><a class="sub-menu-link"
+                                                href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
+                                        <li class="sub-menu-item"><a class="sub-menu-link"
+                                                href="{{ url('') }}">Pembayaran Online</a></li>
+                                    </ul>
+                                </div>
+                            </li>
                         @endhasPermission
                     </ul>
                 </div>
@@ -268,55 +268,55 @@
             </li>
 
             @hasPermission('view_report')
-            <li class="menu-item">
-                <a class="menu-link menu-arrow" href="#sidebarReport" data-bs-toggle="collapse" role="button"
-                    aria-expanded="false" aria-controls="sidebarReport">
-                    <span class="nav-icon">
-                        <i class="ri-file-chart-line"></i>
-                    </span>
-                    <span class="nav-text"> Reports </span>
-                </a>
-                <div class="collapse" id="sidebarReport">
-                    <ul class="sub-menu-nav">
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('report/jurnal') }}">Jurnal</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('report/buku_besar') }}">Buku Besar</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('report/neraca_saldo') }}">Neraca Saldo</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('report/neraca') }}">Neraca</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/labarugi') }}">Laba
-                                Rugi</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('tabungan/report-all') }}">Tabungan</a></li>
-                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                href="{{ url('report/tagihan') }}">Tagihan</a></li>
-                    </ul>
-                </div>
-            </li>
+                <li class="menu-item">
+                    <a class="menu-link menu-arrow" href="#sidebarReport" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarReport">
+                        <span class="nav-icon">
+                            <i class="ri-file-chart-line"></i>
+                        </span>
+                        <span class="nav-text"> Reports </span>
+                    </a>
+                    <div class="collapse" id="sidebarReport">
+                        <ul class="sub-menu-nav">
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('report/jurnal') }}">Jurnal</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('report/buku_besar') }}">Buku Besar</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('report/neraca_saldo') }}">Neraca Saldo</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('report/neraca') }}">Neraca</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/labarugi') }}">Laba
+                                    Rugi</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('tabungan/report-all') }}">Tabungan</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('report/tagihan') }}">Tagihan</a></li>
+                        </ul>
+                    </div>
+                </li>
             @endhasPermission
 
             @hasPermission('view_migrasi')
-            <li class="menu-item">
-                <a class="menu-link" href="{{ url('migrasi/import') }}">
-                    <span class="nav-icon">
-                        <i class="ri-database-fill"></i>
-                    </span>
-                    <span class="nav-text"> Migrasi Data </span>
-                </a>
-            </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url('migrasi/import') }}">
+                        <span class="nav-icon">
+                            <i class="ri-database-fill"></i>
+                        </span>
+                        <span class="nav-text"> Migrasi Data </span>
+                    </a>
+                </li>
             @endhasPermission
 
             @hasPermission('view_activity')
-            <li class="menu-item">
-                <a class="menu-link" href="{{ url('activity') }}">
-                    <span class="nav-icon">
-                        <i class="ri-file-history-line"></i>
-                    </span>
-                    <span class="nav-text"> Logs Aktivitas </span>
-                </a>
-            </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url('activity') }}">
+                        <span class="nav-icon">
+                            <i class="ri-file-history-line"></i>
+                        </span>
+                        <span class="nav-text"> Logs Aktivitas </span>
+                    </a>
+                </li>
             @endhasPermission
 
         </ul>

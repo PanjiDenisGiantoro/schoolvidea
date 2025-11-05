@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AkunController;
+use App\Http\Controllers\AkunUserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\UnitController;
@@ -354,6 +356,18 @@ Route::middleware(['auth'])->group(function () {
     // Ambil daftar guru/staff berdasarkan unit (AJAX)
     Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
         ->name('officers.byUnit');
+
+    Route::prefix('akun-user')->middleware('permission:view_user')->group(function () {
+        Route::get('/', [AkunUserController::class, 'index'])->name('akun-user.index');
+        Route::get('/edit/{id}', [AkunUserController::class, 'edit'])->name('akun-user.edit');
+        Route::put('/update/{id}', [AkunUserController::class, 'update'])->name('akun-user.update');
+        Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
+
+    });
+
+
+
+
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');
