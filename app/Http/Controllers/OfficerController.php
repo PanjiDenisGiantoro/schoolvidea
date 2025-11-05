@@ -24,8 +24,16 @@ class OfficerController extends Controller
                 $query->whereNotIn('name', ['siswa', 'user']);
             });
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan officer dari semua unit di yayasan tersebut
+            $query->whereHas('officer', function($q) {
+                $q->whereHas('unit', function($q2) {
+                    $q2->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan officer dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
             // Admin user filtering by unit
@@ -74,9 +82,20 @@ class OfficerController extends Controller
 
     public function create()
     {
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })->where('status', '1')->get();
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status', '1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $units = Unit::where('status', '1')->get();
+        }
+
         $roles = Roles_petugas::all();
         $positions = Positions::all();
 
@@ -130,6 +149,7 @@ class OfficerController extends Controller
                 'password' => bcrypt($request->password),
                 'rfid_no' => $request->no_kartu_rfid,
                 'unit_id' => $request->unit_id,
+                'yayasan_id' => Auth::user()->yayasan_id,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
@@ -174,12 +194,23 @@ class OfficerController extends Controller
     public function edit($id)
     {
         $officer = Officer::with('user')->findOrFail($id);
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })->where('status', '1')->get();
+
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status', '1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $units = Unit::where('status', '1')->get();
+        }
+
         $roles = Roles_petugas::all();
         $positions = Positions::all();
-
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
@@ -235,6 +266,7 @@ class OfficerController extends Controller
                 'email' => $request->email,
                 'password' => $request->password ? bcrypt($request->password) : $user->password,
                 'rfid_no' => $request->no_kartu_rfid,
+                'yayasan_id' => Auth::user()->yayasan_id,
             ]);
 
             // Update role user
@@ -308,10 +340,21 @@ class OfficerController extends Controller
     {
         $officer = Officer::with(['user', 'rolePetugas', 'unit', 'tahunAjaran'])->findOrFail($id);
         $show = true;
-        $units = Unit::all();
+
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $units = Unit::where('status', '1')->where('id', Auth::user()->unit_id)->get();
+        } else {
+            // Admin bisa melihat semua
+            $units = Unit::all();
+        }
+
         $roles = Roles_petugas::all();
         $positions = Positions::all();
-
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
