@@ -119,7 +119,8 @@ class AkunController extends Controller
             'kode_akun' => 'required|unique:akuns,kode_akun',
             'nama_akun' => 'required',
             'tipe' => 'required|in:ASET,LIABILITAS,EKUITAS,PENDAPATAN,BEBAN',
-            'kategori_akun' => 'nullable'
+            'kategori_akun' => 'nullable',
+            'keterangan' => 'nullable|string',
         ]);
 
         Akun::create([
@@ -129,7 +130,8 @@ class AkunController extends Controller
             'parent_id' => $request->parent_id,
             'unit_id' => $request->unit_id,
             'status' => $request->status ?? '1',
-            'kategori_akun' => $request->kategori_akun
+            'kategori_akun' => $request->kategori_akun,
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('akun.index')
@@ -173,7 +175,8 @@ class AkunController extends Controller
             'kode_akun' => 'required|unique:akuns,kode_akun,' . $akun->id,
             'nama_akun' => 'required',
             'tipe' => 'required|in:ASET,LIABILITAS,EKUITAS,PENDAPATAN,BEBAN',
-            'kategori_akun' => 'nullable'
+            'kategori_akun' => 'nullable',
+            'keterangan' => 'nullable|string',
         ]);
 
         $akun->update([
@@ -183,7 +186,8 @@ class AkunController extends Controller
             'parent_id' => $request->parent_id,
             'unit_id' => $request->unit_id,
             'status' => $request->status ?? '1',
-            'kategori_akun' => $request->kategori_akun
+            'kategori_akun' => $request->kategori_akun,
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('akun.index')
