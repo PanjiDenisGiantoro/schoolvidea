@@ -131,6 +131,8 @@ class TrialRegistrationController extends Controller
                 'unit_id' => $unit->id,
                 'password' => Hash::make('123456'),
                 'email' => $request->email,
+                'yayasan_id' => $yayasan_id,
+
             ]);
 
             // Role Spatie
