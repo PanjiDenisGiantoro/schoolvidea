@@ -66,7 +66,7 @@
                             <td>{{ $item->keterangan ?? '' }}</td>
                             <td>{{ $item->unit->nama_unit ?? '' }}</td>
                             <td>
-                                @if($item->status == 1)
+                                @if($item->status == '1')
                                     <span class="badge bg-success">Aktif</span>
                                 @else
                                     <span class="badge bg-danger">Tidak Aktif</span>

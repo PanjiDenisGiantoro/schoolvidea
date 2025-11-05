@@ -72,11 +72,11 @@
                             <label for="status" class="form-label">Status</label>
                             <select name="status" id="status" class="form-select">
                                 <option value="1"
-                                    {{ old('status', $jurusan->status ?? '') == 'Aktif' ? 'selected' : '' }}>
+                                    {{ old('status', $jurusan->status ?? '') == '1' ? 'selected' : '' }}>
                                     Aktif
                                 </option>
                                 <option value="0"
-                                    {{ old('status', $jurusan->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>
+                                    {{ old('status', $jurusan->status ?? '') == '0' ? 'selected' : '' }}>
                                     Tidak Aktif
                                 </option>
                             </select>
