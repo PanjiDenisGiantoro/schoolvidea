@@ -107,7 +107,8 @@ class SettingAkunController extends Controller
             })->where('status','1')->get();
         } else {
             $units = Unit::where('status', '1')->get();
-            $akuns = Akun::where('status', '1')->get();
+            $akuns = Akun::where('status', '1')
+                ->get();
         }
 
 
@@ -120,8 +121,24 @@ class SettingAkunController extends Controller
     public function edit($id)
     {
         $setting = setting_akun::findOrFail($id);
-        $units = Unit::isactive()->get();
-        $akuns = Akun::all();
+
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $akuns = Akun::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status','1')->get();
+            $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })->where('status','1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+            $akuns = Akun::where('status', '1')
+                ->get();
+        }
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
 
         return view('pages.data_master.setting_akun.setting_akun_create', compact('setting','units','akuns','akunOptions'));
