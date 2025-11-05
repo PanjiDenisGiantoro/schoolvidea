@@ -34,11 +34,22 @@ class TabunganController extends Controller
             ->where('status','1')
             ->get();
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->when(Auth::user()->yayasan_id, function ($query) use ($unitIds) {
+                $query->whereIn('unit_id', $unitIds);
+            })
+            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->when(Auth::user()->yayasan_id, function ($query) use ($unitIds) {
+                $query->whereIn('unit_id', $unitIds);
+            })
+            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
             ->sum('jumlah');
-
         return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
     }
 
