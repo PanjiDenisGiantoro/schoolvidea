@@ -47,7 +47,7 @@
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
-                            <option value="">Semua Unit</option>
+                            <option value="">Pilih Unit</option>
                             @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}
@@ -82,8 +82,7 @@
                     <div class="col-md-3">
                         <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
                         <input type="text" name="kode_pembayaran" id="kode_pembayaran" class="form-control p-3"
-                            placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}"
-                            style="font-size: 14px">
+                            placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}">
                     </div>
 
                     {{-- Filter Nama Siswa --}}

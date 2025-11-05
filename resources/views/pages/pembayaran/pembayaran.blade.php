@@ -307,7 +307,7 @@
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table-hover table-striped mb-0 table align-middle">
-                        <thead class="table-light text-center align-middle">
+                        <thead class="table-light text-center">
                             <tr>
                                 <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
                                 <th>#</th>
@@ -316,8 +316,8 @@
                                 <th>Rincian Tagihan</th>
                                 <th>Jumlah Potongan</th>
                                 <th>Jumlah Tagihan</th>
-                                <th>Total Dibayar</th>
                                 <th>Total Tunggakan</th>
+                                <th>Nominal Pembayaran</th>
                                 <th>Catatan</th>
                                 <th>Aksi</th>
                             </tr>
@@ -325,15 +325,10 @@
                         <tbody id="list_tagihan">
                             <tr>
                                 <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih kelas & siswa
+                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot id="foot_belum_lunas" class="fw-bold table-light text-center" style="font-size: 14px">
-                            <tr>
-                                <td colspan="11"></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -349,22 +344,16 @@
                                 <th>Jml.Potongan</th>
                                 <th>Jml.Tagihan</th>
                                 <th>Jml.Bayar</th>
-                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="list_tagihan">
                             <tr>
-                                <td colspan="9" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih kelas & siswa
+                                <td colspan="11" class="text-muted py-4 text-center">
+                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot id="foot_sudah_lunas" class="fw-bold table-light text-center" style="font-size: 14px">
-                            <tr>
-                                <td colspan="9"></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -423,11 +412,8 @@
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
-
         const listTagihanContainer = document.getElementById('list_tagihan_container');
         const listTagihan = document.getElementById('list_tagihan');
-        const footBelumLunas = document.getElementById('foot_belum_lunas');
-        const footSudahLunas = document.getElementById('foot_sudah_lunas');
 
         // Load kelas berdasarkan unit
         filterUnit.addEventListener('change', function() {
@@ -547,30 +533,20 @@
                     }
                 })
                 .catch(err => console.error(err));
+
+            // Load daftar tagihan bulanan otomatis
             fetch(`/tagihan/daftarTagihan/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
-                    const tagihanSelect = document.getElementById('nama_tagihan');
-                    const wrapper = document.getElementById('nama_tagihan_wrapper');
-                    const listTagihan = document.getElementById('list_tagihan');
-                    // listTagihan.innerHTML = '';
-
-
                     if (!data.detail || !data.detail.length) {
-                        listTagihan.innerHTML = `
-                    <tr>
-                        <td colspan="11" class="text-center text-muted py-4">
-                            <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada tagihan
-                        </td>
-                    </tr>`;
-                        wrapper.style.display = 'block';
+                        document.getElementById('nama_tagihan_wrapper').style.display = 'none';
                         return;
                     }
 
                     // Isi dropdown nama tagihan
                     const tagihanSelect = document.getElementById('nama_tagihan');
                     tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
-                    data.detail.forEach(tagihan => {
+                    data.detail.forEach((tagihan) => {
                         const opt = document.createElement('option');
                         opt.value = tagihan.id;
                         const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ?? 'Tanpa Kategori';
@@ -578,9 +554,12 @@
                             `${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
                         tagihanSelect.appendChild(opt);
                     });
-                    wrapper.style.display = 'block';
+
+                    // Tampilkan wrapper
+                    document.getElementById('nama_tagihan_wrapper').style.display = 'block';
                     window.tagihanData = data.detail;
-                }).catch(err => console.error('Fetch tagihan error: ', err))
+                })
+                .catch(err => console.error('Fetch tagihan error:', err));
         });
         document.getElementById('nama_tagihan').addEventListener('change', function() {
             const tagihanId = this.value;
@@ -591,34 +570,34 @@
             fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
                 .then(res => res.json())
                 .then(data => {
-                        if (!data.belum_lunas.length && !data.sudah_lunas.length) {
-                            listTagihan.innerHTML = `
+                    if (!data.belum_lunas.length && !data.sudah_lunas.length) {
+                        listTagihan.innerHTML = `
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
                     </td>
                 </tr>`;
-                            return;
-                        }
+                        return;
+                    }
 
-                        // Render Belum Lunas
-                        const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
+                    // Render Belum Lunas
+                    const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
 
-                        // Simpan data tagihan ke window untuk keperluan pembayaran multiple
-                        if (!window.tagihanDataMap) {
-                            window.tagihanDataMap = new Map();
-                        }
+                    // Simpan data tagihan ke window untuk keperluan pembayaran multiple
+                    if (!window.tagihanDataMap) {
+                        window.tagihanDataMap = new Map();
+                    }
 
-                        data.belum_lunas.forEach(tagihan => {
-                            window.tagihanDataMap.set(tagihan.id, {
-                                bulan: tagihan.periode,
-                                tahun: tagihan.tahun || new Date().getFullYear(),
-                                kategori_id: tagihan.kategori_id || 1,
-                                nominal: parseInt(tagihan.nominal_pembayaran)
-                            });
+                    data.belum_lunas.forEach(tagihan => {
+                        window.tagihanDataMap.set(tagihan.id, {
+                            bulan: tagihan.periode,
+                            tahun: tagihan.tahun || new Date().getFullYear(),
+                            kategori_id: tagihan.kategori_id || 1,
+                            nominal: parseInt(tagihan.nominal_pembayaran)
                         });
+                    });
 
-                        tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
+                    tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
                 <td class="text-center">${tagihan.no}</td>
@@ -644,57 +623,9 @@
             </tr>
         `).join('');
 
-                        let totalRincian = 0;
-                        let totalPotongan = 0;
-                        let totalTagihan = 0;
-                        let totalDibayar = 0;
-                        let totalTunggakan = 0;
-                        let totalPeriode = new Set();
-                        let tagihanKelas = '';
-
-                        data.belum_lunas.forEach(item => {
-                            totalPeriode.add(item.periode);
-                            totalRincian += parseInt(item.rincian_tagihan || 0);
-                            totalPotongan += parseInt(item.jumlah_potongan || 0);
-                            totalTagihan += parseInt(item.jumlah_tagihan || 0);
-                            totalDibayar += parseInt(item.nominal_pembayaran || 0);
-                            totalTunggakan += parseInt(item.jumlah_dibayar || 0);
-                            tagihanKelas = item.tagihan_kelas;
-                        });
-
-                        const tabelBelumFoot = document.querySelector('#tabelBelumLunas tfoot');
-                        tabelBelumFoot.innerHTML = `
-    <tr>
-        <td class="text-center"><input type="checkbox" disabled></td>
-        <td class="text-center fw-bold" style="font-size: 14px">Total</td>
-        <td class="text-center" style="font-size: 14px">${[totalPeriode.size].join(', ')}</td>
-        <td class="text-center" style="font-size: 14px">${tagihanKelas}</td>
-        <td class="text-center" style="font-size: 14px">Rp ${totalRincian.toLocaleString('id-ID')}</td>
-        <td class="text-center text-danger" style="font-size: 14px">Rp ${totalPotongan.toLocaleString('id-ID')}</td>
-        <td class="text-center fw-bold" style="font-size: 14px">Rp ${totalTagihan.toLocaleString('id-ID')}</td>
-        <td class="text-center" style="font-size: 14px">Rp ${totalDibayar.toLocaleString('id-ID')}</td>
-        <td class="text-center text-success" style="font-size: 14px">Rp ${totalTunggakan.toLocaleString('id-ID')}</td>
-        <td class="text-center" colspan="2">—</td>
-    </tr>
-`;
-                    }
-                    if (!data.sudah_lunas.length) {
-                        listTagihan.innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center text-muted py-4">
-                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
-                    </td>
-                </tr>`;
-                        footSudahLunas.innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center text-muted py-4">
-                    </td>
-                </tr>`;
-                    } else {
-                        // Render Sudah Lunas
-                        const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
-                        tabelLunas
-                            .innerHTML = data.sudah_lunas.map(tagihan => `
+                    // Render Sudah Lunas
+                    const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
+                    tabelLunas.innerHTML = data.sudah_lunas.map(tagihan => `
             <tr>
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
@@ -706,7 +637,7 @@
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
-                    });
+                });
 
         });
     </script>
@@ -871,17 +802,21 @@
             });
         });
 
-        function tambahCatatan(tagihanId, isicatatan) {
+        function tambahCatatan(tagihanId) {
             // 1️⃣ Simpan ID ke hidden input
             document.getElementById('catatan_tagihan_id').value = tagihanId;
+
             // 2️⃣ Ambil data tagihan dari window.tagihanData (hasil fetch sebelumnya)
             const tagihan = window.tagihanData?.find(t => t.id === tagihanId);
+
             // 3️⃣ Isi catatan kalau ada, kosong kalau tidak
-            document.getElementById('isiCatatan').value = isicatatan || '';
+            document.getElementById('isiCatatan').value = tagihan?.catatan || '';
+
             // 4️⃣ Tampilkan modal
             const modal = new bootstrap.Modal(document.getElementById('catatanModal'));
             modal.show();
         }
+
 
         function simpanCatatan() {
             const tagihanId = document.getElementById('catatan_tagihan_id').value;
@@ -952,12 +887,12 @@
             // 🔹 Saat klik "Proses Pembayaran"
             if (btnProsesPembayaran) {
                 btnProsesPembayaran.addEventListener('click', function() {
-                    const selected = Array.from(
+                    const checkboxes = Array.from(
                         document.querySelectorAll(
                             '#tabelBelumLunas tbody input[type="checkbox"]:checked')
-                    ).map(cb => cb.value);
+                    );
 
-                    if (selected.length === 0) {
+                    if (checkboxes.length === 0) {
                         Swal.fire("Peringatan!", "Silakan pilih minimal satu tagihan terlebih dahulu.",
                             "warning");
                         return;

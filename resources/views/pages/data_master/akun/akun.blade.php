@@ -49,58 +49,59 @@
                 </div>
 
                 <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Kode Akun</th>
-                        <th>Nama Akun</th>
-                        <th>Kategori</th>
-                        <th>Tipe</th>
-                        <th>Parent</th>
-                        <th>Unit</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @forelse($akuns as $index => $akun)
-                        <tr>
-                            <td>{{ $akuns->firstItem() + $index }}</td>
-                            <td>{{ $akun->kode_akun }}</td>
-                            <td>{{ $akun->nama_akun }}</td>
-                            <td>{{ $akun->kategori_akun ?? '-' }}</td>
-                            <td>{{ $akun->tipe }}</td>
-                            <td>{{ $akun->parent?->nama_akun ?? '-' }}</td>
-                            <td>{{ $akun->unit?->nama_unit ?? '-' }}</td>
-                            <td>
-                                @if($akun->status == 1)
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Tidak Aktif</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex gap-3">
-                                    <a href="{{ route('akun.show', $akun->id) }}" class="link-primary text-muted">
-                                        <i class="ri-eye-line align-middle fs-20"></i> Show
-                                    </a>
-                                    <a href="{{ route('akun.edit', $akun->id) }}" class="link-warning text-muted">
-                                        <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                    </a>
-                                    <a href="{{ route('akun.destroy', $akun->id) }}" class="link-danger text-muted">
-                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
-                        </tr>
-                    @endforelse
-                    </tbody>
-                </table>
+                    <table class="table-bordered table-striped table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kode Akun</th>
+                                <th>Nama Akun</th>
+                                <th>Kategori</th>
+                                <th>Tipe</th>
+                                <th>Parent</th>
+                                <th>Unit</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($akuns as $index => $akun)
+                                <tr>
+                                    <td>{{ $akuns->firstItem() + $index }}</td>
+                                    <td>{{ $akun->kode_akun }}</td>
+                                    <td>{{ $akun->nama_akun }}</td>
+                                    <td>{{ $akun->kategori_akun ?? '-' }}</td>
+                                    <td>{{ $akun->tipe }}</td>
+                                    <td>{{ $akun->parent?->nama_akun ?? '-' }}</td>
+                                    <td>{{ $akun->unit?->nama_unit ?? '-' }}</td>
+                                    <td>
+                                        @if ($akun->status == 1)
+                                            <span class="badge bg-success">Aktif</span>
+                                        @else
+                                            <span class="badge bg-danger">Tidak Aktif</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-3">
+                                            <a href="{{ route('akun.show', $akun->id) }}" class="link-primary text-muted">
+                                                <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                            </a>
+                                            <a href="{{ route('akun.edit', $akun->id) }}" class="link-warning text-muted">
+                                                <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                            </a>
+                                            <a href="{{ route('akun.destroy', $akun->id) }}"
+                                                class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
 
                     <!-- Pagination -->
                     <div class="col-lg-12">
