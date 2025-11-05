@@ -105,6 +105,7 @@
                                 <th>Tagihan Kelas</th>
                                 <th>Item Tagihan</th>
                                 <th>Type Tagihan</th>
+                                <th>Periode</th>
                                 <th>Jml. Tagihan</th>
                                 <th>Jml. Dibayar</th>
                                 <th>Jml. Tunggakan</th>
@@ -140,6 +141,7 @@
                                         @endforeach
                                     </td>
                                     <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
+                                    <td>{{ $tagihan->periode ?? '-' }}</td>
 
                                     <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
