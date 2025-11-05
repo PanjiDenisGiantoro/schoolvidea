@@ -29,6 +29,7 @@ class TrialRegistrationConfirmationnext extends Mailable
                 'email' => $this->user->email,
                 'password' => '123456',  // Sebaiknya tidak kirim password asli
                 'unit_code' => $this->unit->code, // unit code
+                'nama_sekolah' => $this->unit->nama_unit,
             ]);
     }
 }

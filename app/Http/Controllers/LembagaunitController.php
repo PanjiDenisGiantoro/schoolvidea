@@ -17,9 +17,15 @@ class LembagaunitController extends Controller
 
         // Filter by unit_id if user has unit_id OR if admin selects a unit
         if (Auth::user()->unit_id) {
-            $query->where('unit_id', Auth::user()->unit_id);
+            // Join dengan tabel units berdasarkan yayasan_id
+            $query->join('units', 'units.yayasan_id', '=', 'yayasans.id')
+                  ->where('units.id', Auth::user()->unit_id)
+                  ->select('yayasans.*'); // Select semua kolom dari yayasans
         } elseif ($request->filled('unit_id')) {
-            $query->where('unit_id', $request->unit_id);
+            // Join dengan tabel units untuk filter berdasarkan unit yang dipilih admin
+            $query->join('units', 'units.yayasan_id', '=', 'yayasans.id')
+                  ->where('units.id', $request->unit_id)
+                  ->select('yayasans.*');
         }
 
         // Search functionality
@@ -56,11 +62,18 @@ class LembagaunitController extends Controller
     }
     public function create()
     {
+        $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
+        if($ceknotdoubleunit){
+            return redirect()->route('lembagaunit.index')
+                ->with('danger', 'Unit ini sudah memiliki yayasan, silahkan hubungi admin');
+        }
         return view('pages.data_master.kode_lembaga.kode_lembaga_create');
     }
     public function store(Request $request)
     {
-        $request->validate([
+
+
+            $request->validate([
             'nama_yayasan' => 'required|string|max:255',
             'kode_yayasan' => 'required',
             'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional

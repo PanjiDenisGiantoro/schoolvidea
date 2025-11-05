@@ -58,17 +58,14 @@ class TrialRegistrationController extends Controller
             ]);
 
             Mail::to($trialRegistration->email)->send(new TrialRegistrationConfirmation($trialRegistration));
-            return redirect()
-                ->route('landing.registerpublic') // Sesuaikan dengan route yang sesuai
-                ->with('success', 'Pendaftaran berhasil! Kami akan segera menghubungi Anda.');
+
+            return redirect()->route('landing.successregister');
 
         }catch (Exception $e) {
             Log::error('Error in TrialRegistrationController@store: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
         }
-        // Validasi input data
-
-        }
+    }
     public function registrationPortal($id)
     {
         $trialRegistration = TrialRegistration::findOrFail($id);
@@ -106,7 +103,7 @@ class TrialRegistrationController extends Controller
             $centralCode = 'U' . strtoupper(Str::random(7));
 
             $unit = Unit::create([
-                'nama_unit' => $request->school_name,
+                'nama_unit' => $trialUser->school_name,
                 'code' => $centralCode,
                 'image' => null,
                 'no_hp' => $request->no_hp,
@@ -116,6 +113,10 @@ class TrialRegistrationController extends Controller
                 'tipe_unit_id' => $trialUser->tipe_unit_id,
                 'status' => 1,
                 'yayasan_id' => $yayasan_id, // ✅ pakai variabel yang aman
+            ]);
+
+            $updateunit_idyayasan = Yayasan::where('id', $yayasan_id)->update([
+                'unit_id' => $unit->id,
             ]);
 
             $usercek = User::where('email', $request->email)->first();
@@ -151,7 +152,7 @@ class TrialRegistrationController extends Controller
             DB::commit();
 
             return redirect()->route('landing.success')
-                ->with('success', 'Penyiapan portal berhasil!');
+                ->with('success', 'Akun portal berhasil dibuat!, Harap cek email untuk login.');
 
         } catch (Exception $e) {
             DB::rollBack();

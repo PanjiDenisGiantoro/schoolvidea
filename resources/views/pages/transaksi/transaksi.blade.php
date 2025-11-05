@@ -91,7 +91,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped" id="transactionTable">
+                    <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -107,7 +107,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($transactions as $index => $transaction)
+                            @forelse($transactions as $index => $transaction)
                             @php
                                 $siswa = $transaction->siswa ?? null;
                                 $unit = $siswa->kelas->unit ?? null;
@@ -118,7 +118,7 @@
                                 $status = $transaction->status ?? 'Lunas';
                             @endphp
                             <tr>
-                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $transactions->firstItem() + $index }}</td>
                                 <td>{{ $unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $nomorInduk }}</td>
                                 <td>{{ $siswa->nama_lengkap ?? 'Non-Siswa' }}</td>
@@ -137,9 +137,23 @@
                                     </button>
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="10" class="text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-wrapper mt-3">
+                    <div class="pagination-info">
+                        Menampilkan {{ $transactions->firstItem() ?? 0 }} sampai {{ $transactions->lastItem() ?? 0 }} dari {{ $transactions->total() }} data
+                    </div>
+                    <div>
+                        {{ $transactions->links('vendor.pagination.custom') }}
+                    </div>
                 </div>
             </div>
     </section>
@@ -148,11 +162,6 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Initialize DataTable
-        $('#transactionTable').DataTable({
-            "order": [[1, "desc"]]
-        });
-
         // Handle form submission
         $('#transactionForm').on('submit', function(e) {
             e.preventDefault();

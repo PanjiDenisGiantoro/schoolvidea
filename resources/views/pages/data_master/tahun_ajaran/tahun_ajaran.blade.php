@@ -52,7 +52,7 @@
                             <td>{{ $item->tanggal_selesai ?? '-' }}</td>
                             <td>{{ $item->semester ?? '-' }}</td>
                             <td>
-                                @if($item->status == 1)
+                                @if($item->status == 'Aktif')
                                     <span class="badge bg-success">Aktif</span>
                                 @else
                                     <span class="badge bg-danger">Tidak Aktif</span>

@@ -23,6 +23,10 @@
         <td><strong>Unit Code:</strong></td>
         <td>{{ $unit_code }}</td>
     </tr>
+    <tr>
+        <td><strong>Nama Sekolah:</strong></td>
+        <td>{{ $nama_sekolah }}</td>
+    </tr>
 </table>
 
 <p>Gunakan informasi di atas untuk login ke portal VideaClass.</p>

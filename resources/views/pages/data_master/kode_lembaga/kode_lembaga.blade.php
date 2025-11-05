@@ -69,7 +69,7 @@
                                 <td>{{ $item->website ?? '-' }}</td>
                                 <td>{{ $item->nama_pimpinan ?? '-' }}</td>
                                 <td>
-                                    @if($item->status == 1)
+                                    @if($item->status == 'Aktif')
                                         <span class="badge bg-success">Aktif</span>
                                     @else
                                         <span class="badge bg-danger">Tidak Aktif</span>

@@ -30,10 +30,10 @@ class Unit extends Model
     {
         return $this->belongsTo(Yayasan::class, 'yayasan_id', 'id');
     }
-    public function getStatusAttribute($value)
-    {
-        return $value == 1 ? 'Aktif' : 'Tidak Aktif';
-    }
+//    public function getStatusAttribute($value)
+//    {
+//        return $value == 1 ? 'Aktif' : 'Tidak Aktif';
+//    }
     public function scopeIsactive($query)
     {
         return $query->where('status', '1');
