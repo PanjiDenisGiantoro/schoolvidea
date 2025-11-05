@@ -120,7 +120,7 @@ class KelasController extends Controller
                 'unit_id'         => 'required',
                 'officer_id'      => 'required',
                 'status'          => 'required|in:0,1', // atau 0/1 kalau status disimpan angka
-                'jurusan_id'      => 'required',
+                'jurusan_id'      => 'nullable',
             ]);
 
             Kelas::create([
@@ -185,7 +185,7 @@ class KelasController extends Controller
             'unit_id'         => 'required',
             'officer_id'      => 'required',
             'status'          => 'required|in:0,1',
-            'jurusan_id'      => 'required',
+            'jurusan_id'      => 'nullable',
         ]);
         $data = $request->all();
         $kelas = Kelas::findOrFail($id);
