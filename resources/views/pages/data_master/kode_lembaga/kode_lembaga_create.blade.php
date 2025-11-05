@@ -27,11 +27,8 @@
 
                 <div class="row ">
                     <div class="col-md-4">
-                        <x-input-field type="text" name="kode_yayasan" label="Kode Yayasan"
-                            placeholder="Masukkan Kode Yayasan" icon="bx bx-building" :value="old('kode_yayasan', $lembagaunit->kode_yayasan ?? '')" required />
                         <x-input-field type="text" name="no_hp" label="No. Telepon"
                             placeholder="Masukkan nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $lembagaunit->no_hp ?? '')" />
-
 
                         <x-input-field type="text" name="central_code" label="Central Code"
                             placeholder="Kosongkan Untuk Auto Generate" icon="bx bx-code" :value="old('central_code', $lembagaunit->central_code ?? '')" />
@@ -41,9 +38,9 @@
                             <label for="status" class="form-label">Status Unit </label>
                             <select name="status" id="status" class="form-select ">
                                 <option value="1"
-                                    {{ old('status', $lembagaunit->status ?? '') == 1 ? 'selected' : '' }}>Aktif</option>
+                                    {{ old('status', $lembagaunit->status ?? '') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
                                 <option value="0"
-                                    {{ old('status', $lembagaunit->status ?? '') == 0 ? 'selected' : '' }}>Tidak Aktif
+                                    {{ old('status', $lembagaunit->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif
                                 </option>
                             </select>
                         </div>

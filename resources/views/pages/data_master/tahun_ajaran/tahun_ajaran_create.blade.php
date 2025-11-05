@@ -45,9 +45,6 @@
                                required>
                     </div>
 
-
-
-
                     <div class="col-md-6">
                         <label for="status" class="form-label">Status <span style="color: #dc3545 !important;">*</span></label>
                         <select name="status" id="status" class="form-select w-full" required>
