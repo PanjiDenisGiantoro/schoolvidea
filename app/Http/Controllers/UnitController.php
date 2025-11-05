@@ -60,10 +60,15 @@ class UnitController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
+        $unit = Unit::where('id', Auth::user()->unit_id)->first();
 
+        if(Auth::user()->unit_id){
+            $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
+                $query->where('id', $yayasanId);
+            })->get();
+        }else{
+            $yayasan = Yayasan::where('status', '1')->get();
+        }
         $tipeunit = Tipeunit::where('status','1')->get();
         return view('pages.data_master.unit.unit_create', compact('yayasan','tipeunit'));
     }
