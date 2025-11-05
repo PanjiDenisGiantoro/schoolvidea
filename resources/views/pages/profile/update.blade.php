@@ -17,9 +17,6 @@
                     <form action="{{ route('profile.updatePassword') }}" method="POST">
                         @csrf
                         @method('PUT')
-
-
-
                         <div class="form-group mb-3">
                             <label for="new_password">Password Baru</label>
                             <input type="password" name="new_password" id="new_password" class="form-control @error('new_password') is-invalid @enderror" placeholder="Masukkan password baru" required>
@@ -34,7 +31,7 @@
                         </div>
 
                         <div class="text-center d-grid">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary link-danger">
                                 Update Password
                             </button>
                         </div>

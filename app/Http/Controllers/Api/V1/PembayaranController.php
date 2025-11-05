@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class PembayaranController extends Controller
 {
@@ -576,6 +577,327 @@ class PembayaranController extends Controller
         return response()->json([
             'success' => true,
             'data' => $receipt
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/pembayaran/{id}/upload-bukti",
+     *     tags={"Pembayaran"},
+     *     summary="Upload payment proof",
+     *     description="Upload file bukti pembayaran dengan keterangan dari siswa",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"file_bukti"},
+     *                 @OA\Property(property="file_bukti", type="string", format="binary"),
+     *                 @OA\Property(property="keterangan_siswa", type="string", example="Bukti transfer via BCA")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Upload successful"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Payment not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function uploadBukti(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'file_bukti' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'keterangan_siswa' => 'nullable|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $pembayaran = Pembayarantagihan::find($id);
+
+        if (!$pembayaran) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran not found'
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Delete old file if exists
+            if ($pembayaran->file_bukti && Storage::disk('public')->exists($pembayaran->file_bukti)) {
+                Storage::disk('public')->delete($pembayaran->file_bukti);
+            }
+
+            // Upload new file
+            $file = $request->file('file_bukti');
+            $fileName = 'bukti_bayar_' . $pembayaran->code_pembayaran . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('bukti_pembayaran', $fileName, 'public');
+
+            // Update pembayaran
+            $pembayaran->update([
+                'file_bukti' => $filePath,
+                'keterangan_siswa' => $request->keterangan_siswa,
+                'status_approval' => 'pending'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran berhasil diupload',
+                'data' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan'])
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/pembayaran/{id}/approve",
+     *     tags={"Pembayaran"},
+     *     summary="Approve payment",
+     *     description="Approve pembayaran oleh pihak sekolah",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="catatan_approval", type="string", example="Pembayaran sudah diverifikasi")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Payment approved"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Payment not found"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Payment already approved/rejected"
+     *     )
+     * )
+     */
+    public function approve(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'catatan_approval' => 'nullable|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $pembayaran = Pembayarantagihan::find($id);
+
+        if (!$pembayaran) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran not found'
+            ], 404);
+        }
+
+        if ($pembayaran->status_approval !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran sudah ' . ($pembayaran->status_approval === 'approved' ? 'disetujui' : 'ditolak')
+            ], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $pembayaran->update([
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'catatan_approval' => $request->catatan_approval
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil disetujui',
+                'data' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy'])
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/pembayaran/{id}/reject",
+     *     tags={"Pembayaran"},
+     *     summary="Reject payment",
+     *     description="Reject pembayaran oleh pihak sekolah",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"catatan_approval"},
+     *             @OA\Property(property="catatan_approval", type="string", example="Bukti pembayaran tidak jelas, mohon upload ulang")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Payment rejected"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Payment not found"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Payment already approved/rejected"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function reject(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'catatan_approval' => 'required|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $pembayaran = Pembayarantagihan::find($id);
+
+        if (!$pembayaran) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran not found'
+            ], 404);
+        }
+
+        if ($pembayaran->status_approval !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran sudah ' . ($pembayaran->status_approval === 'approved' ? 'disetujui' : 'ditolak')
+            ], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $pembayaran->update([
+                'status_approval' => 'rejected',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'catatan_approval' => $request->catatan_approval
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil ditolak',
+                'data' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy'])
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/pembayaran/pending-approval",
+     *     tags={"Pembayaran"},
+     *     summary="Get pending approval payments",
+     *     description="Get list of payments waiting for approval",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation"
+     *     )
+     * )
+     */
+    public function pendingApproval(Request $request)
+    {
+        $perPage = $request->get('per_page', 15);
+
+        $pembayaran = Pembayarantagihan::with([
+            'tagihanSiswa.siswa.kelas',
+            'tagihanSiswa.tagihan.kategori',
+            'user'
+        ])
+        ->where('status_approval', 'pending')
+        ->whereNotNull('file_bukti')
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $pembayaran
         ]);
     }
 }

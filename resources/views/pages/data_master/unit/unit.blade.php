@@ -66,7 +66,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-3">
-                                        <a href="{{ route('unit.show', $item->id) }}" class="link-primary text-muted">
+                                        <a href="{{ url('unit/show', $item->id ?? '') }}" class="link-primary text-muted">
                                             <i class="ri-eye-line align-middle fs-20"></i>
                                             Show
                                         </a>
