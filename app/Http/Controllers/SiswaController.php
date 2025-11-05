@@ -30,8 +30,14 @@ class SiswaController extends Controller
         $query = Siswa::with('unit', 'kelas', 'user', 'jurusan')
             ->where('status', '1');
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan siswa dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan siswa dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
             // Admin user filtering by unit
@@ -86,24 +92,41 @@ class SiswaController extends Controller
     }
     public function create()
     {
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })->where('status', '1')->get();
-
-        $yayasan = Yayasan::with('units')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('units', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
+        // Filter berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
+            $yayasan = Yayasan::where('id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-
-        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->where('status', '1')->get();
-
-        $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->where('status', 1)->get();
+            $jurusans = Jurusan::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', 1)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan data dari unit tersebut saja
+            $yayasan = Yayasan::with('units')
+                ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                    $query->whereHas('units', function ($q) use ($unitId) {
+                        $q->where('id', $unitId);
+                    });
+                })->where('status', '1')->get();
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status', '1')->get();
+            $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })->where('status', '1')->get();
+            $jurusans = Jurusan::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })->where('status', 1)->get();
+        } else {
+            // Admin bisa melihat semua
+            $yayasan = Yayasan::where('status', '1')->get();
+            $units = Unit::where('status', '1')->get();
+            $kelas = Kelas::where('status', '1')->get();
+            $jurusans = Jurusan::where('status', 1)->get();
+        }
 
         $logoUnit = $units->first()->image ?? null;
 
@@ -149,12 +172,13 @@ class SiswaController extends Controller
         try {
             // Buat user baru
             $user = User::create([
-                'name'     => $request->name,
-                'username' => $request->nisn,
-                'email'    => $request->email,
-                'password' => bcrypt($request->nisn),
-                'rfid_no'  => $request->rfid_no,
-                'unit_id'  => $request->unit_id,
+                'name'       => $request->name,
+                'username'   => $request->nisn,
+                'email'      => $request->email,
+                'password'   => bcrypt($request->nisn),
+                'rfid_no'    => $request->rfid_no,
+                'unit_id'    => $request->unit_id,
+                'yayasan_id' => Auth::user()->yayasan_id,
             ]);
 
             // Ambil role "siswa"
@@ -318,10 +342,11 @@ class SiswaController extends Controller
 
             // Update User data
             $userData = [
-                'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'unit_id' => $request->unit_id,
+                'name'       => $request->name,
+                'username'   => $request->username,
+                'email'      => $request->email,
+                'unit_id'    => $request->unit_id,
+                'yayasan_id' => Auth::user()->yayasan_id,
             ];
 
             // Update password hanya jika diisi

@@ -17,8 +17,14 @@ class KategoritagihanController extends Controller
         // Build query
         $query = Kategoritagihan::with('unit');
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan kategori dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan kategori dari unit tersebut saja
             $query->whereHas('unit', function ($q) {
                 $q->where('id', Auth::user()->unit_id);
             });
@@ -59,11 +65,17 @@ class KategoritagihanController extends Controller
 
     public function create()
     {
-        $units = Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
-            $query->where('id',$unit_id);
-        })
-            ->where('status','1')
-            ->get();
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
+                $query->where('id',$unit_id);
+            })->where('status','1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+        }
+
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
