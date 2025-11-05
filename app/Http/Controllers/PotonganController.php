@@ -22,8 +22,14 @@ class PotonganController extends Controller
         // Build query
         $query = Potongan::with('unit', 'kelas', 'kategoriTagihan');
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan data dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
             // Admin user filtering by unit
@@ -58,13 +64,24 @@ class PotonganController extends Controller
 
     public function create()
     {
-        $units = Unit::get();
-        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unit_id) {
-            $query->where('unit_id', $unit_id);
-        })->where('status', '1')->get();
-        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id, function ($unit, $query) {
-            $query('unit_id', $query->unit_id);
-        })->get();
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+            $kelas = Kelas::where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('status', '1')->get();
+        }
         return view('pages.potongan.potongan_create', compact('units', 'kategoriTagihan','kelas'));
 
     }
@@ -162,13 +179,25 @@ class PotonganController extends Controller
 
         $potongan = Potongan::with(['unit', 'kelas', 'kategoriTagihan', 'potonganSiswa.tagihanSiswa', 'potonganSiswa.tagihan', 'tagihan'])
             ->findOrFail($id);
-        $units = Unit::get();
-        $kelas = Kelas::when(Auth::user()->unit_id, function ($query, $unit_id) {
-            $query->where('unit_id', $unit_id);
-        })->where('status', '1')->get();
-        $kategoriTagihan = Kategoritagihan::when(Auth::user()->unit_id, function ($unit, $query) {
-            $query('unit_id', $query->unit_id);
-        })->get();
+
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+            $kelas = Kelas::where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('status', '1')->get();
+        }
         return view('pages.potongan.potongan_create', compact('potongan', 'units', 'kategoriTagihan', 'kelas'));
     }
 
