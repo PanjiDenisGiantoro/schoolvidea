@@ -36,7 +36,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="card rounded-3 border-0 shadow-sm mb-4">
+    <div class="card rounded-3 mb-4 border-0 shadow-sm">
         <div class="card-body">
             <h5 class="fw-bold text-primary mb-3">
                 <i class="bx bx-filter"></i> Filter Transaksi
@@ -47,7 +47,7 @@
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
-                            <option value="">Pilih Unit</option>
+                            <option value="">Semua Unit</option>
                             @foreach($units as $unit)
                                 <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}
@@ -61,10 +61,12 @@
                         <label for="jenis_transaksi" class="form-label">Jenis Transaksi</label>
                         <select name="jenis_transaksi" id="jenis_transaksi" class="form-select">
                             <option value="">Semua Jenis</option>
-                            <option value="setoran_tabungan" {{ request('jenis_transaksi') == 'setoran_tabungan' ? 'selected' : '' }}>
+                            <option value="setoran_tabungan"
+                                {{ request('jenis_transaksi') == 'setoran_tabungan' ? 'selected' : '' }}>
                                 Setoran Tabungan
                             </option>
-                            <option value="penarikan_tabungan" {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
+                            <option value="penarikan_tabungan"
+                                {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
                                 Penarikan Tabungan
                             </option>
                             <option value="pembayaran" {{ request('jenis_transaksi') == 'pembayaran' ? 'selected' : '' }}>
@@ -80,23 +82,23 @@
                     {{-- Filter Kode Pembayaran --}}
                     <div class="col-md-3">
                         <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
-                        <input type="text" name="kode_pembayaran" id="kode_pembayaran"
-                               class="form-control" placeholder="Cari kode pembayaran"
-                               value="{{ request('kode_pembayaran') }}">
+                        <input type="text" name="kode_pembayaran" id="kode_pembayaran" class="form-control p-3"
+                            placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}"
+                            style="font-size: 14px">
                     </div>
 
                     {{-- Filter Tanggal Dari --}}
                     <div class="col-md-3">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
-                        <input type="date" name="dari_tanggal" id="dari_tanggal"
-                               class="form-control" value="{{ request('dari_tanggal') }}">
+                        <input type="date" name="dari_tanggal" id="dari_tanggal" class="form-control p-3"
+                            value="{{ request('dari_tanggal') }}" style="font-size: 14px">
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
                     <div class="col-md-3">
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
-                        <input type="date" name="sampai_tanggal" id="sampai_tanggal"
-                               class="form-control" value="{{ request('sampai_tanggal') }}">
+                        <input type="date" name="sampai_tanggal" id="sampai_tanggal" class="form-control p-3"
+                            value="{{ request('sampai_tanggal') }}" style="font-size: 14px">
                     </div>
 
                     {{-- Tombol Filter --}}
@@ -150,14 +152,14 @@
                                 <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
                                 <td>
                                     @php
-                                        $badgeColor = match($transaksi->jenis_transaksi) {
+                                        $badgeColor = match ($transaksi->jenis_transaksi) {
                                             'setoran_tabungan' => 'success',
                                             'penarikan_tabungan' => 'warning',
                                             'pembayaran' => 'info',
                                             'tagihan' => 'info',
                                             default => 'secondary',
                                         };
-                                        $jenisText = match($transaksi->jenis_transaksi) {
+                                        $jenisText = match ($transaksi->jenis_transaksi) {
                                             'setoran_tabungan' => 'Setoran Tabungan',
                                             'penarikan_tabungan' => 'Penarikan Tabungan',
                                             'pembayaran' => 'Pembayaran',
@@ -168,26 +170,30 @@
                                     <span class="badge rounded-pill bg-{{ $badgeColor }}">
                                         {{ $jenisText }}
                                     </span>
-                                    @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                                    @if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
                                         <br>
                                         <small class="text-muted">
-                                            @if($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
+                                            @if ($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
                                                 {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-' }}
                                             @endif
                                         </small>
-                                        @if($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
+                                        @if (
+                                            $transaksi->pembayaranTagihan->tagihanSiswa &&
+                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan &&
+                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
                                             <br>
                                             <small class="text-muted">
-                                                @foreach($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
-                                                    <span class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
+                                                @foreach ($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
+                                                    <span
+                                                        class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
                                                 @endforeach
                                             </small>
                                         @endif
                                     @endif
                                 </td>
                                 <td>
-                                    @if($transaksi->penerima)
-                                        @if($transaksi->penerima_tipe === 'App\Models\Siswa')
+                                    @if ($transaksi->penerima)
+                                        @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
                                             {{ $transaksi->penerima->user->name ?? '-' }}
                                             <br>
                                             <small class="text-muted">NISN: {{ $transaksi->penerima->nisn ?? '-' }}</small>

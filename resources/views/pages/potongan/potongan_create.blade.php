@@ -139,7 +139,7 @@
                     <div class="col-md-6">
                         <label for="nilai" class="form-label">Nominal Potongan</label>
                         <input type="number" class="form-control" id="nilai" name="nilai"
-                               value="{{ isset($potongan) ? $potongan->nilai : '' }}" required>
+                            value="{{ isset($potongan) ? $potongan->nilai : '' }}" required>
                     </div>
 
                     <div class="col-md-6">
@@ -150,6 +150,8 @@
 
                 <div class="d-flex justify-content-end mt-3">
                     <button type="submit" class="btn btn-primary">Proses Tambah Potongan</button>
+                    <button class="btn btn-secondary" onclick="history.go(-1)">Kembali</button>
+
                 </div>
             </form>
         </div>
@@ -211,6 +213,7 @@
             }
         });
 
+        // Load students dynamically when class is selected
         // Load students dynamically when class is selected
         document.getElementById('kelas_id').addEventListener('change', function() {
             const kelasId = this.value;
