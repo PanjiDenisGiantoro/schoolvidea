@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Guru & Staff'
+        'subTitle' => 'Data Guru & Staff',
     ])
 
     <div class="card">
@@ -21,13 +21,14 @@
                 <!-- Search and Filter Form -->
                 <div class="col-lg-12 mb-3">
                     <form method="GET" action="{{ route('officer.index') }}" class="row g-3">
-                        @if(auth()->user()->unit_id === null)
+                        @if (auth()->user()->unit_id === null)
                             <!-- Unit Filter for Admin -->
                             <div class="col-md-3">
                                 <select name="unit_id" class="form-select" onchange="this.form.submit()">
                                     <option value="">-- Semua Unit --</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}"
+                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                             {{ $unit->nama_unit }}
                                         </option>
                                     @endforeach
@@ -36,7 +37,9 @@
                         @endif
                         <!-- Search Input -->
                         <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
-                            <input type="text" name="search" class="form-control p-3" placeholder="Cari guru/staff (Nama, NIP, Email, Role, Unit, dll...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" style="font-size: 14px"
+                                placeholder="Cari guru/staff (Nama, NIP, Email, Role, Unit, dll...)"
+                                value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -46,55 +49,58 @@
                     </form>
                 </div>
 
-                <table class="table table-bordered table-striped">
+                <table class="table-bordered table-striped table">
                     <thead>
-                    @if(!empty($headers) && is_array($headers))
-                        <tr>
-                            @foreach($headers as $header)
-                                <th>{{ $header }}</th>
-                            @endforeach
-                        </tr>
-                    @else
-                        <th>No data</th>
-                    @endif
+                        @if (!empty($headers) && is_array($headers))
+                            <tr>
+                                @foreach ($headers as $header)
+                                    <th>{{ $header }}</th>
+                                @endforeach
+                            </tr>
+                        @else
+                            <th>No data</th>
+                        @endif
                     </thead>
                     <tbody>
-                    @forelse($officer as $index => $item)
-                        <tr>
-                            <td>{{ $officer->firstItem() + $index }}</td>
-                            <td>{{ $item->officer->unit->nama_unit ?? '-' }}</td>
-                            <td>{{ $item->name ?? '-' }}</td>
-                            <td>{{ $item->roles->pluck('name')->join(', ') ?: '-' }}</td>
-                            <td>{{ $item->officer->nip ?? '-' }}</td>
-                            <td>{{ $item->email ?? '-' }}</td>
-                            <td>{{ $item->officer->va_guru ?? '-' }}</td>
-                            <td>
-                                <div class="d-flex gap-3">
-                                    @if($item->officer)
-                                        <a href="{{ url('officer/show/'.$item->officer->id) }}" class="link-primary text-muted">
-                                            <i class="ri-eye-line align-middle fs-20"></i> Show
-                                        </a>
-                                        <a href="{{ route('officer.edit', $item->officer->id) }}" class="link-warning text-muted">
-                                            <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                        </a>
-                                        <a href="{{ route('officer.destroy', $item->officer->id) }}" class="link-danger text-muted">
-                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                        </a>
-                                    @else
-                                        <a href="{{ route('officer.destroy', $item->officer->id ?? $item->id) }}" class="link-danger text-muted">
-                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                        </a>
+                        @forelse($officer as $index => $item)
+                            <tr>
+                                <td>{{ $officer->firstItem() + $index }}</td>
+                                <td>{{ $item->officer->unit->nama_unit ?? '-' }}</td>
+                                <td>{{ $item->name ?? '-' }}</td>
+                                <td>{{ $item->roles->pluck('name')->join(', ') ?: '-' }}</td>
+                                <td>{{ $item->officer->nip ?? '-' }}</td>
+                                <td>{{ $item->email ?? '-' }}</td>
+                                <td>{{ $item->officer->va_guru ?? '-' }}</td>
+                                <td>
+                                    <div class="d-flex gap-3">
+                                        @if ($item->officer)
+                                            <a href="{{ url('officer/show/' . $item->officer->id) }}"
+                                                class="link-primary text-muted">
+                                                <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                            </a>
+                                            <a href="{{ route('officer.edit', $item->officer->id) }}"
+                                                class="link-warning text-muted">
+                                                <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                            </a>
+                                            <a href="{{ route('officer.destroy', $item->officer->id) }}"
+                                                class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                            </a>
+                                        @else
+                                            <a href="{{ route('officer.destroy', $item->officer->id ?? $item->id) }}"
+                                                class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                            </a>
+                                        @endif
+                                    </div>
 
-                                    @endif
-                                </div>
-
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center">Tidak ada data ditemukan</td>
-                        </tr>
-                    @endforelse
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
 
@@ -103,7 +109,8 @@
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
 
-                            Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari {{ $officer->total() }} data
+                            Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari
+                            {{ $officer->total() }} data
                         </div>
                         <div>
                             {{ $officer->links('vendor.pagination.custom') }}
@@ -119,7 +126,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -143,7 +150,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

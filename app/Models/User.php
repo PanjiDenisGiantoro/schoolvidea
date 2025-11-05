@@ -14,7 +14,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+    use Notifiable;
     use HasRoles;
 
     /**
@@ -70,7 +71,7 @@ class User extends Authenticatable implements JWTSubject
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn($word) => Str::substr($word, 0, 1))
+            ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
     public function officer()
@@ -125,4 +126,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+    public function units()
+    {
+        return $this->belongsTo(\App\Models\Unit::class, 'unit_id', 'id');
+    }
+
 }

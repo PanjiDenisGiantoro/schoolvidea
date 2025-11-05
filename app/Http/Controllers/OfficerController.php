@@ -36,21 +36,21 @@ class OfficerController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhereHas('officer', function($q) use ($search) {
+                  ->orWhereHas('officer', function ($q) use ($search) {
                       $q->where('nip', 'like', "%{$search}%")
                         ->orWhere('nuptk', 'like', "%{$search}%")
                         ->orWhere('nik', 'like', "%{$search}%")
                         ->orWhere('va_guru', 'like', "%{$search}%")
                         ->orWhere('no_hp', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('officer.unit', function($q) use ($search) {
+                  ->orWhereHas('officer.unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('roles', function($q) use ($search) {
+                  ->orWhereHas('roles', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
                   });
             });
@@ -167,7 +167,9 @@ class OfficerController extends Controller
             DB::commit();
 
             return redirect()->route('officer.index')
-                ->with('success', 'Officer berhasil ditambahkan dengan role ' . $roleSpatie->name);
+                ->
+with('success', 'Data user berhasil diperbarui.');
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);

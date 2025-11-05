@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Tahun Ajaran'
+        'subTitle' => 'Data Tahun Ajaran',
     ])
 
     <div class="card">
@@ -23,7 +23,9 @@
                     <form method="GET" action="{{ route('tahun_ajaran.index') }}" class="row g-3">
                         <!-- Search Input -->
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari tahun ajaran (Tahun, Semester, Tanggal...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" style="font-size: 14px"
+                                placeholder="Cari tahun ajaran (Tahun, Semester, Tanggal...)"
+                                value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -33,53 +35,55 @@
                     </form>
                 </div>
 
-                <table class="table table-bordered table-striped">
+                <table class="table-bordered table-striped table">
                     <thead>
-                    @if(!empty($headers) && is_array($headers))
-                        @foreach($headers as $header)
-                            <th>{{ $header }}</th>
-                        @endforeach
-                    @else
-                        <th>No data</th>
-                    @endif
+                        @if (!empty($headers) && is_array($headers))
+                            @foreach ($headers as $header)
+                                <th>{{ $header }}</th>
+                            @endforeach
+                        @else
+                            <th>No data</th>
+                        @endif
                     </thead>
                     <tbody>
-                    @forelse($tahun_ajaran as $index => $item)
-                        <tr>
-                            <td>{{ $tahun_ajaran->firstItem() + $index }}</td>
-                            <td>{{ $item->tahun_ajaran ?? '-' }}</td>
-                            <td>{{ $item->tanggal_mulai ?? '-' }}</td>
-                            <td>{{ $item->tanggal_selesai ?? '-' }}</td>
-                            <td>{{ $item->semester ?? '-' }}</td>
-                            <td>
-                                @if($item->status == 'Aktif')
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Tidak Aktif</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex gap-3">
-                                    <a href="{{ url('tahun_ajaran/show/'.$item->id) }}" class="link-primary text-muted">
-                                        <i class="ri-eye-line align-middle fs-20"></i>
-                                        Show
-                                    </a>
-                                    <a href="{{ route('tahun_ajaran.edit', $item->id) }}" class="link-warning text-muted">
-                                        <i class="ri-edit-line align-middle fs-20"></i>
-                                        Edit
-                                    </a>
-                                    <a href="{{ route('tahun_ajaran.destroy', $item->id) }}" class="link-danger text-muted">
-                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i>
-                                        Hapus
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
-                        </tr>
-                    @endforelse
+                        @forelse($tahun_ajaran as $index => $item)
+                            <tr>
+                                <td>{{ $tahun_ajaran->firstItem() + $index }}</td>
+                                <td>{{ $item->tahun_ajaran ?? '-' }}</td>
+                                <td>{{ $item->tanggal_mulai ?? '-' }}</td>
+                                <td>{{ $item->tanggal_selesai ?? '-' }}</td>
+                                <td>{{ $item->semester ?? '-' }}</td>
+                                <td>
+                                    @if ($item->status == 'Aktif')
+                                        <span class="badge bg-success">Aktif</span>
+                                    @else
+                                        <span class="badge bg-danger">Tidak Aktif</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-3">
+                                        <a href="{{ url('tahun_ajaran/show/' . $item->id) }}" class="link-primary text-muted">
+                                            <i class="ri-eye-line fs-20 align-middle"></i>
+                                            Show
+                                        </a>
+                                        <a href="{{ route('tahun_ajaran.edit', $item->id) }}"
+                                            class="link-warning text-muted">
+                                            <i class="ri-edit-line fs-20 align-middle"></i>
+                                            Edit
+                                        </a>
+                                        <a href="{{ route('tahun_ajaran.destroy', $item->id) }}"
+                                            class="link-danger text-muted">
+                                            <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
+                                            Hapus
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
 
@@ -88,7 +92,8 @@
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
 
-                            Menampilkan {{ $tahun_ajaran->firstItem() ?? 0 }} sampai {{ $tahun_ajaran->lastItem() ?? 0 }} dari {{ $tahun_ajaran->total() }} data
+                            Menampilkan {{ $tahun_ajaran->firstItem() ?? 0 }} sampai {{ $tahun_ajaran->lastItem() ?? 0 }}
+                            dari {{ $tahun_ajaran->total() }} data
                         </div>
                         <div>
                             {{ $tahun_ajaran->links('vendor.pagination.custom') }}
@@ -104,7 +109,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -128,7 +133,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',
