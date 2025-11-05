@@ -165,6 +165,7 @@ class SiswaController extends Controller
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'no_hp' => 'nullable|string|digits_between:10,13',
+            'tahun_ajaran_id' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -326,6 +327,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp,' . $siswa->id,
             'password' => 'nullable|string|min:6',
+            'tahun_ajaran_id' => 'required'
         ], [
             'email.unique' => 'Email sudah digunakan oleh user lain.',
             'username.unique' => 'Username sudah digunakan oleh user lain.',
