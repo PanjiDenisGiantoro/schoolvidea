@@ -153,20 +153,22 @@ class KeuanganTransaksiController extends Controller
             ->count();
 
         // Get units that have transactions - PERBAIKAN DI SINI
-        $unitsWithTransactions = collect();
-
         if (Auth::user()->yayasan_id) {
             // Jika user adalah yayasan, ambil unit dari yayasan yang punya transaksi
-            $unitsWithTransactions = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)
-                ->whereHas('siswa.transaksis') // Hanya unit yang punya siswa dengan transaksi
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)
+                ->whereHas('siswa', function($query) {
+                    $query->whereHas('transaksis');
+                })
                 ->orderBy('nama_unit')
                 ->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user adalah unit, tampilkan unit tersebut
-            $unitsWithTransactions = \App\Models\Unit::where('id', Auth::user()->unit_id)->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->orderBy('nama_unit')->get();
         } else {
             // Jika user adalah admin, tampilkan semua unit yang punya transaksi
-            $unitsWithTransactions = \App\Models\Unit::whereHas('siswa.transaksis')
+            $units = \App\Models\Unit::whereHas('siswa', function($query) {
+                $query->whereHas('transaksis');
+            })
                 ->orderBy('nama_unit')
                 ->get();
         }
@@ -176,9 +178,9 @@ class KeuanganTransaksiController extends Controller
             'total_pemasukan',
             'total_pengeluaran',
             'total_transaksi',
-            'units' => $unitsWithTransactions
-    )
-}
+            'units'
+        ));
+    }
     /**
      * Detail transaksi dengan history jurnal dan logs
      */
