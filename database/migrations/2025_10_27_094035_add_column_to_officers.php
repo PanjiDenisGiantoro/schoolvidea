@@ -12,10 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('officers', function (Blueprint $table) {
-            $table->string('name')->nullable();
+            if (!Schema::hasColumn('officers', 'name')) {
+                $table->string('name')->nullable();
+            }
         });
+
         Schema::table('officers', function (Blueprint $table) {
-            $table->dropColumn(['jurusan', 'tahun_ajaran_id']);
+            if (Schema::hasColumn('officers', 'jurusan')) {
+                $table->dropColumn('jurusan');
+            }
+            if (Schema::hasColumn('officers', 'tahun_ajaran_id')) {
+                $table->dropForeign(['tahun_ajaran_id']);
+                $table->dropColumn('tahun_ajaran_id');
+            }
         });
     }
 

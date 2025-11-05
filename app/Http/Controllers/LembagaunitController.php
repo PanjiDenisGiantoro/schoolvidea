@@ -15,14 +15,17 @@ class LembagaunitController extends Controller
         // Build query
         $query = Yayasan::query();
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
-            // Join dengan tabel units berdasarkan yayasan_id
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan yayasan tersebut saja
+            $query->where('yayasans.id', Auth::user()->yayasan_id);
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, join dengan units dan tampilkan yayasan yang terkait
             $query->join('units', 'units.yayasan_id', '=', 'yayasans.id')
                   ->where('units.id', Auth::user()->unit_id)
                   ->select('yayasans.*'); // Select semua kolom dari yayasans
         } elseif ($request->filled('unit_id')) {
-            // Join dengan tabel units untuk filter berdasarkan unit yang dipilih admin
+            // Jika admin memilih unit tertentu, filter berdasarkan unit tersebut
             $query->join('units', 'units.yayasan_id', '=', 'yayasans.id')
                   ->where('units.id', $request->unit_id)
                   ->select('yayasans.*');
@@ -62,6 +65,12 @@ class LembagaunitController extends Controller
     }
     public function create()
     {
+        // Jika user punya yayasan_id, tidak boleh buat yayasan baru
+        if(Auth::user()->yayasan_id){
+            return redirect()->route('lembagaunit.index')
+                ->with('danger', 'Anda sudah terdaftar di yayasan, tidak dapat membuat yayasan baru');
+        }
+
         if(Auth::user()->unit_id){
             $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
             if($ceknotdoubleunit){
@@ -78,7 +87,6 @@ class LembagaunitController extends Controller
 
             $request->validate([
             'nama_yayasan' => 'required|string|max:255',
-            'kode_yayasan' => 'required',
             'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
             'no_hp'        => 'nullable|string|max:20',
             'email'        => 'nullable|email',
@@ -96,7 +104,6 @@ class LembagaunitController extends Controller
 
         Yayasan::create([
             'nama_yayasan' => $request->nama_yayasan,
-            'kode_yayasan' => $request->kode_yayasan,
             'central_code' => $centralCode,
             'no_hp'        => $request->no_hp,
             'email'        => $request->email,
