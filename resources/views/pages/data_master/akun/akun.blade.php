@@ -50,6 +50,7 @@
                 <table class="table table-bordered table-striped">
                     <thead>
                     <tr>
+                        <th>No</th>
                         <th>Kode Akun</th>
                         <th>Nama Akun</th>
                         <th>Kategori</th>
