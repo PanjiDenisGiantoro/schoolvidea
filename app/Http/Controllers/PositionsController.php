@@ -10,8 +10,19 @@ use Illuminate\Support\Str;
 
 class PositionsController extends Controller
 {
-    public function index(){
-        $positions = Positions::get();
+    public function index(Request $request){
+        // Build query
+        $query = Positions::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('positions_name', 'like', "%{$search}%");
+        }
+
+        // Paginate results
+        $positions = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Nama Jabatan',

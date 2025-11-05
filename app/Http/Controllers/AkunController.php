@@ -8,13 +8,40 @@ use Illuminate\Support\Facades\Auth;
 
 class AkunController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $akuns = Akun::with('parent', 'unit')
-            ->when(Auth::user()->unit_id,function ($query, $unit_id){
-                $query->where('unit_id',$unit_id);
-            })
-            ->get(); // ambil relasi parent & unit
+        $units = \App\Models\Unit::all();
+
+        // Build query
+        $query = Akun::with('parent', 'unit');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('kode_akun', 'like', "%{$search}%")
+                  ->orWhere('nama_akun', 'like', "%{$search}%")
+                  ->orWhere('kategori_akun', 'like', "%{$search}%")
+                  ->orWhere('tipe', 'like', "%{$search}%")
+                  ->orWhereHas('parent', function($q) use ($search) {
+                      $q->where('nama_akun', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $akuns = $query->paginate(15)->appends($request->except('page'));
+
         $headers = [
             'No',
             'Kode Akun',
@@ -27,7 +54,7 @@ class AkunController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.akun.akun', compact('akuns', 'headers'));
+        return view('pages.data_master.akun.akun', compact('akuns', 'headers', 'units'));
     }
     private function buildAkunOptions(
         $akunList,

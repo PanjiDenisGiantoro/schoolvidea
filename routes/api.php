@@ -35,7 +35,8 @@ Route::prefix("v1")->group(function () {
     });
 
     // Protected routes
-    Route::middleware("auth:api")->group(function () {
+    Route::middleware('auth:api')->group(function () {
+
         // Siswa routes
         // Route::apiResource("siswa", SiswaController::class);
         Route::get("siswa/kelas/{kelasId}", [

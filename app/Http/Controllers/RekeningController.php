@@ -11,9 +11,38 @@ use Illuminate\Support\Facades\Auth;
 
 class RekeningController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rekenings = Rekening::with( 'unit')->get();
+        $units = Unit::all();
+
+        // Build query
+        $query = Rekening::with('unit');
+
+        // Filter by unit_id if user has unit_id OR if admin selects a unit
+        if (Auth::user()->unit_id) {
+            $query->where('unit_id', Auth::user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('type_rekening', 'like', "%{$search}%")
+                  ->orWhere('nama_rekening', 'like', "%{$search}%")
+                  ->orWhere('no_rekening', 'like', "%{$search}%")
+                  ->orWhere('bank', 'like', "%{$search}%")
+                  ->orWhere('KCP', 'like', "%{$search}%")
+                  ->orWhere('nama_pemilik_rekening', 'like', "%{$search}%")
+                  ->orWhereHas('unit', function($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Paginate results
+        $rekenings = $query->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -28,7 +57,7 @@ class RekeningController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.rekening.rekening', compact('rekenings','headers'));
+        return view('pages.data_master.rekening.rekening', compact('rekenings','headers', 'units'));
     }
 
     public function create()
