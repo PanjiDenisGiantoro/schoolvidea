@@ -38,11 +38,11 @@ class TabunganController extends Controller
 
 // Filter transaksi keuangan berdasarkan user_id
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->whereIn('user_id', $userIds)
+            ->whereIn('penerima_id', $userIds)
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->whereIn('user_id', $userIds)
+            ->whereIn('penerima_id', $userIds)
             ->sum('jumlah');
         return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
     }
