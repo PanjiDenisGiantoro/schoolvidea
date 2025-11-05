@@ -116,7 +116,7 @@ class AkunController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode_akun' => 'required|unique:akuns,kode_akun',
+            'kode_akun' => 'required',
             'nama_akun' => 'required',
             'tipe' => 'required|in:ASET,LIABILITAS,EKUITAS,PENDAPATAN,BEBAN',
             'kategori_akun' => 'nullable',
@@ -172,7 +172,7 @@ class AkunController extends Controller
     {
         $akun = Akun::findOrFail($id);
         $request->validate([
-            'kode_akun' => 'required|unique:akuns,kode_akun,' . $akun->id,
+            'kode_akun' => 'required',
             'nama_akun' => 'required',
             'tipe' => 'required|in:ASET,LIABILITAS,EKUITAS,PENDAPATAN,BEBAN',
             'kategori_akun' => 'nullable',
