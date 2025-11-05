@@ -7,6 +7,7 @@ use App\Models\Kelas;
 use App\Models\Roles_petugas;
 use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
+use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
@@ -128,6 +129,7 @@ class SiswaController extends Controller
             $jurusans = Jurusan::where('status', 1)->get();
         }
 
+        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
         $logoUnit = $units->first()->image ?? null;
 
         return view('pages.data_master.siswa.siswa_create', compact(
@@ -135,20 +137,21 @@ class SiswaController extends Controller
             'yayasan',
             'units',
             'jurusans',
-            'logoUnit'
+            'logoUnit',
+            'tahunajaran',
         ));
     }
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn',
+            'nisn' => 'required',
             'name' => 'required|string|max:255',
             'username' => 'nullable|string',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'email' => 'required|string|email|max:255',
             'kelas_id' => 'required',
             'unit_id' => 'required',
-            'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no',
-            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa',
+            'rfid_no' => 'nullable|string|max:255',
+            'va_siswa' => 'nullable|string|max:255',
             'nis' => 'nullable|string|max:20|unique:siswas,nis',
             'nik' => 'nullable|string|max:20|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -156,16 +159,16 @@ class SiswaController extends Controller
             'no_hp_ortu' => 'nullable|string|max:20',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
-            'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening',
+            'no_rekening' => 'nullable|string|max:50',
             'jurusan_id' => 'nullable|exists:jurusans,id',
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp',
+            'no_hp' => 'nullable|string|digits_between:10,13',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with('danger', $validator->errors()->first());
         }
 
         DB::beginTransaction();
@@ -213,6 +216,7 @@ class SiswaController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'alamat'          => $request->alamat,
                 'name'            => $request->name,
+                'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
@@ -336,7 +340,7 @@ class SiswaController extends Controller
                 ->with('error', 'Terdapat kesalahan dalam pengisian form.');
         }
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
         try {
             Log::info('Starting transaction update...');
 
@@ -379,6 +383,7 @@ class SiswaController extends Controller
                 'status' => $request->status,
                 'rfid_no' => $request->rfid_no,
                 'va_siswa' => $request->va_siswa,
+                'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ];
 
             // Handle image
@@ -418,13 +423,14 @@ class SiswaController extends Controller
                 Log::warning('QR Code generation skipped: ' . $qrException->getMessage());
             }
 
-            DB::commit();
+//            DB::commit();
             Log::info('=== UPDATE SISWA SUCCESS ===');
 
             return redirect()->route('siswa.index')
                 ->with('success', 'Data siswa berhasil diperbarui!');
         } catch (\Exception $e) {
-            DB::rollBack();
+//            DB::rollBack();
+            dd($e->getMessage());
             Log::error('UPDATE FAILED: ' . $e->getMessage());
             Log::error('File: ' . $e->getFile());
             Log::error('Line: ' . $e->getLine());

@@ -111,6 +111,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
         Route::post('/upload', [UnitController::class, 'upload'])->middleware('permission:upload_unit')->name('unit.upload');
         Route::get('/{unitId}/kelas', [UnitController::class, 'listkelas'])->name('unit.kelas');
+        Route::get('/by-unit/{unitId}', [\App\Http\Controllers\UnitController::class, 'getKelasByUnit']);
+
     });
 
     Route::prefix('tahun_ajaran')->middleware('permission:view_tahun_ajaran')->group(function () {

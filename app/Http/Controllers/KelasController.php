@@ -118,7 +118,7 @@ class KelasController extends Controller
                 'kode_kelas' => 'required',
                 'tahun_ajaran_id' => 'required',
                 'unit_id'         => 'required',
-                'officer_id'      => 'required',
+                'officer_id'      => 'nullable',
                 'status'          => 'required|in:0,1', // atau 0/1 kalau status disimpan angka
                 'jurusan_id'      => 'nullable',
             ]);
@@ -183,7 +183,7 @@ class KelasController extends Controller
             'tahun_ajaran_id' => 'required',
             'kode_kelas' => 'required',
             'unit_id'         => 'required',
-            'officer_id'      => 'required',
+            'officer_id'      => 'nullable',
             'status'          => 'required|in:0,1',
             'jurusan_id'      => 'nullable',
         ]);

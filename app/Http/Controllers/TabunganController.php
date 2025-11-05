@@ -49,29 +49,25 @@ class TabunganController extends Controller
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
-            $kelas = Kelas::whereHas('unit', function($q) {
-                $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
         } elseif (Auth::user()->unit_id) {
-            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
         } else {
-            $kelas = Kelas::where('status','1')->get();
+            $units = \App\Models\Unit::where('status','1')->get();
         }
-        return view('pages.tabungan.create', compact('kelas'));
+        return view('pages.tabungan.create', compact('units'));
     }
     public function tarik()
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
-            $kelas = Kelas::whereHas('unit', function($q) {
-                $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
         } elseif (Auth::user()->unit_id) {
-            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
         } else {
-            $kelas = Kelas::get();
+            $units = \App\Models\Unit::where('status','1')->get();
         }
-        return view('pages.tabungan.tarik', compact('kelas'));
+        return view('pages.tabungan.tarik', compact('units'));
     }
 
 

@@ -12,16 +12,22 @@
         <div class="col-12">
             <div class="card p-4 shadow-sm rounded-4 border-0">
                 <div class="row g-3 align-items-center">
-                    <div class="col-md-6">
-                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                    <div class="col-md-4">
+                        <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
+                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                            <option value="">-- Pilih Unit --</option>
+                            @foreach($units as $u)
+                                <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
                         <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
@@ -128,17 +134,61 @@
         });
 
         // Element DOM
+        const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
 
-        // Load siswa berdasarkan kelas
+        // Initialize Choices for dependent dropdowns
+        const kelasChoices = new Choices(filterKelas, {
+            removeItemButton: false,
+            shouldSort: false
+        });
+
         const siswaChoices = new Choices(siswaSelect, {
             removeItemButton: false,
             shouldSort: false
         });
 
+        // Load kelas berdasarkan unit
+        filterUnit.addEventListener('change', function() {
+            const unitId = this.value;
+
+            // reset select kelas dan siswa
+            kelasChoices.clearStore();
+            kelasChoices.setChoices([{ value: '', label: '-- Pilih Kelas --', selected: true }], 'value', 'label', true);
+            siswaChoices.clearStore();
+            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
+            kelasHidden.value = '';
+
+            if (!unitId) return;
+
+            fetch(`/unit/by-unit/${unitId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.length) {
+                        kelasChoices.setChoices([{ value: '', label: 'Tidak ada kelas', selected: true }], 'value', 'label', true);
+                        return;
+                    }
+
+                    const options = data.map(kelas => ({
+                        value: kelas.id,
+                        label: kelas.nama_kelas
+                    }));
+
+                    kelasChoices.setChoices(options, 'value', 'label', true);
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    kelasChoices.setChoices([{ value: '', label: 'Gagal memuat kelas', selected: true }], 'value', 'label', true);
+                });
+        });
+
+        // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
             kelasHidden.value = kelasId;

@@ -204,4 +204,13 @@ class UnitController extends Controller
         $kelas = Kelas::where('unit_id', $id)->where('status', '1')->get();
         return response()->json($kelas);
     }
+    public function getKelasByUnit($unitId)
+    {
+        $kelas = \App\Models\Kelas::where('unit_id', $unitId)
+            ->where('status', '1')
+            ->select('id', 'nama_kelas')
+            ->get();
+
+        return response()->json($kelas);
+    }
 }

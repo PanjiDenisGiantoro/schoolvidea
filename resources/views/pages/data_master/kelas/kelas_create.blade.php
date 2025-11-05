@@ -60,7 +60,7 @@
                     <div class="col-md-4">
                         <label for="officer_id" class="form-label">Wali Kelas</label>
                         <select name="officer_id" id="officer_id" class="form-select" data-choices
-                            data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                            data-choices-sorting-false  @if (isset($show) && $show) disabled @endif>
                             <option value="">-- Pilih Wali Kelas --</option>
                             @foreach ($wali as $w)
                                 <option value="{{ $w->id }}"
