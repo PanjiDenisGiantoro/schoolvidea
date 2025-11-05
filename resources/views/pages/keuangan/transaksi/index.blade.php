@@ -47,7 +47,7 @@
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
-                            <option value="">Semua Unit</option>
+                            <option value="">Pilih Unit</option>
                             @foreach($units as $unit)
                                 <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}

@@ -123,8 +123,13 @@
 
                     {{-- Item Tagihan --}}
                     <div id="itemTagihan">
-                        <div class="mb-3">
-                            <label class="form-label">Item Tagihan 1</label>
+                        <div class="mb-3 item-wrapper" data-item-index="0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">Item Tagihan 1</label>
+                                <button type="button" class="btn btn-sm btn-danger d-none" onclick="hapusItem(this)">
+                                    <i class="fa fa-trash"></i> Hapus
+                                </button>
+                            </div>
                             <select name="items[0][id]" class="form-control">
                                 <option value="">-- Pilih Item --</option>
                                 @foreach ($kategoriTagihan as $kat)
@@ -218,8 +223,13 @@
         function tambahItem() {
             let container = document.getElementById('itemTagihan');
             let html = `
-        <div class="mb-3">
-            <label class="form-label">Item Tagihan ${itemCount+1}</label>
+        <div class="mb-3 item-wrapper" data-item-index="${itemCount}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Item Tagihan ${itemCount+1}</label>
+                <button type="button" class="btn btn-sm btn-danger" onclick="hapusItem(this)">
+                    <i class="fa fa-trash"></i> Hapus
+                </button>
+            </div>
             <select name="items[${itemCount}][id]" class="form-control">
                 <option value="">-- Pilih Item --</option>
                 @foreach ($kategoriTagihan as $kat)
@@ -232,16 +242,37 @@
     `;
             container.insertAdjacentHTML('beforeend', html);
             itemCount++;
+            updateDeleteButtons();
         }
 
-        // Tampilkan siswa kalau mode = "siswa"
-        document.getElementById('modeTagihan').addEventListener('change', function() {
-            let siswaWrapper = document.getElementById('siswaWrapper');
-            if (this.value === "siswa") {
-                siswaWrapper.classList.remove('d-none');
-            } else {
-                siswaWrapper.classList.add('d-none');
-            }
-        });
+        // Hapus item tagihan
+        function hapusItem(btn) {
+            const wrapper = btn.closest('.item-wrapper');
+            wrapper.remove();
+            updateDeleteButtons();
+            updateItemLabels();
+        }
+
+        // Update visibility tombol hapus
+        function updateDeleteButtons() {
+            const items = document.querySelectorAll('.item-wrapper');
+            items.forEach((item, index) => {
+                const deleteBtn = item.querySelector('.btn-danger');
+                if (items.length > 1) {
+                    deleteBtn.classList.remove('d-none');
+                } else {
+                    deleteBtn.classList.add('d-none');
+                }
+            });
+        }
+
+        // Update label item tagihan
+        function updateItemLabels() {
+            const items = document.querySelectorAll('.item-wrapper');
+            items.forEach((item, index) => {
+                const label = item.querySelector('.form-label');
+                label.textContent = `Item Tagihan ${index + 1}`;
+            });
+        }
     </script>
 @endpush

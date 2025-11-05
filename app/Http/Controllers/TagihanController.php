@@ -22,8 +22,14 @@ class TagihanController extends Controller
 {
     public function create()
     {
-        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
-        if (Auth::user()->yayasan_id) {
+        // Filter berdasarkan prioritas: unit_id > yayasan_id > admin
+        if (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan hanya data dari unit tersebut
+            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+        } elseif (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id (tapi tidak punya unit_id), tampilkan semua unit dalam yayasan
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $kelas = Kelas::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
@@ -31,11 +37,8 @@ class TagihanController extends Controller
             $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-        } elseif (Auth::user()->unit_id) {
-            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
-            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
-            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
+            // Super admin - tampilkan semua
             $units = Unit::where('status', '1')->get();
             $kelas = Kelas::where('status', '1')->get();
             $kategoriTagihan = Kategoritagihan::where('status', '1')->get();
@@ -54,13 +57,15 @@ class TagihanController extends Controller
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.siswa.pembayaranTagihan'
         ])
-        ->when(Auth::user()->yayasan_id, function ($query) {
+        ->when(Auth::user()->unit_id, function ($query) {
+            // Jika user punya unit_id, filter tagihan dari unit tersebut
+            $query->where('unit_id', Auth::user()->unit_id);
+        })
+        ->when(!Auth::user()->unit_id && Auth::user()->yayasan_id, function ($query) {
+            // Jika user punya yayasan_id (tapi tidak punya unit_id), filter tagihan dari semua unit dalam yayasan
             $query->whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
-        })
-        ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query, $unit_id) {
-            $query->where('unit_id', $unit_id);
         })
         ->get();
 
@@ -121,21 +126,27 @@ class TagihanController extends Controller
                 'tahun_mulai' => $request->tahun_mulai,
             ]);
 
-            // 2. Simpan item tagihan
-            $total_tagihan = 0;
+            // 2. Simpan item tagihan dan kumpulkan data item
+            $itemsData = [];
             foreach ($request->items as $item) {
                 if (!empty($item['id'])) {
                     $kategori = KategoriTagihan::find($item['id']);
                     $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
-                    Tagihanitem::create([
+
+                    $tagihanItem = Tagihanitem::create([
                         'tagihan_id' => $tagihan->id,
                         'kategori_id' => $item['id'],
                         'nominal' => $nominal_item,
                     ]);
-                    $total_tagihan += $nominal_item;
+
+                    $itemsData[] = [
+                        'item_id' => $tagihanItem->id,
+                        'kategori_id' => $item['id'],
+                        'nominal' => $nominal_item,
+                    ];
                 }
             }
-            $kategoriIds = collect($request->items)->pluck('id')->filter()->all();
+            $kategoriIds = collect($itemsData)->pluck('kategori_id')->filter()->all();
 
             // Ambil siswa target
             $siswaList = [];
@@ -160,17 +171,17 @@ class TagihanController extends Controller
             // 3. Simpan tagihan_siswa dan jurnal
             $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
-            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
-            if (Auth::user()->yayasan_id) {
-                // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+            // Filter berdasarkan prioritas: unit_id > yayasan_id > admin filter
+            if (Auth::user()->unit_id) {
+                // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
+                $settings->where('unit_id', Auth::user()->unit_id);
+            } elseif (Auth::user()->yayasan_id) {
+                // Jika user punya yayasan_id (tapi tidak punya unit_id), tampilkan akun dari semua unit di yayasan tersebut
                 $settings->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
-            } elseif (Auth::user()->unit_id) {
-                // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
-                $settings->where('unit_id', Auth::user()->unit_id);
             } elseif ($request->filled('unit_id')) {
-                // Admin user filtering by unit
+                // Super admin filtering by selected unit
                 $settings->where('unit_id', $request->unit_id);
             }
 
@@ -184,69 +195,73 @@ class TagihanController extends Controller
             }
 
             foreach ($siswaList as $siswa) {
-                if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
-                    // generate sesuai jumlah bulan
-                    for ($i = 1; $i <= $tagihan->periode; $i++) {
+                // Loop untuk setiap item tagihan
+                foreach ($itemsData as $itemData) {
+                    if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
+                        // generate sesuai jumlah bulan untuk setiap item
+                        for ($i = 1; $i <= $tagihan->periode; $i++) {
+                            Tagihansiswa::create([
+                                'tagihan_id'    => $tagihan->id,
+                                'siswa_id'      => $siswa->id,
+                                'bulan_ke'      => $i,
+                                'tanggal_bayar' => null,
+                                'sisa_nominal'  => $itemData['nominal'],
+                                'status'        => '0'
+                            ]);
+                        }
+                    } else {
+                        // jenis bebas → 1 row per item
                         Tagihansiswa::create([
                             'tagihan_id'    => $tagihan->id,
                             'siswa_id'      => $siswa->id,
-                            'bulan_ke'      => $i,
+                            'bulan_ke'      => null,
                             'tanggal_bayar' => null,
-                            'sisa_nominal'  => $total_tagihan,
-                            'status'        => '0'
+                            'sisa_nominal'  => $itemData['nominal'],
                         ]);
                     }
-                } else {
-                    // jenis bebas → cuma 1 row
-                    Tagihansiswa::create([
-                        'tagihan_id'    => $tagihan->id,
-                        'siswa_id'      => $siswa->id,
-                        'bulan_ke'      => null,
-                        'tanggal_bayar' => null,
-                        'sisa_nominal'  => $total_tagihan,
+
+                    // Transaksi per item
+                    $transaksi = Keuangan_transaksi::create([
+                        'penerima_id'      => $siswa->id,
+                        'penerima_tipe'    => Siswa::class,
+                        'jenis_transaksi'  => 'tagihan',
+                        'jumlah'           => $itemData['nominal'],
+                        'keterangan'       => "Tagihan ID: {$tagihan->id} - Item ID: {$itemData['item_id']}",
+                        'created_by'       => Auth::id(),
+                    ]);
+
+                    // Jurnal debit
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $akun_debit,
+                        'debit'        => $itemData['nominal'],
+                        'kredit'       => 0,
+                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - Item: {$itemData['kategori_id']}",
+                    ]);
+
+                    // Jurnal kredit
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $akun_kredit,
+                        'debit'        => 0,
+                        'kredit'       => $itemData['nominal'],
+                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - Item: {$itemData['kategori_id']}",
+                    ]);
+
+                    // Log transaksi
+                    Keuangan_transaksi_logs::create([
+                        'transaksi_id'   => $transaksi->id,
+                        'aksi'           => 'create_tagihan',
+                        'data_lama'      => null,
+                        'data_baru'      => json_encode([
+                            'tagihan_id' => $tagihan->id,
+                            'item_id'    => $itemData['item_id'],
+                            'jumlah'     => $itemData['nominal'],
+                        ]),
+                        'dilakukan_oleh' => Auth::id(),
+                        'dilakukan_pada' => now(),
                     ]);
                 }
-
-                // Transaksi utama
-                $transaksi = Keuangan_transaksi::create([
-                    'penerima_id'      => $siswa->id,
-                    'penerima_tipe'    => Siswa::class,
-                    'jenis_transaksi'  => 'tagihan',
-                    'jumlah'           => $total_tagihan,
-                    'keterangan'       => "Tagihan ID: {$tagihan->id}",
-                    'created_by'       => Auth::id(),
-                ]);
-
-                // Jurnal debit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_debit,
-                    'debit'        => $total_tagihan,
-                    'kredit'       => 0,
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id}",
-                ]);
-
-                // Jurnal kredit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_kredit,
-                    'debit'        => 0,
-                    'kredit'       => $total_tagihan,
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id}",
-                ]);
-
-                // Log transaksi
-                Keuangan_transaksi_logs::create([
-                    'transaksi_id'   => $transaksi->id,
-                    'aksi'           => 'create_tagihan',
-                    'data_lama'      => null,
-                    'data_baru'      => json_encode([
-                        'tagihan_id' => $tagihan->id,
-                        'jumlah'     => $total_tagihan,
-                    ]),
-                    'dilakukan_oleh' => Auth::id(),
-                    'dilakukan_pada' => now(),
-                ]);
             }
 
             DB::commit();
