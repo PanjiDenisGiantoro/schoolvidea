@@ -126,4 +126,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+    public function units()
+    {
+        return $this->belongsTo(\App\Models\Unit::class, 'unit_id', 'id');
+    }
 }
