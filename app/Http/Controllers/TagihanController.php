@@ -22,14 +22,9 @@ class TagihanController extends Controller
 {
     public function create()
     {
-        // Filter berdasarkan prioritas: unit_id > yayasan_id > admin
-        if (Auth::user()->unit_id) {
-            // Jika user punya unit_id, tampilkan hanya data dari unit tersebut
-            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
-            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
-            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
-        } elseif (Auth::user()->yayasan_id) {
-            // Jika user punya yayasan_id (tapi tidak punya unit_id), tampilkan semua unit dalam yayasan
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit dalam yayasan
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $kelas = Kelas::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
@@ -37,6 +32,11 @@ class TagihanController extends Controller
             $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan hanya data dari unit tersebut
+            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
             // Super admin - tampilkan semua
             $units = Unit::where('status', '1')->get();
@@ -57,15 +57,15 @@ class TagihanController extends Controller
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.siswa.pembayaranTagihan'
         ])
-        ->when(Auth::user()->unit_id, function ($query) {
-            // Jika user punya unit_id, filter tagihan dari unit tersebut
-            $query->where('unit_id', Auth::user()->unit_id);
-        })
-        ->when(!Auth::user()->unit_id && Auth::user()->yayasan_id, function ($query) {
-            // Jika user punya yayasan_id (tapi tidak punya unit_id), filter tagihan dari semua unit dalam yayasan
+        ->when(Auth::user()->yayasan_id, function ($query) {
+            // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
             $query->whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
+        })
+        ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
+            // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
+            $query->where('unit_id', Auth::user()->unit_id);
         })
         ->get();
 
@@ -171,15 +171,15 @@ class TagihanController extends Controller
             // 3. Simpan tagihan_siswa dan jurnal
             $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
-            // Filter berdasarkan prioritas: unit_id > yayasan_id > admin filter
-            if (Auth::user()->unit_id) {
-                // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
-                $settings->where('unit_id', Auth::user()->unit_id);
-            } elseif (Auth::user()->yayasan_id) {
-                // Jika user punya yayasan_id (tapi tidak punya unit_id), tampilkan akun dari semua unit di yayasan tersebut
+            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+            if (Auth::user()->yayasan_id) {
+                // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
                 $settings->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
+            } elseif (Auth::user()->unit_id) {
+                // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan akun dari unit tersebut saja
+                $settings->where('unit_id', Auth::user()->unit_id);
             } elseif ($request->filled('unit_id')) {
                 // Super admin filtering by selected unit
                 $settings->where('unit_id', $request->unit_id);
