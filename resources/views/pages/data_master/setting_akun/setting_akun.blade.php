@@ -48,7 +48,7 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-3">
-                                    <a href="{{ route('setting_akun.show', $item->id) }}" class="link-primary text-muted">
+                                    <a href="{{url('setting_akun/show'.$item->id)}}" class="link-primary text-muted">
                                         <i class="ri-eye-line align-middle fs-20"></i> Show
                                     </a>
                                     <a href="{{ route('setting_akun.edit', $item->id) }}" class="link-warning text-muted">

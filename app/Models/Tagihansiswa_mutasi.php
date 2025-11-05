@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Pembayarantagihan extends Model
+class Tagihansiswa_mutasi extends Model
 {
-    protected $table = 'pembayaran_tagihan';
+    protected $table = 'tagihan_siswa_mutasi';
     protected $guarded = [];
 
     protected $casts = [
-        'tanggal_bayar' => 'date',
+        'nominal_sebelum' => 'decimal:2',
+        'nominal_perubahan' => 'decimal:2',
+        'nominal_sesudah' => 'decimal:2',
         'approved_at' => 'datetime',
     ];
 
@@ -19,18 +21,13 @@ class Pembayarantagihan extends Model
         return $this->belongsTo(Tagihansiswa::class, 'tagihan_siswa_id');
     }
 
-    public function user()
+    public function createdBy()
     {
-        return $this->belongsTo(User::class, 'create_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function approvedBy()
     {
         return $this->belongsTo(User::class, 'approved_by');
-    }
-
-    public function keuanganTransaksi()
-    {
-        return $this->hasOne(Keuangan_transaksi::class, 'referensi_tagihan_id');
     }
 }

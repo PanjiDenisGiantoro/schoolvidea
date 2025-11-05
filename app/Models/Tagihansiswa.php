@@ -27,4 +27,9 @@ class Tagihansiswa extends Model
         return $this->hasMany(Potongansiswa::class, 'tagihan_siswa_id', 'id');
     }
 
+    public function mutasi()
+    {
+        return $this->hasMany(Tagihansiswa_mutasi::class, 'tagihan_siswa_id');
+    }
+
 }
