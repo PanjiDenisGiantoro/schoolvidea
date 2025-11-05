@@ -22,8 +22,14 @@ class TabunganController extends Controller
     public function index()
     {
         $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
-            ->when(Auth::user()->unit_id,function ($queyr,$unit_id){
-                $queyr->where('unit_id',$unit_id);
+            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+            ->when(Auth::user()->yayasan_id, function ($query) {
+                $query->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            })
+            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query, $unit_id) {
+                $query->where('unit_id', $unit_id);
             })
             ->where('status','1')
             ->get();
@@ -41,15 +47,30 @@ class TabunganController extends Controller
      */
     public function create()
     {
-        $kelas = Kelas::when(Auth::user()->unit_id,function ($query,$unit_id){
-            $query->where('unit_id',$unit_id);
-        })->where('status','1')
-            ->get();
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status','1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            $kelas = Kelas::where('status','1')->get();
+        }
         return view('pages.tabungan.create', compact('kelas'));
     }
     public function tarik()
     {
-        $kelas = Kelas::get();
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status','1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            $kelas = Kelas::get();
+        }
         return view('pages.tabungan.tarik', compact('kelas'));
     }
 
