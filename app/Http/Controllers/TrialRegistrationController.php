@@ -115,6 +115,10 @@ class TrialRegistrationController extends Controller
                 'yayasan_id' => $yayasan_id, // ✅ pakai variabel yang aman
             ]);
 
+            $updateunit_idyayasan = Yayasan::where('id', $yayasan_id)->update([
+                'unit_id' => $unit->id,
+            ]);
+
             $usercek = User::where('email', $request->email)->first();
 
             if ($usercek) {
