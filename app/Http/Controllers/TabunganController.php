@@ -33,16 +33,18 @@ class TabunganController extends Controller
             ->where('status','1')
             ->get();
 
-// Ambil semua user_id dari siswa yang lolos filter
-        $userIds = $transaksis->pluck('user_id')->unique()->toArray();
+// Ambil semua siswa_id dari siswa yang lolos filter
+        $siswaIds = $transaksis->pluck('id')->unique()->toArray();
 
-// Filter transaksi keuangan berdasarkan user_id
+// Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->whereIn('penerima_id', $userIds)
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->whereIn('penerima_id', $userIds)
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
             ->sum('jumlah');
         return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
     }
