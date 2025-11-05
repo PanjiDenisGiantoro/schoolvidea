@@ -305,24 +305,29 @@ class TagihanController extends Controller
             ];
         });
 
-        $pembayaranSiswa = $siswa->pembayaranTagihan->map(function ($p) use ($bulanMulai, $tahunMulai) {
-            $ts = $p->tagihanSiswa;
-            $bulanKe = $ts?->bulan_ke;
+        // Filter pembayaran hanya untuk tagihan_id yang sedang ditampilkan
+        $pembayaranSiswa = $siswa->pembayaranTagihan
+            ->filter(function ($p) use ($id) {
+                return $p->tagihanSiswa && $p->tagihanSiswa->tagihan_id == $id;
+            })
+            ->map(function ($p) use ($bulanMulai, $tahunMulai) {
+                $ts = $p->tagihanSiswa;
+                $bulanKe = $ts?->bulan_ke;
 
-            $date = $bulanKe
-                ? Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1)
-                : null;
+                $date = $bulanKe
+                    ? Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1)
+                    : null;
 
-            return [
-                'id'            => $p->id,
-                'tanggal_bayar' => $p->tanggal_bayar,
-                'jumlah_bayar'  => $p->jumlah_bayar,
-                'bulan_ke'      => $bulanKe,
-                'bulan'         => $date ? $date->translatedFormat('F') : null,
-                'tahun'         => $date ? $date->year : null,
-                'create_by'     => $p->user?->name,  // ambil nama user
-            ];
-        });
+                return [
+                    'id'            => $p->id,
+                    'tanggal_bayar' => $p->tanggal_bayar,
+                    'jumlah_bayar'  => $p->jumlah_bayar,
+                    'bulan_ke'      => $bulanKe,
+                    'bulan'         => $date ? $date->translatedFormat('F') : null,
+                    'tahun'         => $date ? $date->year : null,
+                    'create_by'     => $p->user?->name,  // ambil nama user
+                ];
+            });
 
         return view('pages.tagihan.show', compact('tagihanSiswa', 'dataPerbulan', 'pembayaranSiswa'));
     }
