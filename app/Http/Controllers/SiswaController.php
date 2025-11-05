@@ -128,7 +128,6 @@ class SiswaController extends Controller
             $jurusans = Jurusan::where('status', 1)->get();
         }
 
-        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
         $logoUnit = $units->first()->image ?? null;
 
         return view('pages.data_master.siswa.siswa_create', compact(
@@ -143,22 +142,22 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required',
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nisn',
             'name' => 'required|string|max:255',
             'username' => 'nullable|string',
             'email' => 'required|string|email|max:255',
             'kelas_id' => 'required',
             'unit_id' => 'required',
-            'rfid_no' => 'nullable|string|max:255',
-            'va_siswa' => 'nullable|string|max:255',
-            'nis' => 'nullable|string|max:20|unique:siswas,nis',
-            'nik' => 'nullable|string|max:20|unique:siswas,nik',
+            'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no',
+            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa',
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nis',
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|string|regex:/^[0-9]+$/|digits_between:10,13',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
-            'no_rekening' => 'nullable|string|max:50',
+            'no_rekening' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:siswas,no_rekening',
             'jurusan_id' => 'nullable|exists:jurusans,id',
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
@@ -216,6 +215,7 @@ class SiswaController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'alamat'          => $request->alamat,
                 'name'            => $request->name,
+                'tahun_ajaran_id' => $tahun_ajaran->id
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
@@ -384,7 +384,6 @@ class SiswaController extends Controller
                 'status' => $request->status,
                 'rfid_no' => $request->rfid_no,
                 'va_siswa' => $request->va_siswa,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ];
 
             // Handle image
