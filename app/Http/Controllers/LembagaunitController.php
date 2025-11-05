@@ -62,7 +62,7 @@ class LembagaunitController extends Controller
     }
     public function create()
     {
-        if(!Auth::user()->unit_id){
+        if(Auth::user()->unit_id){
             $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
             if($ceknotdoubleunit){
                 return redirect()->route('lembagaunit.index')
