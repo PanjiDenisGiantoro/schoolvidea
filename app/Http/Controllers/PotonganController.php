@@ -88,6 +88,7 @@ class PotonganController extends Controller
 
     public function store(Request $request)
     {
+
         // Validate the incoming data
         $request->validate([
             'unit_id' => 'required|exists:units,id',

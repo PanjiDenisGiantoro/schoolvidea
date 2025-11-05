@@ -160,6 +160,23 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script>
+        // Handle Kelas Switch (All Classes or Specific Class)
+        document.querySelectorAll('input[name="kelas_switch"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const kelasTable = document.getElementById('kelas_table');
+                const siswaTable = document.getElementById('siswa_table');
+
+                if (this.value === 'all') {
+                    // Hide kelas dan siswa table jika pilih "Semua Kelas"
+                    kelasTable.style.display = 'none';
+                    siswaTable.style.display = 'none';
+                } else {
+                    // Show kelas table jika pilih "Pilih Kelas"
+                    kelasTable.style.display = 'block';
+                }
+            });
+        });
+
         // Fetch Kelas based on the selected Unit using AJAX
         document.getElementById('unit_id').addEventListener('change', function() {
             const unitId = this.value;
@@ -180,8 +197,11 @@
                             kelasSelect.appendChild(option);
                         });
 
-                        // Show the Kelas dropdown
-                        document.getElementById("kelas_table").style.display = "block";
+                        // Show the Kelas dropdown only if "Pilih Kelas" is selected
+                        const kelasSelectRadio = document.getElementById('kelas_select');
+                        if (kelasSelectRadio.checked) {
+                            document.getElementById("kelas_table").style.display = "block";
+                        }
                     })
                     .catch(error => console.error('Error fetching classes:', error));
             } else {
@@ -191,7 +211,6 @@
             }
         });
 
-        // Load students dynamically when class is selected
         // Load students dynamically when class is selected
         document.getElementById('kelas_id').addEventListener('change', function() {
             const kelasId = this.value;
