@@ -91,65 +91,103 @@ class PotonganController extends Controller
         // Validate the incoming data
         $request->validate([
             'unit_id' => 'required|exists:units,id',
-            'kelas_id' => 'required|exists:kelas,id',
+            'kelas_switch' => 'required|in:all,select',
+            'kelas_id' => 'required_if:kelas_switch,select|nullable|exists:kelas,id',
             'kategori_tagihan_id' => 'required',
             'tipe_potongan' => 'required|in:nominal,persentase',
             'nilai' => 'required|numeric',
             'keterangan' => 'nullable|string|max:64',
-            'siswa_id' => 'required|array', // array of selected siswa ids
+            'siswa_id' => 'required_if:kelas_switch,select|nullable|array', // array of selected siswa ids
             'siswa_id.*' => 'exists:siswas,id', // Validate each siswa_id
         ]);
 
         try {
-            // Store the Potongan data
-            $potongan = Potongan::create([
-                'unit_id' => $request->unit_id,
-                'kelas_id' => $request->kelas_id,
-                'kategori_tagihan_id' => $request->kategori_tagihan_id,
-                'tipe_potongan' => $request->tipe_potongan,
-                'nilai' => $request->nilai,
-                'keterangan' => $request->keterangan,
-            ]);
+            // Determine if we're applying to all classes or specific class
+            if ($request->kelas_switch === 'all') {
+                // Get all kelas in the selected unit
+                $kelasList = Kelas::where('unit_id', $request->unit_id)->where('status', '1')->get();
 
-            // Store PotonganSiswa for each selected siswa
-            foreach ($request->siswa_id as $siswaId) {
-                // Fetch the related tagihan_id from the tagihan_siswa table
-                $tagihanSiswa = Tagihansiswa::with('siswa')->where('siswa_id', $siswaId)
-                    ->whereHas('tagihan', function ($query) use ($request) {
-                        $query->where('kelas_id', $request->kelas_id);
-                    })->where('status', '=', '0')
-                    ->orWhere('status', '=', '2')
-                    ->first();
-
-                // Ensure tagihan_siswa record is found
-                if ($tagihanSiswa) {
-                    // Now get the tagihan using tagihan_siswa
-                    $tagihan = $tagihanSiswa->tagihan;
-
-                    // Calculate the nominal for the discount (potongan)
-                    $nominal = $this->calculateNominal($potongan, $tagihanSiswa->sisa_nominal);
-
-                    // Store the PotonganSiswa entry
-                    Potongansiswa::create([
-                        'potongan_id' => $potongan->id,
-                        'tagihan_id' => $tagihan->id,
-                        'tagihan_siswa_id' => $tagihanSiswa->siswa->id,
-                        'nominal' => $nominal,
+                foreach ($kelasList as $kelas) {
+                    // Create a potongan for each class
+                    $potongan = Potongan::create([
+                        'unit_id' => $request->unit_id,
+                        'kelas_id' => $kelas->id,
+                        'kategori_tagihan_id' => $request->kategori_tagihan_id,
+                        'tipe_potongan' => $request->tipe_potongan,
+                        'nilai' => $request->nilai,
+                        'keterangan' => $request->keterangan,
                     ]);
-                    Tagihansiswa::where('siswa_id', $tagihanSiswa->siswa_id)
-                        ->where('tagihan_id', $tagihan->id)
-                        ->where('status', '=', '0')
-                        ->orWhere('status', '=', '2')
-                        ->update([
-                            'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
-                        ]);
+
+                    // Get all siswa in this kelas
+                    $siswaList = $kelas->siswas;
+
+                    // Apply potongan to all siswa in this kelas
+                    foreach ($siswaList as $siswa) {
+                        $this->applyPotonganToSiswa($potongan, $siswa->id, $kelas->id);
+                    }
+                }
+            } else {
+                // Store the Potongan data for specific class
+                $potongan = Potongan::create([
+                    'unit_id' => $request->unit_id,
+                    'kelas_id' => $request->kelas_id,
+                    'kategori_tagihan_id' => $request->kategori_tagihan_id,
+                    'tipe_potongan' => $request->tipe_potongan,
+                    'nilai' => $request->nilai,
+                    'keterangan' => $request->keterangan,
+                ]);
+
+                // Store PotonganSiswa for each selected siswa
+                foreach ($request->siswa_id as $siswaId) {
+                    $this->applyPotonganToSiswa($potongan, $siswaId, $request->kelas_id);
                 }
             }
 
             return redirect()->route('potongan.index')->with('success', 'Potongan successfully created.');
         } catch (\Exception $e) {
             return redirect()->route('potongan.index')->with('danger', $e->getMessage());
+        }
+    }
 
+    private function applyPotonganToSiswa($potongan, $siswaId, $kelasId)
+    {
+        // Fetch the related tagihan_id from the tagihan_siswa table
+        $tagihanSiswa = Tagihansiswa::with('siswa')->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function ($query) use ($kelasId) {
+                $query->where('kelas_id', $kelasId);
+            })
+            ->where(function ($query) {
+                $query->where('status', '=', '0')
+                    ->orWhere('status', '=', '2');
+            })
+            ->first();
+
+        // Ensure tagihan_siswa record is found
+        if ($tagihanSiswa) {
+            // Now get the tagihan using tagihan_siswa
+            $tagihan = $tagihanSiswa->tagihan;
+
+            // Calculate the nominal for the discount (potongan)
+            $nominal = $this->calculateNominal($potongan, $tagihanSiswa->sisa_nominal);
+
+            // Store the PotonganSiswa entry
+            Potongansiswa::create([
+                'potongan_id' => $potongan->id,
+                'tagihan_id' => $tagihan->id,
+                'tagihan_siswa_id' => $tagihanSiswa->siswa->id,
+                'nominal' => $nominal,
+            ]);
+
+            // Update sisa_nominal in tagihan_siswa
+            Tagihansiswa::where('siswa_id', $tagihanSiswa->siswa_id)
+                ->where('tagihan_id', $tagihan->id)
+                ->where(function ($query) {
+                    $query->where('status', '=', '0')
+                        ->orWhere('status', '=', '2');
+                })
+                ->update([
+                    'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
+                ]);
         }
     }
 

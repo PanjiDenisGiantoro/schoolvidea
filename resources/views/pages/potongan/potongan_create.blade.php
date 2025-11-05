@@ -73,7 +73,7 @@
                         </select>
                     </div>
 
-                    <!-- Pilih Siswa -->
+                    <!-- Pilih Siswa (Only visible when specific class is selected) -->
                     <div class="col-md-12" id="siswa_table"
                         style="{{ isset($potongan) && !empty($potongan->kelas_id) ? '' : 'display: none;' }}">
                         <label for="siswa_id" class="form-label">Pilih Siswa</label>
@@ -85,6 +85,7 @@
                                     </th>
                                     <th>Nama Lengkap</th>
                                     <th>NISN</th>
+                                    <th>Kelas</th>
                                 </tr>
                             </thead>
                             <tbody id="siswa_list">
@@ -99,6 +100,7 @@
                                             </td>
                                             <td>{{ $siswa->user->name }}</td>
                                             <td>{{ $siswa->nisn }}</td>
+                                            <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
                                         </tr>
                                     @endforeach
                                 @endif
@@ -162,11 +164,34 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script>
+        // Handle kelas switch (All or Select)
+        document.querySelectorAll('input[name="kelas_switch"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const kelasTable = document.getElementById('kelas_table');
+                const siswaTable = document.getElementById('siswa_table');
+
+                if (this.value === 'all') {
+                    // Hide kelas dropdown and siswa table when "Semua Kelas" is selected
+                    kelasTable.style.display = 'none';
+                    siswaTable.style.display = 'none';
+                    // Clear kelas selection
+                    document.getElementById('kelas_id').value = '';
+                } else {
+                    // Show kelas dropdown when "Pilih Kelas" is selected
+                    const unitId = document.getElementById('unit_id').value;
+                    if (unitId) {
+                        kelasTable.style.display = 'block';
+                    }
+                }
+            });
+        });
+
         // Fetch Kelas based on the selected Unit using AJAX
         document.getElementById('unit_id').addEventListener('change', function() {
             const unitId = this.value;
             const kelasSelect = document.getElementById('kelas_id');
             const siswaTable = document.getElementById('siswa_table');
+            const kelasSwitch = document.querySelector('input[name="kelas_switch"]:checked').value;
 
             if (unitId) {
                 // Make AJAX request to fetch classes based on unit_id
@@ -182,14 +207,17 @@
                             kelasSelect.appendChild(option);
                         });
 
-                        // Show the Kelas dropdown
-                        document.getElementById("kelas_table").style.display = "block";
+                        // Only show kelas dropdown if "Pilih Kelas" is selected
+                        if (kelasSwitch === 'select') {
+                            document.getElementById("kelas_table").style.display = "block";
+                        }
                     })
                     .catch(error => console.error('Error fetching classes:', error));
             } else {
                 // Clear Kelas dropdown if no unit is selected
                 kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
                 document.getElementById("kelas_table").style.display = "none";
+                siswaTable.style.display = "none";
             }
         });
 
