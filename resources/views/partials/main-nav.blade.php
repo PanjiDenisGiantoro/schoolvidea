@@ -85,7 +85,7 @@
                         @endhasPermission
 
                         @hasPermission('view_user')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Akun User</a>
+                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun-user') }}">Akun User</a>
                         </li>
                         @endhasPermission
                     </ul>

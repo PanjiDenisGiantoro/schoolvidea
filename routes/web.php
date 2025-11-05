@@ -24,6 +24,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollSettingController;
+use App\Http\Controllers\AkunUserController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -305,6 +306,13 @@ Route::middleware(['auth'])->group(function () {
             ->name('components.byOfficer');
     });
 
+    Route::prefix('akun-user')->middleware('permission:view_user')->group(function () {
+        Route::get('/', [AkunUserController::class, 'index'])->name('akun-user.index');
+        Route::get('/edit/{id}', [AkunUserController::class, 'edit'])->name('akun-user.edit');
+        Route::put('/update/{id}', [AkunUserController::class, 'update'])->name('akun-user.update');
+        Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
+
+    });
     Route::prefix('payroll-deductions')->middleware('permission:view_payroll_deductions')->group(function () {
         Route::get('/', [PayrollDeductionsController::class, 'index'])->name('payroll_deductions.index');
         Route::get('/create', [PayrollDeductionsController::class, 'create'])->middleware('permission:create_payroll_deductions')->name('payroll_deductions.create');
