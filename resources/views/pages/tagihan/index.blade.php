@@ -141,9 +141,9 @@
                                         @endforeach
                                     </td>
                                     <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
-                                    <td>{{ $tagihan->periode ?? '-' }}</td>
+                                    <td>{{ $tagihan->periode ?? '-' }} Bulan</td>
 
-                                    <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($total_tagihan * ($tagihan->periode ?? 1), 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
                                     <td>
