@@ -5,7 +5,6 @@
 @section('title', isset($officer->id) ? (isset($show) && $show ? 'Lihat User' : 'Edit User') : 'Tambah User')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
-
 @section('content')
     @include('partials.page-title', [
         'title' => isset($officer->id) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
@@ -52,19 +51,23 @@
                     <!-- Colom - 1 -->
                     <div class="col-md-3">
                         <x-input-field type="number" id="nip" name="nip" label="NIP" class="text-uppercase"
-                            placeholder="Masukkan NIP" icon="bx bx-id-card" :value="old('nip', $officer->nip ?? '')" required />
+                            placeholder="Masukkan NIP" icon="bx bx-id-card" :value="old('nip', $officer->nip ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" id="nuptk" name="nuptk" label="NUPTK"
-                            placeholder="Masukkan NUPTK" icon="bx bx-id-card" :value="old('nuptk', $officer->nuptk ?? '')" required />
+                            placeholder="Masukkan NUPTK" icon="bx bx-id-card" :value="old('nuptk', $officer->nuptk ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
                             placeholder="Masukkan nama lengkap" icon="bx bx-user" :value="old('name', $officer->user->name ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" id="nik" name="nik" label="NIK"
-                            placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $officer->nik ?? '')" required />
+
+                        <x-input-field type="text" id="nik" name="nik" label="NIK"
+                            placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $officer->nik ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -113,8 +116,9 @@
                             placeholder="Email" icon="bx bx-envelope" :value="old('email', $officer->user->email ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" id="no_hp" name="no_hp" label="No. Telepon"
-                            placeholder="Masukkan Nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $officer->no_hp ?? '')" required />
+                        <x-input-field type="text" id="no_hp" name="no_hp" label="No. Telepon"
+                            placeholder="Masukkan Nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $officer->no_hp ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <label for="alamat" class="form-label">Alamat <span
@@ -137,7 +141,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     {{-- Data Tambahan --}}
                     <div class="row mt-4">
@@ -165,7 +168,7 @@
                             </div>
                             <x-input-field type="text" id="va_guru" name="va_guru" label="No. VA Guru & Staff"
                                 placeholder="Masukkan VA Guru & Staff" icon="bx bx-credit-card" :value="old('va_guru', $officer->va_guru ?? ($officer->va_guru ?? ''))"
-                                required />
+                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                             <div class="mb-4">
                                 <label for="jabatan_id" class="form-label">Jabatan</label>
                                 <select name="position_id" id="position_id" class="form-select" data-choices
@@ -179,7 +182,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
 
                         </div>
 
@@ -201,14 +203,6 @@
                             </div>
                             <x-input-field type="text" id="bank" name="bank" label="Bank"
                                 placeholder="Masukkan Nama Bank" icon="bx bx-bank" :value="old('bank', $officer->bank ?? '')" />
-
-
-
-
-
-
-
-
                         </div>
 
                         <!-- Colom - 3 -->
@@ -217,7 +211,8 @@
                                 placeholder="Masukkan Nomor RFID" icon="bx bx-barcode" :value="old('no_kartu_rfid', $officer->no_kartu_rfid ?? '')" />
 
                             <x-input-field type="text" id="no_rekening" name="no_rekening" label="No Rekening"
-                                placeholder="Masukkan Nomor Rekening" icon="bx bx-bank" :value="old('no_rekening', $officer->no_rekening ?? '')" />
+                                placeholder="Masukkan Nomor Rekening" icon="bx bx-bank" :value="old('no_rekening', $officer->no_rekening ?? '')"
+                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
 
                         </div>
 
@@ -228,7 +223,6 @@
                                 <label class="form-label">QR Code Preview</label>
                                 <div id="qrcode" style="width:150px; height:150px; border:1px solid #ddd;"></div>
                             </div>
-
 
                         </div>
 
@@ -251,11 +245,9 @@
     {{-- Semua JS Dropzone, QR Code, Swal, dsb seperti Blade sebelumnya --}}
 @endpush
 
-
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
-
 
     <script>
         @if (isset($show) && $show)
@@ -392,7 +384,6 @@
             });
         </script>
     @endif
-
 
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
     <script>

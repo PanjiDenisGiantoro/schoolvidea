@@ -42,12 +42,14 @@
                     <p class="text-muted">Masukkan data lengkap siswa</p>
                     <hr>
                     <div class="col-md-3">
-                        <x-input-field type="number" id="nisn" name="nisn" label="NISN"
-                            placeholder="Masukkan NISN" icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')" required />
+                        <x-input-field type="text" id="nisn" name="nisn" label="NISN"
+                            placeholder="Masukkan NISN" icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" id="nis" name="nis" label="NIS"
-                            placeholder="Masukkan NIS" icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')" required />
+                        <x-input-field type="text" id="nis" name="nis" label="NIS"
+                            placeholder="Masukkan NIS" icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
@@ -55,7 +57,8 @@
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" id="nik" name="nik" label="NIK"
-                            placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')" required />
+                            placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -101,13 +104,15 @@
                     </div>
 
                     <div class="col-md-3">
-                        <x-input-field type="number" id="no_hp" name="no_hp" label="No. Telepon Siswa"
-                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp', $siswa?->no_hp ?? '')" />
+                        <x-input-field type="text" id="no_hp" name="no_hp" label="No. Telepon Siswa"
+                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp', $siswa?->no_hp ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                     </div>
 
                     <div class="col-md-3">
-                        <x-input-field type="number" id="no_hp_ortu" name="no_hp_ortu" label="No. Telepon Orang Tua"
-                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')" required />
+                        <x-input-field type="text" id="no_hp_ortu" name="no_hp_ortu" label="No. Telepon Orang Tua"
+                            placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
 
                     <div class="col-md-3">
@@ -156,7 +161,6 @@
                     </div>
                 </div>
 
-
                 <div class="row g-3 mt-4">
                     <h5 class="card-title mb-0 mt-3">Data Tambahan Siswa <span
                             style="color: #dc3545 !important;">*</span><small class="text-muted">(Wajib diisi)</small>
@@ -181,7 +185,8 @@
                             </select>
                         </div>
                         <x-input-field type="text" id="va_siswa" name="va_siswa" label="VA Siswa"
-                            placeholder="Masukkan VA Siswa" icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')" required />
+                            placeholder="Masukkan VA Siswa" icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
 
                     </div>
                     <!-- Colom - 2 -->
@@ -210,7 +215,8 @@
                         <x-input-field type="text" id="rfid_no" name="rfid_no" label="RFID"
                             placeholder="Masukkan RFID" :value="old('rfid_no', $siswa?->rfid_no ?? '')" />
                         <x-input-field type="text" name="no_rekening" label="No Rekening Siswa"
-                            placeholder="Masukkan nomor rekening siswa" icon="bx bx-credit-card" :value="old('no_rekening', $siswa?->no_rekening ?? '')" />
+                            placeholder="Masukkan nomor rekening siswa" icon="bx bx-credit-card" :value="old('no_rekening', $siswa?->no_rekening ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                     </div>
                     <!-- Colom - 4 -->
                     <div class="col-md-3">
@@ -248,7 +254,6 @@
                                 <input type="hidden" name="qrcode" id="qrcode-text"
                                     value="{{ old('qrcode', $siswa?->qrcode ?? '') }}">
 
-
                             @endif
                         </div>
                     </div>
@@ -275,7 +280,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-
 
     <script>
         @if (isset($show) && $show)
@@ -409,8 +413,6 @@
             });
         </script>
     @endif
-
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

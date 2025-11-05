@@ -41,7 +41,7 @@ class SiswaController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
                   ->orWhere('nis', 'like', "%{$search}%")
                   ->orWhere('name', 'like', "%{$search}%")
@@ -50,17 +50,17 @@ class SiswaController extends Controller
                   ->orWhere('no_hp', 'like', "%{$search}%")
                   ->orWhere('tempat_lahir', 'like', "%{$search}%")
                   ->orWhere('nama_ortu', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($q) use ($search) {
+                  ->orWhereHas('user', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('kelas', function($q) use ($search) {
+                  ->orWhereHas('kelas', function ($q) use ($search) {
                       $q->where('nama_kelas', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('jurusan', function($q) use ($search) {
+                  ->orWhereHas('jurusan', function ($q) use ($search) {
                       $q->where('nama_jurusan', 'like', "%{$search}%");
                   });
             });
@@ -118,7 +118,7 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn',
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nisn',
             'name' => 'required|string|max:255',
             'username' => 'nullable|string',
             'email' => 'required|string|email|max:255|unique:users,email',
@@ -126,14 +126,14 @@ class SiswaController extends Controller
             'unit_id' => 'required',
             'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no',
             'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa',
-            'nis' => 'nullable|string|max:20|unique:siswas,nis',
-            'nik' => 'nullable|string|max:20|unique:siswas,nik',
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nis',
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|string|regex:/^[0-9]+$/|digits_between:10,13',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
-            'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening',
+            'no_rekening' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:siswas,no_rekening',
             'jurusan_id' => 'nullable|exists:jurusans,id',
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
