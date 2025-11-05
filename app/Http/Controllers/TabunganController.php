@@ -33,6 +33,8 @@ class TabunganController extends Controller
             })
             ->where('status','1')
             ->get();
+        $unitIds = $transaksis->pluck('unit_id')->unique()->toArray();
+
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->when(Auth::user()->yayasan_id, function ($query) use ($unitIds) {
                 $query->whereIn('unit_id', $unitIds);
