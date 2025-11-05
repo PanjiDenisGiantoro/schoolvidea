@@ -138,13 +138,14 @@
                     <!-- Nominal Potongan -->
                     <div class="col-md-6">
                         <label for="nilai" class="form-label">Nominal Potongan</label>
-                        <input type="number" class="form-control" id="nilai" name="nilai"
-                            value="{{ isset($potongan) ? $potongan->nilai : '' }}" required>
+                        <input type="text" class="form-control" id="nilai" name="nilai"
+                            value="{{ isset($potongan) ? $potongan->nilai : '' }}" oninput="formatCurrencyInput(this)"
+                            required>
                     </div>
 
                     <div class="col-md-6">
                         <label for="keterangan" class="form-label">Keterangan</label>
-                        <textarea class="form-control" id="keterangan" name="keterangan" rows="3" maxlength="64">{{ isset($potongan) ? $potongan->keterangan : '' }}</textarea>
+                        <textarea class="form-control" id="keterangan" name="keterangan" rows="1" maxlength="64">{{ isset($potongan) ? $potongan->keterangan : '' }}</textarea>
                     </div>
                 </div>
 
@@ -234,6 +235,27 @@
             const checkboxes = document.querySelectorAll('.siswa_checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
+            });
+        });
+    </script>
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"], [name="nilai"]'
+            );
+            inputs.forEach(input => {
+                input.value = parseInt(input.value.replace(/\./g, ''));
+                console.log('parseint : ', input.value);
             });
         });
     </script>

@@ -65,8 +65,6 @@
                             placeholder="Masukkan Nama Kategori" icon="bx bx-book" :value="old('nama_kategori', $kategoritagihan->nama_kategori ?? '')" required />
                     </div>
 
-
-
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="biaya_tagihan" label="Biaya Tagihan"
@@ -94,7 +92,6 @@
                             <textarea name="keterangan" id="keterangan" class="form-control" rows="2" placeholder="Tambahkan keterangan">{{ old('keterangan', $kategoritagihan->keterangan ?? '') }}</textarea>
                         </div>
                     </div>
-
 
                 </div>
 
@@ -202,10 +199,11 @@
         // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
         document.addEventListener('submit', function(e) {
             const inputs = document.querySelectorAll(
-                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"], [name="biaya_tagihan"]'
             );
             inputs.forEach(input => {
-                input.value = input.value.replace(/\./g, '');
+                input.value = parseInt(input.value.replace(/[^\d]/g, ''));
+                console.log('parseint : ', input.value);
             });
         });
     </script>
