@@ -128,7 +128,6 @@ class SiswaController extends Controller
             $jurusans = Jurusan::where('status', 1)->get();
         }
 
-        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
         $logoUnit = $units->first()->image ?? null;
 
         return view('pages.data_master.siswa.siswa_create', compact(
@@ -396,7 +395,6 @@ class SiswaController extends Controller
                 'status' => $request->status,
                 'rfid_no' => $request->rfid_no,
                 'va_siswa' => $request->va_siswa,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ];
 
             // Handle image

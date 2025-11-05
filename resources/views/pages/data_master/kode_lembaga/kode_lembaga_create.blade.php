@@ -1,5 +1,10 @@
 @extends('layouts.app')
-@section('title', isset($lembagaunit) ? (isset($show) && $show ? 'Lihat Lembaga Unit' : 'Edit Lembaga Unit') : 'Tambah
+@section('title',
+    isset($lembagaunit)
+    ? (isset($show) && $show
+    ? 'Lihat Lembaga Unit'
+    : 'Edit Lembaga Unit')
+    : 'Tambah
     Lembaga Unit')
 
 @section('content')
@@ -25,42 +30,72 @@
                     @method('PUT')
                 @endif
 
-                <div class="row ">
-                    <div class="col-md-4">
-                        <x-input-field type="text" name="no_hp" label="No. Telepon"
-                            placeholder="Masukkan nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $lembagaunit->no_hp ?? '')" />
+                <div class="row">
 
+                    <div class="col-md-4">
                         <x-input-field type="text" name="central_code" label="Central Code"
                             placeholder="Kosongkan Untuk Auto Generate" icon="bx bx-code" :value="old('central_code', $lembagaunit->central_code ?? '')" />
+                    </div>
+                    <div class="col-md-4">
+                        <x-input-field type="text" name="nama_yayasan" label="Nama Yayasan"
+                            placeholder="Masukkan Nama Yayasan" icon="bx bx-building" :value="old('nama_yayasan', $lembagaunit->nama_yayasan ?? '')" required />
+                    </div>
 
+                    <div class="col-md-4">
+                        <x-input-field type="email" name="email" label="Email" placeholder="Masukkan Email"
+                            icon="bx bx-envelope" :value="old('email', $lembagaunit->email ?? '')" />
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <x-input-field type="text" name="no_hp" label="No. Telepon"
+                            placeholder="Masukkan nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $lembagaunit->no_hp ?? '')"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
+                    </div>
+
+                    <div class="col-md-4">
                         {{-- Status --}}
-                        <div class="mb-2 ">
+                        <div class="mb-2">
                             <label for="status" class="form-label">Status Unit </label>
-                            <select name="status" id="status" class="form-select ">
+                            <select name="status" id="status" class="form-select">
                                 <option value="1"
-                                    {{ old('status', $lembagaunit->status ?? '') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                                    {{ old('status', $lembagaunit->status ?? '') == 'Aktif' ? 'selected' : '' }}>Aktif
+                                </option>
                                 <option value="0"
-                                    {{ old('status', $lembagaunit->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif
+                                    {{ old('status', $lembagaunit->status ?? '') == 'Tidak Aktif' ? 'selected' : '' }}>Tidak
+                                    Aktif
                                 </option>
                             </select>
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <x-input-field type="text" name="nama_yayasan" label="Nama Yayasan"
-                            placeholder="Masukkan Nama Yayasan" icon="bx bx-building" :value="old('nama_yayasan', $lembagaunit->nama_yayasan ?? '')" required />
-
-
-                        <x-input-field type="email" name="email" label="Email" placeholder="Masukkan Email"
-                            icon="bx bx-envelope" :value="old('email', $lembagaunit->email ?? '')" />
 
                         <x-input-field type="text" name="nama_pimpinan" label="Nama Pimpinan"
                             placeholder="Masukkan Nama Pimpinan" icon="bx bx-user" :value="old('nama_pimpinan', $lembagaunit->nama_pimpinan ?? '')" />
+                    </div>
+                    <div class="col-md-4">
+
                         <x-input-field type="text" name="website" label="Website" placeholder="Masukkan Website"
                             icon="bx bx-globe" :value="old('website', $lembagaunit->website ?? '')" />
 
-                        {{-- Dropzone Upload --}}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-4">
+                            <label for="alamat" class="form-label">Alamat</label>
+                            <textarea name="alamat" id="alamat" class="form-control" rows="2" placeholder="Masukkan alamat">{{ old('alamat', $lembagaunit->alamat ?? '') }}</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
 
+                        <div class="mb-3">
+                            <label for="image-dropzone" class="form-label">Upload Gambar Logo</label>
+                            <div class="dropzone" id="image-dropzone"></div>
+                            <input type="hidden" name="image" id="image-hidden"
+                                value="{{ old('image', $lembagaunit->image ?? '') }}">
+                            <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
+
+                        </div>
                         <div class="modal fade" id="imageModal" tabindex="-1">
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class="modal-content">
@@ -70,22 +105,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-4">
-                            <label for="alamat" class="form-label">Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control" rows="6" placeholder="Masukkan alamat">{{ old('alamat', $lembagaunit->alamat ?? '') }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image-dropzone" class="form-label">Upload Gambar Logo</label>
-                            <div class="dropzone" id="image-dropzone"></div>
-                            <input type="hidden" name="image" id="image-hidden"
-                                value="{{ old('image', $lembagaunit->image ?? '') }}">
-                            <small class="text-muted">Format: JPG, PNG | Max: 1MB</small>
-                        </div>
 
                     </div>
+
                 </div>
 
                 <div class="mt-3 text-end">
@@ -107,7 +129,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const formElements = document.querySelectorAll(
                     '#lembagaForm input, #lembagaForm textarea, #lembagaForm select, #lembagaForm button[type="submit"]'
-                    );
+                );
 
                 formElements.forEach(el => {
                     el.disabled = true;
