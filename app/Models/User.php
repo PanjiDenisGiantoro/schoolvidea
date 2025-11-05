@@ -71,7 +71,7 @@ class User extends Authenticatable implements JWTSubject
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn($word) => Str::substr($word, 0, 1))
+            ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
     public function officer()
@@ -130,4 +130,5 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(\App\Models\Unit::class, 'unit_id', 'id');
     }
+
 }

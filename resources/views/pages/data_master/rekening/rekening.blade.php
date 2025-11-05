@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Master Rekening',
-        'subTitle' => 'List Rekening'
+        'subTitle' => 'List Rekening',
     ])
 
     <div class="card">
@@ -21,13 +21,14 @@
                 <!-- Search and Filter Form -->
                 <div class="col-lg-12 mb-3">
                     <form method="GET" action="{{ route('rekening.index') }}" class="row g-3">
-                        @if(auth()->user()->unit_id === null)
+                        @if (auth()->user()->unit_id === null)
                             <!-- Unit Filter for Admin -->
                             <div class="col-md-3">
                                 <select name="unit_id" class="form-select" onchange="this.form.submit()">
                                     <option value="">-- Semua Unit --</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}"
+                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                             {{ $unit->nama_unit }}
                                         </option>
                                     @endforeach
@@ -36,7 +37,9 @@
                         @endif
                         <!-- Search Input -->
                         <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
-                            <input type="text" name="search" class="form-control p-3" placeholder="Cari rekening (Nama, No Rekening, Bank, dll...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3"
+                                placeholder="Cari rekening (Nama, No Rekening, Bank, dll...)"
+                                value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -46,76 +49,79 @@
                     </form>
                 </div>
 
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tipe Rekening</th>
-                    <th>Nama Rekening</th>
-                    <th>No Rekening</th>
-                    <th>Bank</th>
-                    <th>KCP</th>
-                    <th>User</th>
-                    <th>Unit</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-                </thead>
-                <tbody>
-                @forelse($rekenings as $index => $item)
-                    <tr>
-                        <td>{{ $rekenings->firstItem() + $index }}</td>
-                        <td>{{ $item->type_rekening ?? '-' }}</td>
-                        <td>{{ $item->nama_rekening ?? '-' }}</td>
-                        <td>{{ $item->no_rekening ?? '-' }}</td>
-                        <td>{{ $item->bank ?? '-' }}</td>
-                        <td>{{ $item->KCP ?? '-' }}</td>
-                        <td>{{ $item->nama_pemilik_rekening ?? '-' }}</td>
-                        <td>{{ $item->unit->nama_unit ?? '-' }}</td>
-                        <td>
-                            <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">
-                                {{ $item->status === '1' ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex gap-3">
-                                <a href="{{ route('rekening.show', $item->id) }}" class="link-primary text-muted">
-                                    <i class="ri-eye-line align-middle fs-20"></i> Show
-                                </a>
-                                <a href="{{ route('rekening.edit', $item->id) }}" class="link-warning text-muted">
-                                    <i class="ri-edit-line align-middle fs-20"></i> Edit
-                                </a>
-                                <form action="{{ route('rekening.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-link link-danger text-muted p-0 m-0">
-                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i> Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+                <table class="table-bordered table-striped table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tipe Rekening</th>
+                            <th>Nama Rekening</th>
+                            <th>No Rekening</th>
+                            <th>Bank</th>
+                            <th>KCP</th>
+                            <th>User</th>
+                            <th>Unit</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($rekenings as $index => $item)
+                            <tr>
+                                <td>{{ $rekenings->firstItem() + $index }}</td>
+                                <td>{{ $item->type_rekening ?? '-' }}</td>
+                                <td>{{ $item->nama_rekening ?? '-' }}</td>
+                                <td>{{ $item->no_rekening ?? '-' }}</td>
+                                <td>{{ $item->bank ?? '-' }}</td>
+                                <td>{{ $item->KCP ?? '-' }}</td>
+                                <td>{{ $item->nama_pemilik_rekening ?? '-' }}</td>
+                                <td>{{ $item->unit->nama_unit ?? '-' }}</td>
+                                <td>
+                                    <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $item->status === '1' ? 'Aktif' : 'Tidak Aktif' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-3">
+                                        <a href="{{ route('rekening.show', $item->id) }}" class="link-primary text-muted">
+                                            <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                        </a>
+                                        <a href="{{ route('rekening.edit', $item->id) }}" class="link-warning text-muted">
+                                            <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                        </a>
+                                        <form action="{{ route('rekening.destroy', $item->id) }}" method="POST"
+                                            onsubmit="return confirm('Yakin ingin menghapus data ini?')"
+                                            style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link link-danger text-muted m-0 p-0">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
 
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="10" class="text-center">Tidak ada data ditemukan</td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
-            <!-- Pagination -->
-            <div class="col-lg-12">
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">
+                <!-- Pagination -->
+                <div class="col-lg-12">
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
 
-                        Menampilkan {{ $rekenings->firstItem() ?? 0 }} sampai {{ $rekenings->lastItem() ?? 0 }} dari {{ $rekenings->total() }} data
-                    </div>
-                    <div>
-                        {{ $rekenings->links('vendor.pagination.custom') }}
+                            Menampilkan {{ $rekenings->firstItem() ?? 0 }} sampai {{ $rekenings->lastItem() ?? 0 }} dari
+                            {{ $rekenings->total() }} data
+                        </div>
+                        <div>
+                            {{ $rekenings->links('vendor.pagination.custom') }}
+                        </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -126,7 +132,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
                 var url = $(this).attr('href');
@@ -149,7 +155,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

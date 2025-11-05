@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Unit'
+        'subTitle' => 'Data Unit',
     ])
 
     <div class="card">
@@ -23,7 +23,9 @@
                     <form method="GET" action="{{ route('unit.index') }}" class="row g-3">
                         <!-- Search Input -->
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control p-3" placeholder="Cari unit (Nama, Code, Email, Telp, Alamat, dll...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3"
+                                placeholder="Cari unit (Nama, Code, Email, Telp, Alamat, dll...)"
+                                value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -34,58 +36,60 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
+                    <table class="table-bordered table-striped table">
                         <thead>
-                        @if(!empty($headers) && is_array($headers))
-                            @foreach($headers as $header)
-                                <th>{{ $header }}</th>
-                            @endforeach
-                        @else
-                            <th>No data</th>
-                        @endif
+                            @if (!empty($headers) && is_array($headers))
+                                @foreach ($headers as $header)
+                                    <th>{{ $header }}</th>
+                                @endforeach
+                            @else
+                                <th>No data</th>
+                            @endif
                         </thead>
                         <tbody>
-                        @forelse($unit as $index => $item)
-                            <tr>
-                                <td>{{ $unit->firstItem() + $index }}</td>
-                                <td>{{ $item->yayasan->nama_yayasan ?? '-' }}</td>
-                                <td>{{ $item->tipe_unit->nama_tipe_unit ?? '-' }}</td>
-                                <td>{{ $item->nama_unit ?? '-' }}</td>
-                                <td>{{ $item->code ?? '-' }}</td>
-                                {{--                            <td>{{ $item->image ?? '-' }}</td>--}}
-                                <td>{{ $item->no_hp ?? '-' }}</td>
-                                <td>{{ $item->email ?? '-' }}</td>
-                                <td>{{ $item->alamat ?? '-' }}</td>
-                                <td>{{ $item->website ?? '-' }}</td>
-                                <td>
-                                    @if($item->status == 1)
-                                        <span class="badge bg-success">Aktif</span>
-                                    @else
-                                        <span class="badge bg-danger">Tidak Aktif</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-3">
-                                        <a href="{{ url('unit/show', $item->id ?? '') }}" class="link-primary text-muted">
-                                            <i class="ri-eye-line align-middle fs-20"></i>
-                                            Show
-                                        </a>
-                                        <a href="{{ route('unit.edit', $item->id) }}" class="link-warning text-muted">
-                                            <i class="ri-edit-line align-middle fs-20"></i>
-                                            Edit
-                                        </a>
-                                        <a href="{{ route('unit.destroy', $item->id) }}" class="link-danger text-muted">
-                                            <i class="ri-delete-bin-5-line align-middle fs-20"></i>
-                                            Hapus
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="11" class="text-center">Tidak ada data ditemukan</td>
-                            </tr>
-                        @endforelse
+                            @forelse($unit as $index => $item)
+                                <tr>
+                                    <td>{{ $unit->firstItem() + $index }}</td>
+                                    <td>{{ $item->yayasan->nama_yayasan ?? '-' }}</td>
+                                    <td>{{ $item->tipe_unit->nama_tipe_unit ?? '-' }}</td>
+                                    <td>{{ $item->nama_unit ?? '-' }}</td>
+                                    <td>{{ $item->code ?? '-' }}</td>
+                                    {{--                            <td>{{ $item->image ?? '-' }}</td> --}}
+                                    <td>{{ $item->no_hp ?? '-' }}</td>
+                                    <td>{{ $item->email ?? '-' }}</td>
+                                    <td>{{ $item->alamat ?? '-' }}</td>
+                                    <td>{{ $item->website ?? '-' }}</td>
+                                    <td>
+                                        @if ($item->status == 1)
+                                            <span class="badge bg-success">Aktif</span>
+                                        @else
+                                            <span class="badge bg-danger">Tidak Aktif</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-3">
+                                            <a href="{{ url('unit/show', $item->id ?? '') }}"
+                                                class="link-primary text-muted">
+                                                <i class="ri-eye-line fs-20 align-middle"></i>
+                                                Show
+                                            </a>
+                                            <a href="{{ route('unit.edit', $item->id) }}" class="link-warning text-muted">
+                                                <i class="ri-edit-line fs-20 align-middle"></i>
+                                                Edit
+                                            </a>
+                                            <a href="{{ route('unit.destroy', $item->id) }}"
+                                                class="link-danger text-muted">
+                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
+                                                Hapus
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="11" class="text-center">Tidak ada data ditemukan</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -94,7 +98,8 @@
                 <div class="col-lg-12">
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
-                            Menampilkan {{ $unit->firstItem() ?? 0 }} sampai {{ $unit->lastItem() ?? 0 }} dari {{ $unit->total() }} data
+                            Menampilkan {{ $unit->firstItem() ?? 0 }} sampai {{ $unit->lastItem() ?? 0 }} dari
+                            {{ $unit->total() }} data
                         </div>
                         <div>
                             {{ $unit->links('vendor.pagination.custom') }}
@@ -110,7 +115,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -134,7 +139,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

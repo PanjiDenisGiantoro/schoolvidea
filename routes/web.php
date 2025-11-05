@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AkunController;
+use App\Http\Controllers\AkunUserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\UnitController;
@@ -24,7 +26,6 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollSettingController;
-use App\Http\Controllers\AkunUserController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -363,6 +364,18 @@ Route::middleware(['auth'])->group(function () {
         ->name('officers.byUnit');
     Route::post('/tabungan/mass-status', [App\Http\Controllers\TabunganController::class, 'massStatus'])
         ->name('tabungan.massStatus');
+
+    Route::prefix('akun-user')->middleware('permission:view_user')->group(function () {
+        Route::get('/', [AkunUserController::class, 'index'])->name('akun-user.index');
+        Route::get('/edit/{id}', [AkunUserController::class, 'edit'])->name('akun-user.edit');
+        Route::put('/update/{id}', [AkunUserController::class, 'update'])->name('akun-user.update');
+        Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
+
+    });
+
+
+
+
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');

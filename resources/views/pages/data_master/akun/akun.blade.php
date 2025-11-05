@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Akun'
+        'subTitle' => 'Data Akun',
     ])
 
     <div class="card">
@@ -21,13 +21,14 @@
                 <!-- Search and Filter Form -->
                 <div class="col-lg-12 mb-3">
                     <form method="GET" action="{{ route('akun.index') }}" class="row g-3">
-                        @if(auth()->user()->unit_id === null)
+                        @if (auth()->user()->unit_id === null)
                             <!-- Unit Filter for Admin -->
                             <div class="col-md-3">
                                 <select name="unit_id" class="form-select" onchange="this.form.submit()">
                                     <option value="">-- Semua Unit --</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}"
+                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                             {{ $unit->nama_unit }}
                                         </option>
                                     @endforeach
@@ -36,7 +37,8 @@
                         @endif
                         <!-- Search Input -->
                         <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
-                            <input type="text" name="search" class="form-control p-3" placeholder="Cari akun (Kode, Nama, Kategori, dll...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" style="font-size: 14px"
+                                placeholder="Cari akun (Kode, Nama, Kategori, dll...)" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -100,19 +102,20 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div class="col-lg-12">
-                    <div class="pagination-wrapper">
-                        <div class="pagination-info">
+                    <!-- Pagination -->
+                    <div class="col-lg-12">
+                        <div class="pagination-wrapper">
+                            <div class="pagination-info">
 
-                            Menampilkan {{ $akuns->firstItem() ?? 0 }} sampai {{ $akuns->lastItem() ?? 0 }} dari {{ $akuns->total() }} data
-                        </div>
-                        <div>
-                            {{ $akuns->links('vendor.pagination.custom') }}
+                                Menampilkan {{ $akuns->firstItem() ?? 0 }} sampai {{ $akuns->lastItem() ?? 0 }} dari
+                                {{ $akuns->total() }} data
+                            </div>
+                            <div>
+                                {{ $akuns->links('vendor.pagination.custom') }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -122,7 +125,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -146,7 +149,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',
