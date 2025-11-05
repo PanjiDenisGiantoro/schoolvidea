@@ -66,7 +66,13 @@ class LembagaunitController extends Controller
     }
     public function store(Request $request)
     {
-        $request->validate([
+        $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
+        if($ceknotdoubleunit){
+            return redirect()->route('lembagaunit.index')
+            ->with('danger', 'Unit ini sudah memiliki yayasan, silahkan hubungi admin');
+        }
+
+            $request->validate([
             'nama_yayasan' => 'required|string|max:255',
             'kode_yayasan' => 'required',
             'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
