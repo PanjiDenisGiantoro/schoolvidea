@@ -40,8 +40,9 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select p-3" style="font-size: 14px" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select p-3"
+                                style="font-size: 14px" data-choices data-choices-sorting-false required
+                                @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
                                 @foreach ($tahun_ajaran as $t)
                                     <option value="{{ $t->id }}"
@@ -65,8 +66,6 @@
                             placeholder="Masukkan Nama Kategori" icon="bx bx-book" :value="old('nama_kategori', $kategoritagihan->nama_kategori ?? '')" required />
                     </div>
 
-
-
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -76,7 +75,7 @@
                             <input type="text" name="biaya_tagihan_display" id="biaya_tagihan_display"
                                 class="form-control p-3" style="font-size: 14px" placeholder="Masukkan Biaya Tagihan"
                                 value="{{ old('biaya_tagihan', isset($kategoritagihan) ? number_format($kategoritagihan->biaya_tagihan, 0, ',', '.') : '') }}"
-                                required @if(isset($show) && $show) disabled @endif>
+                                required @if (isset($show) && $show) disabled @endif>
                             <input type="hidden" name="biaya_tagihan" id="biaya_tagihan"
                                 value="{{ old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '') }}">
                         </div>
@@ -90,7 +89,8 @@
                                     {{ old('status', $kategoritagihan->status ?? '') == '1' ? 'selected' : '' }}>Aktif
                                 </option>
                                 <option value="0"
-                                    {{ old('status', $kategoritagihan->status ?? '') == '0' ? 'selected' : '' }}>Tidak Aktif
+                                    {{ old('status', $kategoritagihan->status ?? '') == '0' ? 'selected' : '' }}>Tidak
+                                    Aktif
                                 </option>
                             </select>
                         </div>
@@ -102,7 +102,6 @@
                             <textarea name="keterangan" id="keterangan" class="form-control" rows="2" placeholder="Tambahkan keterangan">{{ old('keterangan', $kategoritagihan->keterangan ?? '') }}</textarea>
                         </div>
                     </div>
-
 
                 </div>
 
