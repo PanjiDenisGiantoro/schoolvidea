@@ -282,13 +282,15 @@ class SiswaController extends Controller
         $jurusans = Jurusan::where('unit_id', $siswa->unit_id)->where('status', 1)->get();
 
         $logoUnit = $siswa->unit->image ?? null;
+        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
 
         return view('pages.data_master.siswa.siswa_create', compact(
             'siswa',
             'units',
             'kelas',
             'jurusans',
-            'logoUnit'
+            'logoUnit',
+            'tahunajaran'
         ));
     }
 
@@ -480,6 +482,7 @@ class SiswaController extends Controller
         $kelas = Kelas::all();
         $jurusans = Jurusan::all();
         $show = true;
+        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
 
         // Logo unit siswa
         $logoUnit = $siswa->unit->image ?? null;
@@ -490,7 +493,8 @@ class SiswaController extends Controller
             'units',
             'kelas',
             'jurusans',
-            'logoUnit'
+            'logoUnit',
+            'tahunajaran'
         ))->with('show', true);
     }
     public function getByKelas($kelasId)
