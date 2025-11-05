@@ -15,8 +15,8 @@
     <div class="card">
         <div class="card-body">
             <form id="potonganForm"
-                action="{{ isset($potongan) ? route('potongan.update', $potongan->id) : route('potongan.store') }}"
-                method="POST">
+                  action="{{ isset($potongan) ? route('potongan.update', $potongan->id) : route('potongan.store') }}"
+                  method="POST">
                 @csrf
                 @if (isset($potongan))
                     @method('PUT')
@@ -50,7 +50,7 @@
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="kelas_switch" id="kelas_select"
-                                value="select" {{ isset($potongan) && !empty($potongan->kelas_id) ? 'checked' : '' }}>
+                                   value="select" {{ isset($potongan) && !empty($potongan->kelas_id) ? 'checked' : '' }}>
                             <label class="form-check-label" for="kelas_select">
                                 Pilih Kelas
                             </label>
@@ -59,7 +59,7 @@
 
                     <!-- Daftar Kelas (Only visible if "Pilih Kelas" is selected) -->
                     <div class="col-md-12" id="kelas_table"
-                        style="{{ isset($potongan) && !empty($potongan->kelas_id) ? '' : 'display: none;' }}">
+                         style="{{ isset($potongan) && !empty($potongan->kelas_id) ? '' : 'display: none;' }}">
                         <label for="kelas_id" class="form-label">Pilih Kelas</label>
                         <select class="form-control" id="kelas_id" name="kelas_id"
                             {{ isset($potongan) ? 'disabled' : '' }}>
@@ -73,37 +73,35 @@
                         </select>
                     </div>
 
-                    <!-- Pilih Siswa (Only visible when specific class is selected) -->
+                    <!-- Pilih Siswa -->
                     <div class="col-md-12" id="siswa_table"
-                        style="{{ isset($potongan) && !empty($potongan->kelas_id) ? '' : 'display: none;' }}">
+                         style="{{ isset($potongan) && !empty($potongan->kelas_id) ? '' : 'display: none;' }}">
                         <label for="siswa_id" class="form-label">Pilih Siswa</label>
                         <table id="siswa_datatable" class="table-striped table-bordered table">
                             <thead>
-                                <tr>
-                                    <th>
-                                        <input type="checkbox" id="checkAll"> Select All
-                                    </th>
-                                    <th>Nama Lengkap</th>
-                                    <th>NISN</th>
-                                    <th>Kelas</th>
-                                </tr>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="checkAll"> Select All
+                                </th>
+                                <th>Nama Lengkap</th>
+                                <th>NISN</th>
+                            </tr>
                             </thead>
                             <tbody id="siswa_list">
-                                @if (isset($potongan) && !empty($potongan->kelas_id))
-                                    @foreach ($potongan->kelas->siswas as $siswa)
-                                        <tr>
-                                            <td>
-                                                <input type="checkbox" class="siswa_checkbox" name="siswa_id[]"
-                                                    value="{{ $siswa->id }}"
-                                                    {{ isset($potongan->potonganSiswa) && in_array($siswa->id, $potongan->potonganSiswa->pluck('siswa_id')->toArray()) ? 'checked' : '' }}
-                                                    disabled>
-                                            </td>
-                                            <td>{{ $siswa->user->name }}</td>
-                                            <td>{{ $siswa->nisn }}</td>
-                                            <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
-                                        </tr>
-                                    @endforeach
-                                @endif
+                            @if (isset($potongan) && !empty($potongan->kelas_id))
+                                @foreach ($potongan->kelas->siswas as $siswa)
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" class="siswa_checkbox" name="siswa_id[]"
+                                                   value="{{ $siswa->id }}"
+                                                   {{ isset($potongan->potonganSiswa) && in_array($siswa->id, $potongan->potonganSiswa->pluck('siswa_id')->toArray()) ? 'checked' : '' }}
+                                                   disabled>
+                                        </td>
+                                        <td>{{ $siswa->user->name }}</td>
+                                        <td>{{ $siswa->nisn }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
                             </tbody>
                         </table>
                     </div>
@@ -141,7 +139,7 @@
                     <div class="col-md-6">
                         <label for="nilai" class="form-label">Nominal Potongan</label>
                         <input type="number" class="form-control" id="nilai" name="nilai"
-                            value="{{ isset($potongan) ? $potongan->nilai : '' }}" required>
+                               value="{{ isset($potongan) ? $potongan->nilai : '' }}" required>
                     </div>
 
                     <div class="col-md-6">
@@ -150,10 +148,8 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-3 gap-2">
+                <div class="d-flex justify-content-end mt-3">
                     <button type="submit" class="btn btn-primary">Proses Tambah Potongan</button>
-                    <button class="btn btn-secondary" onclick="history.go(-1)">Kembali</button>
-
                 </div>
             </form>
         </div>
@@ -164,34 +160,11 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script>
-        // Handle kelas switch (All or Select)
-        document.querySelectorAll('input[name="kelas_switch"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const kelasTable = document.getElementById('kelas_table');
-                const siswaTable = document.getElementById('siswa_table');
-
-                if (this.value === 'all') {
-                    // Hide kelas dropdown and siswa table when "Semua Kelas" is selected
-                    kelasTable.style.display = 'none';
-                    siswaTable.style.display = 'none';
-                    // Clear kelas selection
-                    document.getElementById('kelas_id').value = '';
-                } else {
-                    // Show kelas dropdown when "Pilih Kelas" is selected
-                    const unitId = document.getElementById('unit_id').value;
-                    if (unitId) {
-                        kelasTable.style.display = 'block';
-                    }
-                }
-            });
-        });
-
         // Fetch Kelas based on the selected Unit using AJAX
         document.getElementById('unit_id').addEventListener('change', function() {
             const unitId = this.value;
             const kelasSelect = document.getElementById('kelas_id');
             const siswaTable = document.getElementById('siswa_table');
-            const kelasSwitch = document.querySelector('input[name="kelas_switch"]:checked').value;
 
             if (unitId) {
                 // Make AJAX request to fetch classes based on unit_id
@@ -207,17 +180,14 @@
                             kelasSelect.appendChild(option);
                         });
 
-                        // Only show kelas dropdown if "Pilih Kelas" is selected
-                        if (kelasSwitch === 'select') {
-                            document.getElementById("kelas_table").style.display = "block";
-                        }
+                        // Show the Kelas dropdown
+                        document.getElementById("kelas_table").style.display = "block";
                     })
                     .catch(error => console.error('Error fetching classes:', error));
             } else {
                 // Clear Kelas dropdown if no unit is selected
                 kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
                 document.getElementById("kelas_table").style.display = "none";
-                siswaTable.style.display = "none";
             }
         });
 

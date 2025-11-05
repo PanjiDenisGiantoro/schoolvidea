@@ -92,7 +92,7 @@ class PotonganController extends Controller
         $request->validate([
             'unit_id' => 'required|exists:units,id',
             'kelas_switch' => 'required|in:all,select',
-            'kelas_id' => 'required_if:kelas_switch,select|nullable|exists:kelas,id',
+            'kelas_id' => 'nullable',
             'kategori_tagihan_id' => 'required',
             'tipe_potongan' => 'required|in:nominal,persentase',
             'nilai' => 'required|numeric',
