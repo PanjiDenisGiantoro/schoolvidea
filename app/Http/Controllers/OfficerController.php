@@ -136,11 +136,18 @@ class OfficerController extends Controller
             'no_kartu_rfid'   => 'nullable|string|max:100|unique:officers,no_kartu_rfid',
             'qr_code'         => 'nullable|string|max:100',
             'va_guru'         => 'nullable|string|max:100|unique:officers,va_guru',
-            'position_id'     => 'nullable|'
+            'position_id'     => 'nullable|',
+            'akses_yayasan'   => 'nullable|in:ya,tidak'
         ]);
 
         DB::beginTransaction();
         try {
+            // Tentukan yayasan_id berdasarkan dropdown akses yayasan
+            $yayasanId = null;
+            if ($request->akses_yayasan === 'ya' && Auth::user()->yayasan_id) {
+                $yayasanId = Auth::user()->yayasan_id;
+            }
+
             // 1. Buat user baru
             $user = User::create([
                 'name' => $request->name,
@@ -149,7 +156,7 @@ class OfficerController extends Controller
                 'password' => bcrypt($request->password),
                 'rfid_no' => $request->no_kartu_rfid,
                 'unit_id' => $request->unit_id,
-                'yayasan_id' => Auth::user()->yayasan_id,
+                'yayasan_id' => $yayasanId,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
@@ -250,14 +257,20 @@ class OfficerController extends Controller
             'no_kartu_rfid'   => 'nullable|string|max:100',
             'qr_code'         => 'nullable|string|max:100',
             'va_guru'         => 'nullable|string|max:100',
-            'position_id'     => 'nullable|'
-
+            'position_id'     => 'nullable|',
+            'akses_yayasan'   => 'nullable|in:ya,tidak'
         ]);
 
         DB::beginTransaction();
         try {
             $officer = Officer::findOrFail($id);
             $user    = $officer->user;
+
+            // Tentukan yayasan_id berdasarkan dropdown akses yayasan
+            $yayasanId = null;
+            if ($request->akses_yayasan === 'ya' && Auth::user()->yayasan_id) {
+                $yayasanId = Auth::user()->yayasan_id;
+            }
 
             // Update user
             $user->update([
@@ -266,7 +279,7 @@ class OfficerController extends Controller
                 'email' => $request->email,
                 'password' => $request->password ? bcrypt($request->password) : $user->password,
                 'rfid_no' => $request->no_kartu_rfid,
-                'yayasan_id' => Auth::user()->yayasan_id,
+                'yayasan_id' => $yayasanId,
             ]);
 
             // Update role user

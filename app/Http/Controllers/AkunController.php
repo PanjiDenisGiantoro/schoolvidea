@@ -15,10 +15,17 @@ class AkunController extends Controller
         // Build query
         $query = Akun::with('parent', 'unit');
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
             $query->where('unit_id', $request->unit_id);
         }
 
@@ -84,15 +91,22 @@ class AkunController extends Controller
 
     public function create()
     {
-        $parents = Akun::when(Auth::user()->unit_id,function ($query,$unitId){
-            $query->where('unit_id',$unitId);
-        })->where('status','1')->get(); // opsi parent
-        $units = \App\Models\Unit::when(Auth::user()->unit_id,function ($query, $unit_id){
-          $query->where('id',$unit_id);
-        })
-        ->where('status','1')
-            ->get();// ambil data unit
-
+        // Filter berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
+            $parents = Akun::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan data dari unit tersebut saja
+            $parents = Akun::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $parents = Akun::where('status','1')->get();
+            $units = \App\Models\Unit::where('status','1')->get();
+        }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 
@@ -125,16 +139,27 @@ class AkunController extends Controller
     public function edit($id)
     {
         $akun = Akun::findOrFail($id);
-        $parents = Akun::where('id', '!=', $id)
-            ->when(Auth::user()->unit_id,function ($query,$unit_id){
-                $query->where('unit_id',$unit_id);
-            })
-            ->where('status','1')
-            ->get(); // exclude diri sendiri
-        $units = \App\Models\Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
-            $query->where('id',$unit_id);
-        })
-            ->where('status','1')->get();
+
+        // Filter berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
+            $parents = Akun::where('id', '!=', $id)
+                ->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                })
+                ->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan data dari unit tersebut saja
+            $parents = Akun::where('id', '!=', $id)
+                ->where('unit_id', Auth::user()->unit_id)
+                ->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $parents = Akun::where('id', '!=', $id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('status','1')->get();
+        }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 
@@ -177,16 +202,27 @@ class AkunController extends Controller
     public function show($id)
     {
         $akun = Akun::findOrFail($id);
-        $parents = Akun::where('id', '!=', $id)
-            ->when(Auth::user()->unit_id,function ($query,$unit_id){
-                $query->where('unit_id',$unit_id);
-            })
-            ->where('status','1')
-            ->get(); // exclude diri sendiri
-        $units = \App\Models\Unit::when(Auth::user()->unit_id,function ($query,$unit_id){
-            $query->where('id',$unit_id);
-        })
-            ->where('status','1')->get();
+
+        // Filter berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
+            $parents = Akun::where('id', '!=', $id)
+                ->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                })
+                ->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan data dari unit tersebut saja
+            $parents = Akun::where('id', '!=', $id)
+                ->where('unit_id', Auth::user()->unit_id)
+                ->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $parents = Akun::where('id', '!=', $id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('status','1')->get();
+        }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 

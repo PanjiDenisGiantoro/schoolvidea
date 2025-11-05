@@ -199,6 +199,18 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if (Auth::user()->yayasan_id)
+                            <div class="mb-4">
+                                <label for="akses_yayasan" class="form-label">Akses Yayasan</label>
+                                <select name="akses_yayasan" id="akses_yayasan" class="form-select" data-choices data-choices-sorting-false
+                                    @if (isset($show) && $show) disabled @endif>
+                                    <option value="">-- Pilih Akses Yayasan --</option>
+                                    <option value="ya" {{ old('akses_yayasan', $officer->user->yayasan_id ?? '') ? 'selected' : '' }}>Ya</option>
+                                    <option value="tidak" {{ old('akses_yayasan', $officer->user->yayasan_id ?? '') == '' ? 'selected' : '' }}>Tidak</option>
+                                </select>
+                                <small class="text-muted">Jika "Ya", user akan memiliki akses ke semua unit dalam yayasan</small>
+                            </div>
+                            @endif
                             <x-input-field type="text" id="bank" name="bank" label="Bank"
                                 placeholder="Masukkan Nama Bank" icon="bx bx-bank" :value="old('bank', $officer->bank ?? '')" />
 
