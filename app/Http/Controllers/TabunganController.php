@@ -22,7 +22,6 @@ class TabunganController extends Controller
     public function index()
     {
         $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
-            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
             ->when(Auth::user()->yayasan_id, function ($query) {
                 $query->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
@@ -33,24 +32,17 @@ class TabunganController extends Controller
             })
             ->where('status','1')
             ->get();
-        $unitIds = $transaksis->pluck('unit_id')->unique()->toArray();
 
+// Ambil semua user_id dari siswa yang lolos filter
+        $userIds = $transaksis->pluck('user_id')->unique()->toArray();
+
+// Filter transaksi keuangan berdasarkan user_id
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->when(Auth::user()->yayasan_id, function ($query) use ($unitIds) {
-                $query->whereIn('unit_id', $unitIds);
-            })
-            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
-                $query->where('unit_id', Auth::user()->unit_id);
-            })
+            ->whereIn('user_id', $userIds)
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->when(Auth::user()->yayasan_id, function ($query) use ($unitIds) {
-                $query->whereIn('unit_id', $unitIds);
-            })
-            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
-                $query->where('unit_id', Auth::user()->unit_id);
-            })
+            ->whereIn('user_id', $userIds)
             ->sum('jumlah');
         return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
     }
