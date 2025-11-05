@@ -100,12 +100,13 @@
 
                 <!-- Pagination -->
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+
                             Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari {{ $officer->total() }} data
                         </div>
                         <div>
-                            {{ $officer->links() }}
+                            {{ $officer->links('vendor.pagination.custom') }}
                         </div>
                     </div>
                 </div>

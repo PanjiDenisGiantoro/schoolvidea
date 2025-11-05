@@ -97,12 +97,12 @@
 
                 <!-- Pagination -->
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
                             Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} data
                         </div>
                         <div>
-                            {{ $siswa->links() }}
+                            {{ $siswa->links('vendor.pagination.custom') }}
                         </div>
                     </div>
                 </div>

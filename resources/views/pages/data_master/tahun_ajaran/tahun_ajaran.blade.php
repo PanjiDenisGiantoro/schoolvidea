@@ -85,12 +85,13 @@
 
                 <!-- Pagination -->
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+
                             Menampilkan {{ $tahun_ajaran->firstItem() ?? 0 }} sampai {{ $tahun_ajaran->lastItem() ?? 0 }} dari {{ $tahun_ajaran->total() }} data
                         </div>
                         <div>
-                            {{ $tahun_ajaran->links() }}
+                            {{ $tahun_ajaran->links('vendor.pagination.custom') }}
                         </div>
                     </div>
                 </div>

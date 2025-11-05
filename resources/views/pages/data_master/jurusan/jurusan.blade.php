@@ -99,12 +99,13 @@
 
                 <!-- Pagination -->
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+
                             Menampilkan {{ $jurusan->firstItem() ?? 0 }} sampai {{ $jurusan->lastItem() ?? 0 }} dari {{ $jurusan->total() }} data
                         </div>
                         <div>
-                            {{ $jurusan->links() }}
+                            {{ $jurusan->links('vendor.pagination.custom') }}
                         </div>
                     </div>
                 </div>

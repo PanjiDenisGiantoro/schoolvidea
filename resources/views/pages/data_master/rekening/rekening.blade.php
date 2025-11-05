@@ -106,12 +106,13 @@
 
             <!-- Pagination -->
             <div class="col-lg-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+
                         Menampilkan {{ $rekenings->firstItem() ?? 0 }} sampai {{ $rekenings->lastItem() ?? 0 }} dari {{ $rekenings->total() }} data
                     </div>
                     <div>
-                        {{ $rekenings->links() }}
+                        {{ $rekenings->links('vendor.pagination.custom') }}
                     </div>
                 </div>
             </div>

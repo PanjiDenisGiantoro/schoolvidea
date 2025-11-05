@@ -98,12 +98,13 @@
 
                 <!-- Pagination -->
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+
                             Menampilkan {{ $kategoritagihans->firstItem() ?? 0 }} sampai {{ $kategoritagihans->lastItem() ?? 0 }} dari {{ $kategoritagihans->total() }} data
                         </div>
                         <div>
-                            {{ $kategoritagihans->links() }}
+                            {{ $kategoritagihans->links('vendor.pagination.custom') }}
                         </div>
                     </div>
                 </div>
