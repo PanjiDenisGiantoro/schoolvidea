@@ -112,6 +112,7 @@ class TabunganController extends Controller
                 'jenis_transaksi' => 'setoran_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
+                'metode' => 'CASH',
                 'created_by'      => Auth::id(),
             ]);
 
@@ -238,6 +239,7 @@ class TabunganController extends Controller
                 'jenis_transaksi' => 'penarikan_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
+                'metode' => 'CASH',
                 'created_by'      => Auth::id(),
             ]);
 
