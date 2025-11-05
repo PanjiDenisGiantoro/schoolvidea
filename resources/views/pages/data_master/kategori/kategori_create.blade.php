@@ -69,7 +69,7 @@
 
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="biaya_tagihan" label="Biaya Tagihan"
+                        <x-input-field type="number" name="biaya_tagihan" label="Biaya Tagihan"
                             placeholder="Masukkan Biaya Tagihan" icon="bx bx-money" :value="old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '')"
 {{--                            oninput="formatCurrencyInput(this)" --}}
                                        required />
