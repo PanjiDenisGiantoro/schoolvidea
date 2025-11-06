@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Auth;
 
 class JurusanController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $units = Unit::all();
 
         // Build query
@@ -30,11 +31,11 @@ class JurusanController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_jurusan', 'like', "%{$search}%")
                   ->orWhere('kode_jurusan', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   });
             });
@@ -53,7 +54,7 @@ class JurusanController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.jurusan.jurusan', compact('jurusan','headers','units'));
+        return view('pages.data_master.jurusan.jurusan', compact('jurusan', 'headers', 'units'));
     }
     public function create()
     {
@@ -62,16 +63,16 @@ class JurusanController extends Controller
                 $query->whereHas('units', function ($q) use ($unitId) {
                     $q->where('id', $unitId);
                 });
-            })->where('status','1')->get();
-        $units = Unit::when(Auth::user()->unit_id,function ($query, $unitId) {
-          $query->where('id', $unitId);
+            })->where('status', '1')->get();
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+            $query->where('id', $unitId);
         })
-            ->where('status','1')->get();
+            ->where('status', '1')->get();
 
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
-        return view('pages.data_master.jurusan.jurusan_create', compact('yayasan','units','tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.jurusan.jurusan_create', compact('yayasan', 'units', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
     public function store(Request $request)
     {
@@ -100,14 +101,17 @@ class JurusanController extends Controller
     public function edit($id)
     {
         $jurusan = Jurusan::findOrFail($id);
-        $units = Unit::when(Auth::user()->unit_id,function ($query, $unit_id){
+        $units = Unit::when(Auth::user()->unit_id, function ($query, $unit_id) {
             $query->where('id', $unit_id);
-        })->where('status','1')->get();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        })->where('status', '1')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
         return view('pages.data_master.jurusan.jurusan_create', compact(
-            'jurusan','units','tahun_ajaran','tahun_ajaran_selected'
+            'jurusan',
+            'units',
+            'tahun_ajaran',
+            'tahun_ajaran_selected'
         ));
     }
 
@@ -149,12 +153,16 @@ class JurusanController extends Controller
     {
         $jurusan = Jurusan::findOrFail($id);
         $units = Unit::isactive()->get();
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $show = true;
 
         return view('pages.data_master.jurusan.jurusan_create', compact(
-            'jurusan','show','units','tahun_ajaran','tahun_ajaran_selected'
+            'jurusan',
+            'show',
+            'units',
+            'tahun_ajaran',
+            'tahun_ajaran_selected'
         ));
     }
 

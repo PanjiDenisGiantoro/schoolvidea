@@ -100,7 +100,6 @@
                                 <td class="d-flex gap-2">
                                     <a href="{{ route('tabungan.show', $siswa->id) }}"
                                         class="btn btn-sm btn-outline-primary rounded-pill">Detail</a>
-
                                     @if ($saldo && $saldo->status == 0)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
                                             class="btn btn-sm btn-primary rounded-pill">Aktif</a>
