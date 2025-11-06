@@ -4,32 +4,38 @@
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi',
-        'subTitle' => 'Tabungan / Keuangan'
+        'subTitle' => 'Tabungan / Keuangan',
     ])
 
     <div class="row g-4">
         {{-- Pilih Siswa --}}
         <div class="col-12">
-            <div class="card p-4 shadow-sm rounded-4 border-0">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
-                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Unit --</option>
-                            @foreach($units as $u)
+                            @foreach ($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
+                            @foreach ($kelas as $k)
+                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -42,25 +48,24 @@
             <div class="row g-4">
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
-                    <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
-                        <div class="card-header bg-gradient-primary text-white text-center py-3">
-                            <h6 class="mb-0 fw-bold">Informasi Siswa</h6>
+                    <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
+                        <div class="card-header bg-gradient-primary py-3 text-center text-white">
+                            <h6 class="fw-bold mb-0">Informasi Siswa</h6>
                         </div>
                         <div class="card-body p-4">
-                            <div class="text-center mb-4">
+                            <div class="mb-4 text-center">
                                 <div class="position-relative d-inline-block">
-                                    <img src="{{ asset('images/default-user.png') }}"
-                                         alt="Foto Siswa"
-                                         id="foto_siswa"
-                                         class="img-fluid rounded-circle shadow border border-3 border-primary"
-                                         style="width: 120px; height: 120px; object-fit: cover;">
-                                    <span class="position-absolute bottom-0 end-0 bg-success rounded-circle p-2 border border-2 border-white">
+                                    <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa" id="foto_siswa"
+                                        class="img-fluid rounded-circle border-3 border-primary border shadow"
+                                        style="width: 120px; height: 120px; object-fit: cover;">
+                                    <span
+                                        class="position-absolute bg-success rounded-circle bottom-0 end-0 border border-2 border-white p-2">
                                         <i class="bx bx-check text-white"></i>
                                     </span>
                                 </div>
                             </div>
                             <div class="student-info">
-                                <div class="info-item mb-2 p-2 bg-light rounded">
+                                <div class="info-item bg-light mb-2 rounded p-2">
                                     <small class="text-muted d-block mb-1">Nama Lengkap</small>
                                     <strong id="detail_nama" class="text-dark">-</strong>
                                 </div>
@@ -68,7 +73,7 @@
                                     <small class="text-muted d-block mb-1">Nomor Induk</small>
                                     <strong id="detail_nisn" class="text-dark">-</strong>
                                 </div>
-                                <div class="info-item mb-2 p-2 bg-light rounded">
+                                <div class="info-item bg-light mb-2 rounded p-2">
                                     <small class="text-muted d-block mb-1">Kelas</small>
                                     <strong id="detail_kelas" class="text-dark">-</strong>
                                 </div>
@@ -92,14 +97,14 @@
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
-                        <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
-                            <div class="card-header bg-gradient-success text-white py-3">
-                                <h5 class="mb-0 fw-bold">
+                        <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
+                            <div class="card-header bg-gradient-success py-3 text-white">
+                                <h5 class="fw-bold mb-0">
                                     <i class="bx bx-wallet me-2"></i>Transaksi Setoran Tabungan
                                 </h5>
                             </div>
                             <div class="card-body gap-4 p-4">
-                                <div class="alert alert-info border-0 shadow-sm mb-4">
+                                <div class="alert alert-info mb-4 border-0 shadow-sm">
                                     <div class="d-flex align-items-center">
                                         <i class="bx bx-info-circle fs-4 me-3"></i>
                                         <div>
@@ -115,35 +120,34 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group input-group-lg">
-                                        <span class="input-group-text bg-success text-white border-0 rounded-start-pill">
+                                        <span class="input-group-text bg-success rounded-start-pill border-0 text-white">
                                             <strong>Rp</strong>
                                         </span>
                                         <input type="text" name="jumlah_display" id="jumlah_display"
-                                               class="form-control border-0 shadow-sm rounded-end-pill"
-                                               placeholder="0" required>
+                                            class="form-control rounded-end-pill border-0 shadow-sm" placeholder="0"
+                                            required>
                                         <input type="hidden" name="jumlah" id="jumlah">
                                     </div>
                                     <small class="text-muted">Minimal setoran Rp 1.000</small>
                                 </div>
 
-                                <div class=" mb-4">
+                                <div class="mb-4">
                                     <label for="keterangan" class="form-label fw-semibold">
                                         <i class="bx bx-note text-primary me-1"></i>Keterangan
                                     </label>
-                                    <textarea name="keterangan" id="keterangan"
-                                              class="form-control rounded-4 shadow-sm border-0"
-                                              rows="3"
-                                              placeholder="Tambahkan catatan transaksi (opsional)"></textarea>
+                                    <textarea name="keterangan" id="keterangan" class="form-control rounded-4 border-0 shadow-sm" rows="3"
+                                        placeholder="Tambahkan catatan transaksi (opsional)"></textarea>
                                 </div>
 
-                                <div class="alert alert-success border-0 shadow-sm mt-4 mb-4">
+                                <div class="alert alert-success mb-4 mt-4 border-0 shadow-sm">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="fw-semibold">Total Setoran</span>
                                         <div id="jumlah_transaksi" class="fs-4 fw-bold text-success">Rp 0</div>
                                     </div>
                                 </div>
 
-                                <button type="button" id="btnSubmit" class="btn btn-success btn-lg w-100 rounded-pill shadow-lg animate-btn">
+                                <button type="button" id="btnSubmit"
+                                    class="btn btn-success btn-lg w-100 rounded-pill animate-btn shadow-lg">
                                     <i class="bx bx-check-circle me-2"></i>Proses Setoran
                                 </button>
                             </div>
@@ -160,46 +164,58 @@
         .bg-gradient-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .bg-gradient-success {
             background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
         }
+
         .animate-btn {
             transition: all 0.3s ease-in-out;
             position: relative;
             overflow: hidden;
         }
+
         .animate-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(72, 187, 120, 0.4);
         }
+
         .animate-btn:active {
             transform: translateY(0);
         }
+
         .form-control:focus {
             box-shadow: 0 0 0 0.25rem rgba(72, 187, 120, 0.25);
             border-color: #48bb78;
         }
+
         .student-info .info-item {
             transition: all 0.2s ease;
         }
+
         .student-info .info-item:hover {
             background-color: #f0f9ff !important;
             transform: translateX(5px);
         }
+
         #foto_siswa {
             transition: all 0.3s ease;
         }
+
         #foto_siswa:hover {
             transform: scale(1.05);
         }
+
         .alert {
             animation: slideInDown 0.5s ease-out;
         }
+
         @keyframes slideInDown {
             from {
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -207,7 +223,6 @@
         }
     </style>
 @endpush
-
 
 @push('scripts')
     <script>
@@ -294,7 +309,8 @@
                     // Disable button untuk prevent double click
                     const btn = document.getElementById('btnSubmit');
                     btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+                    btn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
                     // Submit form
                     document.getElementById('formTabungan').submit();
@@ -303,7 +319,6 @@
         });
 
         // Element DOM
-        const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
@@ -326,9 +341,17 @@
 
             // reset select kelas dan siswa
             kelasChoices.clearStore();
-            kelasChoices.setChoices([{ value: '', label: '-- Pilih Kelas --', selected: true }], 'value', 'label', true);
+            kelasChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Kelas --',
+                selected: true
+            }], 'value', 'label', true);
             siswaChoices.clearStore();
-            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
+            siswaChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Siswa --',
+                selected: true
+            }], 'value', 'label', true);
             kelasHidden.value = '';
 
             if (!unitId) return;
@@ -340,7 +363,11 @@
                 })
                 .then(data => {
                     if (!data.length) {
-                        kelasChoices.setChoices([{ value: '', label: 'Tidak ada kelas', selected: true }], 'value', 'label', true);
+                        kelasChoices.setChoices([{
+                            value: '',
+                            label: 'Tidak ada kelas',
+                            selected: true
+                        }], 'value', 'label', true);
                         return;
                     }
 
@@ -353,7 +380,11 @@
                 })
                 .catch(err => {
                     console.error('Fetch error:', err);
-                    kelasChoices.setChoices([{ value: '', label: 'Gagal memuat kelas', selected: true }], 'value', 'label', true);
+                    kelasChoices.setChoices([{
+                        value: '',
+                        label: 'Gagal memuat kelas',
+                        selected: true
+                    }], 'value', 'label', true);
                 });
         });
 
@@ -364,7 +395,11 @@
 
             // reset select siswa
             siswaChoices.clearStore();
-            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
+            siswaChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Siswa --',
+                selected: true
+            }], 'value', 'label', true);
 
             if (!kelasId) return;
 
@@ -375,20 +410,29 @@
                 })
                 .then(data => {
                     if (!data.length) {
-                        siswaChoices.setChoices([{ value: '', label: 'Tidak ada siswa', selected: true }], 'value', 'label', true);
+                        siswaChoices.setChoices([{
+                            value: '',
+                            label: 'Tidak ada siswa',
+                            selected: true
+                        }], 'value', 'label', true);
                         return;
                     }
 
                     const options = data.map(siswa => ({
                         value: siswa.id,
-                        label: siswa.user && siswa.user.name ? siswa.user.name : 'Nama tidak tersedia'
+                        label: siswa.user && siswa.user.name ? siswa.user.name :
+                            'Nama tidak tersedia'
                     }));
 
                     siswaChoices.setChoices(options, 'value', 'label', true);
                 })
                 .catch(err => {
                     console.error('Fetch error:', err);
-                    siswaChoices.setChoices([{ value: '', label: 'Gagal memuat siswa', selected: true }], 'value', 'label', true);
+                    siswaChoices.setChoices([{
+                        value: '',
+                        label: 'Gagal memuat siswa',
+                        selected: true
+                    }], 'value', 'label', true);
                 });
         });
 
@@ -420,12 +464,33 @@
                     }
 
                     // Update saldo awal
-                    document.getElementById('saldo_awal').innerText = data.saldo_akhir
-                        ? 'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID')
-                        : 'Rp 0';
+                    document.getElementById('saldo_awal').innerText = data.saldo_akhir ?
+                        'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID') :
+                        'Rp 0';
                 })
                 .catch(err => console.error('Fetch detail siswa error:', err));
         });
+    </script>
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+        }
 
+
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+            );
+            inputs.forEach(input => {
+                input.value = input.value.replace(/[^\d]/g, '');
+            });
+        });
     </script>
 @endpush
