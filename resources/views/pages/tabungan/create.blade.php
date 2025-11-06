@@ -48,6 +48,7 @@
             <div class="row g-4">
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
+<<<<<<< HEAD
                     <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary py-3 text-center text-white">
                             <h6 class="fw-bold mb-0">Informasi Siswa</h6>
@@ -87,6 +88,26 @@
                                 </div>
                             </div>
                         </div>
+=======
+                    <div class="card rounded-4 border-0 p-4 shadow-sm">
+                        <div class="mb-3 text-center">
+                            <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
+                                class="img-fluid rounded-circle border shadow-sm" width="120">
+                        </div>
+
+<table class="table table-sm table-borderless w-100 small">
+  <tr><th>Nama Lengkap</th><td id="detail_nama">-</td></tr>
+  <tr><th>Nomor Induk</th><td id="detail_nisn">-</td></tr>
+  <tr><th>Unit Pendidikan</th><td id="detail_unit">-</td></tr>
+  <tr><th>Kelas Sekarang</th><td id="detail_kelas">-</td></tr>
+  <tr><th>Nama Jurusan</th><td id="detail_jurusan">-</td></tr>
+  <tr><th>Tahun Ajaran</th><td id="detail_tahun">-</td></tr>
+  <tr><th>Jenis Kelamin</th><td id="detail_gender">-</td></tr>
+  <tr><th>TTL</th><td id="detail_lahir">-</td></tr>
+  <tr><th>Telepon</th><td id="detail_telp">-</td></tr>
+</table>
+
+>>>>>>> a9d4658 (fix foto di tabungan/create)
                     </div>
                 </div>
 
@@ -97,11 +118,21 @@
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
+<<<<<<< HEAD
                         <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
                             <div class="card-header bg-gradient-success py-3 text-white">
                                 <h5 class="fw-bold mb-0">
                                     <i class="bx bx-wallet me-2"></i>Transaksi Setoran Tabungan
                                 </h5>
+=======
+                        <div class="card rounded-4 border-0 p-4 shadow-sm">
+                            <h5 class="fw-bold text-primary">Detail Transaksi</h5>
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Jumlah Saldo Awal</label>
+                                <div id="saldo_awal" class="fw-bold text-success">Rp 0</div>
+>>>>>>> a9d4658 (fix foto di tabungan/create)
                             </div>
                             <div class="card-body gap-4 p-4">
                                 <div class="alert alert-info mb-4 border-0 shadow-sm">
@@ -114,6 +145,7 @@
                                     </div>
                                 </div>
 
+<<<<<<< HEAD
                                 <div class="mb-4">
                                     <label for="jumlah" class="form-label fw-semibold">
                                         <i class="bx bx-money text-success me-1"></i>Jumlah Setoran
@@ -151,6 +183,30 @@
                                     <i class="bx bx-check-circle me-2"></i>Proses Setoran
                                 </button>
                             </div>
+=======
+                            <div class="mb-3">
+                                <label for="jumlah" class="form-label fw-semibold">Jumlah Setoran <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="jumlah" id="jumlah"
+                                    class="form-control rounded-pill shadow-sm"
+                                    oninput="formatCurrencyInput(this)"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Jumlah Transaksi</label>
+                                <div id="jumlah_transaksi" class="fw-bold text-info">Rp 0</div>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
+                                <textarea name="keterangan" id="keterangan" class="form-control rounded-4 shadow-sm" rows="2"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 rounded-pill animate-btn shadow-lg">
+                                <i class="bx bx-check-circle"></i> Proses Tambah Saldo
+                            </button>
+>>>>>>> a9d4658 (fix foto di tabungan/create)
                         </div>
                     </form>
                 </div>
@@ -180,6 +236,7 @@
             box-shadow: 0 10px 25px rgba(72, 187, 120, 0.4);
         }
 
+<<<<<<< HEAD
         .animate-btn:active {
             transform: translateY(0);
         }
@@ -220,10 +277,21 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+=======
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+>>>>>>> a9d4658 (fix foto di tabungan/create)
         }
-    </style>
+
+<<<<<<< HEAD
+=======
+
+</style>
 @endpush
 
+>>>>>>> a9d4658 (fix foto di tabungan/create)
 @push('scripts')
     <script>
         // Format number with thousands separator
@@ -449,21 +517,45 @@
                     return res.json();
                 })
                 .then(data => {
+<<<<<<< HEAD
                     document.getElementById('detail_nama').innerText = data.nama_lengkap || '-';
                     document.getElementById('detail_nisn').innerText = data.nisn || '-';
                     document.getElementById('detail_kelas').innerText = data.kelas || '-';
                     document.getElementById('detail_telp').innerText = data.no_hp || '-';
                     document.getElementById('detail_va').innerText = data.va || '-';
+=======
+                    document.getElementById('detail_nama').innerText = ': ' + (data.nama_lengkap || '-');
+                    document.getElementById('detail_nisn').innerText = ': ' + (data.nisn || '-');
+                    document.getElementById('detail_unit').innerText = ': ' + (data.unit || '-');
+                    document.getElementById('detail_kelas').innerText = ': ' + (data.kelas || '-');
+                    document.getElementById('detail_jurusan').innerText = ': ' + (data.jurusan || '-');
+                    document.getElementById('detail_tahun').innerText = ': ' + (data.tahun_ajaran || '-');
+                    document.getElementById('detail_gender').innerText = ': ' + (data.gender || '-');
+                    document.getElementById('detail_lahir').innerText =
+                        `: ${data.tempat_lahir || '-'}, ${data.tanggal_lahir || '-'}`;
+                    document.getElementById('detail_telp').innerText = ': ' + data.no_hp || '-';
+>>>>>>> a9d4658 (fix foto di tabungan/create)
 
                     // Update foto siswa - gunakan langsung URL dari API
                     const fotoSiswa = document.getElementById('foto_siswa');
                     if (data.foto) {
+<<<<<<< HEAD
                         fotoSiswa.src = data.foto;
                     } else {
                         fotoSiswa.src = `{{ asset('images/default-user.png') }}`;
                     }
 
                     // Update saldo awal
+=======
+                        document.querySelector('img[alt="Foto Siswa"]').src = `${data.foto}`;
+                        console.log('path foto: ', data.foto)
+                    } else {
+                        document.querySelector('img[alt="Foto Siswa"]').src =
+                            `{{ asset('images/default-user.png') }}`;
+                    }
+
+                    // update saldo awal jika ada
+>>>>>>> a9d4658 (fix foto di tabungan/create)
                     document.getElementById('saldo_awal').innerText = data.saldo_akhir ?
                         'Rp ' + parseInt(data.saldo_akhir).toLocaleString('id-ID') :
                         'Rp 0';
@@ -471,7 +563,11 @@
                 .catch(err => console.error('Fetch detail siswa error:', err));
         });
     </script>
+<<<<<<< HEAD
     <script>
+=======
+        <script>
+>>>>>>> a9d4658 (fix foto di tabungan/create)
         function formatCurrencyInput(input) {
             let value = input.value.replace(/[^\d]/g, '');
             if (value === '') {
