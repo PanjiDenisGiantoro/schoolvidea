@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Log;
 
-
 class SiswaController extends Controller
 {
     public function index(Request $request)
@@ -56,17 +55,17 @@ class SiswaController extends Controller
                   ->orWhere('no_hp', 'like', "%{$search}%")
                   ->orWhere('tempat_lahir', 'like', "%{$search}%")
                   ->orWhere('nama_ortu', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($q) use ($search) {
+                  ->orWhereHas('user', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('kelas', function($q) use ($search) {
+                  ->orWhereHas('kelas', function ($q) use ($search) {
                       $q->where('nama_kelas', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('jurusan', function($q) use ($search) {
+                  ->orWhereHas('jurusan', function ($q) use ($search) {
                       $q->where('nama_jurusan', 'like', "%{$search}%");
                   });
             });
@@ -88,7 +87,7 @@ class SiswaController extends Controller
 
         $logoUnit = $units->first()->image ?? null;
 
-        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit'));
+        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit', 'units'));
     }
     public function create()
     {
@@ -164,10 +163,11 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'no_hp' => 'nullable|string|digits_between:10,13',
             'tahun_ajaran_id' => 'required'
+            'no_hp' => 'nullable|string|digits_between:10,14|unique:siswas,no_hp',
         ]);
 
         if ($validator->fails()) {
-            return back()->with('danger', $validator->errors()->first());
+            return back()->withErrors($validator)->withInput();
         }
 
         DB::beginTransaction();
@@ -286,8 +286,7 @@ class SiswaController extends Controller
             'units',
             'kelas',
             'jurusans',
-            'logoUnit',
-            'tahunajaran'
+            'logoUnit'
         ));
     }
 
@@ -304,19 +303,19 @@ class SiswaController extends Controller
 
         // Validator dengan exclude current records
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nisn,' . $siswa->id,
             'name' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'kelas_id' => 'required',
             'unit_id' => 'required',
             'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no,' . $siswa->id,
-            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa,' . $siswa->id,
-            'nis' => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
-            'nik' => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'va_siswa' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,va_siswa,' . $siswa->id,
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nis,' . $siswa->id,
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nik,' . $siswa->id,
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|digits_between:10,14|max:20',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
             'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening,' . $siswa->id,
@@ -324,9 +323,8 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp,' . $siswa->id,
+            'no_hp' => 'nullable|string|digits_between:10,14|unique:siswas,no_hp,' . $siswa->id,
             'password' => 'nullable|string|min:6',
-            'tahun_ajaran_id' => 'required'
         ], [
             'email.unique' => 'Email sudah digunakan oleh user lain.',
             'username.unique' => 'Username sudah digunakan oleh user lain.',
@@ -341,7 +339,7 @@ class SiswaController extends Controller
                 ->with('error', 'Terdapat kesalahan dalam pengisian form.');
         }
 
-       DB::beginTransaction();
+        DB::beginTransaction();
         try {
             Log::info('Starting transaction update...');
 
@@ -477,7 +475,6 @@ class SiswaController extends Controller
         $kelas = Kelas::all();
         $jurusans = Jurusan::all();
         $show = true;
-        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
 
         // Logo unit siswa
         $logoUnit = $siswa->unit->image ?? null;
@@ -514,8 +511,10 @@ class SiswaController extends Controller
             'tempat_lahir'   => $siswa->tempat_lahir ?? '-',
             'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
             'no_hp'          => $siswa->no_hp ?? '-',
+            'gender'         => $siswa->jenis_kelamin ?? '-',
+            'tahun_ajaran'   => $siswa->tahun_ajaran->tahun_ajaran ?? '-',
             'foto'           => $siswa->image
-                ? asset('storage/' . $siswa->image)
+                ? asset($siswa->image)
                 : asset('images/default-avatar.png'),
             'qrcode'         => $siswa->qrcode_image
                 ? asset('storage/' . $siswa->qrcode_image)
