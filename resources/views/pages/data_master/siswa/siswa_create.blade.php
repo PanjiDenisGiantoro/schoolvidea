@@ -297,60 +297,54 @@
         @endif
     </script>
 
-    <script>
-        Dropzone.autoDiscover = false;
 
-        Dropzone.options.myDropzone = {
-            paramName: "file",
-            maxFilesize: 1,
-            acceptedFiles: "image/*",
-            addRemoveLinks: true,
-            init: function() {
-                this.on("addedfile", function(file) {
-                    file.previewElement.addEventListener("click", function() {
-                        let imgSrc = file.dataURL;
-                        document.getElementById("previewImage").src = imgSrc;
-                        var modal = new bootstrap.Modal(document.getElementById("imageModal"));
-                        modal.show();
-                    });
-                });
-            }
-        };
+<script>
+Dropzone.autoDiscover = false;
 
-        let myDropzone = new Dropzone("#image-dropzone", {
-            url: "{{ route('siswa.upload') }}",
-            paramName: "file",
-            maxFiles: 1,
-            maxFilesize: 1,
-            acceptedFiles: ".jpg,.jpeg,.png",
-            addRemoveLinks: true,
-            thumbnailWidth: 200,
-            thumbnailHeight: 200,
-            headers: {
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            },
-            success: function(file, response) {
-                document.querySelector("#image-hidden").value = response.filepath;
-            },
-            removedfile: function(file) {
-                file.previewElement.remove();
-                document.querySelector("#image-hidden").value = "";
-            }
-        });
-
-        @if (isset($siswa) && $siswa?->image)
-            let mockFile = {
+let myDropzone = new Dropzone("#image-dropzone", {
+    url: "{{ route('siswa.upload') }}",
+    paramName: "file",
+    maxFiles: 1,
+    maxFilesize: 1,
+    acceptedFiles: ".jpg,.jpeg,.png",
+    addRemoveLinks: true,
+    thumbnailWidth: 200,
+    thumbnailHeight: 200,
+    headers: {
+        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+    },
+    success: function(file, response) {
+        // Simpan path untuk database (uploads/siswa/xxx.jpg)
+        document.querySelector("#image-hidden").value = response.image;
+    },
+    removedfile: function(file) {
+        file.previewElement.remove();
+        document.querySelector("#image-hidden").value = "";
+    },
+    init: function() {
+        // ✅ Saat edit data, tampilkan foto lama
+        @if(isset($siswa) && $siswa->image)
+            const mockFile = {
                 name: "Current Image",
                 size: 12345,
                 type: 'image/jpeg',
                 accepted: true
             };
-            myDropzone.emit("addedfile", mockFile);
-            myDropzone.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
-            myDropzone.emit("complete", mockFile);
-            myDropzone.files.push(mockFile);
+            this.emit("addedfile", mockFile);
+            this.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
+            this.emit("complete", mockFile);
+            this.files.push(mockFile);
+
+            // Klik gambar untuk preview modal
+            mockFile.previewElement.addEventListener("click", function() {
+                document.getElementById("previewImage").src = "{{ asset($siswa->image) }}";
+                new bootstrap.Modal(document.getElementById("imageModal")).show();
+            });
         @endif
-    </script>
+    }
+});
+</script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('siswaForm');

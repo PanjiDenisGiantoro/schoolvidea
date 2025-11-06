@@ -130,7 +130,7 @@ class SiswaController extends Controller
             'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|regex:/^[0-9]+$/|digits_between:10,13',
+            'no_hp_ortu' => 'nullable|string|regex:/^[0-9]+$/|digits_between:10,14',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
             'no_rekening' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:siswas,no_rekening',
@@ -138,7 +138,7 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp',
+            'no_hp' => 'nullable|string|digits_between:10,14|unique:siswas,no_hp',
         ]);
 
         if ($validator->fails()) {
@@ -238,6 +238,8 @@ class SiswaController extends Controller
                 'status' => 0,
             ]);
 
+
+
             DB::commit();
             return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');
         } catch (\Exception $e) {
@@ -277,19 +279,19 @@ class SiswaController extends Controller
 
         // Validator dengan exclude current records
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nisn,' . $siswa->id,
             'name' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'kelas_id' => 'required',
             'unit_id' => 'required',
             'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no,' . $siswa->id,
-            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa,' . $siswa->id,
-            'nis' => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
-            'nik' => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'va_siswa' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,va_siswa,' . $siswa->id,
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nis,' . $siswa->id,
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:siswas,nik,' . $siswa->id,
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|digits_between:10,14|max:20',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
             'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening,' . $siswa->id,
@@ -297,7 +299,7 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp,' . $siswa->id,
+            'no_hp' => 'nullable|string|digits_between:10,14|unique:siswas,no_hp,' . $siswa->id,
             'password' => 'nullable|string|min:6',
         ], [
             'email.unique' => 'Email sudah digunakan oleh user lain.',
@@ -447,6 +449,7 @@ class SiswaController extends Controller
         $units = Unit::isactive()->get();
         $kelas = Kelas::all();
         $jurusans = Jurusan::all();
+        $tahun_ajaran = Tahun_ajaran::all();
         $show = true;
 
         // Logo unit siswa
@@ -483,8 +486,10 @@ class SiswaController extends Controller
             'tempat_lahir'   => $siswa->tempat_lahir ?? '-',
             'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
             'no_hp'          => $siswa->no_hp ?? '-',
+            'gender'         => $siswa->jenis_kelamin ?? '-',
+            'tahun_ajaran'   => $siswa->tahun_ajaran->tahun_ajaran ?? '-',
             'foto'           => $siswa->image
-                ? asset('storage/' . $siswa->image)
+                ? asset($siswa->image)
                 : asset('images/default-avatar.png'),
             'qrcode'         => $siswa->qrcode_image
                 ? asset('storage/' . $siswa->qrcode_image)
