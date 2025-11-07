@@ -145,7 +145,7 @@
                                         <span class="text-muted">{{ $log->keterangan ?: '-' }}</span>
                                     </td>
                                     <td class="text-center">
-                                        @if($log->jenis_transaksi == 'setoran_tabungan')
+                                        @if($log->jenis_transaksi != 'setoran_tabungan')
                                         @if($log->status_approval == 'approved')
                                             <span class="badge bg-success rounded-pill">
                                                 <i class="bx bx-check-circle me-1"></i>Approved
@@ -162,7 +162,7 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @if($log->jenis_transaksi == 'setoran_tabungan')
+                                        @if($log->jenis_transaksi != 'setoran_tabungan')
                                         @if($log->status_approval == 'pending' && $log->token_expired_at && now()->lessThan($log->token_expired_at))
                                             <button type="button" class="btn btn-sm btn-primary rounded-pill btn-verify"
                                                     data-id="{{ $log->id }}"
