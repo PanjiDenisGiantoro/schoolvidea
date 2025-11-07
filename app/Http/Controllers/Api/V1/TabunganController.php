@@ -404,9 +404,9 @@ class TabunganController extends Controller
                 'metode' => $metode,
                 'tanggal_transaksi' => now(),
                 'keterangan' => $request->keterangan ?? "Setoran tabungan sebesar Rp " . number_format($jumlah, 0, ',', '.'),
-                'token' => $token,
-                'token_expired_at' => now()->addDay(),
-                'status_approval' => 'pending',
+                'token' => '',
+                'token_expired_at' => '',
+                'status_approval' => '',
                 'created_by' => Auth::id(),
             ]);
 
@@ -579,7 +579,7 @@ class TabunganController extends Controller
             $codePembayaran = 'TRK' . date('YmdHis') . rand(1000, 9999);
 
             // Generate token 5 digit
-            $token = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+            $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
 
             // Buat transaksi
             $transaksi = Keuangan_transaksi::create([
@@ -718,7 +718,7 @@ class TabunganController extends Controller
             $transaksi = Keuangan_transaksi::with(['siswa'])->findOrFail($request->transaksi_id);
 
             // Cek apakah transaksi tabungan
-            if (!in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'penarikan_tabungan'])) {
+            if (!in_array($transaksi->jenis_transaksi, ['penarikan_tabungan'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Transaksi bukan merupakan transaksi tabungan'

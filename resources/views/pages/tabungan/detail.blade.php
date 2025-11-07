@@ -145,6 +145,7 @@
                                         <span class="text-muted">{{ $log->keterangan ?: '-' }}</span>
                                     </td>
                                     <td class="text-center">
+                                        @if($log->jenis_transaksi == 'setoran_tabungan')
                                         @if($log->status_approval == 'approved')
                                             <span class="badge bg-success rounded-pill">
                                                 <i class="bx bx-check-circle me-1"></i>Approved
@@ -158,8 +159,10 @@
                                                 <i class="bx bx-time-five me-1"></i>Pending
                                             </span>
                                         @endif
+                                        @endif
                                     </td>
                                     <td class="text-center">
+                                        @if($log->jenis_transaksi == 'setoran_tabungan')
                                         @if($log->status_approval == 'pending' && $log->token_expired_at && now()->lessThan($log->token_expired_at))
                                             <button type="button" class="btn btn-sm btn-primary rounded-pill btn-verify"
                                                     data-id="{{ $log->id }}"
@@ -172,6 +175,7 @@
                                             <small class="text-danger">Token Expired</small>
                                         @else
                                             <small class="text-muted">-</small>
+                                        @endif
                                         @endif
                                     </td>
                                 </tr>
@@ -271,7 +275,7 @@
                         <input type="text" id="token-input" class="form-control form-control-lg text-center mb-3"
                                placeholder="00000" maxlength="5" pattern="[0-9]{5}"
                                style="letter-spacing: 8px; font-size: 1.5rem; font-weight: bold;">
-                        <small class="text-muted">Masukkan 5 digit token untuk memverifikasi transaksi</small>
+                        <small class="text-muted">Masukkan 6 digit token untuk memverifikasi transaksi</small>
                     `,
                     icon: 'question',
                     showCancelButton: true,
@@ -294,16 +298,16 @@
                     },
                     preConfirm: () => {
                         const inputToken = document.getElementById('token-input').value;
-                        if (!inputToken || inputToken.length !== 5) {
-                            Swal.showValidationMessage('Token harus 5 digit angka');
+                        if (!inputToken || inputToken.length !== 6) {
+                            Swal.showValidationMessage('Token harus 6 digit angka');
                             return false;
                         }
                         return inputToken;
                     },
                     preDeny: () => {
                         const inputToken = document.getElementById('token-input').value;
-                        if (!inputToken || inputToken.length !== 5) {
-                            Swal.showValidationMessage('Token harus 5 digit angka');
+                        if (!inputToken || inputToken.length !== 6) {
+                            Swal.showValidationMessage('Token harus 6 digit angka');
                             return false;
                         }
                         return inputToken;

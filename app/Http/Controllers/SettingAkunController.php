@@ -14,8 +14,8 @@ class SettingAkunController extends Controller
     {
         $units = Unit::all();
 
-        // Build query
-        $query = setting_akun::with(['unit', 'akun']);
+        // Build query - include akunDebit and akunKredit
+        $query = setting_akun::with(['unit', 'akun', 'akunDebit', 'akunKredit']);
 
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
@@ -147,30 +147,28 @@ class SettingAkunController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_setting' => 'required|string|max:255',
-            'akun_id'      => 'nullable|exists:akuns,id',
-            'debit'        => 'nullable|integer|in:0,1',
-            'keterangan'   => 'nullable|string',
-            'unit_id'      => 'nullable|exists:units,id',
-            'status'       => 'required|in:0,1',
-            'kategori'     => 'required|string|max:255',
+            'nama_setting'     => 'required|string|max:255',
+            'akun_id'          => 'nullable|exists:akuns,id',
+            'akun_debit_id'    => 'required|exists:akuns,id',
+            'akun_kredit_id'   => 'required|exists:akuns,id',
+            'keterangan'       => 'nullable|string',
+            'unit_id'          => 'nullable|exists:units,id',
+            'status'           => 'required|in:0,1',
+            'kategori'         => 'required|string|max:255',
         ]);
 
-        // Hitung otomatis kredit
-        $kredit = null;
-        if ($request->filled('debit')) {
-            $kredit = $request->debit == 1 ? 0 : 1;
+        // Validasi akun debit dan kredit tidak boleh sama
+        if ($request->akun_debit_id == $request->akun_kredit_id) {
+            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
         }
 
         setting_akun::create([
-            'nama_setting' => $request->nama_setting,
-            'akun_id'      => $request->akun_id,
-            'debit'        => $request->debit,
-            'kredit'       => $kredit,
-            'keterangan'   => $request->keterangan,
-            'unit_id'      => $request->unit_id,
-            'status'       => $request->status,
-            'kategori'     => $request->kategori,
+            'nama_setting'   => $request->nama_setting,
+            'akun_id'        => $request->akun_id,
+            'keterangan'     => $request->keterangan,
+            'unit_id'        => $request->unit_id,
+            'status'         => $request->status,
+            'kategori'       => $request->kategori,
         ]);
 
         return redirect()->route('setting_akun.index')
@@ -182,30 +180,26 @@ class SettingAkunController extends Controller
         $setting = setting_akun::findOrFail($id);
 
         $request->validate([
-            'nama_setting' => 'required|string|max:255',
-            'akun_id'      => 'nullable|exists:akuns,id',
-            'debit'        => 'nullable|integer|in:0,1',
-            'keterangan'   => 'nullable|string',
-            'unit_id'      => 'nullable|exists:units,id',
-            'status'       => 'required|in:0,1',
-            'kategori'     => 'required|string|max:255',
+            'nama_setting'     => 'required|string|max:255',
+            'akun_id'          => 'nullable|exists:akuns,id',
+            'keterangan'       => 'nullable|string',
+            'unit_id'          => 'nullable|exists:units,id',
+            'status'           => 'required|in:0,1',
+            'kategori'         => 'required|string|max:255',
         ]);
 
-        // Hitung otomatis kredit
-        $kredit = null;
-        if ($request->filled('debit')) {
-            $kredit = $request->debit == 1 ? 0 : 1;
+        // Validasi akun debit dan kredit tidak boleh sama
+        if ($request->akun_debit_id == $request->akun_kredit_id) {
+            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
         }
 
         $setting->update([
-            'nama_setting' => $request->nama_setting,
-            'akun_id'      => $request->akun_id,
-            'debit'        => $request->debit,
-            'kredit'       => $kredit,
-            'keterangan'   => $request->keterangan,
-            'unit_id'      => $request->unit_id,
-            'status'       => $request->status,
-            'kategori'     => $request->kategori,
+            'nama_setting'   => $request->nama_setting,
+            'akun_id'        => $request->akun_id,
+            'keterangan'     => $request->keterangan,
+            'unit_id'        => $request->unit_id,
+            'status'         => $request->status,
+            'kategori'       => $request->kategori,
         ]);
 
         return redirect()->route('setting_akun.index')

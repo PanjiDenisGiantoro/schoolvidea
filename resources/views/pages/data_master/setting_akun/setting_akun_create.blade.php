@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 @section('title',
     isset($setting)
@@ -16,8 +17,8 @@
     <div class="card">
         <div class="card-body">
             <form id="settingAkunForm"
-                action="{{ isset($setting) ? route('setting_akun.update', $setting->id) : route('setting_akun.store') }}"
-                method="POST">
+                  action="{{ isset($setting) ? route('setting_akun.update', $setting->id) : route('setting_akun.store') }}"
+                  method="POST">
                 @csrf
                 @if (isset($setting))
                     @method('PUT')
@@ -29,7 +30,7 @@
                         <div class="mb-3">
                             <label for="unit_id" class="form-label">Unit</label>
                             <select name="unit_id" id="unit_id" class="form-select" data-choices
-                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
+                                    data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
@@ -44,7 +45,7 @@
                     <div class="col-md-4">
                         <label for="kategori" class="form-label">Kategori</label>
                         <select name="kategori" id="kategori" class="form-select" data-choices data-choices-sorting-false
-                            @if (isset($show) && $show) disabled @endif>
+                                @if (isset($show) && $show) disabled @endif>
                             <option value="">-- Pilih Kategori --</option>
                             <option value="tagihan-masuk"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Tagihan
@@ -67,7 +68,7 @@
 
 
                             <select name="akun_id" id="akun_id" class="form-control" data-choices
-                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
+                                    data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Akun --</option>
 
                                 {{--                                @foreach ($akunOptions as $opt) --}}
@@ -89,7 +90,7 @@
                     {{-- Nama Setting --}}
                     <div class="col-md-4">
                         <x-input-field type="text" name="nama_setting" label="Nama Setting"
-                            placeholder="Masukkan Nama Setting" icon="bx bx-cog" :value="old('nama_setting', $setting->nama_setting ?? '')" required />
+                                       placeholder="Masukkan Nama Setting" icon="bx bx-cog" :value="old('nama_setting', $setting->nama_setting ?? '')" required />
                     </div>
 
 
@@ -115,7 +116,7 @@
                         <div class="mb-3">
                             <label for="kredit" class="form-label">Kredit</label>
                             <input type="text" name="kredit" id="kredit" class="form-control py-3"
-                                value="{{ old('kredit', $setting->kredit ?? '') }}" readonly>
+                                   value="{{ old('kredit', $setting->kredit ?? '') }}" readonly>
                         </div>
                     </div>
 
@@ -163,7 +164,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const debit = document.getElementById('debit');
             const kredit = document.getElementById('kredit');
-
             function syncDebitKredit() {
                 if (debit.value === "1") {
                     kredit.value = 0;
@@ -173,19 +173,16 @@
                     kredit.value = '';
                 }
             }
-
             debit.addEventListener('change', syncDebitKredit);
-
             syncDebitKredit();
-
             @if (isset($show) && $show)
-                const formElements = document.querySelectorAll(
-                    '#settingAkunForm input, #settingAkunForm select, #settingAkunForm textarea, #settingAkunForm button[type="submit"]'
-                );
-                formElements.forEach(el => {
-                    el.disabled = true;
-                    if (el.type === 'submit') el.style.display = 'none';
-                });
+            const formElements = document.querySelectorAll(
+                '#settingAkunForm input, #settingAkunForm select, #settingAkunForm textarea, #settingAkunForm button[type="submit"]'
+            );
+            formElements.forEach(el => {
+                el.disabled = true;
+                if (el.type === 'submit') el.style.display = 'none';
+            });
             @endif
         });
     </script>
@@ -194,7 +191,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('settingAkunForm');
-
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({

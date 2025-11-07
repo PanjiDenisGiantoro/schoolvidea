@@ -64,8 +64,6 @@
                             <td>{{ $settings->firstItem() + $index }}</td>
                             <td>{{ $item->nama_setting ?? '-' }}</td>
                             <td>{{ $item->akun->nama_akun ?? '-' }}</td>
-                            <td>{{ $item->debit ?? 0 }}</td>
-                            <td>{{ $item->kredit ?? 0 }}</td>
                             <td>{{ $item->keterangan ?? '-' }}</td>
                             <td>{{ $item->unit->nama_unit ?? '-' }}</td>
                             <td>

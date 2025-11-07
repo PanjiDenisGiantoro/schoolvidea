@@ -106,7 +106,7 @@ class TabunganController extends Controller
             }
 
             // Generate token 5 digit
-            $token = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+//            $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
@@ -117,9 +117,9 @@ class TabunganController extends Controller
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
                 'metode' => 'CASH',
-                'token'           => $token,
-                'token_expired_at'=> now()->addDay(),
-                'status_approval' => 'pending',
+                'token'           => '',
+                'token_expired_at'=> '',
+                'status_approval' => '',
                 'created_by'      => Auth::id(),
             ]);
 
@@ -183,7 +183,7 @@ class TabunganController extends Controller
 
             return redirect()->route('tabungan.show', $siswa->id)
                 ->with('success', 'Transaksi berhasil disimpan!')
-                ->with('token', $token)
+                ->with('token', '')
                 ->with('transaksi_id', $transaksi->id);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -234,7 +234,7 @@ class TabunganController extends Controller
             }
 
             // Generate token 5 digit
-            $token = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+            $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
@@ -406,7 +406,7 @@ class TabunganController extends Controller
     {
         $request->validate([
             'transaksi_id' => 'required|exists:keuangan_transaksis,id',
-            'token' => 'required|string|size:5',
+            'token' => 'required|string|size:6',
             'action' => 'required|in:approve,reject'
         ]);
 
