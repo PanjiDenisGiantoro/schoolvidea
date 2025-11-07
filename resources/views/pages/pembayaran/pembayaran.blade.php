@@ -44,7 +44,7 @@
                         <select id="filter_unit" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Unit --</option>
                             @foreach ($units as $u)
-                                <option value="{{ $u->id }}">{{ $u->nama }}</option>
+                                <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                             @endforeach
                         </select>
                     </div>
