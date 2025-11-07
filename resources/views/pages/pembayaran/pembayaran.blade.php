@@ -496,7 +496,7 @@
                         `${data.tempat_lahir}, ${data.tanggal_lahir}`;
                     document.getElementById('detail_telp').innerText = data.no_hp;
                     if (data.foto) {
-                        document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
+                        document.querySelector('img[alt="Foto Siswa"]').src = `${data.foto}`;
                     }
                 })
                 .catch(err => console.error(err));
