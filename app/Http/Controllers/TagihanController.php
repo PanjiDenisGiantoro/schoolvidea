@@ -55,25 +55,26 @@ class TagihanController extends Controller
             'kelas',
             'items.kategori',
             'tagihanSiswa.siswa.user',
-            'tagihanSiswa.siswa.pembayaranTagihan'
+            'tagihanSiswa.siswa.pembayaranTagihan',
+            'tagihanSiswa.potonganSiswa'
         ])
-        ->when(Auth::user()->yayasan_id, function ($query) {
-            // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
-            $query->whereHas('unit', function($q) {
-                $q->where('yayasan_id', Auth::user()->yayasan_id);
-            });
-        })
-        ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
-            // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
-            $query->where('unit_id', Auth::user()->unit_id);
-        })
-        ->get();
+            ->when(Auth::user()->yayasan_id, function ($query) {
+                // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
+                $query->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            })
+            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
+                // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
+            ->get();
 
         //        dd($tagihans);
         $summary = [
             'jumlah_data' => $tagihans->count(),
             'nominal_tagihan' => $tagihans->sum(function ($t) {
-                $total = $t->items->sum('nominal') * ($t->periode ?? 1);
+                $total = $t->items->sum('nominal');
                 return $total * $t->tagihanSiswa->count(); // total tagihan semua siswa
             }),
             'sudah_dibayar' => $tagihans->sum(function ($t) {
@@ -82,7 +83,7 @@ class TagihanController extends Controller
                 });
             }),
             'belum_dibayar' => $tagihans->sum(function ($t) {
-                $total_tagihan = $t->items->sum('nominal') * ($t->periode ?? 1);
+                $total_tagihan = $t->items->sum('nominal') ;
                 return $t->tagihanSiswa->sum(function ($ts) use ($total_tagihan) {
                     $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
                     return $total_tagihan - $sudah_bayar;
@@ -441,53 +442,40 @@ class TagihanController extends Controller
         }
 
         $firstTagihan = $tagihanSiswa->first()->tagihan;
+        $nominal = $firstTagihan->items->sum('nominal');
+        $namaKategori = $firstTagihan->items->pluck('kategori.nama_kategori')->implode(', ');
         $bulanMulai = (int) $firstTagihan->bulan_mulai;
         $tahunMulai = (int) $firstTagihan->tahun_mulai;
+
+        // Total potongan semua bulan
+        $totalPotonganSemuaBulan = $tagihanSiswa->flatMap(function ($ts) {
+            return $ts->potonganSiswa;
+        })->sum('nominal');
 
         // Bagi menjadi dua kelompok
         $belumLunas = [];
         $sudahLunas = [];
-        $counter = 1;
 
-        // Loop setiap tagihan_siswa (setiap record adalah 1 item untuk 1 bulan)
-        foreach ($tagihanSiswa as $ts) {
-            // Ambil item tagihan yang sesuai dari sisa_nominal (karena sekarang 1 tagihan_siswa = 1 item)
-            $nominalItem = $ts->sisa_nominal; // ini sudah nominal per item
+        foreach ($tagihanSiswa as $index => $ts) {
+            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
-            // Cari kategori item dari tagihan items berdasarkan nominal
-            $tagihanItem = $firstTagihan->items->first(); // ambil item pertama sebagai default
-            $namaKategori = $tagihanItem->kategori->nama_kategori ?? 'Tagihan';
-
-            // Hitung bulan untuk label
-            $bulanKe = $ts->bulan_ke ?? 1;
-            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1);
-
-            // Total potongan untuk tagihan_siswa ini
-            $totalPotongan = $ts->potonganSiswa->sum('nominal');
-
-            // Hitung jumlah yang sudah dibayar
-            $jumlahSudahDibayar = $ts->siswa->pembayaranTagihan->where('tagihan_siswa_id', $ts->id)->sum('jumlah_bayar');
-
-            // Nominal asli sebelum ada pembayaran (dari transaksi keuangan atau bisa dicari dari tagihanitem)
-            $nominalAsli = $nominalItem + $jumlahSudahDibayar;
-
-            $jumlahTagihan = $nominalAsli - $totalPotongan;
-            $sisaTagihan = $ts->sisa_nominal; // sisa yang belum dibayar
+            $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
+            $jumlahDibayar = $ts->sisa_nominal;
+            $jumlahTunggakan = $ts->sisa_nominal;
 
             $row = [
-                'no'                => $counter++,
+                'no'                => $index + 1,
                 'id'                => $ts->id,
                 'periode'           => $date->translatedFormat('F Y'),
                 'tagihan_kelas'     => $namaKategori,
-                'rincian_tagihan'   => (int) $nominalAsli,
-                'jumlah_potongan'   => (int) $totalPotongan,
+                'rincian_tagihan'   => (int) $nominal,
+                'jumlah_potongan'   => (int) $totalPotonganSemuaBulan,
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
-                'jumlah_dibayar'    => (int) $sisaTagihan, // sisa yang belum dibayar
-                'jumlah_tunggakan'  => (int) $sisaTagihan,
-                'nominal_pembayaran' => (int) $jumlahSudahDibayar, // yang sudah dibayar
+                'jumlah_dibayar'    => (int) $jumlahDibayar,
+                'jumlah_tunggakan'  => (int) $jumlahTunggakan,
+                'nominal_pembayaran'=> (int) $jumlahTagihan,
                 'catatan'           => $ts->catatan ?? '',
                 'status'            => $ts->status,
-                'kategori_id'       => $tagihanItem->kategori_id ?? 1,
             ];
 
             if ($ts->status == 1) {
@@ -502,6 +490,8 @@ class TagihanController extends Controller
             'sudah_lunas' => $sudahLunas
         ]);
     }
+
+
 
 
 
