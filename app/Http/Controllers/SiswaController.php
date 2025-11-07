@@ -7,7 +7,6 @@ use App\Models\Kelas;
 use App\Models\Roles_petugas;
 use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
-use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
@@ -89,7 +88,7 @@ class SiswaController extends Controller
 
         $logoUnit = $units->first()->image ?? null;
 
-        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit', 'units'));
+        return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit'));
     }
     public function create()
     {
@@ -217,7 +216,6 @@ class SiswaController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'alamat'          => $request->alamat,
                 'name'            => $request->name,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
@@ -282,7 +280,6 @@ class SiswaController extends Controller
         $jurusans = Jurusan::where('unit_id', $siswa->unit_id)->where('status', 1)->get();
 
         $logoUnit = $siswa->unit->image ?? null;
-        $tahunajaran = Tahun_ajaran::where('status', '1')->get();
 
         return view('pages.data_master.siswa.siswa_create', compact(
             'siswa',
@@ -344,7 +341,7 @@ class SiswaController extends Controller
                 ->with('error', 'Terdapat kesalahan dalam pengisian form.');
         }
 
-//        DB::beginTransaction();
+       DB::beginTransaction();
         try {
             Log::info('Starting transaction update...');
 
@@ -427,14 +424,13 @@ class SiswaController extends Controller
                 Log::warning('QR Code generation skipped: ' . $qrException->getMessage());
             }
 
-//            DB::commit();
+            DB::commit();
             Log::info('=== UPDATE SISWA SUCCESS ===');
 
             return redirect()->route('siswa.index')
                 ->with('success', 'Data siswa berhasil diperbarui!');
         } catch (\Exception $e) {
-//            DB::rollBack();
-            dd($e->getMessage());
+            DB::rollBack();
             Log::error('UPDATE FAILED: ' . $e->getMessage());
             Log::error('File: ' . $e->getFile());
             Log::error('Line: ' . $e->getLine());

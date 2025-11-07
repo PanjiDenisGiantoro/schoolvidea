@@ -33,7 +33,8 @@ class Siswa extends Model
         'qrcode',
         'qrcode_image',
         'jurusan_id',
-        'alamat'
+        'alamat',
+        'tahun_ajaran_id'
     ];
 
 

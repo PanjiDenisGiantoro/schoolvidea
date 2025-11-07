@@ -106,7 +106,7 @@ class OfficerController extends Controller
             'units',
             'roles',
             'logoUnit',
-            'positions'
+            'positions',
         ));
     }
 
@@ -156,7 +156,6 @@ class OfficerController extends Controller
                 'password' => bcrypt($request->password),
                 'rfid_no' => $request->no_kartu_rfid,
                 'unit_id' => $request->unit_id,
-                'yayasan_id' => $yayasanId,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
@@ -368,6 +367,7 @@ class OfficerController extends Controller
 
         $roles = Roles_petugas::all();
         $positions = Positions::all();
+
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
