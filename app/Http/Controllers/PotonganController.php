@@ -175,7 +175,7 @@ class PotonganController extends Controller
             Potongansiswa::create([
                 'potongan_id' => $potongan->id,
                 'tagihan_id' => $tagihan->id,
-                'tagihan_siswa_id' => $tagihanSiswa->siswa->id,
+                'tagihan_siswa_id' => $tagihanSiswa->id,
                 'nominal' => $nominal,
             ]);
 

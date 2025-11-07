@@ -100,7 +100,7 @@
                                 </tr>
                             @endforelse
                         </tbody>
-                    </table>
+                    </table
 
                     <!-- Pagination -->
                     <div class="col-lg-12">

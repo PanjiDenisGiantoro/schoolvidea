@@ -156,7 +156,6 @@ class OfficerController extends Controller
                 'password' => bcrypt($request->password),
                 'rfid_no' => $request->no_kartu_rfid,
                 'unit_id' => $request->unit_id,
-                'yayasan_id' => $yayasanId,
             ]);
 
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
@@ -221,6 +220,7 @@ with('success', 'Data user berhasil diperbarui.');
 
         $roles = Roles_petugas::all();
         $positions = Positions::all();
+
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
@@ -371,6 +371,7 @@ with('success', 'Data user berhasil diperbarui.');
 
         $roles = Roles_petugas::all();
         $positions = Positions::all();
+
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;

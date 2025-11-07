@@ -52,12 +52,12 @@
                     <div class="col-md-3">
                         <x-input-field type="number" id="nip" name="nip" label="NIP" class="text-uppercase"
                             placeholder="Masukkan NIP" icon="bx bx-id-card" :value="old('nip', $officer->nip ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" id="nuptk" name="nuptk" label="NUPTK"
                             placeholder="Masukkan NUPTK" icon="bx bx-id-card" :value="old('nuptk', $officer->nuptk ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="20" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
@@ -67,7 +67,7 @@
 
                         <x-input-field type="text" id="nik" name="nik" label="NIK"
                             placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $officer->nik ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="20" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -118,7 +118,7 @@
                     <div class="col-md-3">
                         <x-input-field type="text" id="no_hp" name="no_hp" label="No. Telepon"
                             placeholder="Masukkan Nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $officer->no_hp ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="14" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
                     </div>
                     <div class="col-md-3">
                         <label for="alamat" class="form-label">Alamat <span

@@ -38,24 +38,32 @@
         <div class="col-md-8">
             <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
-                    <div class="col-md-6">
-                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm">
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach ($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                    <div class="col-md-4">
+                        <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
+                        <select id="filter_unit" class="form-select rounded-pill shadow-sm">
+                            <option value="">-- Pilih Unit --</option>
+                            @foreach ($units as $u)
+                                <option value="{{ $u->id }}">{{ $u->nama }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
+                        <select id="filter_kelas" class="form-select rounded-pill shadow-sm">
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
                         <select id="siswa_id" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
+                </div>
 
-                    <div class="mb-3" id="nama_tagihan_wrapper" style="display: block;">
-                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan</label>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
+                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan (Bulanan)</label>
                         <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
@@ -66,63 +74,23 @@
                     <!-- Hidden input untuk jenis tagihan (otomatis perbulan) -->
                     <input type="hidden" id="kategori_tagihan" value="perbulan">
 
+
+
+
                 </div>
             </div>
         </div>
-                        {{-- Detail Siswa --}}
-                <div class="col-md-4">
-                    <div class="card rounded-4 border-0 p-4 shadow-sm">
-                        <div class="foto-siswa-wrapper mx-auto">
-                            <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                                class="foto-siswa">
-                        </div>
-
-                        <table class="table-sm table-borderless w-100 small table align-items-center">
-                            <tr >
-                                <th style="font-size: 12px" class="p-0 text-start">Nama Lengkap</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_nama">-</tdid>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">Nomor Induk</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_nisn">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">Unit Pendidikan</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_unit">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">Kelas</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_kelas">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">No VA</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_VA">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">Bank</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_bank">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">No Rekening</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_norek">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">RFID</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_rfid_no">-</td>
-                            </tr>
-                            <tr>
-                                <th style="font-size: 12px" class="p-0 text-start">Telepon</th>
-                                <td style="font-size: 12px" class="p-0 text-start" id="detail_telp">-</td>
-                            </tr>
-                        </table>
-
-                    </div>
+        <div class="col-md-4">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
+                <div class="mb-3 text-center">
+                    <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
+                        class="img-fluid rounded-circle border shadow-sm" width="120">
                 </div>
 
         {{-- Ringkasan Tagihan --}}
 
         {{-- Daftar Tagihan --}}
-        <div class="card rounded-4 mb-3 mt-3 border-0 shadow-sm">
+        <div class="card rounded-4 mt-3 border-0 shadow-sm">
             <!-- Header tombol toggle -->
             <div class="custom-toggle-header">
                 <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
@@ -155,15 +123,13 @@
                             <form id="formCatatan">
                                 <div class="mb-3">
                                     <label for="isiCatatan" class="form-label fw-semibold">Isi Catatan</label>
-                                    <textarea class="form-control" id="isiCatatan" name="isiCatatan" rows="4"
-                                        placeholder="Tulis keterangan tambahan di sini..."></textarea>
+                                    <textarea class="form-control" id="isiCatatan" rows="4" placeholder="Tulis keterangan tambahan di sini..."></textarea>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer border-0">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan
-                                Catatan</button>
+                            <button type="button" class="btn custom-btn-purple" onclick="simpanCatatan()">Simpan Catatan</button>
 
                         </div>
                     </div>
@@ -219,7 +185,7 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="list_tagihan_lunas">
+                        <tbody id="list_tagihan">
                             <tr>
                                 <td colspan="9" class="text-muted py-4 text-center">
                                     <i class="fa fa-info-circle"></i> Silakan pilih kelas & siswa
@@ -284,6 +250,7 @@
     <script>
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
+        const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
@@ -294,6 +261,47 @@
         const footBelumLunas = document.getElementById('foot_belum_lunas');
         const footSudahLunas = document.getElementById('foot_sudah_lunas');
 
+        // Load kelas berdasarkan unit
+        filterUnit.addEventListener('change', function() {
+            var unitId = this.value;
+
+            filterKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+            document.getElementById('list_tagihan').innerHTML = `
+        <tr>
+            <td colspan="11" class="text-center text-muted py-4">
+                <i class="fa fa-info-circle"></i> Silakan pilih unit dan kelas
+            </td>
+        </tr>`;
+            document.getElementById('nama_tagihan').innerHTML =
+                '<option value="">-- Pilih Tagihan --</option>';
+
+            if (!unitId) return;
+
+            fetch(`/siswa/get-kelas/${unitId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Data kelas:', data);
+                    if (data.length === 0) {
+                        const option = document.createElement('option');
+                        option.text = 'Tidak ada kelas';
+                        option.value = '';
+                        filterKelas.appendChild(option);
+                        return;
+                    }
+                    data.forEach(kelas => {
+                        const option = document.createElement('option');
+                        option.value = kelas.id;
+                        option.text = kelas.nama_kelas;
+                        filterKelas.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Fetch error:', err));
+        });
 
         // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
@@ -301,24 +309,15 @@
             kelasHidden.value = kelasId;
 
             siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
-            document.getElementById('nama_tagihan_wrapper').style.display = 'block';
+            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
             document.getElementById('list_tagihan').innerHTML = `
         <tr>
             <td colspan="11" class="text-center text-muted py-4">
-                <i class="fa fa-info-circle"></i> Silakan pilih siswa & jenis tagihan
+                <i class="fa fa-info-circle"></i> Silakan pilih siswa
             </td>
         </tr>`;
             document.getElementById('nama_tagihan').innerHTML =
-                '<option value="">-- Pilih Tagihan --</option>'; // Reset nama tagihan
-
-
-            siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
-            footBelumLunas.innerHTML = `
-        <tr>
-            <td colspan="11" class="text-center text-muted py-4">
-
-            </td>
-        </tr>`;
+                '<option value="">-- Pilih Tagihan --</option>';
             if (!kelasId) return;
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => {
@@ -360,9 +359,20 @@
                 <tr>
                     <td colspan="11" class="text-center text-muted py-4">
 
+
+            // Reset dropdown & table
+            document.getElementById('nama_tagihan').innerHTML = '<option value="">-- Pilih Tagihan --</option>';
+            document.getElementById('nama_tagihan_wrapper').style.display = 'none';
+            document.getElementById('list_tagihan').innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fa fa-info-circle"></i> Silakan pilih nama tagihan
                     </td>
                 </tr>`;
+
             if (!siswaId) return;
+
+            // Load detail siswa
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
@@ -402,6 +412,8 @@
                         return;
                     }
 
+                    // Isi dropdown nama tagihan
+                    const tagihanSelect = document.getElementById('nama_tagihan');
                     tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
                     data.detail.forEach(tagihan => {
                         const opt = document.createElement('option');
@@ -449,19 +461,20 @@
                         // Render Belum Lunas
                         const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
                         tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
+
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
-                <td class="text-center" style="font-size: 14px">${tagihan.no}</td>
-                <td class="text-center" style="font-size: 14px">${tagihan.periode}</td>
-                <td class="text-center" style="font-size: 14px">${tagihan.tagihan_kelas}</td>
-                <td class="text-center" style="font-size: 14px">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center text-danger" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-center fw-bold" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center" style="font-size: 14px">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
-                <td class="text-center text-success" style="font-size: 14px">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-center">${tagihan.no}</td>
+                <td class="text-center">${tagihan.periode}</td>
+                <td class="text-center">${tagihan.tagihan_kelas}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-warning btn-sm rounded-pill"
-                                onclick="tambahCatatan(${tagihan.id}, '${tagihan.catatan}')">
+                                onclick="tambahCatatan(${tagihan.id})">
                                 <i class="fa fa-sticky-note"></i> Catatan
                             </button></td>
                 <td class="text-center">
@@ -509,8 +522,7 @@
 `;
                     }
                     if (!data.sudah_lunas.length) {
-                        const listTagihanLunas = document.getElementById('list_tagihan_lunas');
-                        listTagihanLunas.innerHTML = `
+                        listTagihan.innerHTML = `
                 <tr>
                     <td colspan="9" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
@@ -530,16 +542,11 @@
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
-                <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
-<td class="text-center">
-    <a href="/tagihan/show/${tagihanId}/${siswaSelect.value}" class="btn btn-primary btn-sm rounded-pill">
-        <i class="fa fa-eye"></i> Lihat
-    </a>
-</td>
             </tr>
         `).join('');
                         let tagihKelas = '';
@@ -573,33 +580,11 @@
     </tr>
 `;
                     }
+
                 });
 
         });
     </script>
-    <script>
-        function formatCurrencyInput(input) {
-            let value = input.value.replace(/[^\d]/g, '');
-            if (value === '') {
-                input.value = '';
-                return;
-            }
-            input.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-        }
-
-
-
-        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
-        document.addEventListener('submit', function(e) {
-            const inputs = document.querySelectorAll(
-                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
-            );
-            inputs.forEach(input => {
-                input.value = input.value.replace(/[^\d]/g, '');
-            });
-        });
-    </script>
-
     <script>
         function bayarTagihan(tagihanId, bulan, tahun, nominal, kategoriId) {
             // Handle fallback values for bulan and tahun
@@ -634,33 +619,28 @@
                     // 🔹 Input Nominal untuk Bayar Sebagian
                     Swal.fire({
                         title: "Masukan Nominal Bayar",
-                        input: "text",
+                        input: "number",
                         inputAttributes: {
                             placeholder: "Contoh:Rp. 50.000",
                             inputmode: "numeric",
                             style: "text-align:center"
                         },
                         inputLabel: `Maksimal Rp ${validNominal.toLocaleString('id-ID')}`,
-
+                        inputPlaceholder: "Contoh: 500000",
                         showCancelButton: true,
                         confirmButtonText: "Bayar",
                         cancelButtonText: "Batal",
-                        didOpen: () => {
-                            const input = Swal.getInput();
-                            input.addEventListener('input', () => formatCurrencyInput(input));
-                        },
                         preConfirm: (val) => {
-                            const numericValue = parseInt(val.replace(/[^\d]/g, '')) || 0;
-                            if (numericValue <= 0) {
+                            if (!val || val <= 0) {
                                 Swal.showValidationMessage("Nominal harus lebih dari 0");
                                 return false;
                             }
-                            if (numericValue > validNominal) {
+                            if (parseInt(val) > validNominal) {
                                 Swal.showValidationMessage(
                                     "Nominal tidak boleh lebih besar dari total tagihan!");
                                 return false;
                             }
-                            return numericValue;
+                            return val;
                         }
                     }).then((res) => {
                         if (res.isConfirmed) {
@@ -832,25 +812,125 @@
                         return;
                     }
 
-                    // isi ke input hidden
-                    hiddenInput.value = selected.join(',');
+                    // Kumpulkan data tagihan yang dipilih
+                    const selectedTagihan = checkboxes.map(cb => {
+                        const row = cb.closest('tr');
+                        const periode = row.querySelector('td:nth-child(3)').textContent.trim();
+                        const nominalText = row.querySelector('td:nth-child(9)').textContent.trim();
+                        const nominal = parseInt(nominalText.replace(/[^\d]/g, ''));
 
-                    // optional: tampilkan konfirmasi
+                        return {
+                            id: cb.value,
+                            periode: periode,
+                            nominal: nominal
+                        };
+                    });
+
+                    const totalNominal = selectedTagihan.reduce((sum, t) => sum + t.nominal, 0);
+
+                    // Tampilkan konfirmasi
                     Swal.fire({
                         title: "Konfirmasi Pembayaran",
-                        text: `Anda akan memproses ${selected.length} tagihan.`,
+                        html: `
+                            <p>Anda akan memproses ${selectedTagihan.length} tagihan</p>
+                            <p><strong>Total: Rp ${totalNominal.toLocaleString('id-ID')}</strong></p>
+                        `,
                         icon: "question",
                         showCancelButton: true,
-                        confirmButtonText: "Lanjutkan",
-                        cancelButtonText: "Batal"
+                        confirmButtonText: "Bayar Semua",
+                        cancelButtonText: "Batal",
+                        confirmButtonColor: "#3085d6"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // kirim form (pastikan form punya id, misal "formTagihan")
-                            document.getElementById('formTagihan').submit();
+                            // Proses pembayaran multiple
+                            prosesMultiplePembayaran(selectedTagihan);
                         }
                     });
                 });
             }
         });
+
+        // Fungsi untuk proses pembayaran multiple
+        function prosesMultiplePembayaran(selectedTagihan) {
+            let successCount = 0;
+            let failedCount = 0;
+            const totalTagihan = selectedTagihan.length;
+
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Memproses Pembayaran...',
+                html: `<p>Sedang memproses ${totalTagihan} tagihan</p>`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Proses pembayaran satu per satu secara sequential
+            processNextPayment(0);
+
+            function processNextPayment(index) {
+                if (index >= selectedTagihan.length) {
+                    // Semua pembayaran selesai diproses
+                    Swal.fire({
+                        title: 'Proses Selesai',
+                        html: `
+                            <p><strong>Berhasil:</strong> ${successCount} tagihan</p>
+                            <p><strong>Gagal:</strong> ${failedCount} tagihan</p>
+                        `,
+                        icon: successCount > 0 ? 'success' : 'error',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload list tagihan
+                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                    });
+                    return;
+                }
+
+                const tagihan = selectedTagihan[index];
+
+                // Dapatkan data dari window global jika ada
+                const tagihanData = window.tagihanDataMap ? window.tagihanDataMap.get(tagihan.id) : null;
+
+                fetch('/pembayaran/store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        tagihan_siswa_id: tagihan.id,
+                        bulan: tagihanData?.bulan || tagihan.periode,
+                        tahun: tagihanData?.tahun || new Date().getFullYear(),
+                        nominal: tagihan.nominal,
+                        jumlah_bayar: tagihan.nominal,
+                        kategori_id: tagihanData?.kategori_id || 1,
+                        metode: 'manual',
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status == 1 || data.status == true) {
+                        successCount++;
+                    } else {
+                        failedCount++;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    failedCount++;
+                })
+                .finally(() => {
+                    // Update progress
+                    const processed = index + 1;
+                    Swal.update({
+                        html: `<p>Memproses ${processed} dari ${totalTagihan} tagihan...</p>`
+                    });
+
+                    // Proses tagihan berikutnya
+                    processNextPayment(index + 1);
+                });
+            }
+        }
     </script>
 @endpush

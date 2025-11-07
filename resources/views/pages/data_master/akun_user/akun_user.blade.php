@@ -42,6 +42,7 @@
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="ri-search-line"></i> Cari
+
                             </button>
                         </div>
                     </form>
@@ -55,6 +56,7 @@
                                     <th>{{ $header }}</th>
                                 @endforeach
                             </tr>
+
                         @else
                             <tr>
                                 <th>No data</th>
@@ -64,6 +66,7 @@
 
                     <tbody>
                         @forelse($user as $index => $item)
+
                             <tr class="align-middle">
                                 <td class="text-center">{{ $user->firstItem() + $index }}</td>
                                 <td>{{ $item->units->nama_unit ?? '-' }}</td>
@@ -86,6 +89,7 @@
                                             <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
                                             Hapus
                                         </a> --}}
+
                                     </div>
                                 </td>
                             </tr>
@@ -95,6 +99,7 @@
                             </tr>
                         @endforelse
                     </tbody>
+
                 </table>
             </div>
         </div>

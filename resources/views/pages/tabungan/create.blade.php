@@ -29,6 +29,9 @@
                         <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices
                             data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
+                            @foreach ($kelas as $k)
+                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -48,51 +51,22 @@
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
                     <div class="card rounded-4 border-0 p-4 shadow-sm">
-                        <div class="foto-siswa-wrapper mx-auto">
+                        <div class="mb-3 text-center">
                             <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                                class="foto-siswa">
+                                class="img-fluid rounded-circle border shadow-sm" width="120">
                         </div>
 
-                        <table class="table-sm table-borderless w-100 small table">
-                            <tr>
-                                <th>Nama Lengkap</th>
-                                <td id="detail_nama">-</td>
-                            </tr>
-                            <tr>
-                                <th>NISN</th>
-                                <td id="detail_nisn">-</td>
-                            </tr>
-                            <tr>
-                                <th>Unit Pendidikan</th>
-                                <td id="detail_unit">-</td>
-                            </tr>
-                            <tr>
-                                <th>Kelas Sekarang</th>
-                                <td id="detail_kelas">-</td>
-                            </tr>
-                            <tr>
-                                <th>No VA</th>
-                                <td id="detail_VA">-</td>
-                            </tr>
-
-                            <tr>
-                                <th>Bank</th>
-                                <td id="detail_bank">-</td>
-                            </tr>
-                            <tr>
-                                <th>No Rekening</th>
-                                <td id="detail_norek">-</td>
-                            </tr>
-                            <tr>
-                                <th>RFID</th>
-                                <td id="detail_rfid_no">-</td>
-                            </tr>
-
-                            <tr>
-                                <th>Telepon</th>
-                                <td id="detail_telp">-</td>
-                            </tr>
-                        </table>
+<table class="table table-sm table-borderless w-100 small">
+  <tr><th>Nama Lengkap</th><td id="detail_nama">-</td></tr>
+  <tr><th>Nomor Induk</th><td id="detail_nisn">-</td></tr>
+  <tr><th>Unit Pendidikan</th><td id="detail_unit">-</td></tr>
+  <tr><th>Kelas Sekarang</th><td id="detail_kelas">-</td></tr>
+  <tr><th>Nama Jurusan</th><td id="detail_jurusan">-</td></tr>
+  <tr><th>Tahun Ajaran</th><td id="detail_tahun">-</td></tr>
+  <tr><th>Jenis Kelamin</th><td id="detail_gender">-</td></tr>
+  <tr><th>TTL</th><td id="detail_lahir">-</td></tr>
+  <tr><th>Telepon</th><td id="detail_telp">-</td></tr>
+</table>
 
                     </div>
                 </div>
@@ -117,13 +91,15 @@
                                 <label for="jumlah" class="form-label fw-semibold">Jumlah Setoran <span
                                         class="text-danger">*</span></label>
                                 <input type="text" name="jumlah" id="jumlah"
-                                    class="form-control rounded-pill shadow-sm" oninput="formatCurrencyInput(this)"
+                                    class="form-control rounded-pill shadow-sm"
+                                    oninput="formatCurrencyInput(this)"
                                     required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Jumlah Transaksi</label>
                                 <div id="jumlah_transaksi" class="fw-bold text-info">Rp 0</div>
                             </div>
+
 
                             <div class="mb-3">
                                 <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
@@ -157,7 +133,9 @@
             border-color: #4e73df;
             box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
         }
-    </style>
+
+
+</style>
 @endpush
 
 @push('scripts')
@@ -172,7 +150,6 @@
         });
 
         // Element DOM
-        const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
@@ -307,10 +284,11 @@
                     document.getElementById('detail_nisn').innerText = ': ' + (data.nisn || '-');
                     document.getElementById('detail_unit').innerText = ': ' + (data.unit || '-');
                     document.getElementById('detail_kelas').innerText = ': ' + (data.kelas || '-');
-                    document.getElementById('detail_VA').innerText = ': ' + (data.VA || '-');
-                    document.getElementById('detail_bank').innerText = ': ' + (data.bank || '-');
-                    document.getElementById('detail_rfid_no').innerText = ': ' + (data.rfid_no || '-');
-                    document.getElementById('detail_norek').innerText = ': ' + (data.norek || '-');
+                    document.getElementById('detail_jurusan').innerText = ': ' + (data.jurusan || '-');
+                    document.getElementById('detail_tahun').innerText = ': ' + (data.tahun_ajaran || '-');
+                    document.getElementById('detail_gender').innerText = ': ' + (data.gender || '-');
+                    document.getElementById('detail_lahir').innerText =
+                        `: ${data.tempat_lahir || '-'}, ${data.tanggal_lahir || '-'}`;
                     document.getElementById('detail_telp').innerText = ': ' + data.no_hp || '-';
 
                     if (data.foto) {
@@ -329,7 +307,7 @@
                 .catch(err => console.error('Fetch detail siswa error:', err));
         });
     </script>
-    <script>
+        <script>
         function formatCurrencyInput(input) {
             let value = input.value.replace(/[^\d]/g, '');
             if (value === '') {
@@ -344,42 +322,11 @@
         // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
         document.addEventListener('submit', function(e) {
             const inputs = document.querySelectorAll(
-                '.component-value, .deduction-value, [id$="_allowance"], [name="jumlah"]'
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
             );
             inputs.forEach(input => {
                 input.value = input.value.replace(/[^\d]/g, '');
             });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            form = document.getElementById('formTabungan');
-            setor = document.getElementById('jumlah_transaksi');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                Swal.fire({
-  title: `Setor ${setor.innerText}?`,
-  text: "Jika Sudah Yakin, Tekan Tombol Konfirmasi",
-  icon: "warning",
-  showCancelButton: true,
-  cancelButtonText: "Batal",
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Konfirmasi"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "Mohon Tunggu....",
-      text: "Harap Tunggu Sebentar",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-        }
-    });
-    form.submit();
-  }
-});
-            })
         });
     </script>
     @if (session('success'))

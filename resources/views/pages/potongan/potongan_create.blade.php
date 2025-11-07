@@ -151,6 +151,8 @@
 
                 <div class="d-flex justify-content-end mt-3">
                     <button type="submit" class="btn btn-primary">Proses Tambah Potongan</button>
+                    <button class="btn btn-secondary" onclick="history.go(-1)">Kembali</button>
+
                 </div>
             </form>
         </div>
@@ -212,6 +214,7 @@
             }
         });
 
+        // Load students dynamically when class is selected
         // Load students dynamically when class is selected
         document.getElementById('kelas_id').addEventListener('change', function() {
             const kelasId = this.value;
