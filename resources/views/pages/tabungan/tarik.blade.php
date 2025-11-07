@@ -42,19 +42,42 @@
             <div class="row g-4">
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
-                    <div class="card p-4 shadow-sm rounded-4 border-0">
-                        <div class="text-center mb-3">
-                            <img src="{{ asset('images/default-user.png') }}"
-                                 alt="Foto Siswa"
-                                 class="img-fluid rounded-circle shadow-sm border"
-                                 width="120">
+                    <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
+                        <div class="card-header bg-gradient-primary text-white text-center py-3">
+                            <h6 class="mb-0 fw-bold">Informasi Siswa</h6>
                         </div>
-                        <ul class="list-unstyled small">
-                            <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
-                            <li><strong>Nomor Induk:</strong> <span id="detail_nisn">-</span></li>
-                            <li><strong>Kelas Sekarang:</strong> <span id="detail_kelas">-</span></li>
-                            <li><strong>Saldo Tabungan:</strong> <span id="saldo_awal">Rp 0</span></li>
-                        </ul>
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <div class="position-relative d-inline-block">
+                                    <img src="{{ asset('images/default-user.png') }}"
+                                         alt="Foto Siswa"
+                                         id="foto_siswa"
+                                         class="img-fluid rounded-circle shadow border border-3 border-danger"
+                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                    <span class="position-absolute bottom-0 end-0 bg-danger rounded-circle p-2 border border-2 border-white">
+                                        <i class="bx bx-wallet-alt text-white"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="student-info">
+                                <div class="info-item mb-2 p-2 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Nama Lengkap</small>
+                                    <strong id="detail_nama" class="text-dark">-</strong>
+                                </div>
+                                <div class="info-item mb-2 p-2">
+                                    <small class="text-muted d-block mb-1">Nomor Induk</small>
+                                    <strong id="detail_nisn" class="text-dark">-</strong>
+                                </div>
+                                <div class="info-item mb-2 p-2 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Kelas</small>
+                                    <strong id="detail_kelas" class="text-dark">-</strong>
+                                </div>
+                                <div class="info-item mb-2 p-3 bg-success bg-opacity-10 rounded border border-success">
+                                    <small class="text-muted d-block mb-1">Saldo Tabungan</small>
+                                    <div id="saldo_awal" class="fs-5 fw-bold text-success">Rp 0</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -65,28 +88,60 @@
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
-                        <div class="card p-4 shadow-sm rounded-4 border-0">
-                            <h5 class="fw-bold text-danger">Detail Penarikan</h5>
-                            <hr>
-
-                            <div class="mb-3">
-                                <label for="jumlah" class="form-label fw-semibold">Jumlah Penarikan <span class="text-danger">*</span></label>
-                                <input type="number" name="jumlah" id="jumlah" class="form-control rounded-pill shadow-sm" required>
+                        <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
+                            <div class="card-header bg-gradient-danger text-white py-3">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bx bx-wallet-alt me-2"></i>Transaksi Penarikan Tabungan
+                                </h5>
                             </div>
+                            <div class="card-body p-4">
+                                <div class="alert alert-warning border-0 shadow-sm mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bx bx-info-circle fs-4 me-3 mt-1"></i>
+                                        <div>
+                                            <strong class="d-block mb-1">Perhatian!</strong>
+                                            <small>Pastikan jumlah penarikan tidak melebihi saldo yang tersedia.</small>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div class="mb-3">
-                                <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
-                                <textarea name="keterangan" id="keterangan" class="form-control rounded-4 shadow-sm" rows="2"></textarea>
+                                <div class="mb-4">
+                                    <label for="jumlah" class="form-label fw-semibold">
+                                        <i class="bx bx-money text-danger me-1"></i>Jumlah Penarikan
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text bg-danger text-white border-0 rounded-start-pill">
+                                            <strong>Rp</strong>
+                                        </span>
+                                        <input type="number" name="jumlah" id="jumlah"
+                                               class="form-control border-0 shadow-sm rounded-end-pill"
+                                               placeholder="0" required min="1">
+                                    </div>
+                                    <small class="text-muted">Maksimal penarikan sesuai saldo yang tersedia</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="keterangan" class="form-label fw-semibold">
+                                        <i class="bx bx-note text-primary me-1"></i>Keterangan
+                                    </label>
+                                    <textarea name="keterangan" id="keterangan"
+                                              class="form-control rounded-4 shadow-sm border-0"
+                                              rows="3"
+                                              placeholder="Tambahkan catatan transaksi (opsional)"></textarea>
+                                </div>
+
+                                <div class="alert alert-danger border-0 shadow-sm mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold">Total Penarikan</span>
+                                        <div id="jumlah_transaksi" class="fs-4 fw-bold text-danger">Rp 0</div>
+                                    </div>
+                                </div>
+
+                                <button type="button" id="btnSubmit" class="btn btn-danger btn-lg w-100 rounded-pill shadow-lg animate-btn">
+                                    <i class="bx bx-wallet-alt me-2"></i>Proses Penarikan
+                                </button>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Jumlah Transaksi</label>
-                                <div id="jumlah_transaksi" class="fw-bold text-danger">Rp 0</div>
-                            </div>
-
-                            <button type="submit" class="btn btn-danger w-100 rounded-pill shadow-lg animate-btn">
-                                <i class="bx bx-wallet-alt"></i> Proses Tarik Saldo
-                            </button>
                         </div>
                     </form>
                 </div>
@@ -94,6 +149,60 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .bg-gradient-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+        }
+        .animate-btn {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .animate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 101, 101, 0.4);
+        }
+        .animate-btn:active {
+            transform: translateY(0);
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(245, 101, 101, 0.25);
+            border-color: #f56565;
+        }
+        .student-info .info-item {
+            transition: all 0.2s ease;
+        }
+        .student-info .info-item:hover {
+            background-color: #fff5f5 !important;
+            transform: translateX(5px);
+        }
+        #foto_siswa {
+            transition: all 0.3s ease;
+        }
+        #foto_siswa:hover {
+            transform: scale(1.05);
+        }
+        .alert {
+            animation: slideInDown 0.5s ease-out;
+        }
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+@endpush
+
 @push('scripts')
     <script>
         const jumlahInput = document.getElementById('jumlah');
@@ -183,17 +292,24 @@
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('detail_nama').innerText = data.nama_lengkap;
-                    document.getElementById('detail_nisn').innerText = data.nisn;
-                    document.getElementById('detail_kelas').innerText = data.kelas;
+                    document.getElementById('detail_nama').innerText = data.nama_lengkap || '-';
+                    document.getElementById('detail_nisn').innerText = data.nisn || '-';
+                    document.getElementById('detail_kelas').innerText = data.kelas || '-';
 
                     if (data.saldo_akhir) {
                         saldoAwal = parseInt(data.saldo_akhir); // simpan saldo untuk validasi
                         saldoAwalEl.innerText = 'Rp ' + saldoAwal.toLocaleString('id-ID');
+                    } else {
+                        saldoAwal = 0;
+                        saldoAwalEl.innerText = 'Rp 0';
                     }
 
+                    // Update foto siswa - gunakan langsung URL dari API
+                    const fotoSiswa = document.getElementById('foto_siswa');
                     if (data.foto) {
-                        document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
+                        fotoSiswa.src = data.foto;
+                    } else {
+                        fotoSiswa.src = `{{ asset('images/default-user.png') }}`;
                     }
                 });
         });
@@ -203,12 +319,89 @@
             let value = parseInt(this.value) || 0;
 
             if (value > saldoAwal) {
-                alert("Jumlah penarikan tidak boleh lebih besar dari saldo (" + saldoAwal.toLocaleString('id-ID') + ")");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Saldo Tidak Cukup!',
+                    text: `Jumlah penarikan tidak boleh lebih besar dari saldo (Rp ${saldoAwal.toLocaleString('id-ID')})`,
+                    confirmButtonColor: '#f56565'
+                });
                 this.value = saldoAwal; // otomatis set ke saldo maksimal
                 value = saldoAwal;
             }
 
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
+        });
+
+        // Handle submit dengan SweetAlert confirmation
+        document.getElementById('btnSubmit').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const siswaId = penerimaHidden.value;
+            const jumlah = jumlahInput.value;
+            const namaSiswa = document.getElementById('detail_nama').innerText;
+
+            if (!siswaId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian!',
+                    text: 'Silakan pilih siswa terlebih dahulu',
+                    confirmButtonColor: '#f56565'
+                });
+                return;
+            }
+
+            if (!jumlah || jumlah <= 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian!',
+                    text: 'Silakan masukkan jumlah penarikan yang valid',
+                    confirmButtonColor: '#f56565'
+                });
+                return;
+            }
+
+            if (parseInt(jumlah) > saldoAwal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Saldo Tidak Cukup!',
+                    text: `Saldo siswa hanya Rp ${saldoAwal.toLocaleString('id-ID')}`,
+                    confirmButtonColor: '#f56565'
+                });
+                return;
+            }
+
+            const saldoSetelah = saldoAwal - parseInt(jumlah);
+
+            Swal.fire({
+                title: 'Konfirmasi Penarikan',
+                html: `
+                    <div class="text-start">
+                        <p class="mb-2"><strong>Nama Siswa:</strong> ${namaSiswa}</p>
+                        <p class="mb-2"><strong>Saldo Saat Ini:</strong> <span class="text-success fw-bold">Rp ${saldoAwal.toLocaleString('id-ID')}</span></p>
+                        <p class="mb-2"><strong>Jumlah Penarikan:</strong> <span class="text-danger fw-bold">Rp ${parseInt(jumlah).toLocaleString('id-ID')}</span></p>
+                        <p class="mb-2"><strong>Saldo Setelah Penarikan:</strong> <span class="text-info fw-bold">Rp ${saldoSetelah.toLocaleString('id-ID')}</span></p>
+                        <hr>
+                        <p class="text-muted mb-0">Apakah Anda yakin ingin memproses penarikan ini?</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f56565',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check me-1"></i> Ya, Proses!',
+                cancelButtonText: '<i class="bx bx-x me-1"></i> Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Disable button untuk prevent double click
+                    const btn = document.getElementById('btnSubmit');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+
+                    // Submit form
+                    document.getElementById('formTarik').submit();
+                }
+            });
         });
     </script>
 @endpush

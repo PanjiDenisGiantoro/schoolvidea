@@ -42,7 +42,7 @@
                                 <form action="{{ route('login.process') }}" method="POST" class="authentication-form">
                                     @csrf
 
-                                    <x-input-field type="email" name="email" label="Email" placeholder="Masukkan email"  icon="bx bx-envelope" />
+                                    <x-input-field type="text" name="email" label="Email" placeholder="Masukkan email"  icon="bx bx-envelope" />
                                     <x-input-field name="password" label="user password" type="password" icon="bx bx-lock" />
                                     <div class="mb-3">
                                         <div class="form-check">

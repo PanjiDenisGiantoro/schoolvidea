@@ -57,7 +57,7 @@
                                 Tabungan Tarik</option>
                             <option value="tabungan"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan
-                                Masuk</option>
+                                Setor</option>
                         </select>
                     </div>
                     {{-- Akun --}}

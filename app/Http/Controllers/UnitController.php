@@ -17,7 +17,6 @@ class UnitController extends Controller
 
         // Build query
         $query = Unit::with('tipe_unit');
-
         // Filter berdasarkan prioritas: yayasan_id > unit_id
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan semua unit yang terkait dengan yayasan tersebut

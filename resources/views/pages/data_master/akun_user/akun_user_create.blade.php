@@ -61,6 +61,22 @@
                         <x-input-field type="text" id="rfid_no" name="rfid_no" label="Nomor RFID" placeholder="RFID"
                                        icon="bx bx-card" :value="old('rfid_no', $user->rfid_no ?? '')" :disabled="isset($show) && $show" />
                     </div>
+{{--                    yayasan_id dropdown --}}
+                    <div class="mb-4">
+                        <label for="akses_yayasan" class="form-label">Akses Yayasan</label>
+                        <select name="akses_yayasan" id="akses_yayasan" class="form-select" data-choices data-choices-sorting-false
+                                @if (isset($show) && $show) disabled @endif>
+                            <option value="">-- Pilih Yayasan --</option>
+                            @foreach ($yayasan as $y)
+                                <option value="{{ $y->id }}"
+                                        {{ old('akses_yayasan', $user->yayasan_id ?? '') == $y->id ? 'selected' : '' }}>
+                                    {{ $y->nama_yayasan }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Jika "Ya", user akan memiliki akses ke semua unit dalam yayasan</small>
+                    </div>
+
                 </div>
 
                 <div class="mt-3 text-end">

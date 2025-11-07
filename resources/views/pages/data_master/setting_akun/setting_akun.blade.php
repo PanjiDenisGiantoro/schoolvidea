@@ -68,7 +68,14 @@
                             <td>{{ $item->kredit ?? 0 }}</td>
                             <td>{{ $item->keterangan ?? '-' }}</td>
                             <td>{{ $item->unit->nama_unit ?? '-' }}</td>
-                            <td>{{ $item->kategori ?? '-' }}</td>
+                            <td>
+                                @php
+                                    if($item->kategori == 'tabungan'){
+                                        echo 'Tabungan-setor';
+                                    }else{
+                                        echo $item->kategori ?? '-';
+                                    }
+                                @endphp
                             <td>
                                 <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">
                                     {{ $item->status === '1' ? 'Aktif' : 'Tidak Aktif' }}

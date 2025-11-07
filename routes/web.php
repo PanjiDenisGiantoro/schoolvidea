@@ -190,6 +190,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/tarik', [TabunganController::class, 'tarik'])->middleware('permission:create_tabungan')->name('tabungan.tarik');
         Route::post('/store-tarik', [TabunganController::class, 'tarikStore'])->middleware('permission:create_tabungan')->name('tabungan.tarik.store');
         Route::get('/show/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
+        Route::post('/verify-token', [TabunganController::class, 'verifyToken'])->name('tabungan.verify');
         Route::get('/status/{id}', [TabunganController::class, 'status'])->name('tabungan.status');
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');

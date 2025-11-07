@@ -188,6 +188,7 @@ Route::prefix("v1")->group(function () {
             ]);
             Route::post("/setor", [TabunganController::class, "setor"]);
             Route::post("/tarik", [TabunganController::class, "tarik"]);
+            Route::post("/verify", [TabunganController::class, "verifyToken"]);
         });
     });
 });

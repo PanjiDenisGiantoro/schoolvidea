@@ -47,6 +47,7 @@
                             <td>{{ $item->units->nama_unit ?? '-' }}</td>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->email }}</td>
+                            <td>{{ $item->yayasan_id ? 'Ya' : 'Tidak' }}</td>
                             <td>
                                 <div class="d-flex gap-3"><a href="{{ url('akun-user/show', $item->id ?? '') }}"
                                                              class="link-primary text-muted"> <i

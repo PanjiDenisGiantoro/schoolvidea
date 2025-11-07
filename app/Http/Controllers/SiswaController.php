@@ -520,7 +520,7 @@ class SiswaController extends Controller
             'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
             'no_hp'          => $siswa->no_hp ?? '-',
             'foto'           => $siswa->image
-                ? asset('storage/' . $siswa->image)
+                ? asset($siswa->image)
                 : asset('images/default-avatar.png'),
             'qrcode'         => $siswa->qrcode_image
                 ? asset('storage/' . $siswa->qrcode_image)

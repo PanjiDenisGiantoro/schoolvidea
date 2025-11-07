@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Yayasan;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Unit;
@@ -48,6 +49,7 @@ class AkunUserController extends Controller
             'Unit',
             'Nama Akun User',
             'Email',
+            'Akses Yayasan',
             'Aksi'
         ];
 
@@ -59,10 +61,12 @@ class AkunUserController extends Controller
     {
         $user = User::findOrFail($id);
         $units = Unit::all();
+        $yayasan = Yayasan::all();
 
         return view('pages.data_master.akun_user.akun_user_create', [
             'user' => $user,
             'units' => $units,
+            'yayasan' => $yayasan,
             'show' => false, // mode edit
         ]);
     }
@@ -77,7 +81,8 @@ class AkunUserController extends Controller
             'email' => 'required|email|max:100|unique:users,email,' . $user->id,
             'username' => 'required|string|max:50|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:6',
-            'rfid_no' => 'nullable|string'
+            'rfid_no' => 'nullable|string',
+            'akses_yayasan' => 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -91,7 +96,8 @@ class AkunUserController extends Controller
                 'password' => $validated['password']
                     ? bcrypt($validated['password'])
                     : $user->password,
-                'rfid_no' => $validated['rfid_no']
+                'rfid_no' => $validated['rfid_no'],
+                'yayasan_id' => $validated['akses_yayasan'],
             ]);
 
             DB::commit();
@@ -107,10 +113,12 @@ class AkunUserController extends Controller
     {
         $user = User::findOrFail($id);
         $units = Unit::all();
+        $yayasan = Yayasan::all();
 
         return view('pages.data_master.akun_user.akun_user_create', [
             'user' => $user,
             'units' => $units,
+            'yayasan' => $yayasan,
             'show' => true, // readonly mode
         ]);
     }
