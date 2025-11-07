@@ -169,7 +169,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
         Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);
         Route::post('/upload', [SiswaController::class, 'upload'])->middleware('permission:upload_siswa')->name('siswa.upload');
-        Route::get('/get-kelas/{unitId}', [SiswaController::class, 'getKelasByUnit'])->name('getKelasByUnit');
+        Route::get('/get-kelas/{unitId}', [UnitController::class, 'getKelasByUnit'])->name('getKelasByUnit');
         Route::get('/get-jurusan/{unitId}', [SiswaController::class, 'getJurusanByUnit'])->name('getJurusanByUnit');
     });
 

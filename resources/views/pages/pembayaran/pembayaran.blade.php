@@ -13,10 +13,30 @@
             .table thead th {
                 font-weight: 600;
                 font-size: 0.9rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 15px 10px;
             }
 
             .table tbody td {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                vertical-align: middle;
+                padding: 12px 10px;
+            }
+
+            .table-hover tbody tr:hover {
+                background-color: #f8f9fc;
+                transform: scale(1.01);
+                transition: all 0.2s ease;
+            }
+
+            .card {
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             }
 
             .card-header {
@@ -25,11 +45,99 @@
 
             .btn {
                 transition: all 0.25s ease-in-out;
+                font-weight: 500;
             }
 
             .btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .form-select, .form-control {
+                border: 2px solid #e3e6f0;
+                transition: all 0.3s ease;
+            }
+
+            .form-select:focus, .form-control:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+
+            .custom-btn-info {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .custom-btn-info:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            }
+
+            .custom-btn-outline-primary {
+                border: 2px solid #667eea;
+                background: white;
+                color: #667eea;
+                padding: 10px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .custom-active-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: #667eea;
+            }
+
+            .custom-toggle-header {
+                display: flex;
+                gap: 10px;
+                padding: 20px;
+                background: #f8f9fc;
+                border-radius: 15px 15px 0 0;
+            }
+
+            .custom-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                background: white;
+                border-bottom: 2px solid #e3e6f0;
+                font-weight: 600;
+                font-size: 1.1rem;
+                color: #5a5c69;
+            }
+
+            .badge {
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+
+            .profile-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 20px;
+            }
+
+            .profile-card .list-unstyled li {
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .profile-card .list-unstyled li:last-child {
+                border-bottom: none;
+            }
+
+            .profile-card strong {
+                color: rgba(255, 255, 255, 0.9);
             }
         </style>
     @endpush
@@ -82,22 +190,26 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card rounded-4 border-0 p-4 shadow-sm">
-                <div class="mb-3 text-center">
-                    <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                         class="img-fluid rounded-circle border shadow-sm" width="120">
+            <div class="card rounded-4 border-0 shadow-lg overflow-hidden">
+                <div class="profile-card text-center">
+                    <div class="mb-3">
+                        <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
+                             class="img-fluid rounded-circle border border-4 border-white shadow-lg" width="120" height="120" style="object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-1" id="detail_nama">-</h5>
+                    <p class="mb-0 opacity-75" id="detail_nisn">-</p>
                 </div>
-                <ul class="list-unstyled small">
-                    <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
-                    <li><strong>Nomor Induk:</strong> <span id="detail_nisn">-</span></li>
-                    <li><strong>Unit Pendidikan:</strong> <span id="detail_unit">-</span></li>
-                    <li><strong>Kelas Sekarang:</strong> <span id="detail_kelas">-</span></li>
-                    <li><strong>Nama Jurusan:</strong> <span id="detail_jurusan">-</span></li>
-                    <li><strong>Tahun Ajaran:</strong> <span id="detail_tahun">-</span></li>
-                    <li><strong>Jenis Kelamin:</strong> <span id="detail_gender">-</span></li>
-                    <li><strong>TTL:</strong> <span id="detail_lahir">-</span></li>
-                    <li><strong>Telepon:</strong> <span id="detail_telp">-</span></li>
-                </ul>
+                <div class="p-4 bg-white">
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2"><i class="ri-building-line text-primary me-2"></i><strong>Unit:</strong> <span id="detail_unit" class="float-end">-</span></li>
+                        <li class="mb-2"><i class="ri-book-line text-success me-2"></i><strong>Kelas:</strong> <span id="detail_kelas" class="float-end">-</span></li>
+                        <li class="mb-2"><i class="ri-briefcase-line text-info me-2"></i><strong>Jurusan:</strong> <span id="detail_jurusan" class="float-end">-</span></li>
+                        <li class="mb-2"><i class="ri-calendar-line text-warning me-2"></i><strong>Tahun Ajaran:</strong> <span id="detail_tahun" class="float-end">-</span></li>
+                        <li class="mb-2"><i class="ri-user-line text-secondary me-2"></i><strong>Gender:</strong> <span id="detail_gender" class="float-end">-</span></li>
+                        <li class="mb-2"><i class="ri-map-pin-line text-danger me-2"></i><strong>TTL:</strong> <span id="detail_lahir" class="float-end">-</span></li>
+                        <li><i class="ri-phone-line text-success me-2"></i><strong>Telepon:</strong> <span id="detail_telp" class="float-end">-</span></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
