@@ -39,7 +39,7 @@
                     <button type="submit" class="btn btn-success">
                         {{ isset($tipe_unit) ? 'Update' : 'Simpan' }}
                     </button>
-                    <a href="{{ url('tahun_ajaran/') }}" class="btn btn-secondary">Batal</a>
+                    <a href="{{ url('tipe_unit/') }}" class="btn btn-secondary">Batal</a>
                 </div>
             </form>
         </div>

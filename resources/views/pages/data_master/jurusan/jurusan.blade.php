@@ -59,42 +59,45 @@
                         @endif
                     </thead>
                     <tbody>
-                    @forelse($jurusan as $index => $item)
-                        <tr>
-                            <td>{{ $jurusan->firstItem() + $index }}</td>
-                            <td>{{ $item->nama_jurusan }}</td>
-                            <td>{{ $item->kode_jurusan }}</td>
-                            <td>{{ $item->keterangan ?? '' }}</td>
-                            <td>{{ $item->unit->nama_unit ?? '' }}</td>
-                            <td>
-                                @if($item->status == 1)
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Tidak Aktif</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex gap-3">
-                                    <a href="{{ url('jurusan/show', $item->id ?? '') }}" class="link-primary text-muted">
-                                        <i class="ri-eye-line align-middle fs-20"></i>
-                                        Show
-                                    </a>
-                                    <a href="{{ route('jurusan.edit', $item->id ?? '') }}" class="link-warning text-muted">
-                                        <i class="ri-edit-line align-middle fs-20"></i>
-                                        Edit
-                                    </a>
-                                    <a href="{{ route('jurusan.destroy', $item->id ?? '') }}" class="link-danger text-muted">
-                                        <i class="ri-delete-bin-5-line align-middle fs-20"></i>
-                                        Hapus
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
-                        </tr>
-                    @endforelse
+                        @forelse($jurusan as $index => $item)
+                            <tr>
+                                <td>{{ $jurusan->firstItem() + $index }}</td>
+                                <td>{{ $item->nama_jurusan }}</td>
+                                <td>{{ $item->kode_jurusan }}</td>
+                                <td>{{ $item->keterangan ?? '' }}</td>
+                                <td>{{ $item->unit->nama_unit ?? '' }}</td>
+                                <td>
+                                    @if ($item->status == 1)
+                                        <span class="badge bg-success">Aktif</span>
+                                    @else
+                                        <span class="badge bg-danger">Tidak Aktif</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-3">
+                                        <a href="{{ url('jurusan/show', $item->id ?? '') }}"
+                                            class="link-primary text-muted">
+                                            <i class="ri-eye-line fs-20 align-middle"></i>
+                                            Show
+                                        </a>
+                                        <a href="{{ route('jurusan.edit', $item->id ?? '') }}"
+                                            class="link-warning text-muted">
+                                            <i class="ri-edit-line fs-20 align-middle"></i>
+                                            Edit
+                                        </a>
+                                        <a href="{{ route('jurusan.destroy', $item->id ?? '') }}"
+                                            class="link-danger text-muted">
+                                            <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
+                                            Hapus
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
 

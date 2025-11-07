@@ -164,7 +164,7 @@ class OfficerController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-
+            $tahunAjaran = Tahun_ajaran::where('status', 1)->first();
 
             $officer =   Officer::create([
                 'nip'             => $request->nip,
@@ -187,6 +187,7 @@ class OfficerController extends Controller
                 'va_guru'         => $request->va_guru,
                 'position_id'     => $request->position_id,
                 'name'            => $request->name,
+                'tahun_ajaran_id' => $tahunAjaran->id
             ]);
             DB::commit();
 
@@ -219,6 +220,7 @@ with('success', 'Data user berhasil diperbarui.');
 
         $roles = Roles_petugas::all();
         $positions = Positions::all();
+
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;

@@ -70,8 +70,11 @@ class OfficerController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $tahunAjaran = Tahun_ajaran::where('status', 1)->first();
+        $data = $request->all();
+        $data['tahun_ajaran_id'] = $tahunAjaran ? $tahunAjaran->id : null;
 
-        $officer = Officer::create($request->all());
+        $officer = Officer::create($data;
 
         return response()->json([
             'success' => true,

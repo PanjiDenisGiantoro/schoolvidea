@@ -30,14 +30,14 @@ class AkunUserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%")
-                    ->orWhereHas('parent', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('units', function ($q) use ($search) {
-                        $q->where('nama_unit', 'like', "%{$search}%");
-                    });
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhereHas('parent', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('units', function ($q) use ($search) {
+                      $q->where('nama_unit', 'like', "%{$search}%");
+                  });
             });
         }
 

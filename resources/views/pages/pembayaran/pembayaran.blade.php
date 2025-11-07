@@ -84,7 +84,7 @@
             <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="mb-3 text-center">
                     <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                         class="img-fluid rounded-circle border shadow-sm" width="120">
+                        class="img-fluid rounded-circle border shadow-sm" width="120">
                 </div>
                 <ul class="list-unstyled small">
                     <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
@@ -362,6 +362,18 @@
         siswaSelect.addEventListener('change', function() {
             const siswaId = this.value;
             penerimaHidden.value = siswaId;
+<<<<<<< HEAD
+=======
+            listTagihan.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
+            footBelumLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
 
             // Reset dropdown & table
             document.getElementById('nama_tagihan').innerHTML = '<option value="">-- Pilih Tagihan --</option>';
@@ -400,7 +412,7 @@
                     const tagihanSelect = document.getElementById('nama_tagihan');
                     const wrapper = document.getElementById('nama_tagihan_wrapper');
                     const listTagihan = document.getElementById('list_tagihan');
-                   // listTagihan.innerHTML = '';
+                    // listTagihan.innerHTML = '';
 
 
                     if (!data.detail || !data.detail.length) {
@@ -447,6 +459,7 @@
                 </tr>`;
                         return;
                     }
+<<<<<<< HEAD
 
                     // Render Belum Lunas
                     const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
@@ -466,6 +479,24 @@
                     });
 
                     tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
+=======
+                    if (!data.belum_lunas.length) {
+                        listTagihan.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan
+                    </td>
+                </tr>`;
+                        footBelumLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                    </td>
+                </tr>`;
+                    } else {
+                        // Render Belum Lunas
+                        const tabelBelum = document.querySelector('#tabelBelumLunas tbody');
+                        tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
                 <td class="text-center">${tagihan.no}</td>
@@ -491,26 +522,26 @@
             </tr>
         `).join('');
 
-                    let totalRincian = 0;
-                    let totalPotongan = 0;
-                    let totalTagihan = 0;
-                    let totalDibayar = 0;
-                    let totalTunggakan = 0;
-                    let totalPeriode = new Set();
-                    let tagihanKelas = '';
+                        let totalRincian = 0;
+                        let totalPotongan = 0;
+                        let totalTagihan = 0;
+                        let totalDibayar = 0;
+                        let totalTunggakan = 0;
+                        let totalPeriode = new Set();
+                        let tagihanKelas = '';
 
-                    data.belum_lunas.forEach(item => {
-                        totalPeriode.add(item.periode);
-                        totalRincian += parseInt(item.rincian_tagihan || 0);
-                        totalPotongan += parseInt(item.jumlah_potongan || 0);
-                        totalTagihan += parseInt(item.jumlah_tagihan || 0);
-                        totalDibayar += parseInt(item.nominal_pembayaran || 0);
-                        totalTunggakan += parseInt(item.jumlah_dibayar || 0);
-                        tagihanKelas = item.tagihan_kelas;
-                    });
+                        data.belum_lunas.forEach(item => {
+                            totalPeriode.add(item.periode);
+                            totalRincian += parseInt(item.rincian_tagihan || 0);
+                            totalPotongan += parseInt(item.jumlah_potongan || 0);
+                            totalTagihan += parseInt(item.jumlah_tagihan || 0);
+                            totalDibayar += parseInt(item.nominal_pembayaran || 0);
+                            totalTunggakan += parseInt(item.jumlah_dibayar || 0);
+                            tagihanKelas = item.tagihan_kelas;
+                        });
 
-                    const tabelBelumFoot = document.querySelector('#tabelBelumLunas tfoot');
-                    tabelBelumFoot.innerHTML = `
+                        const tabelBelumFoot = document.querySelector('#tabelBelumLunas tfoot');
+                        tabelBelumFoot.innerHTML = `
     <tr>
         <td class="text-center"><input type="checkbox" disabled></td>
         <td class="text-center fw-bold" style="font-size: 14px">Total</td>
@@ -523,7 +554,8 @@
         <td class="text-center text-success" style="font-size: 14px">Rp ${totalTunggakan.toLocaleString('id-ID')}</td>
         <td class="text-center" colspan="2">—</td>
     </tr>
-`;}
+`;
+                    }
                     if (!data.sudah_lunas.length) {
                         listTagihan.innerHTML = `
                 <tr>
@@ -537,10 +569,10 @@
                     </td>
                 </tr>`;
                     } else {
-                    // Render Sudah Lunas
-                    const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
-                    tabelLunas
-                        .innerHTML = data.sudah_lunas.map(tagihan => `
+                        // Render Sudah Lunas
+                        const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
+                        tabelLunas
+                            .innerHTML = data.sudah_lunas.map(tagihan => `
             <tr>
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
@@ -552,6 +584,40 @@
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
             </tr>
         `).join('');
+<<<<<<< HEAD
+=======
+                        let tagihKelas = '';
+                        let rincianTagihan = 0;
+                        let jumlahPotongan = 0;
+                        let jumlahTagihan = 0;
+                        let jumlahBayar = 0;
+                        let ttlPeriode = new Set();
+
+
+                        data.sudah_lunas.forEach(item => {
+                            ttlPeriode.add(item.periode);
+                            rincianTagihan += parseInt(item.rincian_tagihan || 0);
+                            jumlahPotongan += parseInt(item.jumlah_potongan || 0);
+                            jumlahTagihan += parseInt(item.jumlah_tagihan || 0);
+                            jumlahBayar += parseInt(item.jumlah_tagihan || 0);
+                            tagihKelas = item.tagihan_kelas;
+                        });
+
+                        const tabelSudahLunasFoot = document.querySelector('#tabelSudahLunas tfoot');
+                        tabelSudahLunasFoot.innerHTML = `
+    <tr>
+        <td class="text-center fw-bold" style="font-size: 14px">Total</td>
+        <td class="text-center" style="font-size: 14px">${[ttlPeriode.size].join(', ')}</td>
+        <td class="text-center" style="font-size: 14px">${tagihKelas}</td>
+        <td class="text-center" style="font-size: 14px">Rp ${rincianTagihan.toLocaleString('id-ID')}</td>
+        <td class="text-center text-danger" style="font-size: 14px">Rp ${jumlahPotongan.toLocaleString('id-ID')}</td>
+        <td class="text-center fw-bold" style="font-size: 14px">Rp ${jumlahTagihan.toLocaleString('id-ID')}</td>
+        <td class="text-center text-success" style="font-size: 14px">Rp ${jumlahBayar.toLocaleString('id-ID')}</td>
+        <td class="text-center fw-bold" colspan="2" style="font-size: 14px">-</td>
+    </tr>
+`;
+                    }
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                 });
 
         });
@@ -624,21 +690,21 @@
 
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    tagihan_siswa_id: tagihanId,
-                    bulan: bulan,
-                    tahun: tahun,
-                    nominal: nominal, // total tagihan
-                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
-                    kategori_id: kategoriId,
-                    metode: 'manual',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        tagihan_siswa_id: tagihanId,
+                        bulan: bulan,
+                        tahun: tahun,
+                        nominal: nominal, // total tagihan
+                        jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
+                        kategori_id: kategoriId,
+                        metode: 'manual',
+                    })
                 })
-            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {

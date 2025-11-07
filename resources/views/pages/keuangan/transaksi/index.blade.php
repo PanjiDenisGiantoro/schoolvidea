@@ -48,7 +48,7 @@
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
                             <option value="">Semua Unit</option>
-                            @foreach($units as $unit)
+                            @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}
                                 </option>
@@ -77,7 +77,6 @@
                             </option>
                         </select>
                     </div>
-
 
                     {{-- Filter Kode Pembayaran --}}
                     <div class="col-md-3">
@@ -205,15 +204,17 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
-                                        <span class="text-success fw-bold">+ Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                                    @if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
+                                        <span class="text-success fw-bold">+ Rp
+                                            {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                                     @else
-                                        <span class="text-danger fw-bold">- Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                                        <span class="text-danger fw-bold">- Rp
+                                            {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                                     @endif
                                 </td>
                                 <td>
                                     @php
-                                        $metodeBadge = match($transaksi->metode) {
+                                        $metodeBadge = match ($transaksi->metode) {
                                             'CASH' => 'primary',
                                             'TRANSFER' => 'info',
                                             'SALDO_TABUNGAN' => 'warning',
@@ -225,8 +226,7 @@
                                 <td>{{ $transaksi->creator->name ?? '-' }}</td>
                                 <td>
                                     <a href="{{ route('keuangan_transaksi.show', $transaksi->id) }}"
-                                        class="btn btn-sm btn-primary rounded-pill"
-                                        title="Lihat Detail">
+                                        class="btn btn-sm btn-primary rounded-pill" title="Lihat Detail">
                                         <i class="bx bx-show"></i> Detail
                                     </a>
                                 </td>

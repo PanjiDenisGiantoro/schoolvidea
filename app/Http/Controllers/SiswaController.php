@@ -10,6 +10,7 @@ use App\Models\Siswa;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Yayasan;
+use App\Models\Tahun_ajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class SiswaController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
                   ->orWhere('nis', 'like', "%{$search}%")
                   ->orWhere('name', 'like', "%{$search}%")
@@ -161,8 +162,7 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13',
-            'tahun_ajaran_id' => 'required'
+            'tahun_ajaran_id' => 'required',
             'no_hp' => 'nullable|string|digits_between:10,14|unique:siswas,no_hp',
         ]);
 
@@ -190,7 +190,7 @@ class SiswaController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-
+            $tahun_ajaran = Tahun_ajaran::where('status', 1)->first();
             // Buat siswa
             $siswa = Siswa::create([
                 'nisn'            => $request->nisn,
@@ -263,6 +263,8 @@ class SiswaController extends Controller
                 'saldo_akhir' => 0,
                 'status' => 0,
             ]);
+
+
 
             DB::commit();
             return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');

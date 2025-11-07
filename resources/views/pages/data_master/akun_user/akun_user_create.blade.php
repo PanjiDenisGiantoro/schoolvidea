@@ -34,32 +34,53 @@
                     {{-- Nama --}}
                     <div class="col-md-4">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
+<<<<<<< HEAD
                                        placeholder="Nama Lengkap" icon="bx bx-user" :value="old('name', $user->name ?? '')" :disabled="isset($show) && $show" />
+=======
+                            placeholder="Nama Lengkap" icon="bx bx-user" :value="old('name', $user->name ?? '')" :disabled="isset($show) && $show" />
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                     </div>
 
                     {{-- Email --}}
                     <div class="col-md-4">
                         <x-input-field type="email" id="email" name="email" label="Email"
+<<<<<<< HEAD
                                        placeholder="Alamat Email" icon="bx bx-envelope" :value="old('email', $user->email ?? '')" :disabled="isset($show) && $show" />
+=======
+                            placeholder="Alamat Email" icon="bx bx-envelope" :value="old('email', $user->email ?? '')" :disabled="isset($show) && $show" />
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                     </div>
 
                     {{-- Username --}}
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username" placeholder="Username"
+<<<<<<< HEAD
                                        icon="bx bx-user" :value="old('username', $user->username ?? '')" :disabled="isset($show) && $show" />
+=======
+                            icon="bx bx-user" :value="old('username', $user->username ?? '')" :disabled="isset($show) && $show" />
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                     </div>
 
                     {{-- Password --}}
                     <div class="col-md-4">
                         <x-input-field type="password" id="password" name="password" label="Password"
+<<<<<<< HEAD
                                        placeholder="Kosongkan jika tidak ingin mengubah password" icon="bx bx-lock" :value="old('password')"
                                        :disabled="isset($show) && $show" />
+=======
+                            placeholder="Kosongkan jika tidak ingin mengubah password" icon="bx bx-lock" :value="old('password')"
+                            :disabled="isset($show) && $show" />
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                     </div>
 
                     {{-- RFID --}}
                     <div class="col-md-4">
                         <x-input-field type="text" id="rfid_no" name="rfid_no" label="Nomor RFID" placeholder="RFID"
+<<<<<<< HEAD
                                        icon="bx bx-card" :value="old('rfid_no', $user->rfid_no ?? '')" :disabled="isset($show) && $show" />
+=======
+                            icon="bx bx-card" :value="old('rfid_no', $user->rfid_no ?? '')" :disabled="isset($show) && $show" />
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                     </div>
                 </div>
 
@@ -137,8 +158,13 @@
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
+<<<<<<< HEAD
                 </ul>
 `,
+=======
+        </ul>
+    `,
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
                 confirmButtonColor: '#d33',
             });
         </script>

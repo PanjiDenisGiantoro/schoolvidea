@@ -27,7 +27,8 @@
             </li>
             @endcanViewMenu
 
-            @canViewMenu(['view_tahun_ajaran', 'view_role', 'view_lembagaunit', 'view_tipe_unit', 'view_unit', 'view_positions', 'view_jurusan', 'view_officer', 'view_kelas', 'view_siswa', 'view_user'])
+            @canViewMenu(['view_tahun_ajaran', 'view_role', 'view_lembagaunit', 'view_tipe_unit', 'view_unit',
+            'view_positions', 'view_jurusan', 'view_officer', 'view_kelas', 'view_siswa', 'view_user'])
             <li class="menu-item">
                 <a class="menu-link menu-arrow" href="#sidebarMasterData" data-bs-toggle="collapse" role="button"
                     aria-expanded="false" aria-controls="sidebarMasterData">
@@ -39,54 +40,54 @@
                 <div class="collapse" id="sidebarMasterData">
                     <ul class="sub-menu-nav">
                         @hasPermission('view_tahun_ajaran')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun
-                                Ajaran</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tahun_ajaran') }}">Tahun
+                                    Ajaran</a>
+                            </li>
                         @endhasPermission
 
                         @hasPermission('view_role')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('roles') }}">Role</a></li>
                         @endhasPermission
 
                         @hasPermission('view_lembagaunit')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('lembagaunit') }}"> Lembaga</a>
+                            </li>
                         @endhasPermission
 
                         @hasPermission('view_tipe_unit')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tipe_unit') }}">Tipe Unit</a>
+                            </li>
                         @endhasPermission
 
                         @hasPermission('view_unit')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('unit') }}">Unit</a></li>
                         @endhasPermission
 
                         @hasPermission('view_positions')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('positions') }}">Jabatan</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('positions') }}">Jabatan</a>
+                            </li>
                         @endhasPermission
 
                         @hasPermission('view_jurusan')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('jurusan') }}">Jurusan</a></li>
                         @endhasPermission
 
                         @hasPermission('view_officer')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan
-                                Staff</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('officer') }}">Guru Dan
+                                    Staff</a></li>
                         @endhasPermission
 
                         @hasPermission('view_kelas')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kelas') }}">Kelas</a></li>
                         @endhasPermission
 
                         @hasPermission('view_siswa')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('siswa') }}">Siswa</a></li>
                         @endhasPermission
 
                         @hasPermission('view_user')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('#') }}">Akun User</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun-user') }}">Akun User</a>
+                            </li>
                         @endhasPermission
                     </ul>
                 </div>
@@ -105,17 +106,17 @@
                 <div class="collapse" id="sidebarKeuangan">
                     <ul class="sub-menu-nav">
                         @hasPermission('view_akun')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Set Akun</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun') }}">Set Akun</a></li>
                         @endhasPermission
 
                         @hasPermission('view_setting_akun')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Jenis
-                                Transaksi</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('setting_akun') }}">Jenis
+                                    Transaksi</a></li>
                         @endhasPermission
 
                         @hasPermission('view_kategoritagihan')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategoritagihan') }}">Kategori
-                                Tagihan</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('kategoritagihan') }}">Kategori
+                                    Tagihan</a></li>
                         @endhasPermission
                     </ul>
                 </div>
@@ -134,13 +135,14 @@
                 <div class="collapse" id="sidebarTransaksi">
                     <ul class="sub-menu-nav">
                         @hasPermission('view_report')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
-                                Transaksi</a></li>
+                            <li class="sub-menu-item"><a class="sub-menu-link"
+                                    href="{{ url('keuangan-transaksi') }}">Daftar
+                                    Transaksi</a></li>
                         @endhasPermission
 
                         @hasPermission('view_tabungan')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a>
-                        </li>
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a>
+                            </li>
                         @endhasPermission
 
                         @canViewMenu(['view_tagihan', 'view_potongan'])
@@ -153,13 +155,13 @@
                             <div class="collapse" id="sidebarTagihan">
                                 <ul class="sub-menu-nav">
                                     @hasPermission('view_potongan')
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('potongan') }}">Potongan</a></li>
+                                        <li class="sub-menu-item"><a class="sub-menu-link"
+                                                href="{{ url('potongan') }}">Potongan</a></li>
                                     @endhasPermission
 
                                     @hasPermission('view_tagihan')
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('tagihan') }}">Kelola Data</a></li>
+                                        <li class="sub-menu-item"><a class="sub-menu-link"
+                                                href="{{ url('tagihan') }}">Kelola Data</a></li>
                                     @endhasPermission
                                 </ul>
                             </div>

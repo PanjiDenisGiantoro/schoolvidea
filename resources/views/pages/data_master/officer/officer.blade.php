@@ -5,7 +5,7 @@
 
     @include('partials.page-title', [
         'title' => 'Dashboard',
-        'subTitle' => 'Data Guru & Staff'
+        'subTitle' => 'Data Guru & Staff',
     ])
 
     <div class="card">
@@ -109,7 +109,8 @@
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
 
-                            Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari {{ $officer->total() }} data
+                            Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari
+                            {{ $officer->total() }} data
                         </div>
                         <div>
                             {{ $officer->links('vendor.pagination.custom') }}
@@ -125,7 +126,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault();
@@ -149,7 +150,7 @@
         });
     </script>
 
-    @if(session('success'))
+    @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

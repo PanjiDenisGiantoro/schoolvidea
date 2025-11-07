@@ -4,13 +4,13 @@
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi',
-        'subTitle' => 'Tabungan / Keuangan'
+        'subTitle' => 'Tabungan / Keuangan',
     ])
 
     <div class="row g-4">
         {{-- Pilih Siswa --}}
         <div class="col-12">
-            <div class="card p-4 shadow-sm rounded-4 border-0">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
@@ -23,16 +23,18 @@
                     </div>
                     <div class="col-md-4">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm" data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
+                            @foreach ($kelas as $k)
                                 <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm"data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -73,7 +75,7 @@
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
-                        <div class="card p-4 shadow-sm rounded-4 border-0">
+                        <div class="card rounded-4 border-0 p-4 shadow-sm">
                             <h5 class="fw-bold text-primary">Detail Transaksi</h5>
                             <hr>
 
@@ -128,11 +130,17 @@
             border-color: #4e73df;
             box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
         }
+<<<<<<< HEAD
 
 
 </style>
 @endpush
+=======
+>>>>>>> a9d4658a25edc430af10a587e97b039a8d763490
 
+
+</style>
+@endpush
 
 @push('scripts')
     <script>
