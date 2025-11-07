@@ -113,6 +113,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [UnitController::class, 'show'])->name('unit.show');
         Route::post('/upload', [UnitController::class, 'upload'])->middleware('permission:upload_unit')->name('unit.upload');
         Route::get('/{unitId}/kelas', [UnitController::class, 'listkelas'])->name('unit.kelas');
+        Route::get('/by-unit/{unitId}', [\App\Http\Controllers\UnitController::class, 'getKelasByUnit']);
+
     });
 
     Route::prefix('tahun_ajaran')->middleware('permission:view_tahun_ajaran')->group(function () {
@@ -145,6 +147,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/delete/{id}', [KelasController::class, 'destroy'])->middleware('permission:delete_kelas')->name('kelas.destroy');
         Route::get('/show/{id}', [KelasController::class, 'show'])->name('kelas.show');
         Route::get('/{id}/siswa', [KelasController::class, 'getSiswa']);
+        Route::get('/kelas-by-unit', [App\Http\Controllers\KelasController::class, 'getKelasByUnit'])->name('kelas.by.unit');
+
     });
 
     Route::prefix('jurusan')->middleware('permission:view_jurusan')->group(function () {
@@ -199,6 +203,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
+
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {
@@ -305,6 +310,13 @@ Route::middleware(['auth'])->group(function () {
             ->name('components.byOfficer');
     });
 
+    Route::prefix('akun-user')->middleware('permission:view_user')->group(function () {
+        Route::get('/', [AkunUserController::class, 'index'])->name('akun-user.index');
+        Route::get('/edit/{id}', [AkunUserController::class, 'edit'])->name('akun-user.edit');
+        Route::put('/update/{id}', [AkunUserController::class, 'update'])->name('akun-user.update');
+        Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
+
+    });
     Route::prefix('payroll-deductions')->middleware('permission:view_payroll_deductions')->group(function () {
         Route::get('/', [PayrollDeductionsController::class, 'index'])->name('payroll_deductions.index');
         Route::get('/create', [PayrollDeductionsController::class, 'create'])->middleware('permission:create_payroll_deductions')->name('payroll_deductions.create');
@@ -356,6 +368,8 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
+    Route::post('/tabungan/mass-status', [App\Http\Controllers\TabunganController::class, 'massStatus'])
+        ->name('tabungan.massStatus');
 
 
 

@@ -52,12 +52,12 @@
                     <div class="col-md-3">
                         <x-input-field type="number" id="nip" name="nip" label="NIP" class="text-uppercase"
                             placeholder="Masukkan NIP" icon="bx bx-id-card" :value="old('nip', $officer->nip ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="number" id="nuptk" name="nuptk" label="NUPTK"
                             placeholder="Masukkan NUPTK" icon="bx bx-id-card" :value="old('nuptk', $officer->nuptk ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
@@ -67,7 +67,7 @@
 
                         <x-input-field type="text" id="nik" name="nik" label="NIK"
                             placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $officer->nik ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -118,7 +118,7 @@
                     <div class="col-md-3">
                         <x-input-field type="text" id="no_hp" name="no_hp" label="No. Telepon"
                             placeholder="Masukkan Nomor Telepon" icon="bx bx-phone" :value="old('no_hp', $officer->no_hp ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"  maxLength="14" required />
                     </div>
                     <div class="col-md-3">
                         <label for="alamat" class="form-label">Alamat <span
@@ -201,6 +201,18 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if (Auth::user()->yayasan_id)
+                            <div class="mb-4">
+                                <label for="akses_yayasan" class="form-label">Akses Yayasan</label>
+                                <select name="akses_yayasan" id="akses_yayasan" class="form-select" data-choices data-choices-sorting-false
+                                    @if (isset($show) && $show) disabled @endif>
+                                    <option value="">-- Pilih Akses Yayasan --</option>
+                                    <option value="ya" {{ old('akses_yayasan', $officer->user->yayasan_id ?? '') ? 'selected' : '' }}>Ya</option>
+                                    <option value="tidak" {{ old('akses_yayasan', $officer->user->yayasan_id ?? '') == '' ? 'selected' : '' }}>Tidak</option>
+                                </select>
+                                <small class="text-muted">Jika "Ya", user akan memiliki akses ke semua unit dalam yayasan</small>
+                            </div>
+                            @endif
                             <x-input-field type="text" id="bank" name="bank" label="Bank"
                                 placeholder="Masukkan Nama Bank" icon="bx bx-bank" :value="old('bank', $officer->bank ?? '')" />
                         </div>

@@ -21,19 +21,32 @@ class TabunganController extends Controller
      */
     public function index()
     {
-        $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
-            ->when(Auth::user()->unit_id,function ($queyr,$unit_id){
-                $queyr->where('unit_id',$unit_id);
+        $transaksis = Siswa::with('tahun_ajaran', 'user.saldo', 'kelas', 'unit')
+            ->when(Auth::user()->yayasan_id, function ($query) {
+                $query->whereHas('unit', function ($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
             })
-            ->where('status','1')
+            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query, $unit_id) {
+                $query->where('unit_id', $unit_id);
+            })
+            ->where('status', '1')//->whereDate('created_at', today())
             ->get();
+
+        // Ambil semua siswa_id dari siswa yang lolos filter
+        $siswaIds = $transaksis->pluck('id')->unique()->toArray();
+
+        // Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
             ->sum('jumlah');
-
-        return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
+        return view('pages.tabungan.index', compact('transaksis', 'total_setoran', 'total_penarikan'));
     }
 
     /**
@@ -41,16 +54,27 @@ class TabunganController extends Controller
      */
     public function create()
     {
-        $kelas = Kelas::when(Auth::user()->unit_id,function ($query,$unit_id){
-            $query->where('unit_id',$unit_id);
-        })->where('status','1')
-            ->get();
-        return view('pages.tabungan.create', compact('kelas'));
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+        } else {
+            $units = \App\Models\Unit::where('status', '1')->get();
+        }
+        return view('pages.tabungan.create', compact('units'));
     }
     public function tarik()
     {
-        $kelas = Kelas::get();
-        return view('pages.tabungan.tarik', compact('kelas'));
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+        } else {
+            $units = \App\Models\Unit::where('status', '1')->get();
+        }
+        return view('pages.tabungan.tarik', compact('units'));
     }
 
 
@@ -72,35 +96,47 @@ class TabunganController extends Controller
             // Ambil data siswa
             $siswa = Siswa::with('user')->findOrFail($request->penerima_id);
 
-            if(!$siswa){
+            if (!$siswa) {
                 return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
             $rekening = Saldo_keuangan::with('user')->where('user_id', $siswa->user->id)->where('status', 1)->first();
-            if(!$rekening){
+            if (!$rekening) {
                 return back()->with('danger', 'Rekening tabungan belum Aktif.');
             }
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TST' . date('YmdHis').$siswa->nisn.rand(1000,9999),
+                'code_pembayaran' => 'TST' . date('YmdHis').$siswa->nisn.rand(1000, 9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'setoran_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
+                'metode' => 'CASH',
                 'created_by'      => Auth::id(),
             ]);
 
-            $settings = setting_akun::where('kategori', 'tabungan')
-                ->when(Auth::user()->unit_id,function ($query,$unit_id){
-                    $query->where('unit_id',$unit_id);
-                })
-                ->where('status','1')
-                ->get();
+            $settings = setting_akun::where('kategori', 'tabungan');
 
+            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+            if (Auth::user()->yayasan_id) {
+                // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+                $settings->whereHas('unit', function ($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            } elseif (Auth::user()->unit_id) {
+                // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
+                $settings->where('unit_id', Auth::user()->unit_id);
+            } elseif ($request->filled('unit_id')) {
+                // Admin user filtering by unit
+                $settings->where('unit_id', $request->unit_id);
+            }
+
+            $settings = $settings->where('status', '1')->get();
 
             $akun_debit  = $settings->where('debit', 1)->first()?->akun_id;
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id;
+
 
             if (!$akun_debit || !$akun_kredit) {
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
@@ -139,8 +175,8 @@ class TabunganController extends Controller
                 'aksi'          => 'create',
                 'data_lama'     => null,
                 'data_baru'     => json_encode($transaksi),
-                'dilakukan_oleh'=> Auth::id(),
-                'dilakukan_pada'=> now(),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
             ]);
             $saldoSiswa->increment('saldo_akhir', $request->jumlah);
             DB::commit();
@@ -170,7 +206,7 @@ class TabunganController extends Controller
             }
 
             $rekening = Saldo_keuangan::where('user_id', $siswa->user->id)->where('status', 1)->first();
-            if(!$rekening){
+            if (!$rekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
             $settings = setting_akun::where('kategori', 'tabungan-tarik')->get();
@@ -197,12 +233,13 @@ class TabunganController extends Controller
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TRK' . date('YmdHis').$siswa->nisn.rand(1000,9999),
+                'code_pembayaran' => 'TRK' . date('YmdHis').$siswa->nisn.rand(1000, 9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'penarikan_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
+                'metode' => 'CASH',
                 'created_by'      => Auth::id(),
             ]);
 
@@ -241,14 +278,14 @@ class TabunganController extends Controller
 
             return redirect()->route('tabungan.index')->with('success', 'Penarikan tabungan berhasil.');
         } catch (\Exception $e) {
-//            dd($e->getMessage());
+            //            dd($e->getMessage());
             DB::rollBack();
-            return back()->with('danger',$e->getMessage());
+            return back()->with('danger', $e->getMessage());
         }
     }
     public function show($siswa_id)
     {
-        $siswa = Siswa::with('kelas','user')->findOrFail($siswa_id);
+        $siswa = Siswa::with('kelas', 'user')->findOrFail($siswa_id);
 
         // Ambil semua transaksi siswa
         $logs = Keuangan_transaksi::where('penerima_id', $siswa_id)
@@ -327,7 +364,12 @@ class TabunganController extends Controller
 
 
         return view('pages.report.tabungan.tabungan', compact(
-            'userId', 'from', 'to', 'saldoAwal', 'saldoAkhir', 'riwayat'
+            'userId',
+            'from',
+            'to',
+            'saldoAwal',
+            'saldoAkhir',
+            'riwayat'
         ));
     }
     public function reportAll(Request $request)
@@ -358,10 +400,39 @@ class TabunganController extends Controller
 
 
         return view('pages.report.tabungan.tabunganall', compact(
-            'rekap', 'from', 'to'
+            'rekap',
+            'from',
+            'to'
         ));
     }
 
+    public function massStatus(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return response()->json(['status' => 'error', 'message' => 'Tidak ada data yang dipilih.'], 400);
+        }
+
+        // Ambil semua saldo berdasarkan ID
+        $saldos = \App\Models\Saldo_keuangan::whereIn('id', $ids)->get();
+
+        if ($saldos->isEmpty()) {
+            return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
+        }
+
+        // Jika semua aktif, ubah jadi nonaktif; jika tidak, ubah jadi aktif
+        $allActive = $saldos->every(fn ($s) => $s->status == 1);
+        $newStatus = $allActive ? 0 : 1;
+
+        foreach ($saldos as $saldo) {
+            $saldo->update(['status' => $newStatus]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $newStatus ? 'Siswa berhasil diaktifkan.' : 'Siswa berhasil dinonaktifkan.'
+        ]);
+    }
 
 
 }

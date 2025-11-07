@@ -20,10 +20,34 @@ class PembayaranController extends Controller
 
     public function index()
     {
-        $siswaList = Siswa::all();
-        $tagihanList = Tagihan::all();
-        $akunList = setting_akun::all();
-        $kelas = Kelas::get();
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan dari semua unit dalam yayasan
+            $siswaList = Siswa::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->get();
+            $tagihanList = Tagihan::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->get();
+            $akunList = setting_akun::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->get();
+            $kelas = Kelas::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan dari unit tersebut
+            $siswaList = Siswa::where('unit_id', Auth::user()->unit_id)->get();
+            $tagihanList = Tagihan::where('unit_id', Auth::user()->unit_id)->get();
+            $akunList = setting_akun::where('unit_id', Auth::user()->unit_id)->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->get();
+        } else {
+            // Super admin - tampilkan semua
+            $siswaList = Siswa::all();
+            $tagihanList = Tagihan::all();
+            $akunList = setting_akun::all();
+            $kelas = Kelas::get();
+        }
 
         return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas'));
 

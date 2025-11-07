@@ -16,7 +16,7 @@ class Jurusan extends Model
     {
         return $this->belongsTo(Tahun_ajaran::class);
     }
-    public function getStatusAttribute($value){
-        return $value == 1 ? 'Aktif' : 'Tidak Aktif';
-    }
+//    public function getStatusAttribute($value){
+//        return $value == 1 ? 'Aktif' : 'Tidak Aktif';
+//    }
 }

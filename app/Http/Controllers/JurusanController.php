@@ -20,8 +20,14 @@ class JurusanController extends Controller
             $q->isactive();
         }]);
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan jurusan dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan jurusan dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
             // Admin user filtering by unit
@@ -58,16 +64,27 @@ class JurusanController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::with('units')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('units', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
+        // Filter yayasan dan units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan yayasan tersebut dan semua unit di yayasan tersebut
+            $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan yayasan yang terkait dan unit tersebut saja
+            $yayasan = Yayasan::with('units')
+                ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                    $query->whereHas('units', function ($q) use ($unitId) {
+                        $q->where('id', $unitId);
+                    });
+                })->where('status', '1')->get();
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
             })->where('status', '1')->get();
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })
-            ->where('status', '1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $yayasan = Yayasan::where('status', '1')->get();
+            $units = Unit::where('status', '1')->get();
+        }
 
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
@@ -101,9 +118,21 @@ class JurusanController extends Controller
     public function edit($id)
     {
         $jurusan = Jurusan::findOrFail($id);
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unit_id) {
-            $query->where('id', $unit_id);
-        })->where('status', '1')->get();
+
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unit_id) {
+                $query->where('id', $unit_id);
+            })->where('status', '1')->get();
+        } else {
+            // Admin bisa melihat semua
+            $units = Unit::where('status', '1')->get();
+        }
+
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
@@ -152,7 +181,19 @@ class JurusanController extends Controller
     public function show($id)
     {
         $jurusan = Jurusan::findOrFail($id);
-        $units = Unit::isactive()->get();
+
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $units = Unit::where('status', '1')->where('id', Auth::user()->unit_id)->get();
+        } else {
+            // Admin bisa melihat semua
+            $units = Unit::isactive()->get();
+        }
+
         $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $show = true;

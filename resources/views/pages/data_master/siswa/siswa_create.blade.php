@@ -19,7 +19,7 @@
 
                 <div class="row">
                     <h5 class="card-title mb-0 mt-3">Data Akun Siswa</h5>
-                    <p class="text-muted">Masukkan data login untuk siswa</p>
+                    <p class="text-muted">Data login untuk siswa</p>
                     <hr>
                     <div class="col-md-4">
                         <x-input-field type="email" id="email_top" name="" label="Email" placeholder="Email"
@@ -44,21 +44,21 @@
                     <div class="col-md-3">
                         <x-input-field type="text" id="nisn" name="nisn" label="NISN"
                             placeholder="Masukkan NISN" icon="bx bx-id-card" :value="old('nisn', $siswa?->nisn ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="nis" name="nis" label="NIS"
                             placeholder="Masukkan NIS" icon="bx bx-id-card" :value="old('nis', $siswa?->nis ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <x-input-field type="text" id="name" name="name" label="Nama Lengkap"
                             placeholder="Masukkan nama lengkap" icon="bx bx-user" :value="old('name', $siswa->user->name ?? '')" required />
                     </div>
                     <div class="col-md-3">
-                        <x-input-field type="number" id="nik" name="nik" label="NIK"
+                        <x-input-field type="text" id="nik" name="nik" label="NIK"
                             placeholder="Masukkan NIK" icon="bx bx-id-card" :value="old('nik', $siswa?->nik ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" required />
                     </div>
                     <div class="col-md-3">
                         <label for="jenis_kelamin" class="form-label">Jenis Kelamin <span
@@ -106,13 +106,13 @@
                     <div class="col-md-3">
                         <x-input-field type="text" id="no_hp" name="no_hp" label="No. Telepon Siswa"
                             placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp', $siswa?->no_hp ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="14" />
                     </div>
 
                     <div class="col-md-3">
                         <x-input-field type="text" id="no_hp_ortu" name="no_hp_ortu" label="No. Telepon Orang Tua"
                             placeholder="Masukkan nomor telepon" icon="bx bx-phone" :value="old('no_hp_ortu', $siswa?->no_hp_ortu ?? '')"
-                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="14" required />
                     </div>
 
                     <div class="col-md-3">
@@ -188,6 +188,18 @@
                             placeholder="Masukkan VA Siswa" icon="bx bx-credit-card" :value="old('va_siswa', $siswa?->va_siswa ?? '')"
                             onkeypress="return event.charCode >= 48 && event.charCode <= 57" required />
 
+                            <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran <span
+                                    style="color: #dc3545 !important;">*</span></label>
+                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices
+                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                <option value="">-- Pilih Tahun Ajaran --</option>
+                                @foreach ($tahunajaran as $ta)
+                                    <option value="{{ $ta->id }}"
+                                        {{ old('tahun_ajaran_id', $siswa?->tahun_ajaran_id ?? '') == $ta->id ? 'selected' : '' }}>
+                                        {{ $ta->tahun_ajaran }} {{ $ta->semester }}
+                                    </option>
+                                @endforeach
+                            </select>
                     </div>
                     <!-- Colom - 2 -->
                     <div class="col-md-3">
@@ -314,8 +326,9 @@ let myDropzone = new Dropzone("#image-dropzone", {
         'X-CSRF-TOKEN': "{{ csrf_token() }}"
     },
     success: function(file, response) {
+        console.log('upload response', response);
         // Simpan path untuk database (uploads/siswa/xxx.jpg)
-        document.querySelector("#image-hidden").value = response.image;
+        document.querySelector("#image-hidden").value = response.filepath;
     },
     removedfile: function(file) {
         file.previewElement.remove();
@@ -345,38 +358,79 @@ let myDropzone = new Dropzone("#image-dropzone", {
 });
 </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('siswaForm');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('siswaForm');
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Apakah data sudah benar?',
-                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan!',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.close();
-                        Swal.fire({
-                            title: 'Menyimpan...',
-                            text: 'Harap tunggu sebentar.',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                        form.submit();
-                    }
-                });
-            });
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // --- ✅ Validasi manual sebelum tampilkan SweetAlert ---
+        const requiredFields = [
+            'nisn', 'name', 'email', 'kelas_id', 'unit_id'
+        ];
+
+        let errors = [];
+
+        requiredFields.forEach(name => {
+            const field = form.querySelector(`[name="${name}"]`);
+            if (field && !field.value.trim()) {
+                const label = form.querySelector(`label[for="${name}"]`)?.innerText || name;
+                errors.push(`Kolom "${label}" harus diisi.`);
+            }
         });
-    </script>
+
+        // Cek format email (jika ada)
+        const email = form.querySelector('[name="email"]');
+        if (email && email.value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+            errors.push('Format email tidak valid.');
+        }
+
+        // Cek NISN hanya angka
+        const nisn = form.querySelector('[name="nisn"]');
+        if (nisn && nisn.value.trim() !== '' && !/^[0-9]+$/.test(nisn.value)) {
+            errors.push('NISN hanya boleh berisi angka.');
+        }
+
+        // Jika ada error, tampilkan SweetAlert error dan hentikan submit
+        if (errors.length > 0) {
+            Swal.fire({
+                title: 'Validasi Gagal!',
+                html: `<ul class="text-start">${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
+                icon: 'error',
+                confirmButtonText: 'Perbaiki',
+                confirmButtonColor: '#dc3545'
+            });
+            return;
+        }
+
+        // --- ✅ Jika lolos validasi, tampilkan konfirmasi SweetAlert ---
+        Swal.fire({
+            title: 'Apakah data sudah benar?',
+            text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menyimpan...',
+                    text: 'Harap tunggu sebentar.',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                // ✅ Submit form setelah konfirmasi
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+
 
     {{-- Alert Sukses & Error --}}
     @if (session('success'))

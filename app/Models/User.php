@@ -38,6 +38,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'rfid_no',
         'unit_id',
+        'yayasan_id',
     ];
 
     /**
@@ -130,5 +131,4 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(\App\Models\Unit::class, 'unit_id', 'id');
     }
-
 }

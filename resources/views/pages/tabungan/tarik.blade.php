@@ -1,29 +1,40 @@
 @extends('layouts.app')
 @section('title', 'Tarik Tabungan')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tarik Tabungan',
-        'subTitle' => 'Tabungan / Keuangan'
+        'subTitle' => 'Tabungan / Keuangan',
     ])
 
     <div class="row g-4">
         {{-- Pilih Siswa --}}
         <div class="col-12">
-            <div class="card p-4 shadow-sm rounded-4 border-0">
+            <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
-                    <div class="col-md-6">
-                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                    <div class="col-md-4">
+                        <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
+                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices
+                            data-choices-sorting-false>
+                            <option value="">-- Pilih Unit --</option>
+                            @foreach ($units as $u)
+                                <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm"data-choices
+                            data-choices-sorting-false>
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-control rounded-pill shadow-sm " data-choices data-choices-sorting-false>
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm" data-choices
+                            data-choices-sorting-false>
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -35,20 +46,54 @@
         <div class="col-12">
             <div class="row g-4">
                 {{-- Detail Siswa --}}
-                <div class="col-md-4">
-                    <div class="card p-4 shadow-sm rounded-4 border-0">
-                        <div class="text-center mb-3">
-                            <img src="{{ asset('images/default-user.png') }}"
-                                 alt="Foto Siswa"
-                                 class="img-fluid rounded-circle shadow-sm border"
-                                 width="120">
+<div class="col-md-4">
+                    <div class="card rounded-4 border-0 p-4 shadow-sm">
+                        <div class="foto-siswa-wrapper mx-auto">
+                            <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
+                                class="foto-siswa">
                         </div>
-                        <ul class="list-unstyled small">
-                            <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
-                            <li><strong>Nomor Induk:</strong> <span id="detail_nisn">-</span></li>
-                            <li><strong>Kelas Sekarang:</strong> <span id="detail_kelas">-</span></li>
-                            <li><strong>Saldo Tabungan:</strong> <span id="saldo_awal">Rp 0</span></li>
-                        </ul>
+
+                        <table class="table-sm table-borderless w-100 small table">
+                            <tr>
+                                <th>Nama Lengkap</th>
+                                <td id="detail_nama">-</td>
+                            </tr>
+                            <tr>
+                                <th>NISN</th>
+                                <td id="detail_nisn">-</td>
+                            </tr>
+                            <tr>
+                                <th>Unit Pendidikan</th>
+                                <td id="detail_unit">-</td>
+                            </tr>
+                            <tr>
+                                <th>Kelas Sekarang</th>
+                                <td id="detail_kelas">-</td>
+                            </tr>
+                            <tr>
+                                <th>No VA</th>
+                                <td id="detail_VA">-</td>
+                            </tr>
+
+                            <tr>
+                                <th>Bank</th>
+                                <td id="detail_bank">-</td>
+                            </tr>
+                            <tr>
+                                <th>No Rekening</th>
+                                <td id="detail_norek">-</td>
+                            </tr>
+                            <tr>
+                                <th>RFID</th>
+                                <td id="detail_rfid_no">-</td>
+                            </tr>
+
+                            <tr>
+                                <th>Telepon</th>
+                                <td id="detail_telp">-</td>
+                            </tr>
+                        </table>
+
                     </div>
                 </div>
 
@@ -59,18 +104,19 @@
                         <input type="hidden" name="kelas_id" id="kelas_hidden">
                         <input type="hidden" name="penerima_id" id="penerima_hidden">
 
-                        <div class="card p-4 shadow-sm rounded-4 border-0">
+                        <div class="card rounded-4 border-0 p-4 shadow-sm">
                             <h5 class="fw-bold text-danger">Detail Penarikan</h5>
                             <hr>
-
                             <div class="mb-3">
-                                <label for="jumlah" class="form-label fw-semibold">Jumlah Penarikan <span class="text-danger">*</span></label>
-                                <input type="number" name="jumlah" id="jumlah" class="form-control rounded-pill shadow-sm" required>
+                                <label class="form-label fw-semibold">Jumlah Saldo Awal</label>
+                                <div id="saldo_awal" class="fw-bold text-success">Rp 0</div>
                             </div>
-
                             <div class="mb-3">
-                                <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
-                                <textarea name="keterangan" id="keterangan" class="form-control rounded-4 shadow-sm" rows="2"></textarea>
+                                <label for="jumlah" class="form-label fw-semibold">Jumlah Penarikan <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="jumlah" id="jumlah"
+                                    class="form-control rounded-pill shadow-sm"
+                                        oninput="formatCurrencyInput(this)" required>
                             </div>
 
                             <div class="mb-3">
@@ -78,7 +124,12 @@
                                 <div id="jumlah_transaksi" class="fw-bold text-danger">Rp 0</div>
                             </div>
 
-                            <button type="submit" class="btn btn-danger w-100 rounded-pill shadow-lg animate-btn">
+                            <div class="mb-3">
+                                <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
+                                <textarea name="keterangan" id="keterangan" class="form-control rounded-4 shadow-sm" rows="2"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger w-100 rounded-pill animate-btn shadow-lg">
                                 <i class="bx bx-wallet-alt"></i> Proses Tarik Saldo
                             </button>
                         </div>
@@ -92,16 +143,74 @@
     <script>
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
-        const saldoAwalEl = document.getElementById('saldo_awal');
-        let saldoAwal = 0;
-
+        const saldoAwalElement = document.getElementById('saldo_awal');
+        let saldoAwalValue = 0;
+        const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
         const siswaSelect = document.getElementById('siswa_id');
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
+
+
+        const kelasChoices = new Choices(filterKelas, {
+            removeItemButton: false,
+            shouldSort: false
+        });
         const siswaChoices = new Choices(siswaSelect, {
             removeItemButton: false,
             shouldSort: false
+        });
+
+        filterUnit.addEventListener('change', function() {
+            const unitId = this.value;
+
+            // reset select kelas dan siswa
+            kelasChoices.clearStore();
+            kelasChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Kelas --',
+                selected: true
+            }], 'value', 'label', true);
+            siswaChoices.clearStore();
+            siswaChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Siswa --',
+                selected: true
+            }], 'value', 'label', true);
+            kelasHidden.value = '';
+
+            if (!unitId) return;
+
+            fetch(`/unit/by-unit/${unitId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.length) {
+                        kelasChoices.setChoices([{
+                            value: '',
+                            label: 'Tidak ada kelas',
+                            selected: true
+                        }], 'value', 'label', true);
+                        return;
+                    }
+
+                    const options = data.map(kelas => ({
+                        value: kelas.id,
+                        label: kelas.nama_kelas
+                    }));
+
+                    kelasChoices.setChoices(options, 'value', 'label', true);
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    kelasChoices.setChoices([{
+                        value: '',
+                        label: 'Gagal memuat kelas',
+                        selected: true
+                    }], 'value', 'label', true);
+                });
         });
 
         // Load siswa berdasarkan kelas
@@ -110,7 +219,11 @@
             kelasHidden.value = kelasId;
             // reset select
             siswaChoices.clearStore(); // bersihkan semua opsi
-            siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
+            siswaChoices.setChoices([{
+                value: '',
+                label: '-- Pilih Siswa --',
+                selected: true
+            }], 'value', 'label', true);
 
             if (!kelasId) return;
 
@@ -135,32 +248,127 @@
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('detail_nama').innerText = data.nama_lengkap;
-                    document.getElementById('detail_nisn').innerText = data.nisn;
-                    document.getElementById('detail_kelas').innerText = data.kelas;
+                    document.getElementById('detail_nama').innerText = ': ' + (data.nama_lengkap || '-');
+                    document.getElementById('detail_nisn').innerText = ': ' + (data.nisn || '-');
+                    document.getElementById('detail_unit').innerText = ': ' + (data.unit || '-');
+                    document.getElementById('detail_kelas').innerText = ': ' + (data.kelas || '-');
+                    document.getElementById('detail_VA').innerText = ': ' + (data.VA || '-');
+                    document.getElementById('detail_bank').innerText = ': ' + (data.bank || '-');
+                    document.getElementById('detail_rfid_no').innerText = ': ' + (data.rfid_no || '-');
+                    document.getElementById('detail_norek').innerText = ': ' + (data.norek || '-');
+                    document.getElementById('detail_telp').innerText = ': ' + data.no_hp || '-';
 
                     if (data.saldo_akhir) {
-                        saldoAwal = parseInt(data.saldo_akhir); // simpan saldo untuk validasi
-                        saldoAwalEl.innerText = 'Rp ' + saldoAwal.toLocaleString('id-ID');
+                        saldoAwalValue = parseInt(data.saldo_akhir); // simpan saldo untuk validasi
+                        saldoAwalElement.innerText = 'Rp ' + saldoAwalValue.toLocaleString('id-ID');
                     }
 
                     if (data.foto) {
-                        document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
+                        document.querySelector('img[alt="Foto Siswa"]').src = `${data.foto}`;
+                        console.log('path foto: ', data.foto)
+                    } else {
+                        document.querySelector('img[alt="Foto Siswa"]').src =
+                            `{{ asset('images/default-user.png') }}`;
                     }
                 });
         });
 
         // Update jumlah transaksi real-time + validasi saldo
         jumlahInput.addEventListener('input', function() {
-            let value = parseInt(this.value) || 0;
+            let rawValue = this.value.replace(/[^\d]/g, '');
+            let value = parseInt(rawValue) || 0;
 
-            if (value > saldoAwal) {
-                alert("Jumlah penarikan tidak boleh lebih besar dari saldo (" + saldoAwal.toLocaleString('id-ID') + ")");
-                this.value = saldoAwal; // otomatis set ke saldo maksimal
-                value = saldoAwal;
+            if (value > saldoAwalValue) {
+                alert("Jumlah penarikan tidak boleh lebih besar dari saldo (" + saldoAwalValue.toLocaleString('id-ID') +
+                    ")");
+                this.value = saldoAwalValue; // otomatis set ke saldo maksimal
+                value = saldoAwalValue;
+
             }
 
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
         });
     </script>
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+        }
+
+
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="jumlah"]'
+            );
+            inputs.forEach(input => {
+                input.value = input.value.replace(/[^\d]/g, '');
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            form = document.getElementById('formTarik');
+            setor = document.getElementById('jumlah_transaksi');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+  title: `Tarik ${setor.innerText}?`,
+  text: "Jika Sudah Yakin, Tekan Tombol Konfirmasi",
+  icon: "warning",
+  showCancelButton: true,
+  cancelButtonText: "Batal",
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Konfirmasi"
+}).then((result) => {
+  if (result.isConfirmed) {
+    Swal.fire({
+      title: "Mohon Tunggu....",
+      text: "Harap Tunggu Sebentar",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+        }
+    });
+    form.submit();
+  }
+});
+            })
+        });
+    </script>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: `
+        <ul style="text-align:left;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+                </ul>
+`,
+                confirmButtonColor: '#d33',
+            });
+        </script>
+    @endif
+
 @endpush

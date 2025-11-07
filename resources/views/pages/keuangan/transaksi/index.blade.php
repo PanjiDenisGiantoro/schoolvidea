@@ -9,7 +9,7 @@
 
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-success">
                     <h6>Total Pemasukan</h6>
@@ -17,7 +17,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-danger">
                     <h6>Total Pengeluaran</h6>
@@ -25,11 +25,19 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-primary">
                     <h6>Total Transaksi</h6>
                     <h4>{{ number_format($total_transaksi ?? 0, 0, ',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card-body text-primary">
+                    <h6>Total Saldo</h6>
+                    <h4>Rp {{ number_format($total_pemasukan - $total_pengeluaran ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
@@ -47,7 +55,7 @@
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
-                            <option value="">Semua Unit</option>
+                            <option value="">Pilih Unit</option>
                             @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}
@@ -55,7 +63,17 @@
                             @endforeach
                         </select>
                     </div>
-
+                     <div class="col-md-3">
+                        <label for="kelas_id" class="form-label">Kelas</label>
+                        <select name="kelas_id" id="kelas_id" class="form-select">
+                            <option value="">Pilih Unit Terlebih Dahulu</option>
+                            @foreach ($kelas as $k)
+                                <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>
+                                    {{ $k->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     {{-- Filter Jenis Transaksi --}}
                     <div class="col-md-3">
                         <label for="jenis_transaksi" class="form-label">Jenis Transaksi</label>
@@ -128,13 +146,13 @@
             {{-- Tabel --}}
             <div class="table-responsive">
                 <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
-                    <thead class="table-primary">
+                    <thead class="table-light">
                         <tr>
                             <th>#</th>
                             <th>Kode Pembayaran</th>
                             <th>Tanggal</th>
                             <th>Jenis Transaksi</th>
-                            <th>Penerima</th>
+                            <th>Nama Siswa</th>
                             <th>Jumlah</th>
                             <th>Metode</th>
                             <th>Dibuat Oleh</th>
@@ -239,6 +257,18 @@
                     </tbody>
                 </table>
             </div>
+                <div class="col-lg-12">
+                    <div class="pagination-wrapper d-flex justify-content-between">
+                        <div class="pagination-info mb-3">
+                            Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari
+                            {{ $transaksis->total() }} data
+                        </div>
+                        <div>
+                            {{ $transaksis->links('vendor.pagination.custom') }}
+                        </div>
+                    </div>
+                </div>
+
         </div>
     </div>
 @endsection
@@ -254,4 +284,32 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
         }
     </style>
+@endpush
+@push('script')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+const unitSelect = document.getElementById('unit_id');
+        const kelasSelect = document.getElementById('kelas_id');
+
+        unitSelect.addEventListener('change', function(){
+                const unitId = this.value;
+                kelasSelect.innerHTML = '<option value="">Memuat...</option>';
+                if (unitId) {
+                    fetch(`{{ route('kelas.by.unit') }}?unit_id=${unitId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                            kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+                            data.kelas.forEach(k => {
+                                kelasSelect.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`;
+
+                            })
+                        }).catch(()=>{
+                            kelasSelect.innerHTML = '<option value="">Gagal memuat data</option>';
+                        })
+                } else {
+                    kelasSelect.innerHTML = '<option value="">Pilih Unit Terlebih Dahulu</option>';
+                }
+            })
+        })
+    </script>
 @endpush

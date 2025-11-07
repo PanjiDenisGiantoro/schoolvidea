@@ -86,7 +86,24 @@
                 </form>
             </div>
         </div>
+<section class="section">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Tambah Transaksi</h4>
+            </div>
+            <div class="card-body">
+                <form id="transactionForm" action="{{ route('transaksi.store') }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Simpan</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
+        <div class="card">
+            <div class="card-header">
                 <h4 class="card-title">Daftar Transaksi</h4>
             </div>
             <div class="card-body">
@@ -106,7 +123,7 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="transactionTableBody">
                             @forelse($transactions as $index => $transaction)
                             @php
                                 $siswa = $transaction->siswa ?? null;
@@ -117,8 +134,7 @@
                                 $metodePembayaran = $transaction->metode_pembayaran ?? 'Tunai';
                                 $status = $transaction->status ?? 'Lunas';
                             @endphp
-                            <tr>
-                                <td>{{ $transactions->firstItem() + $index }}</td>
+                            <tr id="transaction-{{ $transaction->id }}"> <td>{{ $transactions->firstItem() + $index }}</td>
                                 <td>{{ $unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $nomorInduk }}</td>
                                 <td>{{ $siswa->nama_lengkap ?? 'Non-Siswa' }}</td>
@@ -146,8 +162,7 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <div class="pagination-wrapper mt-3">
+                <div class="pagination-wrapper mt-3 d-flex justify-content-between align-items-center">
                     <div class="pagination-info">
                         Menampilkan {{ $transactions->firstItem() ?? 0 }} sampai {{ $transactions->lastItem() ?? 0 }} dari {{ $transactions->total() }} data
                     </div>
@@ -156,6 +171,7 @@
                     </div>
                 </div>
             </div>
+        </div>
     </section>
 </div>
 
@@ -165,7 +181,7 @@
         // Handle form submission
         $('#transactionForm').on('submit', function(e) {
             e.preventDefault();
-            
+
             // Get form data
             const formData = {
                 _token: '{{ csrf_token() }}',
@@ -198,7 +214,7 @@
         $('.delete-transaction').on('click', function() {
             if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
                 const transactionId = $(this).data('id');
-                
+
                 $.ajax({
                     url: `/transaksi/${transactionId}`,
                     type: 'DELETE',

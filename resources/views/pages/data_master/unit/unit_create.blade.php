@@ -1,5 +1,10 @@
 @extends('layouts.app')
-@section('title', isset($unit) ? (isset($show) && $show ? 'Lihat Lembaga Unit' : 'Edit Lembaga Unit') : 'Tambah Lembaga
+@section('title',
+    isset($unit)
+    ? (isset($show) && $show
+    ? 'Lihat Lembaga Unit'
+    : 'Edit Lembaga Unit')
+    : 'Tambah Lembaga
     Unit')
 
 @section('content')
@@ -58,10 +63,10 @@
                         <div class="mb-3">
                             <label for="status" class="form-label">Status Unit </label>
                             <select name="status" id="status" class="form-select">
-                                <option value="1" {{ old('status', $unit->status ?? '') == 1 ? 'selected' : '' }}>Aktif
-                                </option>
-                                <option value="0" {{ old('status', $unit->status ?? '') == 0 ? 'selected' : '' }}>Tidak
+                                <option value="1" {{ old('status', $unit->status ?? '') == '1' ? 'selected' : '' }}>
                                     Aktif</option>
+                                <option value="0" {{ old('status', $unit->status ?? '') == '0' ? 'selected' : '' }}>
+                                    Tidak Aktif</option>
                             </select>
                         </div>
                         <div class="mb-3">

@@ -17,8 +17,14 @@ class SettingAkunController extends Controller
         // Build query
         $query = setting_akun::with(['unit', 'akun']);
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan setting dari semua unit di yayasan tersebut
+            $query->whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan setting dari unit tersebut saja
             $query->where('unit_id', Auth::user()->unit_id);
         } elseif ($request->filled('unit_id')) {
             $query->where('unit_id', $request->unit_id);
@@ -86,16 +92,24 @@ class SettingAkunController extends Controller
 
     public function create()
     {
-        $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })
-            ->where('status','1')
-            ->get();
-        $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('id', $unitId);
-        })
-            ->where('status','1')
-            ->get();
+        // Filter units berdasarkan user access
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $akuns = Akun::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status','1')->get();
+            $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })->where('status','1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+            $akuns = Akun::where('status', '1')
+                ->get();
+        }
 
 
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
@@ -107,8 +121,24 @@ class SettingAkunController extends Controller
     public function edit($id)
     {
         $setting = setting_akun::findOrFail($id);
-        $units = Unit::isactive()->get();
-        $akuns = Akun::all();
+
+        if (Auth::user()->yayasan_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
+            $akuns = Akun::whereHas('unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('id', $unitId);
+            })->where('status','1')->get();
+            $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->where('unit_id', $unitId);
+            })->where('status','1')->get();
+        } else {
+            $units = Unit::where('status', '1')->get();
+            $akuns = Akun::where('status', '1')
+                ->get();
+        }
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
 
         return view('pages.data_master.setting_akun.setting_akun_create', compact('setting','units','akuns','akunOptions'));

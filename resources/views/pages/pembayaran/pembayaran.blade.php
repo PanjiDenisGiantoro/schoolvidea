@@ -69,25 +69,55 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-4 border-0 p-4 shadow-sm">
-                <div class="mb-3 text-center">
-                    <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                        class="img-fluid rounded-circle border shadow-sm" width="120">
+                        {{-- Detail Siswa --}}
+                <div class="col-md-4">
+                    <div class="card rounded-4 border-0 p-4 shadow-sm">
+                        <div class="foto-siswa-wrapper mx-auto">
+                            <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
+                                class="foto-siswa">
+                        </div>
+
+                        <table class="table-sm table-borderless w-100 small table align-items-center">
+                            <tr >
+                                <th style="font-size: 12px" class="p-0 text-start">Nama Lengkap</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_nama">-</tdid>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">Nomor Induk</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_nisn">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">Unit Pendidikan</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_unit">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">Kelas</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_kelas">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">No VA</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_VA">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">Bank</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_bank">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">No Rekening</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_norek">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">RFID</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_rfid_no">-</td>
+                            </tr>
+                            <tr>
+                                <th style="font-size: 12px" class="p-0 text-start">Telepon</th>
+                                <td style="font-size: 12px" class="p-0 text-start" id="detail_telp">-</td>
+                            </tr>
+                        </table>
+
+                    </div>
                 </div>
-                <ul class="list-unstyled small">
-                    <li><strong>Nama Lengkap:</strong> <span id="detail_nama">-</span></li>
-                    <li><strong>Nomor Induk:</strong> <span id="detail_nisn">-</span></li>
-                    <li><strong>Unit Pendidikan:</strong> <span id="detail_unit">-</span></li>
-                    <li><strong>Kelas Sekarang:</strong> <span id="detail_kelas">-</span></li>
-                    <li><strong>Nama Jurusan:</strong> <span id="detail_jurusan">-</span></li>
-                    <li><strong>Tahun Ajaran:</strong> <span id="detail_tahun">-</span></li>
-                    <li><strong>Jenis Kelamin:</strong> <span id="detail_gender">-</span></li>
-                    <li><strong>TTL:</strong> <span id="detail_lahir">-</span></li>
-                    <li><strong>Telepon:</strong> <span id="detail_telp">-</span></li>
-                </ul>
-            </div>
-        </div>
 
         {{-- Ringkasan Tagihan --}}
 
@@ -189,7 +219,7 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="list_tagihan">
+                        <tbody id="list_tagihan_lunas">
                             <tr>
                                 <td colspan="9" class="text-muted py-4 text-center">
                                     <i class="fa fa-info-circle"></i> Silakan pilih kelas & siswa
@@ -336,18 +366,19 @@
             fetch(`/siswa/siswadetail/${siswaId}`)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('detail_nama').innerText = data.nama_lengkap;
-                    document.getElementById('detail_nisn').innerText = data.nisn;
-                    document.getElementById('detail_unit').innerText = data.unit;
-                    document.getElementById('detail_kelas').innerText = data.kelas;
-                    document.getElementById('detail_jurusan').innerText = data.jurusan;
-                    document.getElementById('detail_tahun').innerText = data.tahun_ajaran;
-                    document.getElementById('detail_gender').innerText = data.gender;
-                    document.getElementById('detail_lahir').innerText =
-                        `${data.tempat_lahir}, ${data.tanggal_lahir}`;
-                    document.getElementById('detail_telp').innerText = data.no_hp;
+                    document.getElementById('detail_nama').innerText = ': ' + (data.nama_lengkap || '-');
+                    document.getElementById('detail_nisn').innerText = ': ' + (data.nisn || '-');
+                    document.getElementById('detail_unit').innerText = ': ' + (data.unit || '-');
+                    document.getElementById('detail_kelas').innerText = ': ' + (data.kelas || '-');
+                    document.getElementById('detail_VA').innerText = ': ' + (data.VA || '-');
+                    document.getElementById('detail_bank').innerText = ': ' + (data.bank || '-');
+                    document.getElementById('detail_rfid_no').innerText = ': ' + (data.rfid_no || '-');
+                    document.getElementById('detail_norek').innerText = ': ' + (data.norek || '-');
+                    document.getElementById('detail_telp').innerText = ': ' + data.no_hp || '-';
+
+
                     if (data.foto) {
-                        document.querySelector('img[alt="Foto Siswa"]').src = `/storage/${data.foto}`;
+                        document.querySelector('img[alt="Foto Siswa"]').src = `${data.foto}`;
                     }
                 })
                 .catch(err => console.error(err));
@@ -478,7 +509,8 @@
 `;
                     }
                     if (!data.sudah_lunas.length) {
-                        listTagihan.innerHTML = `
+                        const listTagihanLunas = document.getElementById('list_tagihan_lunas');
+                        listTagihanLunas.innerHTML = `
                 <tr>
                     <td colspan="9" class="text-center text-muted py-4">
                         <i class="fa fa-exclamation-circle text-warning"></i> Tidak ada data tagihan

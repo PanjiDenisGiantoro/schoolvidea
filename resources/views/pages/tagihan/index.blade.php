@@ -96,15 +96,16 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table-bordered table-striped table text-center align-middle">
-                        <thead class="table-primary">
+                        <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Nomor Induk</th>
-                                <th>Nama Lengkap</th>
+                                <th>NISN</th>
+                                <th>Nama</th>
                                 <th>Tagihan Unit</th>
                                 <th>Tagihan Kelas</th>
                                 <th>Item Tagihan</th>
                                 <th>Type Tagihan</th>
+                                <th>Periode</th>
                                 <th>Jml. Tagihan</th>
                                 <th>Jml. Dibayar</th>
                                 <th>Jml. Tunggakan</th>
@@ -140,8 +141,9 @@
                                         @endforeach
                                     </td>
                                     <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
+                                    <td>{{ $tagihan->periode ?? '-' }} Bulan</td>
 
-                                    <td>Rp {{ number_format($total_tagihan, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($total_tagihan * ($tagihan->periode ?? 1), 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
                                     <td>

@@ -18,8 +18,12 @@ class UnitController extends Controller
         // Build query
         $query = Unit::with('tipe_unit');
 
-        // Filter by unit_id if user has unit_id OR if admin selects a unit
-        if (Auth::user()->unit_id) {
+        // Filter berdasarkan prioritas: yayasan_id > unit_id
+        if (Auth::user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit yang terkait dengan yayasan tersebut
+            $query->where('yayasan_id', Auth::user()->yayasan_id);
+        } elseif (Auth::user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
             $query->where('id', Auth::user()->unit_id);
         }
         // Search functionality across all columns
@@ -27,15 +31,15 @@ class UnitController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_unit', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('no_hp', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('website', 'like', "%{$search}%")
-                  ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
-                  ->orWhereHas('tipe_unit', function($q) use ($search) {
-                      $q->where('nama_tipe_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('website', 'like', "%{$search}%")
+                    ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
+                    ->orWhereHas('tipe_unit', function($q) use ($search) {
+                        $q->where('nama_tipe_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -60,9 +64,21 @@ class UnitController extends Controller
     }
     public function create()
     {
-        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
+        $unit = Unit::where('id', Auth::user()->unit_id)->first();
+
+        // Filter yayasan berdasarkan user access
+        if(Auth::user()->yayasan_id){
+            // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
+            $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
+        } elseif(Auth::user()->unit_id){
+            // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
+            $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
+                $query->where('id', $yayasanId);
+            })->get();
+        } else {
+            // Admin bisa melihat semua yayasan
+            $yayasan = Yayasan::where('status', '1')->get();
+        }
 
         $tipeunit = Tipeunit::where('status','1')->get();
         return view('pages.data_master.unit.unit_create', compact('yayasan','tipeunit'));
@@ -108,9 +124,20 @@ class UnitController extends Controller
     public function edit($id)
     {
         $unit = Unit::findOrFail($id);
-        $yayasan = Yayasan::where('status', '1')->when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->where('unit_id', $unitId);
-        })->get();
+
+        // Filter yayasan berdasarkan user access
+        if(Auth::user()->yayasan_id){
+            // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
+            $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
+        } elseif(Auth::user()->unit_id){
+            // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
+            $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
+                $query->where('id', $yayasanId);
+            })->get();
+        } else {
+            // Admin bisa melihat semua yayasan
+            $yayasan = Yayasan::where('status', '1')->get();
+        }
 
         $tipeunit = Tipeunit::where('status','1')->get();
 
@@ -134,12 +161,24 @@ class UnitController extends Controller
     {
         $unit = Unit::findOrFail($id);
         $show = true;
-        $yayasan = Yayasan::with('units')
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('units', function ($q) use ($unitId) {
-                    $q->where('id', $unitId);
-                });
-            })->where('status', '1')->get();
+
+        // Filter yayasan berdasarkan user access
+        if(Auth::user()->yayasan_id){
+            // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
+            $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
+        } elseif(Auth::user()->unit_id){
+            // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
+            $yayasan = Yayasan::with('units')
+                ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                    $query->whereHas('units', function ($q) use ($unitId) {
+                        $q->where('id', $unitId);
+                    });
+                })->where('status', '1')->get();
+        } else {
+            // Admin bisa melihat semua yayasan
+            $yayasan = Yayasan::where('status', '1')->get();
+        }
+
         $tipeunit = Tipeunit::where('status','1')->get();
 
         return view('pages.data_master.unit.unit_create', compact('unit','show','yayasan','tipeunit'));
@@ -163,6 +202,15 @@ class UnitController extends Controller
     public function listkelas($id)
     {
         $kelas = Kelas::where('unit_id', $id)->where('status', '1')->get();
+        return response()->json($kelas);
+    }
+    public function getKelasByUnit($unitId)
+    {
+        $kelas = \App\Models\Kelas::where('unit_id', $unitId)
+            ->where('status', '1')
+            ->select('id', 'nama_kelas')
+            ->get();
+
         return response()->json($kelas);
     }
 }
