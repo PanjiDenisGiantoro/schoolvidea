@@ -13,46 +13,86 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class TabunganController extends Controller
 {
     /**
      * List transaksi tabungan
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->get('per_page', 15);
+
         $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
-            ->when(Auth::user()->yayasan_id, function ($query) {
+            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
+                $query->where('unit_id', $request->unit_id);
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 $query->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
-            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query, $unit_id) {
-                $query->where('unit_id', $unit_id);
+            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nisn', 'like', "%{$search}%")
+                      ->orWhere('name', 'like', "%{$search}%")
+                      ->orWhereHas('user', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('kelas', function($q) use ($search) {
+                          $q->where('nama_kelas', 'like', "%{$search}%");
+                      });
+                });
             })
             ->where('status','1')
-            ->get();
+            ->paginate($perPage)
+            ->appends($request->except('page'));
 
 // Ambil semua siswa_id dari siswa yang lolos filter
         $siswaIds = $transaksis->pluck('id')->unique()->toArray();
 
-// Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe
+// Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe dengan date range
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->sum('jumlah');
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
-            ->where('status_approval','=', 'approve')
-            ->orWhere('status_approval','=', 'approved')
+            ->where(function($query) {
+                $query->where('status_approval','=', 'approve')
+                      ->orWhere('status_approval','=', 'approved');
+            })
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->sum('jumlah');
 
         // Jumlah transaksi (count)
         $jumlah_transaksi = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->count();
 
         // Total pending transaksi tabungan (penarikan yang masih pending)
@@ -60,6 +100,12 @@ class TabunganController extends Controller
             ->where('penerima_tipe', Siswa::class)
             ->where('status_approval', 'pending')
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->sum('jumlah');
 
         // Total approved penarikan
@@ -67,6 +113,12 @@ class TabunganController extends Controller
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['approve', 'approved'])
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->sum('jumlah');
 
         // Total reject penarikan
@@ -74,7 +126,22 @@ class TabunganController extends Controller
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['reject', 'rejected'])
             ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
             ->sum('jumlah');
+
+        // Get units for filter
+        if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->orderBy('nama_unit')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+        } else {
+            $units = \App\Models\Unit::where('status','1')->orderBy('nama_unit')->get();
+        }
 
         return view('pages.tabungan.index', compact(
             'transaksis',
@@ -83,7 +150,8 @@ class TabunganController extends Controller
             'jumlah_transaksi',
             'total_pending',
             'total_approved',
-            'total_rejected'
+            'total_rejected',
+            'units'
         ));
     }
 
@@ -525,6 +593,158 @@ class TabunganController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Print laporan tabungan menggunakan mPDF
+     */
+    public function printLaporan(Request $request)
+    {
+        $perPage = $request->get('per_page', 15);
+
+        $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
+            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
+                $query->where('unit_id', $request->unit_id);
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+                $query->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nisn', 'like', "%{$search}%")
+                      ->orWhere('name', 'like', "%{$search}%")
+                      ->orWhereHas('user', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('kelas', function($q) use ($search) {
+                          $q->where('nama_kelas', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->where('status','1')
+            ->get();
+
+        $siswaIds = $transaksis->pluck('id')->unique()->toArray();
+
+        // Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe dengan date range
+        $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->sum('jumlah');
+
+        $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->where(function($query) {
+                $query->where('status_approval','=', 'approve')
+                      ->orWhere('status_approval','=', 'approved');
+            })
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->sum('jumlah');
+
+        // Jumlah transaksi (count)
+        $jumlah_transaksi = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->count();
+
+        // Total pending transaksi tabungan
+        $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->where('status_approval', 'pending')
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->sum('jumlah');
+
+        // Total approved penarikan
+        $total_approved = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['approve', 'approved'])
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->sum('jumlah');
+
+        // Total reject penarikan
+        $total_rejected = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['reject', 'rejected'])
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->sum('jumlah');
+
+        $dari_tanggal = $request->dari_tanggal ?? '';
+        $sampai_tanggal = $request->sampai_tanggal ?? '';
+
+        // Generate HTML dari view
+        $html = view('pages.tabungan.pdf_laporan', compact(
+            'transaksis',
+            'total_setoran',
+            'total_penarikan',
+            'jumlah_transaksi',
+            'total_pending',
+            'total_approved',
+            'total_rejected',
+            'dari_tanggal',
+            'sampai_tanggal'
+        ))->render();
+
+        // Konfigurasi mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'L', // Landscape untuk tabel lebar
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Laporan Tabungan Siswa');
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Laporan-Tabungan-' . date('Ymd') . '.pdf', 'I');
     }
 
 }

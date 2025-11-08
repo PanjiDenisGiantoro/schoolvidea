@@ -16,6 +16,8 @@ class KeuanganTransaksiController extends Controller
      */
     public function index(Request $request)
     {
+        $perPage = $request->get('per_page', 15);
+
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
                 'creator',
@@ -56,7 +58,8 @@ class KeuanganTransaksiController extends Controller
                 $query->whereDate('tanggal_transaksi', '<=', $sampai);
             })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($perPage)
+            ->appends($request->except('page'));
 
         $total_pemasukan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
             ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all', function ($query) use ($request) {

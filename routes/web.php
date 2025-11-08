@@ -198,6 +198,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/status/{id}', [TabunganController::class, 'status'])->name('tabungan.status');
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
+        Route::get('/print-laporan', [TabunganController::class, 'printLaporan'])->name('tabungan.print_laporan');
     });
 
     Route::prefix('keuangan-transaksi')->middleware('permission:view_report')->group(function () {
@@ -247,6 +248,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/daftarTagihanBebas/{id}', [TagihanController::class, 'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
+        Route::get('/print-laporan', [TagihanController::class, 'printLaporan'])->name('tagihan.print_laporan');
     });
 
     Route::prefix('potongan')->middleware('permission:view_potongan')->group(function () {

@@ -6,20 +6,32 @@
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
-        {{-- Action Buttons --}}
-        <div class="d-flex mb-3">
-            <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill me-2 shadow-sm">
-                <i class="fa fa-plus"></i> Tambah
-            </a>
-            <a href="#" class="btn btn-primary rounded-pill me-2 shadow-sm">
-                <i class="fa fa-upload"></i> Impor
-            </a>
-            <a href="#" class="btn btn-primary rounded-pill me-2 shadow-sm">
-                <i class="fa fa-download"></i> Ekspor
-            </a>
-            <a href="#" class="btn btn-primary rounded-pill shadow-sm">
-                <i class="fa fa-sync"></i> Sinkron
-            </a>
+        {{-- Action Buttons & Pagination Control --}}
+        <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <label for="per_page" class="mb-0">Tampilkan:</label>
+                <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                    <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                    <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                </select>
+                <span class="text-muted">data per halaman</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill shadow-sm">
+                    <i class="fa fa-plus"></i> Tambah
+                </a>
+                <a href="#" class="btn btn-primary rounded-pill shadow-sm">
+                    <i class="fa fa-upload"></i> Impor
+                </a>
+                <a href="#" class="btn btn-primary rounded-pill shadow-sm">
+                    <i class="fa fa-download"></i> Ekspor
+                </a>
+                <a href="{{ route('tagihan.print_laporan', request()->all()) }}" target="_blank" class="btn btn-primary rounded-pill shadow-sm">
+                    <i class="fa fa-print"></i> Cetak
+                </a>
+            </div>
         </div>
 
         {{-- Summary Cards --}}
@@ -66,6 +78,63 @@
         @endif
 
         {{-- Filter --}}
+        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
+        <div class="card rounded-3 mb-3 border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold text-primary mb-3">
+                    <i class="bx bx-filter"></i> Filter Tagihan
+                </h5>
+                <form method="GET" action="{{ route('tagihan.index') }}">
+                    <div class="row g-3">
+                        {{-- Filter Unit --}}
+                        <div class="col-md-3">
+                            <label for="unit_id" class="form-label">Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-select">
+                                <option value="">Semua Unit</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Filter Search --}}
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Cari Tagihan</label>
+                            <input type="text" name="search" id="search"
+                                   class="form-control" placeholder="Nama tagihan, kelas..."
+                                   value="{{ request('search') }}">
+                        </div>
+
+                        {{-- Filter Tanggal Dari --}}
+                        <div class="col-md-2">
+                            <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
+                            <input type="date" name="dari_tanggal" id="dari_tanggal"
+                                   class="form-control" value="{{ request('dari_tanggal') }}">
+                        </div>
+
+                        {{-- Filter Tanggal Sampai --}}
+                        <div class="col-md-2">
+                            <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
+                            <input type="date" name="sampai_tanggal" id="sampai_tanggal"
+                                   class="form-control" value="{{ request('sampai_tanggal') }}">
+                        </div>
+
+                        {{-- Tombol Filter --}}
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-search"></i> Filter
+                            </button>
+                            <a href="{{ route('tagihan.index') }}" class="btn btn-secondary">
+                                <i class="bx bx-refresh"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @else
         <div class="card rounded-3 mb-3 border-0 shadow-sm">
             <div class="card-body">
                 <form method="GET">
@@ -90,6 +159,7 @@
                 </form>
             </div>
         </div>
+        @endif
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
@@ -166,7 +236,28 @@
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Pagination --}}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted">
+                        Menampilkan {{ $tagihans->firstItem() ?? 0 }} sampai {{ $tagihans->lastItem() ?? 0 }} dari {{ $tagihans->total() }} data
+                    </div>
+                    <div>
+                        {{ $tagihans->links() }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        function changePerPage(perPage) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', perPage);
+            url.searchParams.delete('page'); // Reset to page 1
+            window.location.href = url.toString();
+        }
+    </script>
+@endpush

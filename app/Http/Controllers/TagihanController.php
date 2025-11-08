@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class TagihanController extends Controller
 {
@@ -46,9 +47,11 @@ class TagihanController extends Controller
 
         return view('pages.tagihan.create', compact('units', 'kelas', 'kategoriTagihan'));
     }
-    public function index()
+    public function index(Request $request)
     {
         //        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
+
+        $perPage = $request->get('per_page', 15);
 
         $tagihans = Tagihan::with([
             'unit',
@@ -58,17 +61,37 @@ class TagihanController extends Controller
             'tagihanSiswa.siswa.pembayaranTagihan',
             'tagihanSiswa.potonganSiswa'
         ])
-            ->when(Auth::user()->yayasan_id, function ($query) {
+            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
+                $query->where('unit_id', $request->unit_id);
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
                 $query->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
-            ->when(!Auth::user()->yayasan_id && Auth::user()->unit_id, function ($query) {
+            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
                 // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
                 $query->where('unit_id', Auth::user()->unit_id);
             })
-            ->get();
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('created_at', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('created_at', '<=', $request->sampai_tanggal);
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_tagihan', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%")
+                      ->orWhereHas('kelas', function($q) use ($search) {
+                          $q->where('nama_kelas', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->paginate($perPage)
+            ->appends($request->except('page'));
 
         //        dd($tagihans);
         $summary = [
@@ -90,7 +113,17 @@ class TagihanController extends Controller
                 });
             }),
         ];
-        return view('pages.tagihan.index', compact('tagihans', 'summary'));
+
+        // Get units for filter
+        if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
+            $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
+        } elseif (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+        } else {
+            $units = Unit::where('status', '1')->orderBy('nama_unit')->get();
+        }
+
+        return view('pages.tagihan.index', compact('tagihans', 'summary', 'units'));
     }
 
 
@@ -611,5 +644,103 @@ class TagihanController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => 0, 'message' => 'Gagal menyimpan catatan: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Print laporan tagihan menggunakan mPDF
+     */
+    public function printLaporan(Request $request)
+    {
+        $perPage = $request->get('per_page', 15);
+
+        $tagihans = Tagihan::with([
+            'unit',
+            'kelas',
+            'items.kategori',
+            'tagihanSiswa.siswa.user',
+            'tagihanSiswa.siswa.pembayaranTagihan',
+            'tagihanSiswa.potonganSiswa'
+        ])
+            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
+                $query->where('unit_id', $request->unit_id);
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+                // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
+                $query->whereHas('unit', function($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
+                // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
+                $query->where('unit_id', Auth::user()->unit_id);
+            })
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('created_at', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('created_at', '<=', $request->sampai_tanggal);
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_tagihan', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%")
+                      ->orWhereHas('kelas', function($q) use ($search) {
+                          $q->where('nama_kelas', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->get();
+
+        $summary = [
+            'jumlah_data' => $tagihans->count(),
+            'nominal_tagihan' => $tagihans->sum(function ($t) {
+                $total = $t->items->sum('nominal');
+                return $total * $t->tagihanSiswa->count(); // total tagihan semua siswa
+            }),
+            'sudah_dibayar' => $tagihans->sum(function ($t) {
+                return $t->tagihanSiswa->sum(function ($ts) {
+                    return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                });
+            }),
+            'belum_dibayar' => $tagihans->sum(function ($t) {
+                $total_tagihan = $t->items->sum('nominal') ;
+                return $t->tagihanSiswa->sum(function ($ts) use ($total_tagihan) {
+                    $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                    return $total_tagihan - $sudah_bayar;
+                });
+            }),
+        ];
+
+        $dari_tanggal = $request->dari_tanggal ?? '';
+        $sampai_tanggal = $request->sampai_tanggal ?? '';
+
+        // Generate HTML dari view
+        $html = view('pages.tagihan.pdf_laporan', compact(
+            'tagihans',
+            'summary',
+            'dari_tanggal',
+            'sampai_tanggal'
+        ))->render();
+
+        // Konfigurasi mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'L', // Landscape untuk tabel lebar
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Laporan Kelola Tagihan');
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Laporan-Tagihan-' . date('Ymd') . '.pdf', 'I');
     }
 }

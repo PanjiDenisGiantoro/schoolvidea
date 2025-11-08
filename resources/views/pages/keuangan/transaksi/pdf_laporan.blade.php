@@ -337,8 +337,10 @@
                         <td>
                             @php
                                 $metodeBadge = match($transaksi->metode) {
+                                    'TUNAI' => 'badge-primary',
                                     'CASH' => 'badge-primary',
                                     'TRANSFER' => 'badge-info',
+                                    'NONTUNAI' => 'badge-info',
                                     'SALDO_TABUNGAN' => 'badge-warning',
                                     default => 'badge-secondary',
                                 };

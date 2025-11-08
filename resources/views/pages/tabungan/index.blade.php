@@ -71,30 +71,101 @@
         </div>
     </div>
 
+    {{-- Filter Card --}}
+    @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
+    <div class="card rounded-3 border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-primary mb-3">
+                <i class="bx bx-filter"></i> Filter Tabungan
+            </h5>
+            <form action="{{ route('tabungan.index') }}" method="GET">
+                <div class="row g-3">
+                    {{-- Filter Unit --}}
+                    <div class="col-md-3">
+                        <label for="unit_id" class="form-label">Unit</label>
+                        <select name="unit_id" id="unit_id" class="form-select">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    {{ $unit->nama_unit }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Search --}}
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Cari Siswa</label>
+                        <input type="text" name="search" id="search"
+                               class="form-control" placeholder="NISN, Nama, Kelas..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    {{-- Filter Tanggal Dari --}}
+                    <div class="col-md-2">
+                        <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
+                        <input type="date" name="dari_tanggal" id="dari_tanggal"
+                               class="form-control" value="{{ request('dari_tanggal') }}">
+                    </div>
+
+                    {{-- Filter Tanggal Sampai --}}
+                    <div class="col-md-2">
+                        <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
+                        <input type="date" name="sampai_tanggal" id="sampai_tanggal"
+                               class="form-control" value="{{ request('sampai_tanggal') }}">
+                    </div>
+
+                    {{-- Tombol Filter --}}
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-search"></i> Filter
+                        </button>
+                        <a href="{{ route('tabungan.index') }}" class="btn btn-secondary">
+                            <i class="bx bx-refresh"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     {{-- Card Utama --}}
     <div class="card rounded-3 border-0 shadow-sm">
         <div class="card-body">
-            {{-- Action Buttons --}}
-            <div class="d-flex justify-content-end mb-3 flex-wrap gap-2 text-end">
-                <a href="{{ route('tabungan.create') }}"
-                    class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                    <i class="bx bx-wallet"></i> Setor
-                </a>
+            {{-- Action Buttons & Pagination Control --}}
+            <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="mb-0">Tampilkan:</label>
+                    <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                    </select>
+                    <span class="text-muted">data per halaman</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('tabungan.create') }}"
+                        class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
+                        <i class="bx bx-wallet"></i> Setor
+                    </a>
 
-                <a href="{{ url('tabungan/tarik') }}"
-                    class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                    <i class="bx bx-money-withdraw"></i> Tarik
-                </a>
+                    <a href="{{ url('tabungan/tarik') }}"
+                        class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
+                        <i class="bx bx-money-withdraw"></i> Tarik
+                    </a>
 
-                <a href="#"
-                    class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                    <i class="bx bx-transfer"></i> Transaksi
-                </a>
+                    <a href="#"
+                        class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
+                        <i class="bx bx-transfer"></i> Transaksi
+                    </a>
 
-                <a href="#" target="_blank"
-                    class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                    <i class="bx bx-printer"></i> Cetak
-                </a>
+                    <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
+                        class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
+                        <i class="bx bx-printer"></i> Cetak
+                    </a>
+                </div>
             </div>
 
             {{-- Tabel --}}
@@ -154,6 +225,16 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- Pagination --}}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
+                </div>
+                <div>
+                    {{ $transaksis->links() }}
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -169,4 +250,15 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        function changePerPage(perPage) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', perPage);
+            url.searchParams.delete('page'); // Reset to page 1
+            window.location.href = url.toString();
+        }
+    </script>
 @endpush

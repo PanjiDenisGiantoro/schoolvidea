@@ -116,8 +116,18 @@
     {{-- Card Utama --}}
     <div class="card rounded-3 border-0 shadow-sm">
         <div class="card-body">
-            {{-- Action Buttons --}}
-            <div class="d-flex justify-content-end mb-3 flex-wrap gap-2 text-end">
+            {{-- Action Buttons & Pagination Control --}}
+            <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="mb-0">Tampilkan:</label>
+                    <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                    </select>
+                    <span class="text-muted">data per halaman</span>
+                </div>
                 <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
                     class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                     <i class="bx bx-printer"></i> Cetak Laporan
@@ -208,8 +218,10 @@
                                 <td>
                                     @php
                                         $metodeBadge = match($transaksi->metode) {
+                                            'TUNAI' => 'primary',
                                             'CASH' => 'primary',
                                             'TRANSFER' => 'info',
+                                            'NONTUNAI' => 'info',
                                             'SALDO_TABUNGAN' => 'warning',
                                             default => 'secondary',
                                         };
@@ -233,6 +245,16 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- Pagination --}}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
+                </div>
+                <div>
+                    {{ $transaksis->links() }}
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -248,4 +270,15 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        function changePerPage(perPage) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', perPage);
+            url.searchParams.delete('page'); // Reset to page 1
+            window.location.href = url.toString();
+        }
+    </script>
 @endpush
