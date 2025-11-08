@@ -148,19 +148,19 @@ class SettingAkunController extends Controller
     {
         $request->validate([
             'nama_setting'     => 'required|string|max:255',
-            'akun_id'          => 'nullable|exists:akuns,id',
-            'akun_debit_id'    => 'required|exists:akuns,id',
-            'akun_kredit_id'   => 'required|exists:akuns,id',
+            'akun_id'          => 'nullable',
+//            'akun_debit_id'    => 'required|exists:akuns,id',
+//            'akun_kredit_id'   => 'required|exists:akuns,id',
             'keterangan'       => 'nullable|string',
-            'unit_id'          => 'nullable|exists:units,id',
+            'unit_id'          => 'nullable',
             'status'           => 'required|in:0,1',
             'kategori'         => 'required|string|max:255',
         ]);
 
         // Validasi akun debit dan kredit tidak boleh sama
-        if ($request->akun_debit_id == $request->akun_kredit_id) {
-            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
-        }
+//        if ($request->akun_debit_id == $request->akun_kredit_id) {
+//            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
+//        }
 
         setting_akun::create([
             'nama_setting'   => $request->nama_setting,
@@ -189,9 +189,9 @@ class SettingAkunController extends Controller
         ]);
 
         // Validasi akun debit dan kredit tidak boleh sama
-        if ($request->akun_debit_id == $request->akun_kredit_id) {
-            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
-        }
+//        if ($request->akun_debit_id == $request->akun_kredit_id) {
+//            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
+//        }
 
         $setting->update([
             'nama_setting'   => $request->nama_setting,
