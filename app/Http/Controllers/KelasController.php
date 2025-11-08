@@ -244,4 +244,22 @@ class KelasController extends Controller
         return response()->json($siswa);
     }
 
+    public function getWaliKelasByUnit($unitId)
+    {
+        $waliKelas = Officer::where('unit_id', $unitId)
+            ->with('user:id,name')
+            ->get();
+
+        return response()->json($waliKelas);
+    }
+
+    public function getJurusanByUnit($unitId)
+    {
+        $jurusan = Jurusan::where('unit_id', $unitId)
+            ->where('status', '1')
+            ->get();
+
+        return response()->json($jurusan);
+    }
+
 }

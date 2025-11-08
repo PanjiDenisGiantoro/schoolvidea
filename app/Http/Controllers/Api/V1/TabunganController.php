@@ -346,7 +346,7 @@ class TabunganController extends Controller
         $validator = Validator::make($request->all(), [
             'siswa_id' => 'required|exists:siswas,id',
             'jumlah' => 'required|numeric|min:1000',
-            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING',
+            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING,TUNAI,NONTUNAI',
             'keterangan' => 'nullable|string'
         ]);
 
@@ -519,7 +519,7 @@ class TabunganController extends Controller
         $validator = Validator::make($request->all(), [
             'siswa_id' => 'required|exists:siswas,id',
             'jumlah' => 'required|numeric|min:1000',
-            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING',
+            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING,TUNAI,NONTUNAI',
             'keterangan' => 'nullable|string'
         ]);
 

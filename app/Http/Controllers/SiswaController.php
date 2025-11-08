@@ -552,4 +552,12 @@ class SiswaController extends Controller
             ->get();
         return response()->json($jurusans);
     }
+
+    public function getKelasByUnit($unitId)
+    {
+        $kelas = Kelas::where('unit_id', $unitId)
+            ->where('status', '1')
+            ->get();
+        return response()->json($kelas);
+    }
 }

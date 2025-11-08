@@ -44,9 +44,47 @@ class TabunganController extends Controller
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
+            ->where('status_approval','=', 'approve')
+            ->orWhere('status_approval','=', 'approved')
             ->whereIn('penerima_id', $siswaIds)
             ->sum('jumlah');
-        return view('pages.tabungan.index', compact('transaksis','total_setoran','total_penarikan'));
+
+        // Jumlah transaksi (count)
+        $jumlah_transaksi = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('penerima_id', $siswaIds)
+            ->count();
+
+        // Total pending transaksi tabungan (penarikan yang masih pending)
+        $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->where('status_approval', 'pending')
+            ->whereIn('penerima_id', $siswaIds)
+            ->sum('jumlah');
+
+        // Total approved penarikan
+        $total_approved = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['approve', 'approved'])
+            ->whereIn('penerima_id', $siswaIds)
+            ->sum('jumlah');
+
+        // Total reject penarikan
+        $total_rejected = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['reject', 'rejected'])
+            ->whereIn('penerima_id', $siswaIds)
+            ->sum('jumlah');
+
+        return view('pages.tabungan.index', compact(
+            'transaksis',
+            'total_setoran',
+            'total_penarikan',
+            'jumlah_transaksi',
+            'total_pending',
+            'total_approved',
+            'total_rejected'
+        ));
     }
 
     /**
@@ -110,16 +148,16 @@ class TabunganController extends Controller
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TST' . date('YmdHis').$siswa->nisn.rand(1000,9999),
+                'code_pembayaran' => 'TST' . date('YmdHis').rand(1000,9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'setoran_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
                 'metode' => 'CASH',
-                'token'           => '',
-                'token_expired_at'=> '',
-                'status_approval' => '',
+                'token'           => null,
+                'token_expired_at'=> null,
+                'status_approval' => null,
                 'created_by'      => Auth::id(),
             ]);
 
@@ -139,12 +177,11 @@ class TabunganController extends Controller
                 $settings->where('unit_id', $request->unit_id);
             }
 
-            $settings = $settings->where('status','1')->get();
+            $settings = $settings->where('status','1')->first();
+            $akun_id = $settings->akun_id;
 
-            $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id;
 
-
-            if ( !$akun_kredit) {
+            if ( !$akun_id) {
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
             }
 
@@ -153,7 +190,7 @@ class TabunganController extends Controller
             // Jurnal Kredit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
-                'akun_id'      => $akun_kredit,
+                'akun_id'      => $akun_id,
                 'debit'        => 0,
                 'kredit'       => $request->jumlah,
                 'keterangan'   => $request->keterangan,
@@ -183,7 +220,7 @@ class TabunganController extends Controller
 
             return redirect()->route('tabungan.show', $siswa->id)
                 ->with('success', 'Transaksi berhasil disimpan!')
-                ->with('token', '')
+                ->with('token', null)
                 ->with('transaksi_id', $transaksi->id);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -213,10 +250,10 @@ class TabunganController extends Controller
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
             $settings = setting_akun::where('kategori', 'tabungan-tarik')->get();
+            $settings = $settings->where('status','1')->first();
+            $akun_id = $settings->akun_id;
 
-            $akun_debit  = $settings->where('debit', 1)->first()?->akun_id;
-
-            if (!$akun_debit) {
+            if (!$akun_id) {
                 throw new \Exception("Setting akun untuk kategori tabungan-tarik belum lengkap.");
             }
 
@@ -238,13 +275,13 @@ class TabunganController extends Controller
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TRK' . date('YmdHis').$siswa->nisn.rand(1000,9999),
+                'code_pembayaran' => 'TRK' . date('YmdHis').rand(1000,9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'penarikan_tabungan',
                 'jumlah'          => $request->jumlah,
                 'keterangan'      => $request->keterangan,
-                'metode' => 'CASH',
+                'metode' => 'Tunai',
                 'token'           => $token,
                 'token_expired_at'=> now()->addDay(),
                 'status_approval' => 'pending',
@@ -253,7 +290,7 @@ class TabunganController extends Controller
             // Jurnal Debit (akun siswa berkurang → debit 0, kredit jumlah)
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
-                'akun_id'      => $akun_debit,
+                'akun_id'      => $akun_id,
                 'debit'        => $request->jumlah,
                 'kredit'       => 0,
                 'keterangan'   => $request->keterangan,

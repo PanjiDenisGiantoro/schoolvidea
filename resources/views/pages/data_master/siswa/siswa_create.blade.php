@@ -609,4 +609,75 @@
             });
         </script>
     @endif
+
+    {{-- Filter Kelas dan Jurusan berdasarkan Unit --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit_id');
+            const kelasSelect = document.getElementById('kelas_id');
+            const jurusanSelect = document.getElementById('jurusan');
+
+            if (unitSelect && kelasSelect) {
+                unitSelect.addEventListener('change', function() {
+                    const unitId = this.value;
+
+                    if (!unitId) {
+                        // Reset kelas dropdown jika unit tidak dipilih
+                        kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                        if (jurusanSelect) {
+                            jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+                        }
+                        return;
+                    }
+
+                    // Fetch kelas berdasarkan unit
+                    fetch(`/siswa/kelas-by-unit/${unitId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                            data.forEach(kelas => {
+                                const option = document.createElement('option');
+                                option.value = kelas.id;
+                                option.textContent = kelas.nama_kelas;
+                                kelasSelect.appendChild(option);
+                            });
+
+                            // Reinitialize Choices.js if it's being used
+                            if (window.Choices) {
+                                const kelasChoices = kelasSelect.choices;
+                                if (kelasChoices) {
+                                    kelasChoices.clearStore();
+                                    kelasChoices.setChoices(
+                                        data.map(kelas => ({
+                                            value: kelas.id.toString(),
+                                            label: kelas.nama_kelas
+                                        })),
+                                        'value',
+                                        'label',
+                                        true
+                                    );
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Error fetching kelas:', error));
+
+                    // Fetch jurusan berdasarkan unit jika ada dropdown jurusan
+                    if (jurusanSelect) {
+                        fetch(`/siswa/jurusan-by-unit/${unitId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+                                data.forEach(jurusan => {
+                                    const option = document.createElement('option');
+                                    option.value = jurusan.id;
+                                    option.textContent = jurusan.nama_jurusan;
+                                    jurusanSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => console.error('Error fetching jurusan:', error));
+                    }
+                });
+            }
+        });
+    </script>
 @endpush

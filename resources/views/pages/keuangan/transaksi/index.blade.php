@@ -133,10 +133,10 @@
                             <th>Kode Pembayaran</th>
                             <th>Tanggal</th>
                             <th>Jenis Transaksi</th>
-                            <th>Penerima</th>
+                            <th>Siswa</th>
                             <th>Jumlah</th>
                             <th>Metode</th>
-                            <th>Dibuat Oleh</th>
+                            <th>Petugas</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>

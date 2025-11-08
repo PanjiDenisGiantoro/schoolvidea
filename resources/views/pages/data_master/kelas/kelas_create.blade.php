@@ -187,4 +187,90 @@
             });
         </script>
     @endif
+
+    {{-- Filter Walikelas dan Jurusan berdasarkan Unit --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit_id');
+            const waliKelasSelect = document.getElementById('officer_id');
+            const jurusanSelect = document.getElementById('jurusan_id');
+
+            if (unitSelect && (waliKelasSelect || jurusanSelect)) {
+                unitSelect.addEventListener('change', function() {
+                    const unitId = this.value;
+
+                    if (!unitId) {
+                        // Reset dropdown jika unit tidak dipilih
+                        if (waliKelasSelect) {
+                            waliKelasSelect.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
+                        }
+                        if (jurusanSelect) {
+                            jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+                        }
+                        return;
+                    }
+
+                    // Fetch wali kelas berdasarkan unit
+                    if (waliKelasSelect) {
+                        fetch(`/kelas/walikelas-by-unit/${unitId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                waliKelasSelect.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
+                                data.forEach(wali => {
+                                    const option = document.createElement('option');
+                                    option.value = wali.id;
+                                    option.textContent = wali.user ? wali.user.name : 'Tanpa Nama';
+                                    waliKelasSelect.appendChild(option);
+                                });
+
+                                // Reinitialize Choices.js if it's being used
+                                if (window.Choices && waliKelasSelect.choices) {
+                                    waliKelasSelect.choices.clearStore();
+                                    waliKelasSelect.choices.setChoices(
+                                        data.map(wali => ({
+                                            value: wali.id.toString(),
+                                            label: wali.user ? wali.user.name : 'Tanpa Nama'
+                                        })),
+                                        'value',
+                                        'label',
+                                        true
+                                    );
+                                }
+                            })
+                            .catch(error => console.error('Error fetching wali kelas:', error));
+                    }
+
+                    // Fetch jurusan berdasarkan unit
+                    if (jurusanSelect) {
+                        fetch(`/kelas/jurusan-by-unit/${unitId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+                                data.forEach(jurusan => {
+                                    const option = document.createElement('option');
+                                    option.value = jurusan.id;
+                                    option.textContent = jurusan.nama_jurusan;
+                                    jurusanSelect.appendChild(option);
+                                });
+
+                                // Reinitialize Choices.js if it's being used
+                                if (window.Choices && jurusanSelect.choices) {
+                                    jurusanSelect.choices.clearStore();
+                                    jurusanSelect.choices.setChoices(
+                                        data.map(jurusan => ({
+                                            value: jurusan.id.toString(),
+                                            label: jurusan.nama_jurusan
+                                        })),
+                                        'value',
+                                        'label',
+                                        true
+                                    );
+                                }
+                            })
+                            .catch(error => console.error('Error fetching jurusan:', error));
+                    }
+                });
+            }
+        });
+    </script>
 @endpush

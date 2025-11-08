@@ -146,6 +146,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/delete/{id}', [KelasController::class, 'destroy'])->middleware('permission:delete_kelas')->name('kelas.destroy');
         Route::get('/show/{id}', [KelasController::class, 'show'])->name('kelas.show');
         Route::get('/{id}/siswa', [KelasController::class, 'getSiswa']);
+        Route::get('/walikelas-by-unit/{unitId}', [KelasController::class, 'getWaliKelasByUnit']);
+        Route::get('/jurusan-by-unit/{unitId}', [KelasController::class, 'getJurusanByUnit']);
     });
 
     Route::prefix('jurusan')->middleware('permission:view_jurusan')->group(function () {
@@ -171,6 +173,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/upload', [SiswaController::class, 'upload'])->middleware('permission:upload_siswa')->name('siswa.upload');
         Route::get('/get-kelas/{unitId}', [UnitController::class, 'getKelasByUnit'])->name('getKelasByUnit');
         Route::get('/get-jurusan/{unitId}', [SiswaController::class, 'getJurusanByUnit'])->name('getJurusanByUnit');
+        Route::get('/kelas-by-unit/{unitId}', [SiswaController::class, 'getKelasByUnit']);
+        Route::get('/jurusan-by-unit/{unitId}', [SiswaController::class, 'getJurusanByUnit']);
     });
 
     Route::prefix('kategoritagihan')->middleware('permission:view_kategoritagihan')->group(function () {

@@ -9,27 +9,63 @@
 
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary">
+                <div class="card-body text-success">
                     <h6>Total Setoran</h6>
                     <h4>Rp {{ number_format($total_setoran ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary">
+                <div class="card-body text-danger">
                     <h6>Total Penarikan</h6>
                     <h4>Rp {{ number_format($total_penarikan ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-primary">
-                    <h6>Total Transaksi</h6>
-                    <h4>Rp {{ number_format($total_setoran + $total_penarikan ?? 0, 0, ',', '.') }}</h4>
+                    <h6>Saldo Tabungan</h6>
+                    <h4>Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card-body text-info">
+                    <h6>Jumlah Transaksi</h6>
+                    <h4>{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Additional Statistics --}}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card-body text-warning">
+                    <h6>Total Pending Penarikan</h6>
+                    <h4>Rp {{ number_format($total_pending ?? 0, 0, ',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card-body text-success">
+                    <h6>Total Approved Penarikan</h6>
+                    <h4>Rp {{ number_format($total_approved ?? 0, 0, ',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card-body text-danger">
+                    <h6>Total Reject Penarikan</h6>
+                    <h4>Rp {{ number_format($total_rejected ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>

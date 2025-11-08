@@ -11,7 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \Illuminate\Support\Facades\DB::statement("SELECT setval('akuns_id_seq', (SELECT MAX(id) FROM akuns))");
+        Schema::table('keuangan_transaksis', function (Blueprint $table) {
+            $table->dateTime('token_expired_at')->nullable()->change();
+            $table->string('status_approval')->nullable()->change();
+
+        });
     }
 
     /**
@@ -19,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('keuangan_transaksis', function (Blueprint $table) {
+            //
+        });
     }
 };
