@@ -7,32 +7,7 @@
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
         {{-- Action Buttons & Pagination Control --}}
-        <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <label for="per_page" class="mb-0">Tampilkan:</label>
-                <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
-                    <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                    <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                    <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
-                </select>
-                <span class="text-muted">data per halaman</span>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill shadow-sm">
-                    <i class="fa fa-plus"></i> Tambah
-                </a>
-                <a href="#" class="btn btn-primary rounded-pill shadow-sm">
-                    <i class="fa fa-upload"></i> Impor
-                </a>
-                <a href="#" class="btn btn-primary rounded-pill shadow-sm">
-                    <i class="fa fa-download"></i> Ekspor
-                </a>
-                <a href="{{ route('tagihan.print_laporan', request()->all()) }}" target="_blank" class="btn btn-primary rounded-pill shadow-sm">
-                    <i class="fa fa-print"></i> Cetak
-                </a>
-            </div>
-        </div>
+
 
         {{-- Summary Cards --}}
         <div class="row mb-4">
@@ -135,6 +110,7 @@
             </div>
         </div>
         @else
+
         <div class="card rounded-3 mb-3 border-0 shadow-sm">
             <div class="card-body">
                 <form method="GET">
@@ -163,7 +139,34 @@
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
+
             <div class="card-body">
+                <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="per_page" class="mb-0">Tampilkan:</label>
+                        <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                            <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                        </select>
+                        <span class="text-muted">data per halaman</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill shadow-sm">
+                            <i class="fa fa-plus"></i> Tambah
+                        </a>
+                        <a href="#" class="btn btn-primary rounded-pill shadow-sm">
+                            <i class="fa fa-upload"></i> Impor
+                        </a>
+                        <a href="#" class="btn btn-primary rounded-pill shadow-sm">
+                            <i class="fa fa-download"></i> Ekspor
+                        </a>
+                        <a href="{{ route('tagihan.print_laporan', request()->all()) }}" target="_blank" class="btn btn-primary rounded-pill shadow-sm">
+                            <i class="fa fa-print"></i> Cetak
+                        </a>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table-bordered table-striped table text-center align-middle">
                         <thead class="table-primary">
