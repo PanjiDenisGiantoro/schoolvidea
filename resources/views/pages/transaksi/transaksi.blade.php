@@ -96,8 +96,8 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nama Unit</th>
-                                <th>Nomor Induk</th>
-                                <th>Nama Lengkap</th>
+                                <th>NISN</th>
+                                <th>Nama Siswa</th>
                                 <th>Total Transaksi</th>
                                 <th>Jenis Transaksi</th>
                                 <th>Metode Pembayaran</th>
@@ -165,7 +165,7 @@
         // Handle form submission
         $('#transactionForm').on('submit', function(e) {
             e.preventDefault();
-            
+
             // Get form data
             const formData = {
                 _token: '{{ csrf_token() }}',
@@ -198,7 +198,7 @@
         $('.delete-transaction').on('click', function() {
             if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
                 const transactionId = $(this).data('id');
-                
+
                 $.ajax({
                     url: `/transaksi/${transactionId}`,
                     type: 'DELETE',

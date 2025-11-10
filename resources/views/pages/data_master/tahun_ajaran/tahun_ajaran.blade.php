@@ -23,7 +23,7 @@
                     <form method="GET" action="{{ route('tahun_ajaran.index') }}" class="row g-3">
                         <!-- Search Input -->
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari tahun ajaran (Tahun, Semester, Tanggal...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" placeholder="Cari tahun ajaran (Tahun, Semester, Tanggal...)" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">

@@ -22,7 +22,7 @@
                 <div class="col-lg-12 mb-3">
                     <form method="GET" action="{{ route('positions.index') }}" class="row g-3">
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari jabatan..." value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" placeholder="Cari jabatan..." value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">

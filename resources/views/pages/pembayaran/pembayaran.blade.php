@@ -125,6 +125,8 @@
                 color: white;
                 border-radius: 15px;
                 padding: 20px;
+                box-shadow: 8px 4px 15px rgba(0, 0, 0, 0.2);
+                margin-right: 20px;
             }
 
             .profile-card .list-unstyled li {
@@ -139,12 +141,32 @@
             .profile-card strong {
                 color: rgba(255, 255, 255, 0.9);
             }
+.profile-photo-wrapper {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    background-color: #f5f5f5; /* warna latar saat kosong */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
         </style>
     @endpush
 
 
     <div class="row g-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card rounded-4 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
@@ -189,29 +211,45 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-4 border-0 shadow-lg overflow-hidden">
-                <div class="profile-card text-center">
-                    <div class="mb-3">
-                        <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa"
-                             class="img-fluid rounded-circle border border-4 border-white shadow-lg" width="120" height="120" style="object-fit: cover;">
-                    </div>
-                    <h5 class="fw-bold mb-1" id="detail_nama">-</h5>
-                    <p class="mb-0 opacity-75" id="detail_nisn">-</p>
+
+<div class="col-md-12">
+    <div class="card rounded-4 border-0 shadow-lg overflow-hidden pr-4">
+        <div class="row align-items-center g-4">
+
+            {{-- Kolom kiri: Foto + Nama --}}
+            <div class="col-md-3 text-center profile-card">
+                <div class="profile-photo-wrapper mx-auto mb-3">
+                    <img src="{{ asset('images/default-user.png') }}"
+                         alt="Foto Siswa"
+                         id="foto_siswa"
+                         class="profile-photo">
                 </div>
-                <div class="p-4 bg-white">
-                    <ul class="list-unstyled small mb-0">
-                        <li class="mb-2"><i class="ri-building-line text-primary me-2"></i><strong>Unit:</strong> <span id="detail_unit" class="float-end">-</span></li>
-                        <li class="mb-2"><i class="ri-book-line text-success me-2"></i><strong>Kelas:</strong> <span id="detail_kelas" class="float-end">-</span></li>
-                        <li class="mb-2"><i class="ri-briefcase-line text-info me-2"></i><strong>Jurusan:</strong> <span id="detail_jurusan" class="float-end">-</span></li>
-                        <li class="mb-2"><i class="ri-calendar-line text-warning me-2"></i><strong>Tahun Ajaran:</strong> <span id="detail_tahun" class="float-end">-</span></li>
-                        <li class="mb-2"><i class="ri-user-line text-secondary me-2"></i><strong>Gender:</strong> <span id="detail_gender" class="float-end">-</span></li>
-                        <li class="mb-2"><i class="ri-map-pin-line text-danger me-2"></i><strong>TTL:</strong> <span id="detail_lahir" class="float-end">-</span></li>
-                        <li><i class="ri-phone-line text-success me-2"></i><strong>Telepon:</strong> <span id="detail_telp" class="float-end">-</span></li>
-                    </ul>
-                </div>
+                <h5 class="fw-bold mb-1" style="font-size: 18px" id="detail_nama">-</h5>
+                <p class="mb-0 opacity-75" id="detail_nisn">-</p>
             </div>
+
+            {{-- Kolom kanan: Detail Siswa --}}
+            <div class="col-md-8 p-4">
+                <ul class="list-unstyled small mb-0 px-4" style="font-size: 14px">
+                    <li class="mb-2"><i class="ri-building-line text-primary me-2"></i>
+                        <strong>Unit :</strong> <span id="detail_unit" class="float-end">-</span></li>
+                    <li class="mb-2"><i class="ri-book-line text-success me-2"></i>
+                        <strong>Kelas :</strong> <span id="detail_kelas" class="float-end">-</span></li>
+                    <li class="mb-2"><i class="ri-calendar-line text-warning me-2"></i>
+                        <strong>No VA :</strong> <span id="detail_va" class="float-end">-</span></li>
+                    <li class="mb-2"><i class="ri-user-line text-secondary me-2"></i>
+                        <strong>Bank :</strong> <span id="detail_bank" class="float-end">-</span></li>
+                    <li class="mb-2"><i class="ri-map-pin-line text-danger me-2"></i>
+                        <strong>No Rekening :</strong> <span id="detail_norek" class="float-end">-</span></li>
+                    <li><i class="ri-phone-line text-success me-2"></i>
+                        <strong>Telepon :</strong> <span id="detail_telp" class="float-end">-</span></li>
+                </ul>
+            </div>
+
         </div>
+    </div>
+</div>
+
 
         {{-- Ringkasan Tagihan --}}
 
@@ -489,11 +527,9 @@
                     document.getElementById('detail_nisn').innerText = data.nisn;
                     document.getElementById('detail_unit').innerText = data.unit;
                     document.getElementById('detail_kelas').innerText = data.kelas;
-                    document.getElementById('detail_jurusan').innerText = data.jurusan;
-                    document.getElementById('detail_tahun').innerText = data.tahun_ajaran;
-                    document.getElementById('detail_gender').innerText = data.gender;
-                    document.getElementById('detail_lahir').innerText =
-                        `${data.tempat_lahir}, ${data.tanggal_lahir}`;
+                    document.getElementById('detail_va').innerText = data.va;
+                    document.getElementById('detail_bank').innerText = data.bank;
+                    document.getElementById('detail_norek').innerText = data.norek;
                     document.getElementById('detail_telp').innerText = data.no_hp;
                     if (data.foto) {
                         document.querySelector('img[alt="Foto Siswa"]').src = `${data.foto}`;

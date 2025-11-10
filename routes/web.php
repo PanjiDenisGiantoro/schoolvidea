@@ -361,6 +361,8 @@ Route::middleware(['auth'])->group(function () {
     // Ambil daftar guru/staff berdasarkan unit (AJAX)
     Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
         ->name('officers.byUnit');
+    Route::post('/tabungan/mass-status', [App\Http\Controllers\TabunganController::class, 'massStatus'])
+        ->name('tabungan.massStatus');
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');

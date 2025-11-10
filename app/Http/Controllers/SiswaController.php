@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Log;
 
-
 class SiswaController extends Controller
 {
     public function index(Request $request)
@@ -34,7 +33,7 @@ class SiswaController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan siswa dari semua unit di yayasan tersebut
-            $query->whereHas('unit', function($q) {
+            $query->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -48,7 +47,7 @@ class SiswaController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
                   ->orWhere('nis', 'like', "%{$search}%")
                   ->orWhere('name', 'like', "%{$search}%")
@@ -57,17 +56,17 @@ class SiswaController extends Controller
                   ->orWhere('no_hp', 'like', "%{$search}%")
                   ->orWhere('tempat_lahir', 'like', "%{$search}%")
                   ->orWhere('nama_ortu', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($q) use ($search) {
+                  ->orWhereHas('user', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('kelas', function($q) use ($search) {
+                  ->orWhereHas('kelas', function ($q) use ($search) {
                       $q->where('nama_kelas', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('jurusan', function($q) use ($search) {
+                  ->orWhereHas('jurusan', function ($q) use ($search) {
                       $q->where('nama_jurusan', 'like', "%{$search}%");
                   });
             });
@@ -98,10 +97,10 @@ class SiswaController extends Controller
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $yayasan = Yayasan::where('id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-            $jurusans = Jurusan::whereHas('unit', function($q) {
+            $jurusans = Jurusan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', 1)->get();
         } elseif (Auth::user()->unit_id) {
@@ -144,28 +143,27 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required',
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nisn',
             'name' => 'required|string|max:255',
             'username' => 'nullable|string',
             'email' => 'required|string|email|max:255',
             'kelas_id' => 'required',
             'unit_id' => 'required',
-            'rfid_no' => 'nullable|string|max:255',
-            'va_siswa' => 'nullable|string|max:255',
-            'nis' => 'nullable|string|max:20|unique:siswas,nis',
-            'nik' => 'nullable|string|max:20|unique:siswas,nik',
+            'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no',
+            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa',
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nis',
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nik',
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,14',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
-            'no_rekening' => 'nullable|string|max:50',
+            'no_rekening' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:siswas,no_rekening',
             'jurusan_id' => 'nullable|exists:jurusans,id',
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13',
-            'tahun_ajaran_id' => 'required'
+            'no_hp' => 'nullable|string|digits_between:0,14|unique:siswas,no_hp',
         ]);
 
         if ($validator->fails()) {
@@ -192,7 +190,7 @@ class SiswaController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-
+            $tahun_ajaran = Tahun_ajaran::where('status', 1)->first();
             // Buat siswa
             $siswa = Siswa::create([
                 'nisn'            => $request->nisn,
@@ -217,7 +215,7 @@ class SiswaController extends Controller
                 'no_rekening'     => $request->no_rekening,
                 'alamat'          => $request->alamat,
                 'name'            => $request->name,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
+                'tahun_ajaran_id' => $tahun_ajaran->id
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
@@ -266,6 +264,8 @@ class SiswaController extends Controller
                 'status' => 0,
             ]);
 
+
+
             DB::commit();
             return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');
         } catch (\Exception $e) {
@@ -307,19 +307,19 @@ class SiswaController extends Controller
 
         // Validator dengan exclude current records
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
+            'nisn' => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nisn,' . $siswa->id,
             'name' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'kelas_id' => 'required',
             'unit_id' => 'required',
             'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no,' . $siswa->id,
-            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa,' . $siswa->id,
-            'nis' => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
-            'nik' => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'va_siswa' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,va_siswa,' . $siswa->id,
+            'nis' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nis,' . $siswa->id,
+            'nik' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:siswas,nik,' . $siswa->id,
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
-            'no_hp_ortu' => 'nullable|string|max:20',
+            'no_hp_ortu' => 'nullable|digits_between:0,14|max:20',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
             'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening,' . $siswa->id,
@@ -327,14 +327,23 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp,' . $siswa->id,
+            'no_hp' => 'nullable|string|digits_between:0,14|unique:siswas,no_hp,' . $siswa->id,
             'password' => 'nullable|string|min:6',
             'tahun_ajaran_id' => 'required'
         ], [
             'email.unique' => 'Email sudah digunakan oleh user lain.',
             'username.unique' => 'Username sudah digunakan oleh user lain.',
-            'nisn.unique' => 'NISN sudah digunakan oleh siswa lain.',
-        ]);
+    'nis.required'   => 'NIS wajib diisi.',
+    'nis.numeric'    => 'NIS hanya boleh berisi angka.',
+    'nis.unique'     => 'NIS sudah digunakan.',
+
+    'nisn.required'  => 'NISN wajib diisi.',
+    'nisn.numeric'   => 'NISN hanya boleh berisi angka.',
+    'nisn.unique'    => 'NISN sudah digunakan.',
+
+    'nik.required'   => 'NIK wajib diisi.',
+    'nik.numeric'    => 'NIK hanya boleh berisi angka.',
+    'nik.unique'     => 'NIK sudah digunakan.',        ]);
 
         if ($validator->fails()) {
             Log::error('Validation Errors: ', $validator->errors()->toArray());
@@ -344,7 +353,7 @@ class SiswaController extends Controller
                 ->with('error', 'Terdapat kesalahan dalam pengisian form.');
         }
 
-//        DB::beginTransaction();
+        //        DB::beginTransaction();
         try {
             Log::info('Starting transaction update...');
 
@@ -427,13 +436,13 @@ class SiswaController extends Controller
                 Log::warning('QR Code generation skipped: ' . $qrException->getMessage());
             }
 
-//            DB::commit();
+            //            DB::commit();
             Log::info('=== UPDATE SISWA SUCCESS ===');
 
             return redirect()->route('siswa.index')
                 ->with('success', 'Data siswa berhasil diperbarui!');
         } catch (\Exception $e) {
-//            DB::rollBack();
+            //            DB::rollBack();
             dd($e->getMessage());
             Log::error('UPDATE FAILED: ' . $e->getMessage());
             Log::error('File: ' . $e->getFile());
@@ -481,6 +490,7 @@ class SiswaController extends Controller
         $units = Unit::isactive()->get();
         $kelas = Kelas::all();
         $jurusans = Jurusan::all();
+        $tahun_ajaran = Tahun_ajaran::all();
         $show = true;
         $tahunajaran = Tahun_ajaran::where('status', '1')->get();
 
@@ -515,10 +525,11 @@ class SiswaController extends Controller
             'nisn'           => $siswa->nisn ?? '-',
             'unit'           => $siswa->unit->nama_unit ?? '-',
             'kelas'          => $siswa->kelas->nama_kelas ?? '-',
-            'jurusan'        => $siswa->kelas->jurusan->nama_jurusan ?? '-',
-            'tempat_lahir'   => $siswa->tempat_lahir ?? '-',
-            'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
+            'va'        => $siswa->qrcode ?? '-',
+            'norek'   => $siswa->no_rekening ?? '-',
+            'rfid_no'  => $siswa->rfid_no ?? '-',
             'no_hp'          => $siswa->no_hp ?? '-',
+            'bank'         => $siswa->bank ?? '-',
             'foto'           => $siswa->image
                 ? asset($siswa->image)
                 : asset('images/default-avatar.png'),
@@ -551,13 +562,5 @@ class SiswaController extends Controller
             ->where('status', '1')
             ->get();
         return response()->json($jurusans);
-    }
-
-    public function getKelasByUnit($unitId)
-    {
-        $kelas = Kelas::where('unit_id', $unitId)
-            ->where('status', '1')
-            ->get();
-        return response()->json($kelas);
     }
 }

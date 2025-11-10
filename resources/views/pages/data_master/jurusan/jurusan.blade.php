@@ -37,7 +37,7 @@
                         @endif
                         <!-- Search Input -->
                         <div class="col-md-{{ auth()->user()->unit_id === null ? '7' : '10' }}">
-                            <input type="text" name="search" class="form-control" placeholder="Cari jurusan (Nama, Kode, Unit...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" placeholder="Cari jurusan (Nama, Kode, Unit...)" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">

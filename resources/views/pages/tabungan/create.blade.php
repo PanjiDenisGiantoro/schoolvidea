@@ -76,6 +76,10 @@
                                     <small class="text-muted d-block mb-1">Telepon</small>
                                     <strong id="detail_telp" class="text-dark">-</strong>
                                 </div>
+                                <div class="info-item mb-2 p-2">
+                                    <small class="text-muted d-block mb-1">No Virtual Account</small>
+                                    <strong id="detail_va" class="text-dark">-</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -94,7 +98,7 @@
                                     <i class="bx bx-wallet me-2"></i>Transaksi Setoran Tabungan
                                 </h5>
                             </div>
-                            <div class="card-body p-4">
+                            <div class="card-body gap-4 p-4">
                                 <div class="alert alert-info border-0 shadow-sm mb-4">
                                     <div class="d-flex align-items-center">
                                         <i class="bx bx-info-circle fs-4 me-3"></i>
@@ -122,7 +126,7 @@
                                     <small class="text-muted">Minimal setoran Rp 1.000</small>
                                 </div>
 
-                                <div class="mb-4">
+                                <div class=" mb-4">
                                     <label for="keterangan" class="form-label fw-semibold">
                                         <i class="bx bx-note text-primary me-1"></i>Keterangan
                                     </label>
@@ -132,7 +136,7 @@
                                               placeholder="Tambahkan catatan transaksi (opsional)"></textarea>
                                 </div>
 
-                                <div class="alert alert-success border-0 shadow-sm mb-4">
+                                <div class="alert alert-success border-0 shadow-sm mt-4 mb-4">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="fw-semibold">Total Setoran</span>
                                         <div id="jumlah_transaksi" class="fs-4 fw-bold text-success">Rp 0</div>
@@ -405,6 +409,7 @@
                     document.getElementById('detail_nisn').innerText = data.nisn || '-';
                     document.getElementById('detail_kelas').innerText = data.kelas || '-';
                     document.getElementById('detail_telp').innerText = data.no_hp || '-';
+                    document.getElementById('detail_va').innerText = data.va || '-';
 
                     // Update foto siswa - gunakan langsung URL dari API
                     const fotoSiswa = document.getElementById('foto_siswa');

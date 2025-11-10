@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', 'Tabungan Siswa')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tabungan Siswa',
@@ -97,7 +99,7 @@
                     <div class="col-md-3">
                         <label for="search" class="form-label">Cari Siswa</label>
                         <input type="text" name="search" id="search"
-                               class="form-control" placeholder="NISN, Nama, Kelas..."
+                               class="form-control p-3" placeholder="NISN, Nama, Kelas..."
                                value="{{ request('search') }}">
                     </div>
 
@@ -105,14 +107,14 @@
                     <div class="col-md-2">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
                         <input type="date" name="dari_tanggal" id="dari_tanggal"
-                               class="form-control" value="{{ request('dari_tanggal') }}">
+                               class="form-control p-3" value="{{ request('dari_tanggal') }}">
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
                     <div class="col-md-2">
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
                         <input type="date" name="sampai_tanggal" id="sampai_tanggal"
-                               class="form-control" value="{{ request('sampai_tanggal') }}">
+                               class="form-control p-3" value="{{ request('sampai_tanggal') }}">
                     </div>
 
                     {{-- Tombol Filter --}}
@@ -145,6 +147,7 @@
                     </select>
                     <span class="text-muted">data per halaman</span>
                 </div>
+
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{{ route('tabungan.create') }}"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
@@ -165,13 +168,30 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
-                    <thead class="table-primary">
+            <div class="custom-card-header">
+                <div class="col-md-4 ">
+                    <span><i class="fa fa-list"></i> Daftar Tabungan Siswa</span>
+                    <button id="btnProsesPembayaran" class="custom-btn-info">
+                        <i class="ri-checkbox-multiple-line"></i>Aktifkan Semua Status
+                    </button>
+                </div>
+                <div>
+                    <label for="filter" class="form-label text-white">Filter Data Status</label>
+                    <select class="form-select form-select-sm rounded-3 filter-status">
+                        <option value="semua" data-status="all">Semua</option>
+                        <option value="aktif" data-status="1">Aktif</option>
+                        <option value="nonaktif" data-status="0">Non Aktif</option>
+                    </select>
+                </div>
+            </div>
+                <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle" id="table-tabungan">
+                    <thead class="table-light text-center align-middle">
                         <tr>
+                            <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
                             <th>#</th>
                             <th>Nama Unit</th>
-                            <th>Nomor Induk</th>
-                            <th>Nama Lengkap</th>
+                            <th>NISN</th>
+                            <th>Nama Siswa</th>
                             <th>Kelas Sekarang</th>
                             <th>Tahun Ajaran</th>
                             <th>Status</th>
@@ -179,9 +199,15 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-tabungan">
                         @forelse($transaksis as $siswa)
-                            <tr>
+                                    @php
+                                        $saldo = $siswa->user->saldo ?? null;
+                                        $statusBadge = $saldo && $saldo->status == 1 ? 'primary' : 'secondary';
+                                        $statusText = $saldo && $saldo->status == 1 ? 'Aktif' : 'Tidak Aktif';
+                                    @endphp
+                            <tr data-status="{{ $saldo ? $saldo->status : '0' }}">                                <td><input type="checkbox" name="checkbox" id="checkbox" class="custom-checkbox"
+                                    data-id="{{ $saldo->id ?? '' }}"></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $siswa->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $siswa->nisn ?? '-' }}</td>
@@ -189,11 +215,6 @@
                                 <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
                                 <td>{{ $siswa->tahun_ajaran->tahun_ajaran ?? '-' }}</td>
                                 <td>
-                                    @php
-                                        $saldo = $siswa->user->saldo ?? null;
-                                        $statusBadge = $saldo && $saldo->status == 1 ? 'primary' : 'secondary';
-                                        $statusText = $saldo && $saldo->status == 1 ? 'Aktif' : 'Tidak Aktif';
-                                    @endphp
                                     <span class="badge rounded-pill bg-{{ $statusBadge }}">
                                         {{ $statusText }}
                                     </span>
@@ -205,10 +226,10 @@
 
                                     @if ($saldo && $saldo->status == 0)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-primary rounded-pill">Aktif</a>
+                                            class="btn btn-sm btn-primary rounded-pill confirm-status">Aktif</a>
                                     @elseif($saldo)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-danger rounded-pill">Non Aktif</a>
+                                            class="btn btn-sm btn-danger rounded-pill confirm-status">Non Aktif</a>
                                     @endif
                                 </td>
                             </tr>
@@ -220,14 +241,13 @@
                     </tbody>
                 </table>
             </div>
-
             {{-- Pagination --}}
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="text-muted">
                     Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
                 </div>
                 <div>
-                    {{ $transaksis->links() }}
+                    {{ $transaksis->links('vendor.pagination.custom') }}
                 </div>
             </div>
         </div>
@@ -248,6 +268,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function changePerPage(perPage) {
             const url = new URL(window.location.href);
@@ -255,5 +276,118 @@
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
         }
+document.addEventListener('DOMContentLoaded', function () {
+    const filterDropdown = document.querySelector('.filter-status'); // Select dropdown
+    const rows = document.querySelectorAll('#tbody-tabungan tr');
+
+    // Fungsi filter data
+    function filterData(status) {
+        rows.forEach(row => {
+            if (status === 'all' || status === 'semua') {
+                row.style.display = '';
+            } else if (status === '1' || status === 'aktif') {
+                row.style.display = row.dataset.status === '1' ? '' : 'none';
+            } else if (status === '0' || status === 'nonaktif') {
+                row.style.display = row.dataset.status === '0' ? '' : 'none';
+            }
+        });
+    }
+
+    // Filter dengan dropdown
+    filterDropdown.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const status = selectedOption.dataset.status; // Ambil dari data-status
+        filterData(status);
+    });
+
+    // SweetAlert Konfirmasi Status
+    document.querySelectorAll('.confirm-status').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = this.getAttribute('href');
+
+            Swal.fire({
+                title: `Anda yakin ingin mengubah status ini?`,
+                text: "Tindakan ini akan mengubah status tabungan siswa.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, konfirmasi!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+
+    // ✅ Check All Checkbox
+    const checkAll = document.getElementById('checkAll');
+    const checkboxes = document.querySelectorAll('input[name="checkbox"]');
+
+    checkAll.addEventListener('change', function () {
+        checkboxes.forEach(chk => {
+            chk.checked = checkAll.checked;
+        });
+    });
+
+    checkboxes.forEach(chk => {
+        chk.addEventListener('change', function () {
+            if (!this.checked) {
+                checkAll.checked = false;
+            } else if (Array.from(checkboxes).every(c => c.checked)) {
+                checkAll.checked = true;
+            }
+        });
+    });
+// Pengaktifan Masal
+const btnMass = document.getElementById('btnProsesPembayaran');
+
+btnMass.addEventListener('click', function () {
+    const selected = Array.from(document.querySelectorAll('input[name="checkbox"]:checked'))
+        .map(chk => chk.dataset.id)
+        .filter(id => id); // hanya ambil yang punya ID saldo
+
+    if (selected.length === 0) {
+        Swal.fire('Peringatan', 'Silakan pilih minimal satu siswa!', 'warning');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Yakin ingin mengubah status?',
+        text: "Status semua tabungan terpilih akan diubah (aktif/nonaktif).",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, ubah!',
+        cancelButtonText: 'Batal',
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch("{{ route('tabungan.massStatus') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: selected })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Berhasil!', data.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Gagal!', data.message, 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error!', 'Terjadi kesalahan saat memproses.', 'error');
+            });
+        }
+    });
+});
+
+});
     </script>
 @endpush

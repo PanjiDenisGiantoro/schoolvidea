@@ -24,12 +24,12 @@ class TabunganController extends Controller
     {
         $perPage = $request->get('per_page', 15);
 
-        $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
+        $transaksis = Siswa::with('tahun_ajaran', 'user.saldo', 'kelas', 'unit')
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->where('unit_id', $request->unit_id);
             })
             ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
-                $query->whereHas('unit', function($q) {
+                $query->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
@@ -38,25 +38,25 @@ class TabunganController extends Controller
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nisn', 'like', "%{$search}%")
                       ->orWhere('name', 'like', "%{$search}%")
-                      ->orWhereHas('user', function($q) use ($search) {
+                      ->orWhereHas('user', function ($q) use ($search) {
                           $q->where('name', 'like', "%{$search}%");
                       })
-                      ->orWhereHas('kelas', function($q) use ($search) {
+                      ->orWhereHas('kelas', function ($q) use ($search) {
                           $q->where('nama_kelas', 'like', "%{$search}%");
                       });
                 });
             })
-            ->where('status','1')
+            ->where('status', '1')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
-// Ambil semua siswa_id dari siswa yang lolos filter
+        // Ambil semua siswa_id dari siswa yang lolos filter
         $siswaIds = $transaksis->pluck('id')->unique()->toArray();
 
-// Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe dengan date range
+        // Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe dengan date range
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('penerima_id', $siswaIds)
@@ -70,9 +70,9 @@ class TabunganController extends Controller
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
-            ->where(function($query) {
-                $query->where('status_approval','=', 'approve')
-                      ->orWhere('status_approval','=', 'approved');
+            ->where(function ($query) {
+                $query->where('status_approval', '=', 'approve')
+                      ->orWhere('status_approval', '=', 'approved');
             })
             ->whereIn('penerima_id', $siswaIds)
             ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
@@ -136,11 +136,11 @@ class TabunganController extends Controller
 
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->orderBy('nama_unit')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
         } elseif (Auth::user()->unit_id) {
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
-            $units = \App\Models\Unit::where('status','1')->orderBy('nama_unit')->get();
+            $units = \App\Models\Unit::where('status', '1')->orderBy('nama_unit')->get();
         }
 
         return view('pages.tabungan.index', compact(
@@ -162,11 +162,11 @@ class TabunganController extends Controller
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
-            $units = \App\Models\Unit::where('status','1')->get();
+            $units = \App\Models\Unit::where('status', '1')->get();
         }
         return view('pages.tabungan.create', compact('units'));
     }
@@ -174,11 +174,11 @@ class TabunganController extends Controller
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
-            $units = \App\Models\Unit::where('status','1')->get();
+            $units = \App\Models\Unit::where('status', '1')->get();
         }
         return view('pages.tabungan.tarik', compact('units'));
     }
@@ -202,21 +202,21 @@ class TabunganController extends Controller
             // Ambil data siswa
             $siswa = Siswa::with('user')->findOrFail($request->penerima_id);
 
-            if(!$siswa){
+            if (!$siswa) {
                 return back()->with('danger', 'Siswa tidak ditemukan.');
             }
 
             $rekening = Saldo_keuangan::with('user')->where('user_id', $siswa->user->id)->where('status', 1)->first();
-            if(!$rekening){
+            if (!$rekening) {
                 return back()->with('danger', 'Rekening tabungan belum Aktif.');
             }
 
             // Generate token 5 digit
-//            $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
+            //            $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TST' . date('YmdHis').rand(1000,9999),
+                'code_pembayaran' => 'TST' . date('YmdHis').rand(1000, 9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'setoran_tabungan',
@@ -224,7 +224,7 @@ class TabunganController extends Controller
                 'keterangan'      => $request->keterangan,
                 'metode' => 'CASH',
                 'token'           => null,
-                'token_expired_at'=> null,
+                'token_expired_at' => null,
                 'status_approval' => null,
                 'created_by'      => Auth::id(),
             ]);
@@ -234,7 +234,7 @@ class TabunganController extends Controller
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
             if (Auth::user()->yayasan_id) {
                 // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
-                $settings->whereHas('unit', function($q) {
+                $settings->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             } elseif (Auth::user()->unit_id) {
@@ -245,11 +245,11 @@ class TabunganController extends Controller
                 $settings->where('unit_id', $request->unit_id);
             }
 
-            $settings = $settings->where('status','1')->first();
+            $settings = $settings->where('status', '1')->first();
             $akun_id = $settings->akun_id;
 
 
-            if ( !$akun_id) {
+            if (!$akun_id) {
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
             }
 
@@ -280,8 +280,8 @@ class TabunganController extends Controller
                 'aksi'          => 'create',
                 'data_lama'     => null,
                 'data_baru'     => json_encode($transaksi),
-                'dilakukan_oleh'=> Auth::id(),
-                'dilakukan_pada'=> now(),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
             ]);
             $saldoSiswa->increment('saldo_akhir', $request->jumlah);
             DB::commit();
@@ -314,11 +314,11 @@ class TabunganController extends Controller
             }
 
             $rekening = Saldo_keuangan::where('user_id', $siswa->user->id)->where('status', 1)->first();
-            if(!$rekening){
+            if (!$rekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
             $settings = setting_akun::where('kategori', 'tabungan-tarik')->get();
-            $settings = $settings->where('status','1')->first();
+            $settings = $settings->where('status', '1')->first();
             $akun_id = $settings->akun_id;
 
             if (!$akun_id) {
@@ -343,7 +343,7 @@ class TabunganController extends Controller
 
             // Simpan transaksi utama
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'TRK' . date('YmdHis').rand(1000,9999),
+                'code_pembayaran' => 'TRK' . date('YmdHis').rand(1000, 9999),
                 'penerima_id'     => $request->penerima_id,
                 'penerima_tipe'   => Siswa::class,
                 'jenis_transaksi' => 'penarikan_tabungan',
@@ -351,7 +351,7 @@ class TabunganController extends Controller
                 'keterangan'      => $request->keterangan,
                 'metode' => 'Tunai',
                 'token'           => $token,
-                'token_expired_at'=> now()->addDay(),
+                'token_expired_at' => now()->addDay(),
                 'status_approval' => 'pending',
                 'created_by'      => Auth::id(),
             ]);
@@ -383,14 +383,14 @@ class TabunganController extends Controller
                 ->with('token', $token)
                 ->with('transaksi_id', $transaksi->id);
         } catch (\Exception $e) {
-//            dd($e->getMessage());
+            //            dd($e->getMessage());
             DB::rollBack();
-            return back()->with('danger',$e->getMessage());
+            return back()->with('danger', $e->getMessage());
         }
     }
     public function show($siswa_id)
     {
-        $siswa = Siswa::with('kelas','user')->findOrFail($siswa_id);
+        $siswa = Siswa::with('kelas', 'user')->findOrFail($siswa_id);
 
         // Ambil semua transaksi siswa
         $logs = Keuangan_transaksi::where('penerima_id', $siswa_id)
@@ -469,7 +469,12 @@ class TabunganController extends Controller
 
 
         return view('pages.report.tabungan.tabungan', compact(
-            'userId', 'from', 'to', 'saldoAwal', 'saldoAkhir', 'riwayat'
+            'userId',
+            'from',
+            'to',
+            'saldoAwal',
+            'saldoAkhir',
+            'riwayat'
         ));
     }
     public function reportAll(Request $request)
@@ -500,7 +505,9 @@ class TabunganController extends Controller
 
 
         return view('pages.report.tabungan.tabunganall', compact(
-            'rekap', 'from', 'to'
+            'rekap',
+            'from',
+            'to'
         ));
     }
 
@@ -602,12 +609,12 @@ class TabunganController extends Controller
     {
         $perPage = $request->get('per_page', 15);
 
-        $transaksis = Siswa::with('tahun_ajaran','user.saldo','kelas','unit')
+        $transaksis = Siswa::with('tahun_ajaran', 'user.saldo', 'kelas', 'unit')
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->where('unit_id', $request->unit_id);
             })
             ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
-                $query->whereHas('unit', function($q) {
+                $query->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
@@ -616,18 +623,18 @@ class TabunganController extends Controller
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nisn', 'like', "%{$search}%")
                       ->orWhere('name', 'like', "%{$search}%")
-                      ->orWhereHas('user', function($q) use ($search) {
+                      ->orWhereHas('user', function ($q) use ($search) {
                           $q->where('name', 'like', "%{$search}%");
                       })
-                      ->orWhereHas('kelas', function($q) use ($search) {
+                      ->orWhereHas('kelas', function ($q) use ($search) {
                           $q->where('nama_kelas', 'like', "%{$search}%");
                       });
                 });
             })
-            ->where('status','1')
+            ->where('status', '1')
             ->get();
 
         $siswaIds = $transaksis->pluck('id')->unique()->toArray();
@@ -646,9 +653,9 @@ class TabunganController extends Controller
 
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
-            ->where(function($query) {
-                $query->where('status_approval','=', 'approve')
-                      ->orWhere('status_approval','=', 'approved');
+            ->where(function ($query) {
+                $query->where('status_approval', '=', 'approve')
+                      ->orWhere('status_approval', '=', 'approved');
             })
             ->whereIn('penerima_id', $siswaIds)
             ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
@@ -746,5 +753,31 @@ class TabunganController extends Controller
         // Output PDF ke browser
         return $mpdf->Output('Laporan-Tabungan-' . date('Ymd') . '.pdf', 'I');
     }
+    public function massStatus(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return response()->json(['status' => 'error', 'message' => 'Tidak ada data yang dipilih.'], 400);
+        }
 
+        // Ambil semua saldo berdasarkan ID
+        $saldos = \App\Models\Saldo_keuangan::whereIn('id', $ids)->get();
+
+        if ($saldos->isEmpty()) {
+            return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
+        }
+
+        // Jika semua aktif, ubah jadi nonaktif; jika tidak, ubah jadi aktif
+        $allActive = $saldos->every(fn ($s) => $s->status == 1);
+        $newStatus = $allActive ? 0 : 1;
+
+        foreach ($saldos as $saldo) {
+            $saldo->update(['status' => $newStatus]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $newStatus ? 'Siswa berhasil diaktifkan.' : 'Siswa berhasil dinonaktifkan.'
+        ]);
+    }
 }

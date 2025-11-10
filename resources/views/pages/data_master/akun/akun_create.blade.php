@@ -61,7 +61,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" class="form-control" rows="2" placeholder="Tambahkan keterangan">{{ old('keterangan', $akun->keterangan ?? '') }}</textarea>
+                            <textarea name="keterangan" id="keterangan" class="form-control p-3" rows="1" placeholder="Tambahkan keterangan">{{ old('keterangan', $akun->keterangan ?? '') }}</textarea>
                         </div>
                     </div>
                     {{-- Status --}}

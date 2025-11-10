@@ -60,7 +60,7 @@
                     <i class="bx bx-filter"></i> Filter Tagihan
                 </h5>
                 <form method="GET" action="{{ route('tagihan.index') }}">
-                    <div class="row g-3">
+                    <div class="row g-3 align-items-end">
                         {{-- Filter Unit --}}
                         <div class="col-md-3">
                             <label for="unit_id" class="form-label">Unit</label>
@@ -78,7 +78,7 @@
                         <div class="col-md-3">
                             <label for="search" class="form-label">Cari Tagihan</label>
                             <input type="text" name="search" id="search"
-                                   class="form-control" placeholder="Nama tagihan, kelas..."
+                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
                                    value="{{ request('search') }}">
                         </div>
 
@@ -86,14 +86,14 @@
                         <div class="col-md-2">
                             <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
                             <input type="date" name="dari_tanggal" id="dari_tanggal"
-                                   class="form-control" value="{{ request('dari_tanggal') }}">
+                                   class="form-control p-3" value="{{ request('dari_tanggal') }}">
                         </div>
 
                         {{-- Filter Tanggal Sampai --}}
                         <div class="col-md-2">
                             <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
                             <input type="date" name="sampai_tanggal" id="sampai_tanggal"
-                                   class="form-control" value="{{ request('sampai_tanggal') }}">
+                                   class="form-control p-3" value="{{ request('sampai_tanggal') }}">
                         </div>
 
                         {{-- Tombol Filter --}}

@@ -81,7 +81,7 @@
                     <div class="col-md-3">
                         <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
                         <input type="text" name="kode_pembayaran" id="kode_pembayaran"
-                               class="form-control" placeholder="Cari kode pembayaran"
+                               class="form-control p-3" placeholder="Cari kode pembayaran"
                                value="{{ request('kode_pembayaran') }}">
                     </div>
 
@@ -89,7 +89,7 @@
                     <div class="col-md-3">
                         <label for="nama_siswa" class="form-label">Nama/NISN Siswa</label>
                         <input type="text" name="nama_siswa" id="nama_siswa"
-                               class="form-control" placeholder="Cari nama atau NISN"
+                               class="form-control p-3" placeholder="Cari nama atau NISN"
                                value="{{ request('nama_siswa') }}">
                     </div>
 
@@ -97,7 +97,7 @@
                     <div class="col-md-3">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
                         <input type="text" name="dari_tanggal" id="dari_tanggal"
-                               class="form-control datepicker" placeholder="DD/MM/YYYY"
+                               class="form-control datepicker p-3" placeholder="DD/MM/YYYY"
                                value="{{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : '' }}">
                     </div>
 
@@ -105,7 +105,7 @@
                     <div class="col-md-3">
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
                         <input type="text" name="sampai_tanggal" id="sampai_tanggal"
-                               class="form-control datepicker" placeholder="DD/MM/YYYY"
+                               class="form-control datepicker p-3" placeholder="DD/MM/YYYY"
                                value="{{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : '' }}">
                     </div>
 
@@ -262,7 +262,7 @@
                     Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
                 </div>
                 <div>
-                    {{ $transaksis->links() }}
+                    {{ $transaksis->links('vendor.pagination.custom') }}
                 </div>
             </div>
         </div>

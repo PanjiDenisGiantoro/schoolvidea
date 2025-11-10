@@ -23,7 +23,7 @@
                     <form method="GET" action="{{ route('tipe_unit.index') }}" class="row g-3">
                         <!-- Search Input -->
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari tipe unit (Nama Tipe Unit...)" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control p-3" placeholder="Cari tipe unit (Nama Tipe Unit...)" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">

@@ -40,7 +40,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices
+                            <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select p-3" style="font-size: 14px" data-choices
                                 data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
                                 @foreach ($tahun_ajaran as $t)
@@ -74,7 +74,7 @@
                                 <i class="bx bx-money text-primary"></i> Biaya Tagihan <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="biaya_tagihan_display" id="biaya_tagihan_display"
-                                class="form-control" placeholder="Masukkan Biaya Tagihan"
+                                class="form-control p-3" style="font-size: 14px" placeholder="Masukkan Biaya Tagihan"
                                 value="{{ old('biaya_tagihan', isset($kategoritagihan) ? number_format($kategoritagihan->biaya_tagihan, 0, ',', '.') : '') }}"
                                 required @if(isset($show) && $show) disabled @endif>
                             <input type="hidden" name="biaya_tagihan" id="biaya_tagihan"

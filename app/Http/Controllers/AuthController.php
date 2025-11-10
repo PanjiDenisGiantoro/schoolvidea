@@ -70,138 +70,36 @@ class AuthController extends Controller
         return view("pages.login");
     }
 
+
     // Proses login
     public function portal(Request $request)
     {
-        try {
-            $request->validate([
-                "email" => "required|email",
-                "password" => "required",
-            ]);
+        $request->validate([
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+        $loginType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $credentials = [
+            $loginType => $request->email,
+            'password' => $request->password,
+        ];
 
-            $credentials = $request->only("email", "password");
-
-            // Cek apakah user dengan email tersebut ada
-            $user = User::where("email", $request->email)->first();
-
-            if (!$user) {
-                Log::warning("Login gagal - Email tidak ditemukan", [
-                    "email" => $request->email,
-                    "ip" => $request->ip(),
-                ]);
-
-                activity()
-                    ->withProperties([
-                        "email" => $request->email,
-                        "reason" => "Email tidak ditemukan",
-                    ])
-                    ->log("Percobaan login gagal - Email tidak terdaftar");
-
-                return back()
-                    ->withErrors([
-                        "email" => "Email tidak terdaftar",
-                    ])
-                    ->withInput($request->only("email"));
-            }
-
-            // Cek apakah user aktif (jika ada kolom status)
-            if (isset($user->status) && $user->status == "0") {
-                Log::warning("Login gagal - User tidak aktif", [
-                    "email" => $request->email,
-                    "user_id" => $user->id,
-                ]);
-
-                activity()
-                    ->withProperties([
-                        "email" => $request->email,
-                        "user_id" => $user->id,
-                        "reason" => "User tidak aktif",
-                    ])
-                    ->log("Percobaan login gagal - User tidak aktif");
-
-                return back()
-                    ->withErrors([
-                        "email" =>
-                            "Akun Anda tidak aktif. Silakan hubungi administrator.",
-                    ])
-                    ->withInput($request->only("email"));
-            }
-
-            // Coba login dengan credentials
-            if (Auth::attempt($credentials, $request->filled("remember"))) {
-                $request->session()->regenerate();
-
-                Log::info("Login berhasil", [
-                    "user_id" => Auth::id(),
-                    "email" => $request->email,
-                    "ip" => $request->ip(),
-                ]);
-
-                activity()
-                    ->causedBy(Auth::user())
-                    ->withProperties([
-                        "email" => $request->email,
-                        "ip" => $request->ip(),
-                    ])
-                    ->log("User berhasil login");
-
-                return redirect()->intended(route("dashboard"));
-            }
-
-            // Password salah
-            Log::warning("Login gagal - Password salah", [
-                "email" => $request->email,
-                "user_id" => $user->id,
-                "ip" => $request->ip(),
-            ]);
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
             activity()
+                ->causedBy(Auth::user())
                 ->withProperties([
-                    "email" => $request->email,
-                    "user_id" => $user->id,
-                    "reason" => "Password salah",
+                    $loginType => $request->email
                 ])
-                ->log("Percobaan login gagal - Password salah");
+                ->log('User berhasil login');
 
-            return back()
-                ->withErrors([
-                    "password" => "Password yang Anda masukkan salah",
-                ])
-                ->withInput($request->only("email"));
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Tangani validation error
-            Log::error("Login validation error", [
-                "errors" => $e->errors(),
-                "email" => $request->email ?? null,
-            ]);
-
-            return back()
-                ->withErrors($e->errors())
-                ->withInput($request->only("email"));
-        } catch (\Exception $e) {
-            // Tangani error lainnya
-            Log::error("Login error exception", [
-                "message" => $e->getMessage(),
-                "file" => $e->getFile(),
-                "line" => $e->getLine(),
-                "email" => $request->email ?? null,
-                "ip" => $request->ip(),
-            ]);
-
-            activity()
-                ->withProperties([
-                    "email" => $request->email ?? null,
-                    "error" => $e->getMessage(),
-                ])
-                ->log("Error saat proses login");
-
-            return back()
-                ->withErrors([
-                    "email" =>
-                        "Terjadi kesalahan saat login. Silakan coba lagi.",
-                ])
-                ->withInput($request->only("email"));
+            return redirect()->route('dashboard');
         }
+
+        return back()->withErrors([
+            'email' => 'Email atau password salah',
+        ]);
     }
 
     // Logout
@@ -251,6 +149,7 @@ class AuthController extends Controller
             ]);
         }
 
+
         // Simpan data unit baru
         $unit = Unit::create([
             "nama_unit" => $data["school_name"],
@@ -289,6 +188,7 @@ class AuthController extends Controller
             "new_password" => "required|string|min:6|confirmed",
         ]);
 
+
         $user = Auth::user();
         $user->password = Hash::make($request->new_password);
         $user->save();
@@ -306,6 +206,6 @@ class AuthController extends Controller
     public function activity()
     {
         $activity = Activity::latest()->get();
-        return view("pages.activity_log.activity_log", compact("activity"));
+        return view('pages.activity_log.activity_log', compact('activity'));
     }
 }
