@@ -211,6 +211,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
+
+        // Approve/Reject routes
+        Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');
+        Route::post('/reject/{id}', [KeuanganTransaksiController::class, 'reject'])->name('keuangan_transaksi.reject');
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {

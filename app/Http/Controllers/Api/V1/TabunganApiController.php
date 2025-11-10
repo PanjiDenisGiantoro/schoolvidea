@@ -320,6 +320,57 @@ class TabunganApiController extends Controller
     }
 
     /**
+     * API v1 - List Transaksi (dengan filter status)
+     * GET /api/v1/tabungan/transaksi
+     */
+    public function transaksi(Request $request)
+    {
+        try {
+            $query = Keuangan_transaksi::with(['penerima', 'creator', 'verifier'])
+                ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->orderBy('created_at', 'desc');
+
+            // Filter by status if provided
+            if ($request->has('status')) {
+                $query->where('status_verifikasi', $request->status);
+            }
+
+            // Filter by jenis_transaksi if provided
+            if ($request->has('jenis')) {
+                $query->where('jenis_transaksi', $request->jenis);
+            }
+
+            $transaksis = $query->get();
+
+            $data = $transaksis->map(function ($trx) {
+                return [
+                    'transaksi_id' => $trx->id,
+                    'nomor_transaksi' => $trx->code_pembayaran,
+                    'code_pembayaran' => $trx->code_pembayaran,
+                    'jenis_transaksi' => $trx->jenis_transaksi,
+                    'jumlah' => $trx->jumlah,
+                    'tanggal_transaksi' => $trx->created_at->format('Y-m-d H:i:s'),
+                    'deskripsi' => $trx->keterangan,
+                    'status_pembayaran' => $trx->status_verifikasi,
+                    'status_verifikasi' => $trx->status_verifikasi,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'List transaksi berhasil diambil',
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil list transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * API v1 - Detail Transaksi
      * GET /api/v1/tabungan/{id}/detail
      */

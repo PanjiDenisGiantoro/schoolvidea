@@ -177,7 +177,16 @@ Route::prefix("v1")->group(function () {
         // Tabungan routes
         Route::prefix("tabungan")->group(function () {
             Route::get("/dashboard", [TabunganController::class, "dashboard"]);
-            Route::get("/transaksi", [TabunganController::class, "transaksi"]);
+
+            // New Tabungan API v1 routes
+            Route::get("/transaksi", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "transaksi"]);
+            Route::post("/setor", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "setor"]);
+            Route::post("/tarik", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "tarik"]);
+            Route::post("/{id}/upload-bukti", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "uploadBukti"]);
+            Route::get("/{id}/detail", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "detail"]);
+            Route::post("/{id}/approve", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "approve"]);
+            Route::post("/{id}/reject", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "reject"]);
+
             Route::get("/transaksi/{id}", [
                 TabunganController::class,
                 "detailTransaksi",
@@ -186,14 +195,6 @@ Route::prefix("v1")->group(function () {
                 TabunganController::class,
                 "mutasiRekening",
             ]);
-
-            // New Tabungan API v1 routes
-            Route::post("/setor", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "setor"]);
-            Route::post("/tarik", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "tarik"]);
-            Route::post("/{id}/upload-bukti", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "uploadBukti"]);
-            Route::get("/{id}/detail", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "detail"]);
-            Route::post("/{id}/approve", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "approve"]);
-            Route::post("/{id}/reject", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "reject"]);
             Route::post("/verify", [TabunganController::class, "verifyToken"]);
         });
     });

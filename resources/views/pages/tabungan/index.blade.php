@@ -156,6 +156,15 @@
                         <i class="bx bx-money-withdraw"></i> Tarik
                     </a>
 
+                    @if($total_pending > 0)
+                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
+                        <i class="bx bx-time-five"></i> Pending
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
+                        </span>
+                    </button>
+                    @endif
+
                     <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                         <i class="bx bx-printer"></i> Cetak
@@ -254,6 +263,363 @@
             url.searchParams.set('per_page', perPage);
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
+        }
+
+        function showPendingTransactions() {
+            Swal.fire({
+                title: 'Memuat Transaksi Pending...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Fetch pending transactions
+            fetch('/api/v1/tabungan/transaksi?status=pending', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data && data.data.length > 0) {
+                    let tableRows = '';
+                    data.data.forEach((trx, index) => {
+                        const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
+                        const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
+                        const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+
+                        tableRows += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td><span class="badge bg-${jenisClass}"><i class="bx bx-${jenisIcon} me-1"></i>${jenisText}</span></td>
+                                <td>${trx.nomor_transaksi || trx.code_pembayaran}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</td>
+                                <td>${new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID')}</td>
+                                <td><button class="btn btn-sm btn-info" onclick="showDetailFromList(${trx.transaksi_id})"><i class="bx bx-show me-1"></i>Lihat</button></td>
+                            </tr>
+                        `;
+                    });
+
+                    Swal.fire({
+                        title: 'Transaksi Pending Approval',
+                        html: `
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered">
+                                    <thead class="table-warning">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Jenis</th>
+                                            <th>Nomor</th>
+                                            <th>Jumlah</th>
+                                            <th>Tanggal</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `,
+                        width: '800px',
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'swal-wide'
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Tidak Ada Transaksi Pending',
+                        text: 'Semua transaksi sudah diproses',
+                        confirmButtonColor: '#48bb78'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Gagal memuat transaksi pending',
+                    confirmButtonColor: '#f56565'
+                });
+            });
+        }
+
+        function showDetailFromList(transaksiId) {
+            Swal.close(); // Close current modal
+            showDetailTransaksi(transaksiId);
+        }
+
+        function showDetailTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Memuat...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const trx = data.data;
+                    const statusBadge = getStatusBadge(trx.status_pembayaran);
+                    const buktiHtml = trx.bukti_transfer
+                        ? `<div class="mb-3">
+                            <strong>Bukti Transfer:</strong><br>
+                            <a href="${trx.bukti_transfer}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="bx bx-image me-1"></i>Lihat Bukti Transfer
+                            </a>
+                        </div>`
+                        : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
+
+                    const catatanHtml = trx.catatan_verifikasi
+                        ? `<div class="alert alert-info">
+                            <strong>Catatan Verifikasi:</strong><br>
+                            ${trx.catatan_verifikasi}<br>
+                            <small class="text-muted">Oleh: ${trx.verified_by || '-'} pada ${trx.verified_at || '-'}</small>
+                        </div>`
+                        : '';
+
+                    const actionButtons = trx.status_pembayaran === 'pending'
+                        ? `<div class="mt-4 d-flex gap-2 justify-content-center">
+                            <button class="btn btn-success" onclick="approveTransaksi(${transaksiId})">
+                                <i class="bx bx-check-circle me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-danger" onclick="rejectTransaksi(${transaksiId})">
+                                <i class="bx bx-x-circle me-1"></i>Reject
+                            </button>
+                        </div>`
+                        : '';
+
+                    Swal.fire({
+                        title: 'Detail Transaksi',
+                        html: `
+                            <div class="text-start">
+                                <div class="mb-3">
+                                    <strong>Nomor Transaksi:</strong><br>
+                                    <span class="badge bg-secondary">${trx.nomor_transaksi}</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Jenis Transaksi:</strong><br>
+                                    ${trx.jenis_transaksi}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Jumlah:</strong><br>
+                                    <h4 class="text-primary">Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</h4>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Tanggal Transaksi:</strong><br>
+                                    ${trx.tanggal_transaksi}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Deskripsi:</strong><br>
+                                    ${trx.deskripsi || '-'}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Status:</strong><br>
+                                    ${statusBadge}
+                                </div>
+                                ${buktiHtml}
+                                ${catatanHtml}
+                                ${actionButtons}
+                            </div>
+                        `,
+                        width: '600px',
+                        showCloseButton: true,
+                        showConfirmButton: false
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Gagal memuat detail transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+            });
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'approved') {
+                return '<span class="badge bg-success rounded-pill px-3 py-2"><i class="bx bx-check-circle me-1"></i>Approved</span>';
+            } else if (status === 'rejected') {
+                return '<span class="badge bg-danger rounded-pill px-3 py-2"><i class="bx bx-x-circle me-1"></i>Rejected</span>';
+            } else {
+                return '<span class="badge bg-warning rounded-pill px-3 py-2"><i class="bx bx-time-five me-1"></i>Pending</span>';
+            }
+        }
+
+        function approveTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Approve Transaksi',
+                html: `
+                    <div class="text-start">
+                        <label for="catatan-approve" class="form-label">Catatan (Opsional)</label>
+                        <textarea id="catatan-approve" class="form-control" rows="3" placeholder="Masukkan catatan verifikasi..."></textarea>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#48bb78',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check me-1"></i> Approve',
+                cancelButtonText: 'Batal',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const catatan = document.getElementById('catatan-approve').value;
+                    processApproval(transaksiId, catatan);
+                }
+            });
+        }
+
+        function rejectTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Reject Transaksi',
+                html: `
+                    <div class="text-start">
+                        <label for="catatan-reject" class="form-label">Alasan Reject <span class="text-danger">*</span></label>
+                        <textarea id="catatan-reject" class="form-control" rows="3" placeholder="Masukkan alasan reject..." required></textarea>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f56565',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-x me-1"></i> Reject',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const catatan = document.getElementById('catatan-reject').value;
+                    if (!catatan) {
+                        Swal.showValidationMessage('Alasan reject harus diisi');
+                        return false;
+                    }
+                    return catatan;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processRejection(transaksiId, result.value);
+                }
+            });
+        }
+
+        function processApproval(transaksiId, catatan) {
+            Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/api/v1/tabungan/${transaksiId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat approve transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+            });
+        }
+
+        function processRejection(transaksiId, catatan) {
+            Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/api/v1/tabungan/${transaksiId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat reject transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+            });
         }
     </script>
 @endpush

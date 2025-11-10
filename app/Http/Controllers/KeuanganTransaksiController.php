@@ -314,4 +314,136 @@ class KeuanganTransaksiController extends Controller
         // Output PDF ke browser
         return $mpdf->Output('Bukti-Transaksi-' . $transaksi->code_pembayaran . '.pdf', 'I');
     }
+
+    /**
+     * Approve transaksi keuangan
+     */
+    public function approve(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'nullable|string'
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            $transaksi = Keuangan_transaksi::with('penerima')->findOrFail($id);
+
+            // Cek apakah transaksi sudah diverifikasi
+            if ($transaksi->status_verifikasi === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah diapprove sebelumnya'
+                ], 400);
+            }
+
+            // Update status verifikasi
+            $transaksi->update([
+                'status_verifikasi' => 'approved',
+                'status_approval' => 'approved',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            // Jika setoran tabungan, tambah saldo setelah approve
+            if ($transaksi->jenis_transaksi === 'setoran_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+                $siswa = Siswa::findOrFail($transaksi->penerima_id);
+                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+                if ($saldoSiswa) {
+                    $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
+                }
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'approve',
+                'data_lama' => json_encode(['status_verifikasi' => 'pending']),
+                'data_baru' => json_encode(['status_verifikasi' => 'approved']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil diapprove'
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal approve transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject transaksi keuangan
+     */
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'required|string'
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            $transaksi = Keuangan_transaksi::with('penerima')->findOrFail($id);
+
+            // Cek apakah transaksi sudah diverifikasi
+            if ($transaksi->status_verifikasi === 'rejected') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah direject sebelumnya'
+                ], 400);
+            }
+
+            // Update status verifikasi
+            $transaksi->update([
+                'status_verifikasi' => 'rejected',
+                'status_approval' => 'rejected',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            // Rollback saldo jika penarikan tabungan
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+                $siswa = Siswa::findOrFail($transaksi->penerima_id);
+                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+                if ($saldoSiswa) {
+                    $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
+                }
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'reject',
+                'data_lama' => json_encode(['status_verifikasi' => 'pending']),
+                'data_baru' => json_encode(['status_verifikasi' => 'rejected']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil direject'
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reject transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
