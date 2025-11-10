@@ -156,11 +156,6 @@
                         <i class="bx bx-money-withdraw"></i> Tarik
                     </a>
 
-                    <a href="#"
-                        class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                        <i class="bx bx-transfer"></i> Transaksi
-                    </a>
-
                     <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                         <i class="bx bx-printer"></i> Cetak

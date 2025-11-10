@@ -172,7 +172,7 @@
 
                 <div class="row g-3 mt-2">
                     <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
-                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan (Bulanan)</label>
+                        <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan </label>
                         <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Tagihan --</option>
                         </select>
@@ -638,25 +638,52 @@
                     // 🔹 Bayar Full
                     kirimPembayaran(tagihanId, bulan, tahun, validNominal, kategoriId, validNominal);
                 } else if (result.isDenied) {
-                    // 🔹 Input Nominal untuk Bayar Sebagian
+                    // 🔹 Input Nominal untuk Bayar Sebagian dengan format digit
                     Swal.fire({
                         title: "Masukan Nominal Bayar",
-                        input: "number",
-                        inputAttributes: {
-                            min: 1,
-                            max: validNominal
-                        },
-                        inputLabel: `Maksimal Rp ${validNominal.toLocaleString('id-ID')}`,
-                        inputPlaceholder: "Contoh: 500000",
+                        html: `
+                            <div class="mb-3">
+                                <label class="form-label">Maksimal: Rp ${validNominal.toLocaleString('id-ID')}</label>
+                                <input type="text" id="swal-input-nominal" class="form-control"
+                                    placeholder="Contoh: 500.000" style="font-size: 1.1rem;">
+                                <small class="text-muted">Gunakan titik sebagai pemisah ribuan</small>
+                            </div>
+                        `,
                         showCancelButton: true,
                         confirmButtonText: "Bayar",
                         cancelButtonText: "Batal",
-                        preConfirm: (val) => {
-                            if (!val || val <= 0) {
+                        didOpen: () => {
+                            const input = document.getElementById('swal-input-nominal');
+
+                            // Format number with thousands separator
+                            function formatNumber(num) {
+                                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                            }
+
+                            // Remove all non-digit characters
+                            function unformatNumber(str) {
+                                return str.replace(/\D/g, '');
+                            }
+
+                            input.addEventListener('input', function(e) {
+                                let rawValue = unformatNumber(this.value);
+                                if (rawValue) {
+                                    this.value = formatNumber(rawValue);
+                                }
+                            });
+
+                            input.focus();
+                        },
+                        preConfirm: () => {
+                            const input = document.getElementById('swal-input-nominal');
+                            const rawValue = input.value.replace(/\D/g, '');
+                            const val = parseInt(rawValue);
+
+                            if (!rawValue || val <= 0) {
                                 Swal.showValidationMessage("Nominal harus lebih dari 0");
                                 return false;
                             }
-                            if (parseInt(val) > validNominal) {
+                            if (val > validNominal) {
                                 Swal.showValidationMessage(
                                     "Nominal tidak boleh lebih besar dari total tagihan!");
                                 return false;

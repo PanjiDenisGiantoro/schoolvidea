@@ -69,10 +69,17 @@
 
                     {{-- Biaya Tagihan --}}
                     <div class="col-md-4">
-                        <x-input-field type="number" name="biaya_tagihan" label="Biaya Tagihan"
-                            placeholder="Masukkan Biaya Tagihan" icon="bx bx-money" :value="old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '')"
-{{--                            oninput="formatCurrencyInput(this)" --}}
-                                       required />
+                        <div class="mb-3">
+                            <label for="biaya_tagihan" class="form-label">
+                                <i class="bx bx-money text-primary"></i> Biaya Tagihan <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="biaya_tagihan_display" id="biaya_tagihan_display"
+                                class="form-control" placeholder="Masukkan Biaya Tagihan"
+                                value="{{ old('biaya_tagihan', isset($kategoritagihan) ? number_format($kategoritagihan->biaya_tagihan, 0, ',', '.') : '') }}"
+                                required @if(isset($show) && $show) disabled @endif>
+                            <input type="hidden" name="biaya_tagihan" id="biaya_tagihan"
+                                value="{{ old('biaya_tagihan', $kategoritagihan->biaya_tagihan ?? '') }}">
+                        </div>
                     </div>
                     {{-- Status --}}
                     <div class="col-md-4">
@@ -191,23 +198,35 @@
         </script>
     @endif
     <script>
-        function formatCurrencyInput(input) {
-            let value = input.value.replace(/[^\d]/g, '');
-            if (value === '') {
-                input.value = '';
-                return;
-            }
-            input.value = new Intl.NumberFormat('id-ID').format(value);
+        // Format number with thousands separator
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 
-        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
-        document.addEventListener('submit', function(e) {
-            const inputs = document.querySelectorAll(
-                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
-            );
-            inputs.forEach(input => {
-                input.value = input.value.replace(/\./g, '');
-            });
+        // Remove all non-digit characters
+        function unformatNumber(str) {
+            return str.replace(/\D/g, '');
+        }
+
+        // Handle biaya_tagihan input formatting
+        document.addEventListener('DOMContentLoaded', function() {
+            const biayaDisplay = document.getElementById('biaya_tagihan_display');
+            const biayaHidden = document.getElementById('biaya_tagihan');
+
+            if (biayaDisplay) {
+                biayaDisplay.addEventListener('input', function(e) {
+                    // Get raw value without formatting
+                    let rawValue = unformatNumber(this.value);
+
+                    // Update hidden input with raw value
+                    biayaHidden.value = rawValue;
+
+                    // Format display value
+                    if (rawValue) {
+                        this.value = formatNumber(rawValue);
+                    }
+                });
+            }
         });
     </script>
 @endpush

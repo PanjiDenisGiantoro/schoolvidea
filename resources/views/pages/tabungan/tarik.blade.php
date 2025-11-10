@@ -114,9 +114,10 @@
                                         <span class="input-group-text bg-danger text-white border-0 rounded-start-pill">
                                             <strong>Rp</strong>
                                         </span>
-                                        <input type="number" name="jumlah" id="jumlah"
+                                        <input type="text" name="jumlah_display" id="jumlah_display"
                                                class="form-control border-0 shadow-sm rounded-end-pill"
-                                               placeholder="0" required min="1">
+                                               placeholder="0" required>
+                                        <input type="hidden" name="jumlah" id="jumlah">
                                     </div>
                                     <small class="text-muted">Maksimal penarikan sesuai saldo yang tersedia</small>
                                 </div>
@@ -205,7 +206,18 @@
 
 @push('scripts')
     <script>
-        const jumlahInput = document.getElementById('jumlah');
+        // Format number with thousands separator
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Remove all non-digit characters
+        function unformatNumber(str) {
+            return str.replace(/\D/g, '');
+        }
+
+        const jumlahDisplay = document.getElementById('jumlah_display');
+        const jumlahHidden = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
         const saldoAwalEl = document.getElementById('saldo_awal');
         let saldoAwal = 0;
@@ -315,8 +327,14 @@
         });
 
         // Update jumlah transaksi real-time + validasi saldo
-        jumlahInput.addEventListener('input', function() {
-            let value = parseInt(this.value) || 0;
+        jumlahDisplay.addEventListener('input', function(e) {
+            // Get raw value without formatting
+            let rawValue = unformatNumber(this.value);
+
+            // Update hidden input with raw value
+            jumlahHidden.value = rawValue;
+
+            let value = parseInt(rawValue) || 0;
 
             if (value > saldoAwal) {
                 Swal.fire({
@@ -325,8 +343,16 @@
                     text: `Jumlah penarikan tidak boleh lebih besar dari saldo (Rp ${saldoAwal.toLocaleString('id-ID')})`,
                     confirmButtonColor: '#f56565'
                 });
-                this.value = saldoAwal; // otomatis set ke saldo maksimal
+                // Set ke saldo maksimal
+                rawValue = saldoAwal.toString();
+                jumlahHidden.value = rawValue;
+                this.value = formatNumber(rawValue);
                 value = saldoAwal;
+            } else {
+                // Format display value
+                if (rawValue) {
+                    this.value = formatNumber(rawValue);
+                }
             }
 
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
@@ -337,7 +363,8 @@
             e.preventDefault();
 
             const siswaId = penerimaHidden.value;
-            const jumlah = jumlahInput.value;
+            const jumlah = jumlahHidden.value;
+            const jumlahDisplayValue = jumlahDisplay.value;
             const namaSiswa = document.getElementById('detail_nama').innerText;
 
             if (!siswaId) {
@@ -350,7 +377,7 @@
                 return;
             }
 
-            if (!jumlah || jumlah <= 0) {
+            if (!jumlah || jumlah <= 0 || !jumlahDisplayValue) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Perhatian!',

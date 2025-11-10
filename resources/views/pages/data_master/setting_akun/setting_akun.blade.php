@@ -70,8 +70,14 @@
                                 @php
                                     if($item->kategori == 'tabungan'){
                                         echo 'Tabungan-setor';
-                                    }else{
+                                    }elseif ($item->kategori == 'tabungan-tarik'){
                                         echo $item->kategori ?? '-';
+                                    }
+                                    elseif($item->kategori == 'tagihan-masuk'){
+                                        echo 'transaksi masuk';
+                                    }
+                                    else if($item->kategori == 'tagihan-keluar'){
+                                        echo 'transaksi keluar';
                                     }
                                 @endphp
                             <td>

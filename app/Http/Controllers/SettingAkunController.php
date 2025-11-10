@@ -97,17 +97,18 @@ class SettingAkunController extends Controller
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $akuns = Akun::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status', '1')->get();
+            })->where('status', '1')->orderBy('kode_akun')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('id', $unitId);
             })->where('status','1')->get();
             $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
-            })->where('status','1')->get();
+            })->where('status','1')->orderBy('kode_akun')->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $akuns = Akun::where('status', '1')
+                ->orderBy('kode_akun')
                 ->get();
         }
 
@@ -126,17 +127,18 @@ class SettingAkunController extends Controller
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $akuns = Akun::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status', '1')->get();
+            })->where('status', '1')->orderBy('kode_akun')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('id', $unitId);
             })->where('status','1')->get();
             $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
-            })->where('status','1')->get();
+            })->where('status','1')->orderBy('kode_akun')->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $akuns = Akun::where('status', '1')
+                ->orderBy('kode_akun')
                 ->get();
         }
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);

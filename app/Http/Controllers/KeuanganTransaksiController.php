@@ -51,6 +51,13 @@ class KeuanganTransaksiController extends Controller
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
+            ->when($request->nama_siswa, function ($query, $nama) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($nama) {
+                    $q->whereHas('user', function($q2) use ($nama) {
+                        $q2->where('name', 'like', '%' . $nama . '%');
+                    })->orWhere('nisn', 'like', '%' . $nama . '%');
+                });
+            })
             ->when($request->dari_tanggal, function ($query, $dari) {
                 $query->whereDate('tanggal_transaksi', '>=', $dari);
             })

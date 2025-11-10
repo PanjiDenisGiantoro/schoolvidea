@@ -85,18 +85,28 @@
                                value="{{ request('kode_pembayaran') }}">
                     </div>
 
+                    {{-- Filter Nama Siswa --}}
+                    <div class="col-md-3">
+                        <label for="nama_siswa" class="form-label">Nama/NISN Siswa</label>
+                        <input type="text" name="nama_siswa" id="nama_siswa"
+                               class="form-control" placeholder="Cari nama atau NISN"
+                               value="{{ request('nama_siswa') }}">
+                    </div>
+
                     {{-- Filter Tanggal Dari --}}
                     <div class="col-md-3">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
-                        <input type="date" name="dari_tanggal" id="dari_tanggal"
-                               class="form-control" value="{{ request('dari_tanggal') }}">
+                        <input type="text" name="dari_tanggal" id="dari_tanggal"
+                               class="form-control datepicker" placeholder="DD/MM/YYYY"
+                               value="{{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : '' }}">
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
                     <div class="col-md-3">
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
-                        <input type="date" name="sampai_tanggal" id="sampai_tanggal"
-                               class="form-control" value="{{ request('sampai_tanggal') }}">
+                        <input type="text" name="sampai_tanggal" id="sampai_tanggal"
+                               class="form-control datepicker" placeholder="DD/MM/YYYY"
+                               value="{{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : '' }}">
                     </div>
 
                     {{-- Tombol Filter --}}
@@ -273,6 +283,8 @@
 @endpush
 
 @push('scripts')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         function changePerPage(perPage) {
             const url = new URL(window.location.href);
@@ -280,5 +292,62 @@
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
         }
+
+        // Initialize datepicker dengan format DD/MM/YYYY
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr('.datepicker', {
+                dateFormat: 'd/m/Y',
+                allowInput: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Convert DD/MM/YYYY to YYYY-MM-DD for backend
+                    if (selectedDates.length > 0) {
+                        const date = selectedDates[0];
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day}`;
+
+                        // Set the actual input value to backend format
+                        if (instance.element.id === 'dari_tanggal') {
+                            instance.element.setAttribute('data-value', formattedDate);
+                        } else if (instance.element.id === 'sampai_tanggal') {
+                            instance.element.setAttribute('data-value', formattedDate);
+                        }
+                    }
+                }
+            });
+
+            // Convert dates before form submission
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const dariTanggal = document.getElementById('dari_tanggal');
+                const sampaiTanggal = document.getElementById('sampai_tanggal');
+
+                // Convert dari_tanggal
+                if (dariTanggal.value) {
+                    const dataValue = dariTanggal.getAttribute('data-value');
+                    if (dataValue) {
+                        dariTanggal.value = dataValue;
+                    } else {
+                        const parts = dariTanggal.value.split('/');
+                        if (parts.length === 3) {
+                            dariTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        }
+                    }
+                }
+
+                // Convert sampai_tanggal
+                if (sampaiTanggal.value) {
+                    const dataValue = sampaiTanggal.getAttribute('data-value');
+                    if (dataValue) {
+                        sampaiTanggal.value = dataValue;
+                    } else {
+                        const parts = sampaiTanggal.value.split('/');
+                        if (parts.length === 3) {
+                            sampaiTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        }
+                    }
+                }
+            });
+        });
     </script>
 @endpush

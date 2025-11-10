@@ -273,7 +273,7 @@
                         </div>
                         <label for="token-input" class="form-label fw-semibold">Masukkan Token (5 Digit)</label>
                         <input type="text" id="token-input" class="form-control form-control-lg text-center mb-3"
-                               placeholder="00000" maxlength="5" pattern="[0-9]{5}"
+                               placeholder="000000" maxlength="6" pattern="[0-9]{6}"
                                style="letter-spacing: 8px; font-size: 1.5rem; font-weight: bold;">
                         <small class="text-muted">Masukkan 6 digit token untuk memverifikasi transaksi</small>
                     `,

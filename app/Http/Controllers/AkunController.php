@@ -47,7 +47,7 @@ class AkunController extends Controller
         }
 
         // Paginate results
-        $akuns = $query->paginate(15)->appends($request->except('page'));
+        $akuns = $query->orderBy('kode_akun')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -96,15 +96,15 @@ class AkunController extends Controller
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $parents = Akun::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status','1')->get();
+            })->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
-            $parents = Akun::where('unit_id', Auth::user()->unit_id)->where('status','1')->get();
+            $parents = Akun::where('unit_id', Auth::user()->unit_id)->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('status','1')->get();
+            $parents = Akun::where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('status','1')->get();
         }
 
@@ -149,17 +149,17 @@ class AkunController extends Controller
                 ->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 })
-                ->where('status','1')->get();
+                ->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
             $parents = Akun::where('id', '!=', $id)
                 ->where('unit_id', Auth::user()->unit_id)
-                ->where('status','1')->get();
+                ->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('id', '!=', $id)->where('status','1')->get();
+            $parents = Akun::where('id', '!=', $id)->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('status','1')->get();
         }
 
@@ -214,17 +214,17 @@ class AkunController extends Controller
                 ->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 })
-                ->where('status','1')->get();
+                ->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
             $parents = Akun::where('id', '!=', $id)
                 ->where('unit_id', Auth::user()->unit_id)
-                ->where('status','1')->get();
+                ->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('id', '!=', $id)->where('status','1')->get();
+            $parents = Akun::where('id', '!=', $id)->where('status','1')->orderBy('kode_akun')->get();
             $units = \App\Models\Unit::where('status','1')->get();
         }
 

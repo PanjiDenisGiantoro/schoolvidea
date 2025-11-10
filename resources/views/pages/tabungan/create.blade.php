@@ -114,9 +114,10 @@
                                         <span class="input-group-text bg-success text-white border-0 rounded-start-pill">
                                             <strong>Rp</strong>
                                         </span>
-                                        <input type="number" name="jumlah" id="jumlah"
+                                        <input type="text" name="jumlah_display" id="jumlah_display"
                                                class="form-control border-0 shadow-sm rounded-end-pill"
-                                               placeholder="0" required min="1">
+                                               placeholder="0" required>
+                                        <input type="hidden" name="jumlah" id="jumlah">
                                     </div>
                                     <small class="text-muted">Minimal setoran Rp 1.000</small>
                                 </div>
@@ -206,12 +207,35 @@
 
 @push('scripts')
     <script>
+        // Format number with thousands separator
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Remove all non-digit characters
+        function unformatNumber(str) {
+            return str.replace(/\D/g, '');
+        }
+
         // Update jumlah transaksi real-time
-        const jumlahInput = document.getElementById('jumlah');
+        const jumlahDisplay = document.getElementById('jumlah_display');
+        const jumlahHidden = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
 
-        jumlahInput.addEventListener('input', function() {
-            const value = parseInt(this.value) || 0;
+        jumlahDisplay.addEventListener('input', function(e) {
+            // Get raw value without formatting
+            let rawValue = unformatNumber(this.value);
+
+            // Update hidden input with raw value
+            jumlahHidden.value = rawValue;
+
+            // Format display value
+            if (rawValue) {
+                this.value = formatNumber(rawValue);
+            }
+
+            // Update jumlah transaksi display
+            const value = parseInt(rawValue) || 0;
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
         });
 
@@ -221,6 +245,7 @@
 
             const siswaId = document.getElementById('penerima_hidden').value;
             const jumlah = document.getElementById('jumlah').value;
+            const jumlahDisplay = document.getElementById('jumlah_display').value;
             const namaSiswa = document.getElementById('detail_nama').innerText;
 
             if (!siswaId) {
@@ -233,7 +258,7 @@
                 return;
             }
 
-            if (!jumlah || jumlah <= 0) {
+            if (!jumlah || jumlah <= 0 || !jumlahDisplay) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Perhatian!',

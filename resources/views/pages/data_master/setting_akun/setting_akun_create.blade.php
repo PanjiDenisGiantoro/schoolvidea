@@ -48,11 +48,11 @@
                                 @if (isset($show) && $show) disabled @endif>
                             <option value="">-- Pilih Kategori --</option>
                             <option value="tagihan-masuk"
-                                {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Tagihan
+                                {{ old('kategori', $setting->kategori ?? '') == 'tagihan-masuk' ? 'selected' : '' }}>Transaksi
                                 Masuk</option>
                             <option value="tagihan-keluar"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tagihan-keluar' ? 'selected' : '' }}>
-                                Tagihan Keluar</option>
+                                Transaksi Keluar</option>
                             <option value="tabungan-tarik"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tabungan-tarik' ? 'selected' : '' }}>
                                 Tabungan Tarik</option>
