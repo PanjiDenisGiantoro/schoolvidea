@@ -224,7 +224,6 @@ class TabunganController extends Controller
                 'keterangan'      => $request->keterangan,
                 'metode' => 'CASH',
                 'token'           => null,
-                'token_expired_at'=> null,
                 'status_approval' => null,
                 'created_by'      => Auth::id(),
             ]);
@@ -745,6 +744,110 @@ class TabunganController extends Controller
 
         // Output PDF ke browser
         return $mpdf->Output('Laporan-Tabungan-' . date('Ymd') . '.pdf', 'I');
+    }
+
+    /**
+     * Upload bukti transfer untuk transaksi tabungan
+     */
+    public function uploadBuktiTransfer(Request $request, $id)
+    {
+        $request->validate([
+            'bukti_transfer' => 'required|image|mimes:jpeg,png,jpg,pdf|max:2048',
+        ]);
+
+        try {
+            $transaksi = Keuangan_transaksi::findOrFail($id);
+
+            // Hapus file lama jika ada
+            if ($transaksi->bukti_transfer && file_exists(public_path($transaksi->bukti_transfer))) {
+                unlink(public_path($transaksi->bukti_transfer));
+            }
+
+            // Upload file baru
+            $file = $request->file('bukti_transfer');
+            $filename = 'bukti_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->move(public_path('uploads/bukti_transfer'), $filename);
+
+            // Update database
+            $transaksi->update([
+                'bukti_transfer' => 'uploads/bukti_transfer/' . $filename,
+                'status_verifikasi' => 'pending'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti transfer berhasil diupload',
+                'data' => $transaksi
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload bukti transfer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Approve transaksi tabungan
+     */
+    public function approveTransaksi(Request $request, $id)
+    {
+        try {
+            $transaksi = Keuangan_transaksi::findOrFail($id);
+
+            $transaksi->update([
+                'status_verifikasi' => 'approved',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil diapprove',
+                'data' => $transaksi
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal approve transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject transaksi tabungan
+     */
+    public function rejectTransaksi(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'required|string'
+        ]);
+
+        try {
+            $transaksi = Keuangan_transaksi::findOrFail($id);
+
+            $transaksi->update([
+                'status_verifikasi' => 'rejected',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil direject',
+                'data' => $transaksi
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reject transaksi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

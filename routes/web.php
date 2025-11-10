@@ -199,6 +199,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
         Route::get('/print-laporan', [TabunganController::class, 'printLaporan'])->name('tabungan.print_laporan');
+
+        // Bukti transfer & verifikasi
+        Route::post('/upload-bukti/{id}', [TabunganController::class, 'uploadBuktiTransfer'])->name('tabungan.upload_bukti');
+        Route::post('/approve/{id}', [TabunganController::class, 'approveTransaksi'])->middleware('permission:edit_tabungan')->name('tabungan.approve');
+        Route::post('/reject/{id}', [TabunganController::class, 'rejectTransaksi'])->middleware('permission:edit_tabungan')->name('tabungan.reject');
     });
 
     Route::prefix('keuangan-transaksi')->middleware('permission:view_report')->group(function () {

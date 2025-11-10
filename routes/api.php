@@ -186,8 +186,14 @@ Route::prefix("v1")->group(function () {
                 TabunganController::class,
                 "mutasiRekening",
             ]);
-            Route::post("/setor", [TabunganController::class, "setor"]);
-            Route::post("/tarik", [TabunganController::class, "tarik"]);
+
+            // New Tabungan API v1 routes
+            Route::post("/setor", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "setor"]);
+            Route::post("/tarik", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "tarik"]);
+            Route::post("/{id}/upload-bukti", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "uploadBukti"]);
+            Route::get("/{id}/detail", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "detail"]);
+            Route::post("/{id}/approve", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "approve"]);
+            Route::post("/{id}/reject", [\App\Http\Controllers\Api\V1\TabunganApiController::class, "reject"]);
             Route::post("/verify", [TabunganController::class, "verifyToken"]);
         });
     });
