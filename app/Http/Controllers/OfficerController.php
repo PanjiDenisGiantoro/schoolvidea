@@ -122,12 +122,12 @@ class OfficerController extends Controller
             'role_id' => 'required|exists:roles,id',
             'image' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
-            'no_hp' => 'nullable|string|regex:/^[0-9]+$/|digits_between:10,13|unique:officers,no_hp',
+            'no_hp' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,14|unique:officers,no_hp',
             'unit_id' => 'required|exists:units,id',
             'rfid_no' => 'nullable|string|max:255',
-            'nip'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:officers,nip',
-            'nuptk'           => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,16|unique:officers,nuptk',
-            'nik'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,16|unique:officers,nik',
+            'nip'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nip',
+            'nuptk'           => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nuptk',
+            'nik'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nik',
             'jenis_kelamin'   => 'nullable',
             'agama'           => 'nullable|string|max:50',
             'tanggal_lahir'   => 'nullable|date',
@@ -165,7 +165,7 @@ class OfficerController extends Controller
                 ['guard_name' => 'web']
             );
             $user->assignRole($roleSpatie->name);
-            $tahunAjaran = Tahun_ajaran::where('status', 1)->first();
+            $tahunAjaran = \App\Models\Tahun_ajaran::where('status', 1)->first();
 
             $officer =   Officer::create([
                 'nip'             => $request->nip,

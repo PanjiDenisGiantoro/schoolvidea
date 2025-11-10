@@ -425,6 +425,56 @@
                 });
             });
         });
+
+        // Cek format email (jika ada)
+        const email = form.querySelector('[name="email"]');
+        if (email && email.value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+            errors.push('Format email tidak valid.');
+        }
+
+        // Cek NISN hanya angka
+        const nisn = form.querySelector('[name="nisn"]');
+        if (nisn && nisn.value.trim() !== '' && !/^[0-9]+$/.test(nisn.value)) {
+            errors.push('NISN hanya boleh berisi angka.');
+        }
+
+        // Jika ada error, tampilkan SweetAlert error dan hentikan submit
+        if (errors.length > 0) {
+            Swal.fire({
+                title: 'Validasi Gagal!',
+                html: `<ul class="text-start">${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
+                icon: 'error',
+                confirmButtonText: 'Perbaiki',
+                confirmButtonColor: '#dc3545'
+            });
+            return;
+        }
+
+        // --- ✅ Jika lolos validasi, tampilkan konfirmasi SweetAlert ---
+        Swal.fire({
+        title: 'Apakah data sudah benar?',
+        text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Simpan!',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d'
+        }).then((result) => {
+        if (result.isConfirmed) {
+        Swal.fire({
+            title: 'Menyimpan...',
+            text: 'Harap tunggu sebentar.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // ✅ Submit form setelah konfirmasi
+        form.submit();
+        }
+        });
+        });
+        });
     </script>
 
     {{-- Alert Sukses & Error --}}
