@@ -329,6 +329,7 @@ class TabunganApiController extends Controller
             $transaksi = Keuangan_transaksi::with(['penerima', 'creator', 'verifier'])
                 ->findOrFail($id);
 
+
             return response()->json([
                 'success' => true,
                 'message' => 'Detail transaksi berhasil diambil',
