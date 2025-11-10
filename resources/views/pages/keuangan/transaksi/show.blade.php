@@ -140,6 +140,64 @@
 
                 <hr>
 
+                {{-- Status Verifikasi --}}
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-check-shield"></i> Status Verifikasi
+                </h6>
+                <div class="mb-3">
+                    @if($transaksi->status_verifikasi == 'approved')
+                        <span class="badge bg-success rounded-pill px-3 py-2">
+                            <i class="bx bx-check-circle me-1"></i>Approved
+                        </span>
+                    @elseif($transaksi->status_verifikasi == 'rejected')
+                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                            <i class="bx bx-x-circle me-1"></i>Rejected
+                        </span>
+                    @else
+                        <span class="badge bg-warning rounded-pill px-3 py-2">
+                            <i class="bx bx-time-five me-1"></i>Pending
+                        </span>
+                    @endif
+
+                    @if($transaksi->verified_by && $transaksi->verified_at)
+                        <div class="mt-2 small text-muted">
+                            <i class="bx bx-user me-1"></i>
+                            Diverifikasi oleh: {{ $transaksi->verifier->name ?? '-' }}<br>
+                            <i class="bx bx-calendar me-1"></i>
+                            Pada: {{ \Carbon\Carbon::parse($transaksi->verified_at)->format('d/m/Y H:i:s') }}
+                        </div>
+                    @endif
+
+                    @if($transaksi->catatan_verifikasi)
+                        <div class="alert alert-info mt-2 small">
+                            <strong>Catatan Verifikasi:</strong><br>
+                            {{ $transaksi->catatan_verifikasi }}
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Bukti Transfer --}}
+                @if($transaksi->bukti_transfer)
+                <hr>
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-image"></i> Bukti Transfer
+                </h6>
+                <div class="mb-3">
+                    <a href="{{ asset($transaksi->bukti_transfer) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bx bx-download me-1"></i>Lihat Bukti Transfer
+                    </a>
+                    <div class="mt-2">
+                        <img src="{{ asset($transaksi->bukti_transfer) }}"
+                             alt="Bukti Transfer"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height: 300px; cursor: pointer;"
+                             onclick="window.open('{{ asset($transaksi->bukti_transfer) }}', '_blank')">
+                    </div>
+                </div>
+                @endif
+
+                <hr>
+
                 <ul class="list-unstyled small text-muted">
                     <li><strong>Dibuat Oleh:</strong> {{ $transaksi->creator->name ?? '-' }}</li>
                     <li><strong>Dibuat Pada:</strong> {{ \Carbon\Carbon::parse($transaksi->created_at)->format('d/m/Y H:i:s') }}</li>
@@ -147,6 +205,20 @@
                     <li><strong>Terakhir Update:</strong> {{ \Carbon\Carbon::parse($transaksi->updated_at)->format('d/m/Y H:i:s') }}</li>
                     @endif
                 </ul>
+
+                {{-- Approve/Reject Buttons --}}
+                @if($transaksi->status_verifikasi == 'pending')
+                <div class="mt-3">
+                    <button type="button" class="btn btn-success w-100 rounded-pill shadow-sm mb-2 btn-approve-detail"
+                            data-id="{{ $transaksi->id }}">
+                        <i class="bx bx-check-circle me-1"></i> Approve Transaksi
+                    </button>
+                    <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
+                            data-id="{{ $transaksi->id }}">
+                        <i class="bx bx-x-circle me-1"></i> Reject Transaksi
+                    </button>
+                </div>
+                @endif
 
                 <div class="mt-3">
                     <a href="{{ route('keuangan_transaksi.print_detail', $transaksi->id) }}" target="_blank"
@@ -280,4 +352,183 @@
             padding-left: 10px;
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle approve button click
+            const approveBtn = document.querySelector('.btn-approve-detail');
+            if (approveBtn) {
+                approveBtn.addEventListener('click', function() {
+                    const transaksiId = this.dataset.id;
+                    approveTransaksi(transaksiId);
+                });
+            }
+
+            // Handle reject button click
+            const rejectBtn = document.querySelector('.btn-reject-detail');
+            if (rejectBtn) {
+                rejectBtn.addEventListener('click', function() {
+                    const transaksiId = this.dataset.id;
+                    rejectTransaksi(transaksiId);
+                });
+            }
+        });
+
+        function approveTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Approve Transaksi',
+                html: `
+                    <div class="text-start">
+                        <label for="catatan-approve" class="form-label">Catatan (Opsional)</label>
+                        <textarea id="catatan-approve" class="form-control" rows="3" placeholder="Masukkan catatan verifikasi..."></textarea>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#48bb78',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check me-1"></i> Approve',
+                cancelButtonText: 'Batal',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const catatan = document.getElementById('catatan-approve').value;
+                    processApproval(transaksiId, catatan);
+                }
+            });
+        }
+
+        function rejectTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Reject Transaksi',
+                html: `
+                    <div class="text-start">
+                        <label for="catatan-reject" class="form-label">Alasan Reject <span class="text-danger">*</span></label>
+                        <textarea id="catatan-reject" class="form-control" rows="3" placeholder="Masukkan alasan reject..." required></textarea>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f56565',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-x me-1"></i> Reject',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const catatan = document.getElementById('catatan-reject').value;
+                    if (!catatan) {
+                        Swal.showValidationMessage('Alasan reject harus diisi');
+                        return false;
+                    }
+                    return catatan;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processRejection(transaksiId, result.value);
+                }
+            });
+        }
+
+        function processApproval(transaksiId, catatan) {
+            Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('keuangan-transaksi/approve') }}/${transaksiId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat approve transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+            });
+        }
+
+        function processRejection(transaksiId, catatan) {
+            Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('keuangan-transaksi/reject') }}/${transaksiId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat reject transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+            });
+        }
+    </script>
 @endpush
