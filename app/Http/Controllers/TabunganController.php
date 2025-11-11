@@ -538,35 +538,72 @@ class TabunganController extends Controller
                 ], 400);
             }
 
-            // Update status approval
-            $transaksi->update([
-                'status_approval' => $request->action === 'approve' ? 'approved' : 'rejected',
-                'approved_at' => now(),
-                'approved_by' => Auth::id()
-            ]);
+            // Ambil data siswa
+            $siswa = Siswa::with('user')->findOrFail($transaksi->penerima_id);
+            $saldoSiswa = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
 
-            // Jika ditolak, rollback saldo
-            if ($request->action === 'reject') {
-                $siswa = Siswa::findOrFail($transaksi->penerima_id);
-                $saldoSiswa = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+            if (!$saldoSiswa) {
+                throw new \Exception('Rekening tabungan siswa tidak ditemukan.');
+            }
 
-                if ($saldoSiswa) {
-                    if ($transaksi->jenis_transaksi === 'setoran_tabungan') {
-                        // Rollback setoran: kurangi saldo
-                        $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
-                    } elseif ($transaksi->jenis_transaksi === 'penarikan_tabungan') {
-                        // Rollback penarikan: kembalikan saldo
-                        $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
+            if ($request->action === 'approve') {
+                // Untuk penarikan tabungan: kurangi saldo dan buat jurnal
+                if ($transaksi->jenis_transaksi === 'penarikan_tabungan') {
+                    // Cek saldo cukup
+                    if ($saldoSiswa->saldo_akhir < $transaksi->jumlah) {
+                        throw new \Exception('Saldo siswa tidak mencukupi untuk penarikan.');
                     }
+
+                    // Ambil setting akun untuk tabungan-tarik
+                    $settings = setting_akun::where('kategori', 'tabungan-tarik')
+                        ->where('status', '1')
+                        ->first();
+
+                    if (!$settings || !$settings->akun_id) {
+                        throw new \Exception('Setting akun untuk kategori tabungan-tarik belum lengkap.');
+                    }
+
+                    // Buat jurnal Debit
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $settings->akun_id,
+                        'debit'        => $transaksi->jumlah,
+                        'kredit'       => 0,
+                        'keterangan'   => $transaksi->keterangan,
+                    ]);
+
+                    // Kurangi saldo siswa
+                    $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
                 }
+
+                // Update status approval
+                $transaksi->update([
+                    'status_approval' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => Auth::id()
+                ]);
+
+                $message = 'Transaksi berhasil disetujui dan saldo telah diperbarui!';
+                $logAksi = 'approve';
+
+            } else {
+                // Untuk reject: tidak ada perubahan saldo karena saldo belum pernah dikurangi
+                $transaksi->update([
+                    'status_approval' => 'rejected',
+                    'approved_at' => now(),
+                    'approved_by' => Auth::id()
+                ]);
+
+                $message = 'Transaksi berhasil ditolak.';
+                $logAksi = 'reject';
             }
 
             // Log activity
             Keuangan_transaksi_logs::create([
                 'transaksi_id'   => $transaksi->id,
-                'aksi'           => $request->action,
-                'data_lama'      => json_encode(['status_approval' => 'pending']),
-                'data_baru'      => json_encode(['status_approval' => $transaksi->status_approval]),
+                'aksi'           => $logAksi,
+                'data_lama'      => json_encode(['status_approval' => 'pending', 'saldo_sebelum' => $saldoSiswa->saldo_akhir]),
+                'data_baru'      => json_encode(['status_approval' => $transaksi->status_approval, 'saldo_sesudah' => $saldoSiswa->fresh()->saldo_akhir]),
                 'dilakukan_oleh' => Auth::id(),
                 'dilakukan_pada' => now(),
             ]);
@@ -575,9 +612,13 @@ class TabunganController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $request->action === 'approve'
-                    ? 'Transaksi berhasil disetujui!'
-                    : 'Transaksi berhasil ditolak dan saldo telah dikembalikan.'
+                'message' => $message,
+                'data' => [
+                    'transaksi_id' => $transaksi->id,
+                    'code_pembayaran' => $transaksi->code_pembayaran,
+                    'status_approval' => $transaksi->status_approval,
+                    'saldo_akhir' => $saldoSiswa->fresh()->saldo_akhir
+                ]
             ]);
 
         } catch (\Exception $e) {
