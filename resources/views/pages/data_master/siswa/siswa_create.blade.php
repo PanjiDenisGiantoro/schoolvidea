@@ -169,7 +169,7 @@
                             <label for="unit_id" class="form-label">Unit <span
                                     style="color: #dc3545 !important;">*</span></label>
                             <select name="unit_id" id="unit_id" class="form-select" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
@@ -186,7 +186,7 @@
                             <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran <span
                                     style="color: #dc3545 !important;">*</span></label>
                             <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
                                 @foreach ($tahunajaran as $ta)
                                     <option value="{{ $ta->id }}"
@@ -204,7 +204,7 @@
                                     style="color: #dc3545 !important;">*</span></label>
 
                             <select name="kelas_id" id="kelas_id" class="form-select" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Kelas --</option>
                                 @foreach ($kelas as $k)
                                     <option value="{{ $k->id }}"
@@ -365,6 +365,42 @@
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                // Validate required Choices.js fields
+                const unitId = document.getElementById('unit_id').value;
+                const tahunAjaranId = document.getElementById('tahun_ajaran_id').value;
+                const kelasId = document.getElementById('kelas_id').value;
+
+                if (!unitId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian!',
+                        text: 'Silakan pilih Unit terlebih dahulu',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return;
+                }
+
+                if (!tahunAjaranId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian!',
+                        text: 'Silakan pilih Tahun Ajaran terlebih dahulu',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return;
+                }
+
+                if (!kelasId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian!',
+                        text: 'Silakan pilih Kelas terlebih dahulu',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return;
+                }
+
                 Swal.fire({
                     title: 'Apakah data sudah benar?',
                     text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
