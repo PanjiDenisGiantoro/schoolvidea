@@ -353,6 +353,7 @@ class TabunganController extends Controller
                 'token_expired_at'=> now()->addDay(),
                 'status_approval' => 'pending',
                 'created_by'      => Auth::id(),
+                'status_verifikasi' => 'pending'
             ]);
             // Jurnal Debit (akun siswa berkurang → debit 0, kredit jumlah)
             Jurnals::create([

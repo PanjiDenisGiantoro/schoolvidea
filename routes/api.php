@@ -196,6 +196,7 @@ Route::prefix("v1")->group(function () {
                 "mutasiRekening",
             ]);
             Route::post("/verify", [TabunganController::class, "verifyToken"]);
+            Route::post("/regenerate-token", [TabunganController::class, "regenerateToken"]);
         });
     });
 });

@@ -209,7 +209,7 @@
                                 </td>
                                 <td>Rp {{ number_format($saldo->saldo_akhir ?? 0, 0, ',', '.') }}</td>
                                 <td class="d-flex gap-2">
-                                    <a href="{{ route('tabungan.show', $siswa->id) }}"
+                                    <a href="{{ url('tabungan/show/'.$siswa->id) }}"
                                         class="btn btn-sm btn-outline-primary rounded-pill">Detail</a>
 
                                     @if ($saldo && $saldo->status == 0)
