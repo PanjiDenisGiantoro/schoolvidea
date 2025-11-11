@@ -443,7 +443,7 @@ class TabunganApiController extends Controller
                 ], 400);
             }
 
-            // Update status verifikasi
+            // Update status verifikasi di keuangan_transaksis ONLY
             $transaksi->update([
                 'status_verifikasi' => 'approved',
                 'status_approval' => 'approved',
@@ -452,14 +452,17 @@ class TabunganApiController extends Controller
                 'verified_at' => now()
             ]);
 
-            // Jika setoran, tambah saldo setelah approve
-            if ($transaksi->jenis_transaksi === 'setoran_tabungan') {
+            // === TABUNGAN SETOR: Tambah saldo setelah approve ===
+            if ($transaksi->jenis_transaksi === 'setoran_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
                 $siswa = Siswa::findOrFail($transaksi->penerima_id);
                 $saldoSiswa = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
                 if ($saldoSiswa) {
                     $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
                 }
             }
+
+            // === TABUNGAN TARIK: Saldo sudah dikurangi saat create ===
+            // Approve hanya mengkonfirmasi, tidak mengubah saldo
 
             // Log activity
             Keuangan_transaksi_logs::create([
@@ -525,7 +528,7 @@ class TabunganApiController extends Controller
                 ], 400);
             }
 
-            // Update status verifikasi
+            // Update status verifikasi di keuangan_transaksis ONLY
             $transaksi->update([
                 'status_verifikasi' => 'rejected',
                 'status_approval' => 'rejected',
@@ -534,11 +537,15 @@ class TabunganApiController extends Controller
                 'verified_at' => now()
             ]);
 
-            // Rollback saldo jika penarikan
-            if ($transaksi->jenis_transaksi === 'penarikan_tabungan') {
+            // === TABUNGAN SETOR: Tidak perlu rollback (belum ditambah) ===
+            // Saldo belum ditambah karena pending, reject hanya ubah status
+
+            // === TABUNGAN TARIK: Kembalikan saldo yang sudah dikurangi ===
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
                 $siswa = Siswa::findOrFail($transaksi->penerima_id);
                 $saldoSiswa = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
                 if ($saldoSiswa) {
+                    // Kembalikan saldo yang sudah dikurangi saat create
                     $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
                 }
             }

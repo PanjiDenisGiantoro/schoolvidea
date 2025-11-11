@@ -177,21 +177,47 @@
                 </div>
 
                 {{-- Bukti Transfer --}}
-                @if($transaksi->bukti_transfer)
+                @php
+                    $buktiBayar = null;
+                    // Cek bukti transfer dari transaksi
+                    if ($transaksi->bukti_transfer) {
+                        $buktiBayar = $transaksi->bukti_transfer;
+                    }
+                    // Cek bukti dari pembayaran tagihan
+                    elseif (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->file_bukti) {
+                        $buktiBayar = $transaksi->pembayaranTagihan->file_bukti;
+                    }
+                @endphp
+
+                @if($buktiBayar)
                 <hr>
                 <h6 class="fw-bold text-primary mb-2">
-                    <i class="bx bx-image"></i> Bukti Transfer
+                    <i class="bx bx-image"></i> Bukti Pembayaran
                 </h6>
                 <div class="mb-3">
-                    <a href="{{ asset($transaksi->bukti_transfer) }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                        <i class="bx bx-download me-1"></i>Lihat Bukti Transfer
+                    <a href="{{ asset($buktiBayar) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bx bx-download me-1"></i>Lihat Bukti Pembayaran
                     </a>
                     <div class="mt-2">
-                        <img src="{{ asset($transaksi->bukti_transfer) }}"
-                             alt="Bukti Transfer"
-                             class="img-fluid rounded shadow-sm"
-                             style="max-height: 300px; cursor: pointer;"
-                             onclick="window.open('{{ asset($transaksi->bukti_transfer) }}', '_blank')">
+                        @if(Str::endsWith($buktiBayar, ['.pdf', '.PDF']))
+                            <embed src="{{ asset($buktiBayar) }}" type="application/pdf" width="100%" height="400px" class="rounded shadow-sm">
+                        @else
+                            <img src="{{ asset($buktiBayar) }}"
+                                 alt="Bukti Pembayaran"
+                                 class="img-fluid rounded shadow-sm"
+                                 style="max-height: 300px; cursor: pointer;"
+                                 onclick="window.open('{{ asset($buktiBayar) }}', '_blank')">
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- Keterangan dari siswa (untuk pembayaran tagihan) --}}
+                @if(in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->keterangan_siswa)
+                <div class="mb-3">
+                    <div class="alert alert-secondary small">
+                        <strong>Keterangan dari Siswa:</strong><br>
+                        {{ $transaksi->pembayaranTagihan->keterangan_siswa }}
                     </div>
                 </div>
                 @endif

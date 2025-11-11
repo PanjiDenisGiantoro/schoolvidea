@@ -725,7 +725,7 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        $pembayaran = Pembayarantagihan::find($id);
+        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan'])->find($id);
 
         if (!$pembayaran) {
             return response()->json([
@@ -743,6 +743,27 @@ class PembayaranController extends Controller
 
         DB::beginTransaction();
         try {
+            $tagihanSiswa = $pembayaran->tagihanSiswa;
+            $siswa = $tagihanSiswa->siswa;
+            $tagihan = $tagihanSiswa->tagihan;
+
+            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+            $sisaNominal = (int) $tagihanSiswa->sisa_nominal;
+
+            // Calculate remaining balance after payment
+            $sisaSetelahBayar = $sisaNominal - $jumlahBayar;
+
+            // Determine new status
+            if ($sisaSetelahBayar == 0) {
+                $statusTagihan = 1; // Lunas
+                $sisaSetelahBayar = 0;
+                $keterangan = "Pembayaran lunas {$tagihan->nama_tagihan} sebesar Rp " . number_format($tagihanSiswa->nominal, 0, ',', '.');
+            } else {
+                $statusTagihan = 2; // Cicilan
+                $keterangan = "Cicilan {$tagihan->nama_tagihan} bayar Rp " . number_format($jumlahBayar, 0, ',', '.') . " dari Rp " . number_format($tagihanSiswa->nominal, 0, ',', '.');
+            }
+
+            // Update pembayaran approval status
             $pembayaran->update([
                 'status_approval' => 'approved',
                 'approved_by' => Auth::id(),
@@ -750,12 +771,76 @@ class PembayaranController extends Controller
                 'catatan_approval' => $request->catatan_approval
             ]);
 
+            // Update tagihan siswa - reduce sisa_nominal and update status
+            $tagihanSiswa->update([
+                'status' => $statusTagihan,
+                'sisa_nominal' => $sisaSetelahBayar,
+            ]);
+
+            // Check if all student bills for this tagihan are paid
+            $hasUnpaid = Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
+                ->where('status', 0)
+                ->exists();
+
+            if (!$hasUnpaid) {
+                Tagihan::where('id', $tagihanSiswa->tagihan_id)
+                    ->update(['status_tagihan' => 1]);
+            }
+
+            // Check if financial transaction already exists
+            $transaksiExists = Keuangan_transaksi::where('code_pembayaran', $pembayaran->code_pembayaran)
+                ->where('referensi_tagihan_id', $pembayaran->id)
+                ->exists();
+
+            if (!$transaksiExists) {
+                // Record financial transaction
+                $transaksi = Keuangan_transaksi::create([
+                    'code_pembayaran' => $pembayaran->code_pembayaran,
+                    'penerima_id' => $siswa->id,
+                    'penerima_tipe' => Siswa::class,
+                    'jenis_transaksi' => 'tagihan',
+                    'jumlah' => $jumlahBayar,
+                    'metode' => $pembayaran->metode_bayar ?? 'CASH',
+                    'referensi_tagihan_id' => $pembayaran->id,
+                    'tanggal_transaksi' => $pembayaran->tanggal_bayar ?? now(),
+                    'keterangan' => $keterangan,
+                    'created_by' => Auth::id(),
+                ]);
+
+                // Journal entry - debit
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => setting_akun::where('kategori', 'tagihan-keluar')
+                        ->where('debit', 1)
+                        ->first()?->akun_id,
+                    'debit' => $jumlahBayar,
+                    'kredit' => 0,
+                    'keterangan' => $keterangan,
+                ]);
+
+                // Journal entry - credit
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => setting_akun::where('kategori', 'tagihan-keluar')
+                        ->where('kredit', 1)
+                        ->first()?->akun_id,
+                    'debit' => 0,
+                    'kredit' => $jumlahBayar,
+                    'keterangan' => $keterangan,
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pembayaran berhasil disetujui',
-                'data' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy'])
+                'message' => 'Pembayaran berhasil disetujui dan nominal tagihan telah dikurangi',
+                'data' => [
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy']),
+                    'tagihan_siswa' => $tagihanSiswa->fresh(),
+                    'sisa_nominal' => $sisaSetelahBayar,
+                    'status' => $statusTagihan == 1 ? 'Lunas' : 'Cicilan'
+                ]
             ]);
 
         } catch (\Throwable $th) {
