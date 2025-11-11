@@ -236,7 +236,7 @@
                     Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
                 </div>
                 <div>
-                    {{ $transaksis->links() }}
+                    {{ $transaksis->appends(request()->query())->links() }}
                 </div>
             </div>
         </div>
@@ -253,6 +253,41 @@
             transform: translateY(-3px);
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
         }
+
+        /* Pending Modal Styles */
+        #pendingModal .modal-header {
+            border-bottom: 3px solid #ffc107;
+        }
+
+        #pendingModal .table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #fff3cd;
+            z-index: 10;
+        }
+
+        #pendingModal .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        #pendingModal .table tbody tr:hover {
+            background-color: #fff9e6;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        #pendingModal .badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        #pendingModal .btn-primary {
+            transition: all 0.2s ease;
+        }
+
+        #pendingModal .btn-primary:hover {
+            transform: scale(1.05);
+        }
     </style>
 @endpush
 
@@ -266,13 +301,42 @@
         }
 
         function showPendingTransactions() {
-            Swal.fire({
-                title: 'Memuat Transaksi Pending...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            // Show Bootstrap Modal instead of SweetAlert
+            const modalHtml = `
+                <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning">
+                                <h5 class="modal-title fw-bold" id="pendingModalLabel">
+                                    <i class="bx bx-time-five me-2"></i>Transaksi Pending Approval
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                                    <div class="spinner-border text-warning" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-3">Memuat data transaksi pending...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing modal if any
+            const existingModal = document.getElementById('pendingModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Append modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
+            modal.show();
 
             // Fetch pending transactions
             fetch('/api/v1/tabungan/transaksi?status=pending', {
@@ -291,69 +355,115 @@
                         const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
                         const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
 
+                        // Format tanggal
+                        const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        // Status approval untuk penarikan
+                        let statusBadge = '';
+                        if (trx.jenis_transaksi === 'penarikan_tabungan') {
+                            if (trx.status_approval === 'pending') {
+                                statusBadge = '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>';
+                            }
+                        } else {
+                            statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
+                        }
+
                         tableRows += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td><span class="badge bg-${jenisClass}"><i class="bx bx-${jenisIcon} me-1"></i>${jenisText}</span></td>
-                                <td>${trx.nomor_transaksi || trx.code_pembayaran}</td>
-                                <td>Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</td>
-                                <td>${new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID')}</td>
-                                <td><button class="btn btn-sm btn-info" onclick="showDetailFromList(${trx.transaksi_id})"><i class="bx bx-show me-1"></i>Lihat</button></td>
+                            <tr class="align-middle">
+                                <td class="text-center">${index + 1}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-${jenisClass} px-3 py-2">
+                                        <i class="bx bx-${jenisIcon} me-1"></i>${jenisText}
+                                    </span>
+                                </td>
+                                <td><strong>${trx.nomor_transaksi || trx.code_pembayaran}</strong></td>
+                                <td>${trx.siswa_nama || '-'}</td>
+                                <td class="text-end"><strong>Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</strong></td>
+                                <td class="text-center"><small>${tanggal}</small></td>
+                                <td class="text-center">${statusBadge}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary rounded-pill" onclick="viewDetailPending(${trx.transaksi_id})">
+                                        <i class="bx bx-show me-1"></i>Detail
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
 
-                    Swal.fire({
-                        title: 'Transaksi Pending Approval',
-                        html: `
-                            <div class="table-responsive">
-                                <table class="table table-hover table-bordered">
-                                    <thead class="table-warning">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Jenis</th>
-                                            <th>Nomor</th>
-                                            <th>Jumlah</th>
-                                            <th>Tanggal</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${tableRows}
-                                    </tbody>
-                                </table>
+                    const modalBody = document.querySelector('#pendingModal .modal-body');
+                    modalBody.innerHTML = `
+                        <div class="alert alert-warning border-0 shadow-sm mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bx bx-info-circle fs-4 me-3"></i>
+                                <div>
+                                    <strong>Perhatian:</strong> Terdapat <strong>${data.data.length}</strong> transaksi yang menunggu approval.
+                                    <br><small>Untuk penarikan tabungan, verifikasi token terlebih dahulu sebelum approve.</small>
+                                </div>
                             </div>
-                        `,
-                        width: '800px',
-                        showCloseButton: true,
-                        showConfirmButton: false,
-                        customClass: {
-                            popup: 'swal-wide'
-                        }
-                    });
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered align-middle">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">#</th>
+                                        <th class="text-center" style="width: 120px;">Jenis</th>
+                                        <th style="width: 150px;">Nomor Transaksi</th>
+                                        <th style="width: 200px;">Nama Siswa</th>
+                                        <th class="text-end" style="width: 130px;">Jumlah</th>
+                                        <th class="text-center" style="width: 150px;">Tanggal</th>
+                                        <th class="text-center" style="width: 150px;">Status</th>
+                                        <th class="text-center" style="width: 100px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
                 } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Tidak Ada Transaksi Pending',
-                        text: 'Semua transaksi sudah diproses',
-                        confirmButtonColor: '#48bb78'
-                    });
+                    const modalBody = document.querySelector('#pendingModal .modal-body');
+                    modalBody.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bx bx-check-circle text-success" style="font-size: 80px;"></i>
+                            <h4 class="mt-3">Tidak Ada Transaksi Pending</h4>
+                            <p class="text-muted">Semua transaksi sudah diproses</p>
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Gagal memuat transaksi pending',
-                    confirmButtonColor: '#f56565'
-                });
+                const modalBody = document.querySelector('#pendingModal .modal-body');
+                modalBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bx bx-error-circle text-danger" style="font-size: 80px;"></i>
+                        <h4 class="mt-3">Gagal Memuat Data</h4>
+                        <p class="text-muted">Terjadi kesalahan saat memuat transaksi pending</p>
+                        <button class="btn btn-primary" onclick="showPendingTransactions()">
+                            <i class="bx bx-refresh me-1"></i>Coba Lagi
+                        </button>
+                    </div>
+                `;
             });
         }
 
-        function showDetailFromList(transaksiId) {
-            Swal.close(); // Close current modal
-            showDetailTransaksi(transaksiId);
+        function viewDetailPending(transaksiId) {
+            // Close the pending modal first
+            const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
+            if (pendingModal) {
+                pendingModal.hide();
+            }
+
+            // Redirect to detail page or show detail in new modal
+            // You can customize this based on your needs
+            window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
         }
 
         function showDetailTransaksi(transaksiId) {

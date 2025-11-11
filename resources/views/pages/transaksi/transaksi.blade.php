@@ -90,6 +90,20 @@
                 <h4 class="card-title">Daftar Transaksi</h4>
             </div>
             <div class="card-body">
+                {{-- Per Page Selector --}}
+                <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="per_page" class="mb-0">Tampilkan:</label>
+                        <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                            <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                        </select>
+                        <span class="text-muted">data per halaman</span>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped">
                         <thead>
@@ -147,12 +161,12 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="pagination-wrapper mt-3">
-                    <div class="pagination-info">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted">
                         Menampilkan {{ $transactions->firstItem() ?? 0 }} sampai {{ $transactions->lastItem() ?? 0 }} dari {{ $transactions->total() }} data
                     </div>
                     <div>
-                        {{ $transactions->links('vendor.pagination.custom') }}
+                        {{ $transactions->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>
@@ -161,6 +175,14 @@
 
 @push('scripts')
 <script>
+    // Change per page function
+    function changePerPage(perPage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', perPage);
+        url.searchParams.delete('page'); // Reset to page 1
+        window.location.href = url.toString();
+    }
+
     $(document).ready(function() {
         // Handle form submission
         $('#transactionForm').on('submit', function(e) {
