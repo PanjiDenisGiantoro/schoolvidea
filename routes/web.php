@@ -148,6 +148,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/siswa', [KelasController::class, 'getSiswa']);
         Route::get('/walikelas-by-unit/{unitId}', [KelasController::class, 'getWaliKelasByUnit']);
         Route::get('/jurusan-by-unit/{unitId}', [KelasController::class, 'getJurusanByUnit']);
+        Route::get('/by-unit/{unitId}', [KelasController::class, 'getKelasByUnit']);
     });
 
     Route::prefix('jurusan')->middleware('permission:view_jurusan')->group(function () {
