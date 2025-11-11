@@ -337,6 +337,21 @@ class KeuanganTransaksiController extends Controller
                 ], 400);
             }
 
+            // Khusus penarikan tabungan: HARUS melewati token verification dulu
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan') {
+                if ($transaksi->status_approval !== 'verified') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Penarikan tabungan harus diverifikasi dengan token terlebih dahulu. Status saat ini: ' . $transaksi->status_approval,
+                        'data' => [
+                            'status_approval' => $transaksi->status_approval,
+                            'required_status' => 'verified',
+                            'note' => 'Gunakan endpoint /api/v1/tabungan/verify untuk verifikasi token terlebih dahulu'
+                        ]
+                    ], 400);
+                }
+            }
+
             // Update status verifikasi transaksi di keuangan_transaksis ONLY
             $transaksi->update([
                 'status_verifikasi' => 'approved',
