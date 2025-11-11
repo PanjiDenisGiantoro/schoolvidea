@@ -355,9 +355,48 @@ class KeuanganTransaksiController extends Controller
                 }
             }
 
-            // === TABUNGAN TARIK: Saldo sudah dikurangi saat create, tidak perlu update lagi ===
-            // Jika penarikan tabungan, saldo sudah dikurangi saat transaksi dibuat
-            // Approve hanya mengkonfirmasi transaksi, tidak mengubah saldo
+            // === TABUNGAN TARIK: Kurangi saldo saat approve (setelah token diverifikasi) ===
+            // Flow: pending -> verified (via API token verify) -> approved (via web, saldo dikurangi disini)
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+                $siswa = Siswa::findOrFail($transaksi->penerima_id);
+                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+
+                if ($saldoSiswa) {
+                    // Validasi saldo cukup
+                    if ($saldoSiswa->saldo_akhir < $transaksi->jumlah) {
+                        throw new \Exception('Saldo tidak mencukupi. Saldo tersedia: Rp ' . number_format($saldoSiswa->saldo_akhir, 0, ',', '.') . ', Penarikan: Rp ' . number_format($transaksi->jumlah, 0, ',', '.'));
+                    }
+
+                    $saldoSebelum = $saldoSiswa->saldo_akhir;
+
+                    // Kurangi saldo
+                    $saldoSiswa->update([
+                        'saldo_akhir' => $saldoSebelum - $transaksi->jumlah,
+                        'last_updated' => now()
+                    ]);
+
+                    // Create journal entries untuk penarikan tabungan
+                    // Debit: Tabungan Keluar (mengurangi kas)
+                    \App\Models\Keuangan_jurnal::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => 2, // Tabungan Keluar
+                        'tipe_transaksi' => 'debit',
+                        'nominal' => $transaksi->jumlah,
+                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
+                        'tanggal_jurnal' => now(),
+                    ]);
+
+                    // Kredit: Kas (mengurangi kas sekolah)
+                    \App\Models\Keuangan_jurnal::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => 1, // Kas
+                        'tipe_transaksi' => 'kredit',
+                        'nominal' => $transaksi->jumlah,
+                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
+                        'tanggal_jurnal' => now(),
+                    ]);
+                }
+            }
 
             // === PEMBAYARAN TAGIHAN: Update status tagihan siswa ===
             if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
@@ -439,15 +478,10 @@ class KeuanganTransaksiController extends Controller
             // Saldo belum ditambah karena status masih pending
             // Reject hanya mengubah status, tidak perlu update saldo
 
-            // === TABUNGAN TARIK: Kembalikan saldo yang sudah dikurangi ===
-            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
-                $siswa = Siswa::findOrFail($transaksi->penerima_id);
-                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
-                if ($saldoSiswa) {
-                    // Kembalikan saldo yang sudah dikurangi saat create
-                    $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
-                }
-            }
+            // === TABUNGAN TARIK: Tidak perlu kembalikan saldo ===
+            // Flow baru: Saldo BELUM dikurangi saat pending/verified, hanya dikurangi saat approve
+            // Jadi saat reject (dari pending atau verified), tidak perlu kembalikan saldo
+            // Saldo tetap utuh karena belum pernah dikurangi
 
             // === PEMBAYARAN TAGIHAN: Rollback pembayaran ===
             if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {

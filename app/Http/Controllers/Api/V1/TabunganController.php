@@ -765,7 +765,7 @@ class TabunganController extends Controller
 
             $saldoSebelum = $saldoSiswa->saldo_akhir;
 
-            // Jika APPROVE, proses penarikan
+            // Jika APPROVE, validasi saldo cukup tapi BELUM kurangi saldo
             if ($request->action === 'approve') {
                 // Validasi ulang saldo cukup
                 if ($saldoSebelum < $transaksi->jumlah) {
@@ -780,57 +780,24 @@ class TabunganController extends Controller
                     ], 400);
                 }
 
-                // Update saldo - kurangi saldo
-                $saldoSiswa->update([
-                    'saldo_akhir' => $saldoSebelum - $transaksi->jumlah,
-                    'last_updated' => now()
-                ]);
-
-                // Create journal entries
-                // Debit: Tabungan Siswa
-                $akunTabungan = setting_akun::where('kategori', 'tabungan-keluar')
-                    ->where('debit', 1)
-                    ->first();
-
-                if ($akunTabungan) {
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => $akunTabungan->akun_id,
-                        'debit' => $transaksi->jumlah,
-                        'kredit' => 0,
-                        'keterangan' => $transaksi->keterangan,
-                    ]);
-                }
-
-                // Kredit: Kas/Bank
-                $akunKas = setting_akun::where('kategori', 'tabungan-keluar')
-                    ->where('kredit', 1)
-                    ->first();
-
-                if ($akunKas) {
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => $akunKas->akun_id,
-                        'debit' => 0,
-                        'kredit' => $transaksi->jumlah,
-                        'keterangan' => $transaksi->keterangan,
-                    ]);
-                }
-
-                $saldoSiswa->refresh();
+                // TIDAK kurangi saldo disini
+                // TIDAK buat jurnal disini
+                // Saldo akan dikurangi dan jurnal dibuat saat approve di web URL keuangan-transaksi/approve/{id}
             }
 
-            // Update status approval (untuk approve maupun reject)
+            // Update status approval
+            // approve = verified (token cocok, menunggu final approval dari web)
+            // reject = rejected (token cocok tapi ditolak)
             $transaksi->update([
-                'status_approval' => $request->action === 'approve' ? 'approved' : 'rejected',
-                'approved_at' => now(),
-                'approved_by' => Auth::id()
+                'status_approval' => $request->action === 'approve' ? 'verified' : 'rejected',
+                'verified_at' => now(),
+                'verified_by' => Auth::id()
             ]);
 
             // Log activity
             Keuangan_transaksi_logs::create([
                 'transaksi_id'   => $transaksi->id,
-                'aksi'           => $request->action,
+                'aksi'           => $request->action === 'approve' ? 'verify' : 'reject',
                 'data_lama'      => json_encode(['status_approval' => 'pending']),
                 'data_baru'      => json_encode(['status_approval' => $transaksi->status_approval]),
                 'dilakukan_oleh' => Auth::id(),
@@ -842,16 +809,18 @@ class TabunganController extends Controller
             $response = [
                 'success' => true,
                 'message' => $request->action === 'approve'
-                    ? 'Penarikan berhasil disetujui! Saldo telah dikurangi.'
+                    ? 'Token berhasil diverifikasi! Silakan approve final di halaman transaksi.'
                     : 'Permintaan penarikan ditolak.',
                 'data' => [
                     'transaksi_id' => $transaksi->id,
                     'code_pembayaran' => $transaksi->code_pembayaran,
                     'jumlah' => $transaksi->jumlah,
                     'status_approval' => $transaksi->status_approval,
-                    'approved_at' => $transaksi->approved_at,
-                    'saldo_sebelum' => $saldoSebelum,
-                    'saldo_akhir' => $saldoSiswa->saldo_akhir,
+                    'verified_at' => $transaksi->verified_at,
+                    'saldo_saat_ini' => $saldoSebelum,
+                    'note' => $request->action === 'approve'
+                        ? 'Saldo belum dikurangi. Menunggu approval final dari admin.'
+                        : 'Transaksi ditolak, saldo tidak berubah.'
                 ]
             ];
 
