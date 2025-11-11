@@ -302,6 +302,177 @@ class AuthController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/auth/login-nisn",
+     *     tags={"Authentication"},
+     *     summary="Login with NISN",
+     *     description="Authenticate siswa using NISN, password, and unit code",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"nisn","password","code"},
+     *             @OA\Property(property="nisn", type="string", example="1234567890"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123"),
+     *             @OA\Property(property="code", type="string", example="SCH001", description="Kode unit dari tabel units")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful login",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="access_token", type="string"),
+     *             @OA\Property(property="token_type", type="string", example="bearer"),
+     *             @OA\Property(property="expires_in", type="integer", example=3600),
+     *             @OA\Property(property="user", type="object"),
+     *             @OA\Property(property="profile", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Invalid credentials"
+     *     )
+     * )
+     */
+    public function loginWithNisn(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'nisn' => 'required|string',
+            'password' => 'required|string',
+            'code' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Validasi kode unit
+        $unit = \App\Models\Unit::where('code', $request->code)->first();
+        if (!$unit) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode unit tidak valid'
+            ], 401);
+        }
+
+        // Cari siswa berdasarkan NISN dan unit_id
+        $siswa = \App\Models\Siswa::with([
+            'user',
+            'kelas',
+            'unit',
+            'tahun_ajaran',
+            'jurusan',
+            'saldo'
+        ])
+        ->where('nisn', $request->nisn)
+        ->where('unit_id', $unit->id)
+        ->first();
+
+        if (!$siswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'NISN tidak ditemukan atau tidak terdaftar di unit ini'
+            ], 401);
+        }
+
+        // Cek apakah siswa punya user
+        if (!$siswa->user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun siswa belum terhubung dengan user'
+            ], 401);
+        }
+
+        // Validasi password
+        if (!Hash::check($request->password, $siswa->user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password salah'
+            ], 401);
+        }
+
+        // Generate token dengan JWT
+        $token = auth('api')->login($siswa->user);
+
+        // Load user data
+        $user = $siswa->user;
+        $user->load(['roles', 'permissions']);
+
+        // Format profile siswa
+        $profile = [
+            'id' => $siswa->id,
+            'nisn' => $siswa->nisn,
+            'nis' => $siswa->nis,
+            'nama' => $siswa->nama ?? $user->name,
+            'tempat_lahir' => $siswa->tempat_lahir,
+            'tanggal_lahir' => $siswa->tanggal_lahir,
+            'jenis_kelamin' => $siswa->jenis_kelamin,
+            'agama' => $siswa->agama,
+            'alamat' => $siswa->alamat,
+            'no_hp' => $siswa->no_hp,
+            'no_hp_ortu' => $siswa->no_hp_ortu,
+            'nama_ortu' => $siswa->nama_ortu,
+            'nik' => $siswa->nik,
+            'rfid_no' => $siswa->rfid_no,
+            'va_siswa' => $siswa->va_siswa,
+            'bank' => $siswa->bank,
+            'no_rekening' => $siswa->no_rekening,
+            'image' => $siswa->image,
+            'qrcode' => $siswa->qrcode,
+            'status' => $siswa->status,
+            'kelas' => $siswa->kelas ? [
+                'id' => $siswa->kelas->id,
+                'nama_kelas' => $siswa->kelas->nama_kelas,
+            ] : null,
+            'unit' => $siswa->unit ? [
+                'id' => $siswa->unit->id,
+                'nama_unit' => $siswa->unit->nama_unit,
+            ] : null,
+            'tahun_ajaran' => $siswa->tahun_ajaran ? [
+                'id' => $siswa->tahun_ajaran->id,
+                'tahun' => $siswa->tahun_ajaran->tahun,
+                'semester' => $siswa->tahun_ajaran->semester,
+            ] : null,
+            'jurusan' => $siswa->jurusan ? [
+                'id' => $siswa->jurusan->id,
+                'nama_jurusan' => $siswa->jurusan->nama_jurusan,
+                'kode_jurusan' => $siswa->jurusan->kode_jurusan,
+            ] : null,
+            'saldo' => $siswa->saldo ? [
+                'saldo_akhir' => $siswa->saldo->saldo_akhir ?? 0,
+                'status' => $siswa->saldo->status,
+            ] : null,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'rfid_no' => $user->rfid_no,
+                'roles' => $user->roles->pluck('name'),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
+            ],
+            'user_type' => 'siswa',
+            'profile' => $profile,
+            'unit' => [
+                'id' => $unit->id,
+                'nama_unit' => $unit->nama_unit,
+                'code' => $unit->code,
+            ],
+        ]);
+    }
+
+    /**
      * Register a new user.
      *
      * @param Request $request
