@@ -340,7 +340,7 @@ class TabunganController extends Controller
             // Generate token 5 digit
             $token = str_pad(rand(0, 99999), 6, '0', STR_PAD_LEFT);
 
-            // Simpan transaksi utama
+            // Simpan transaksi utama dengan status pending
             $transaksi = Keuangan_transaksi::create([
                 'code_pembayaran' => 'TRK' . date('YmdHis').rand(1000,9999),
                 'penerima_id'     => $request->penerima_id,
@@ -355,23 +355,16 @@ class TabunganController extends Controller
                 'created_by'      => Auth::id(),
                 'status_verifikasi' => 'pending'
             ]);
-            // Jurnal Debit (akun siswa berkurang → debit 0, kredit jumlah)
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => $akun_id,
-                'debit'        => $request->jumlah,
-                'kredit'       => 0,
-                'keterangan'   => $request->keterangan,
-            ]);
-            // Update saldo siswa (kurangi saldo)
-            $saldoSiswa->decrement('saldo_akhir', $request->jumlah);
+
+            // TIDAK BUAT JURNAL DISINI - Jurnal akan dibuat setelah approve
+            // TIDAK UPDATE SALDO DISINI - Saldo akan dikurangi setelah approve
 
             // Catat log transaksi
             Keuangan_transaksi_logs::create([
                 'transaksi_id'   => $transaksi->id,
-                'aksi'           => 'withdraw',
-                'data_lama'      => json_encode(['saldo_awal' => $saldoSiswa->saldo_akhir + $request->jumlah]),
-                'data_baru'      => json_encode(['saldo_akhir' => $saldoSiswa->saldo_akhir]),
+                'aksi'           => 'create_withdraw_request',
+                'data_lama'      => json_encode(['saldo_saat_ini' => $saldoSiswa->saldo_akhir]),
+                'data_baru'      => json_encode(['status' => 'pending', 'token_generated' => true]),
                 'dilakukan_oleh' => Auth::id(),
                 'dilakukan_pada' => now(),
             ]);
@@ -379,9 +372,10 @@ class TabunganController extends Controller
             DB::commit();
 
             return redirect()->route('tabungan.show', $siswa->id)
-                ->with('success', 'Penarikan tabungan berhasil!')
+                ->with('success', 'Permintaan penarikan berhasil dibuat! Gunakan token untuk memverifikasi dan menyetujui penarikan.')
                 ->with('token', $token)
-                ->with('transaksi_id', $transaksi->id);
+                ->with('transaksi_id', $transaksi->id)
+                ->with('info', 'Saldo belum dikurangi. Penarikan akan diproses setelah token diverifikasi.');
         } catch (\Exception $e) {
 //            dd($e->getMessage());
             DB::rollBack();
