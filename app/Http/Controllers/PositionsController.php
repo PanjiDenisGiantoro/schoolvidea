@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 
 class PositionsController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         // Build query
         $query = Positions::query();
 
@@ -21,7 +22,7 @@ class PositionsController extends Controller
         }
 
         // Paginate results
-        $positions = $query->paginate(15)->appends($request->except('page'));
+        $positions = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -30,7 +31,7 @@ class PositionsController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.positions.positions', compact('positions','headers'));
+        return view('pages.data_master.positions.positions', compact('positions', 'headers'));
     }
     public function create()
     {
@@ -75,6 +76,6 @@ class PositionsController extends Controller
     {
         $positions = Positions::findOrFail($id);
         $show = true;
-        return view('pages.data_master.positions.positions_create', compact('positions','show'));
+        return view('pages.data_master.positions.positions_create', compact('positions', 'show'));
     }
 }

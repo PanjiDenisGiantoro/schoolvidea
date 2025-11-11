@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Rekening;
 use App\Models\User;
 use App\Models\Unit;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,21 +27,21 @@ class RekeningController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('type_rekening', 'like', "%{$search}%")
                   ->orWhere('nama_rekening', 'like', "%{$search}%")
                   ->orWhere('no_rekening', 'like', "%{$search}%")
                   ->orWhere('bank', 'like', "%{$search}%")
                   ->orWhere('KCP', 'like', "%{$search}%")
                   ->orWhere('nama_pemilik_rekening', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   });
             });
         }
 
         // Paginate results
-        $rekenings = $query->paginate(15)->appends($request->except('page'));
+        $rekenings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -57,7 +56,7 @@ class RekeningController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.rekening.rekening', compact('rekenings','headers', 'units'));
+        return view('pages.data_master.rekening.rekening', compact('rekenings', 'headers', 'units'));
     }
 
     public function create()
@@ -66,7 +65,7 @@ class RekeningController extends Controller
         $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
             $query->where('unit_id', $unitId);
         })->get();
-        return view('pages.data_master.rekening.rekening_create', compact('users','units'));
+        return view('pages.data_master.rekening.rekening_create', compact('users', 'units'));
     }
 
     public function store(Request $request)
@@ -103,7 +102,7 @@ class RekeningController extends Controller
         $rekening = Rekening::findOrFail($id);
         $users = User::all();
         $units = Unit::all();
-        return view('pages.data_master.rekening.rekening_create', compact('rekening','users','units'));
+        return view('pages.data_master.rekening.rekening_create', compact('rekening', 'users', 'units'));
     }
 
     public function update(Request $request, $id)
@@ -152,6 +151,6 @@ class RekeningController extends Controller
             $query->where('unit_id', $unitId);
         })->get();
         $show = true;
-        return view('pages.data_master.rekening.rekening_create', compact('rekening','show','units'));
+        return view('pages.data_master.rekening.rekening_create', compact('rekening', 'show', 'units'));
     }
 }

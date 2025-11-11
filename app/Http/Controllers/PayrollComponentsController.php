@@ -13,7 +13,7 @@ class PayrollComponentsController extends Controller
      */
     public function index()
     {
-        $payroll_components = PayrollComponents::paginate(10);
+        $payroll_components = PayrollComponents::orderBy('created_at', 'desc')->paginate(10);
         $headers = [
             'No',
             'Nama Komponen',

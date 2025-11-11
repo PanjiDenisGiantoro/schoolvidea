@@ -14,16 +14,17 @@ use Illuminate\Support\Facades\Auth;
 
 class KelasController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $units = Unit::all();
 
         // Build query
-        $query = Kelas::with('unit','officer.user','jurusan');
+        $query = Kelas::with('unit', 'officer.user', 'jurusan');
 
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan kelas dari semua unit di yayasan tersebut
-            $query->whereHas('unit', function($q) {
+            $query->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -37,23 +38,23 @@ class KelasController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_kelas', 'like', "%{$search}%")
                   ->orWhere('kode_kelas', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('officer.user', function($q) use ($search) {
+                  ->orWhereHas('officer.user', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('jurusan', function($q) use ($search) {
+                  ->orWhereHas('jurusan', function ($q) use ($search) {
                       $q->where('nama_jurusan', 'like', "%{$search}%");
                   });
             });
         }
 
         // Paginate results
-        $kelas = $query->paginate(15)->appends($request->except('page'));
+        $kelas = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -65,7 +66,7 @@ class KelasController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.kelas.kelas', compact('kelas','headers','units'));
+        return view('pages.data_master.kelas.kelas', compact('kelas', 'headers', 'units'));
     }
     public function create()
     {
@@ -74,10 +75,10 @@ class KelasController extends Controller
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $yayasan = Yayasan::where('id', Auth::user()->yayasan_id)->get();
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->get();
-            $wali = Officer::whereHas('unit', function($q) {
+            $wali = Officer::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $jurusan = Jurusan::whereHas('unit', function($q) {
+            $jurusan = Jurusan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
         } elseif (Auth::user()->unit_id) {
@@ -105,14 +106,14 @@ class KelasController extends Controller
             $jurusan = Jurusan::get();
         }
 
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
-        return view('pages.data_master.kelas.kelas_create', compact('jurusan','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'yayasan', 'units', 'wali', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
     public function store(Request $request)
     {
-        try{
+        try {
             $request->validate([
                 'nama_kelas'      => 'required|string|max:255',
                 'kode_kelas' => 'required',
@@ -136,7 +137,7 @@ class KelasController extends Controller
             return redirect()->route('kelas.index')
                 ->with('success', 'Data kelas berhasil ditambahkan: ' . $request->nama_kelas);
 
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal menambahkan data kelas: ' . $e->getMessage());
         }
@@ -151,10 +152,10 @@ class KelasController extends Controller
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $yayasan = Yayasan::where('id', Auth::user()->yayasan_id)->get();
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->get();
-            $wali = Officer::whereHas('unit', function($q) {
+            $wali = Officer::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $jurusan = Jurusan::whereHas('unit', function($q) {
+            $jurusan = Jurusan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
         } elseif (Auth::user()->unit_id) {
@@ -171,10 +172,10 @@ class KelasController extends Controller
             $jurusan = Jurusan::get();
         }
 
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
 
-        return view('pages.data_master.kelas.kelas_create', compact('jurusan','tahun_ajaran','kelas','yayasan','units','wali','tahun_ajaran_selected'));
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'tahun_ajaran', 'kelas', 'yayasan', 'units', 'wali', 'tahun_ajaran_selected'));
     }
     public function update(Request $request, $id)
     {
@@ -209,10 +210,10 @@ class KelasController extends Controller
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $yayasan = Yayasan::where('id', Auth::user()->yayasan_id)->get();
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->get();
-            $wali = Officer::whereHas('unit', function($q) {
+            $wali = Officer::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $jurusan = Jurusan::whereHas('unit', function($q) {
+            $jurusan = Jurusan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
         } elseif (Auth::user()->unit_id) {
@@ -229,11 +230,11 @@ class KelasController extends Controller
             $jurusan = Jurusan::get();
         }
 
-        $tahun_ajaran = Tahun_ajaran::orderBy('id','desc')->get();
+        $tahun_ajaran = Tahun_ajaran::orderBy('id', 'desc')->get();
         $tahun_ajaran_selected = Tahun_ajaran::isactive()->first();
         $show = true;
 
-        return view('pages.data_master.kelas.kelas_create', compact('jurusan','kelas','show','yayasan','units','wali','tahun_ajaran','tahun_ajaran_selected'));
+        return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'kelas', 'show', 'yayasan', 'units', 'wali', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
     public function getSiswa($id)
     {

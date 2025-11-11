@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
 
 class LembagaunitController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $units = \App\Models\Unit::all();
 
         // Build query
@@ -34,7 +35,7 @@ class LembagaunitController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_yayasan', 'like', "%{$search}%")
                   ->orWhere('central_code', 'like', "%{$search}%")
                   ->orWhere('no_hp', 'like', "%{$search}%")
@@ -46,7 +47,7 @@ class LembagaunitController extends Controller
         }
 
         // Paginate results
-        $lembagaunit = $query->paginate(15)->appends($request->except('page'));
+        $lembagaunit = $query->latest()->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -61,19 +62,19 @@ class LembagaunitController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.kode_lembaga.kode_lembaga', compact('lembagaunit','headers','units'));
+        return view('pages.data_master.kode_lembaga.kode_lembaga', compact('lembagaunit', 'headers', 'units'));
     }
     public function create()
     {
         // Jika user punya yayasan_id, tidak boleh buat yayasan baru
-        if(Auth::user()->yayasan_id){
+        if (Auth::user()->yayasan_id) {
             return redirect()->route('lembagaunit.index')
                 ->with('danger', 'Anda sudah terdaftar di yayasan, tidak dapat membuat yayasan baru');
         }
 
-        if(Auth::user()->unit_id){
+        if (Auth::user()->unit_id) {
             $ceknotdoubleunit = Yayasan::where('unit_id', Auth::user()->unit_id)->first();
-            if($ceknotdoubleunit){
+            if ($ceknotdoubleunit) {
                 return redirect()->route('lembagaunit.index')
                     ->with('danger', 'Unit ini sudah memiliki yayasan, silahkan hubungi admin');
             }
@@ -85,16 +86,16 @@ class LembagaunitController extends Controller
     {
 
 
-            $request->validate([
-            'nama_yayasan' => 'required|string|max:255',
-            'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
-            'no_hp'        => 'nullable|string|max:20',
-            'email'        => 'nullable|email',
-            'alamat'       => 'nullable|string',
-            'website'      => 'nullable|string',
-            'image'        => 'nullable|string',
-            'status'       => 'required|in:0,1',
-            'nama_pimpinan' => 'nullable|string|max:255',
+        $request->validate([
+        'nama_yayasan' => 'required|string|max:255',
+        'central_code' => 'nullable|string|max:50|unique:yayasans,central_code', // optional
+        'no_hp'        => 'nullable|string|max:20',
+        'email'        => 'nullable|email',
+        'alamat'       => 'nullable|string',
+        'website'      => 'nullable|string',
+        'image'        => 'nullable|string',
+        'status'       => 'required|in:0,1',
+        'nama_pimpinan' => 'nullable|string|max:255',
         ]);
 
         $centralCode = $request->central_code;
@@ -143,9 +144,9 @@ class LembagaunitController extends Controller
     }
     public function show($id)
     {
-            $lembagaunit = Yayasan::findOrFail($id);
-            $show = true;
-        return view('pages.data_master.kode_lembaga.kode_lembaga_create', compact('lembagaunit','show'));
+        $lembagaunit = Yayasan::findOrFail($id);
+        $show = true;
+        return view('pages.data_master.kode_lembaga.kode_lembaga_create', compact('lembagaunit', 'show'));
     }
     public function upload(Request $request)
     {

@@ -348,88 +348,36 @@
         });
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('siswaForm');
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
 
-                // --- ✅ Validasi manual sebelum tampilkan SweetAlert ---
-                const requiredFields = [
-                    'nisn', 'name', 'email', 'kelas_id', 'unit_id'
-                ];
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('siswaForm');
 
-                let errors = [];
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-                requiredFields.forEach(name => {
-                    const field = form.querySelector(`[name="${name}"]`);
-                    if (field && !field.value.trim()) {
-                        const label = form.querySelector(`label[for="${name}"]`)?.innerText || name;
-                        errors.push(`Kolom "${label}" harus diisi.`);
-                    }
-                });
+        const requiredFields = ['nisn', 'name', 'email', 'kelas_id', 'unit_id'];
+        let errors = [];
 
-                // Cek format email (jika ada)
-                const email = form.querySelector('[name="email"]');
-                if (email && email.value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-                    errors.push('Format email tidak valid.');
-                }
-
-                // Cek NISN hanya angka
-                const nisn = form.querySelector('[name="nisn"]');
-                if (nisn && nisn.value.trim() !== '' && !/^[0-9]+$/.test(nisn.value)) {
-                    errors.push('NISN hanya boleh berisi angka.');
-                }
-
-                // Jika ada error, tampilkan SweetAlert error dan hentikan submit
-                if (errors.length > 0) {
-                    Swal.fire({
-                        title: 'Validasi Gagal!',
-                        html: `<ul class="text-start">${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
-                        icon: 'error',
-                        confirmButtonText: 'Perbaiki',
-                        confirmButtonColor: '#dc3545'
-                    });
-                    return;
-                }
-
-                // --- ✅ Jika lolos validasi, tampilkan konfirmasi SweetAlert ---
-                Swal.fire({
-                    title: 'Apakah data sudah benar?',
-                    text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan!',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Menyimpan...',
-                            text: 'Harap tunggu sebentar.',
-                            allowOutsideClick: false,
-                            didOpen: () => Swal.showLoading()
-                        });
-
-                        // ✅ Submit form setelah konfirmasi
-                        form.submit();
-                    }
-                });
-            });
+        requiredFields.forEach(name => {
+            const field = form.querySelector(`[name="${name}"]`);
+            if (field && !field.value.trim()) {
+                const label = form.querySelector(`label[for="${name}"]`)?.innerText || name;
+                errors.push(`Kolom "${label}" harus diisi.`);
+            }
         });
 
-        // Cek format email (jika ada)
         const email = form.querySelector('[name="email"]');
         if (email && email.value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
             errors.push('Format email tidak valid.');
         }
-        // Cek NISN hanya angka
-        errors.push('NISN hanya boleh berisi angka.');
+
+        const nisn = form.querySelector('[name="nisn"]');
+        if (nisn && nisn.value.trim() !== '' && !/^[0-9]+$/.test(nisn.value)) {
+            errors.push('NISN hanya boleh berisi angka.');
         }
 
-        // Jika ada error, tampilkan SweetAlert error dan hentikan submit
         if (errors.length > 0) {
             Swal.fire({
                 title: 'Validasi Gagal!',
@@ -441,7 +389,33 @@
             return;
         }
 
-        // --- ✅ Jika lolos validasi, tampilkan konfirmasi SweetAlert ---
+        // ✅ Cek unik via AJAX ke backend sebelum konfirmasi
+        const formData = new FormData(form);
+
+
+fetch("{{ route('siswa.checkUnique') }}", {
+    method: "POST",
+    headers: {
+        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+    },
+    body: formData
+})
+.then(res => res.json())
+.then(data => {
+    if (data.exists) {
+        const dup = data.duplicates || [];
+        const message = dup.length > 0
+            ? dup.map(d => `Kolom "${d.toUpperCase()}" sudah terdaftar.`).join('<br>')
+            : 'Beberapa data sudah terdaftar.';
+
+        Swal.fire({
+            title: 'Data Duplikat!',
+            html: message,
+            icon: 'warning',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#f0ad4e'
+        });
+    } else {
         Swal.fire({
             title: 'Apakah data sudah benar?',
             text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
@@ -459,12 +433,20 @@
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading()
                 });
-
-                // ✅ Submit form setelah konfirmasi
+                form.querySelector('button[type="submit"]').disabled = true;
                 form.submit();
             }
         });
-    </script>
+    }
+})
+.catch(err => {
+    console.error(err);
+    Swal.fire('Error', 'Terjadi kesalahan saat memeriksa data unik.', 'error');
+});
+
+    });
+});
+</script>
 
     {{-- Alert Sukses & Error --}}
     @if (session('success'))

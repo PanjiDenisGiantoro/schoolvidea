@@ -8,7 +8,6 @@ use App\Models\Tagihan;
 use App\Models\Tagihansiswa;
 use App\Models\Unit;
 use Illuminate\Http\Request;
-
 use App\Models\Potongan;
 use App\Models\Potongansiswa;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +24,7 @@ class PotonganController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
-            $query->whereHas('unit', function($q) {
+            $query->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -39,24 +38,24 @@ class PotonganController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('tipe_potongan', 'like', "%{$search}%")
                   ->orWhere('nilai', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('kelas', function($q) use ($search) {
+                  ->orWhereHas('kelas', function ($q) use ($search) {
                       $q->where('nama_kelas', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('kategoriTagihan', function($q) use ($search) {
+                  ->orWhereHas('kategoriTagihan', function ($q) use ($search) {
                       $q->where('nama_kategori', 'like', "%{$search}%");
                   });
             });
         }
 
         // Paginate results
-        $potongans = $query->paginate(15)->appends($request->except('page'));
+        $potongans = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         return view('pages.potongan.potongan', compact('potongans', 'units'));
     }
@@ -67,10 +66,10 @@ class PotonganController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-            $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
+            $kategoriTagihan = Kategoritagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
@@ -82,7 +81,7 @@ class PotonganController extends Controller
             $kelas = Kelas::where('status', '1')->get();
             $kategoriTagihan = Kategoritagihan::where('status', '1')->get();
         }
-        return view('pages.potongan.potongan_create', compact('units', 'kategoriTagihan','kelas'));
+        return view('pages.potongan.potongan_create', compact('units', 'kategoriTagihan', 'kelas'));
 
     }
 
@@ -222,10 +221,10 @@ class PotonganController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-            $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
+            $kategoriTagihan = Kategoritagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {

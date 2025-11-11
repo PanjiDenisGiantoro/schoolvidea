@@ -48,7 +48,7 @@ class SettingAkunController extends Controller
         }
 
         // Paginate results
-        $settings = $query->paginate(15)->appends($request->except('page'));
+        $settings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',

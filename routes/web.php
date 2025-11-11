@@ -175,6 +175,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-kelas/{unitId}', [UnitController::class, 'getKelasByUnit'])->name('getKelasByUnit');
         Route::get('/get-jurusan/{unitId}', [SiswaController::class, 'getJurusanByUnit'])->name('getJurusanByUnit');
         Route::get('/kelas-by-unit/{unitId}', [SiswaController::class, 'getKelasByUnit']);
+        // routes/web.php
+        Route::post('/siswa/check-unique', [SiswaController::class, 'checkUnique'])->name('siswa.checkUnique');
         Route::get('/jurusan-by-unit/{unitId}', [SiswaController::class, 'getJurusanByUnit']);
     });
 

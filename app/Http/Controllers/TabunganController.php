@@ -50,6 +50,7 @@ class TabunganController extends Controller
                 });
             })
             ->where('status', '1')
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends($request->except('page'));
 

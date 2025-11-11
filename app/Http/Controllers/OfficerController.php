@@ -65,7 +65,7 @@ class OfficerController extends Controller
         }
 
         // Paginate results
-        $officer = $query->paginate(15)->appends($request->except('page'));
+        $officer = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
