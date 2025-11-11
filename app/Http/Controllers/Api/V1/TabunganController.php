@@ -103,33 +103,42 @@ class TabunganController extends Controller
         $siswaId = $request->get('siswa_id');
         $userId = $request->get('user_id');
         $jenisTransaksi = $request->get('jenis_transaksi'); // setoran_tabungan, penarikan_tabungan
+        $status = $request->get('status'); // pending, approved, rejected
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
         $perPage = $request->get('per_page', 15);
 
-        if (!$siswaId && !$userId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parameter siswa_id atau user_id diperlukan'
-            ], 400);
-        }
-
-        // Jika menggunakan siswa_id, ambil user_id dari siswa
-        if ($siswaId) {
-            $siswa = Siswa::with('user')->find($siswaId);
-            if (!$siswa) {
+        // Jika ada filter status=pending, tampilkan semua transaksi pending dari semua siswa
+        if ($status === 'pending') {
+            $query = Keuangan_transaksi::where('status_approval', 'pending')
+                ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->with(['createdBy', 'penerima']);
+        } else {
+            // Filter normal berdasarkan siswa atau user
+            if (!$siswaId && !$userId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Siswa tidak ditemukan'
-                ], 404);
+                    'message' => 'Parameter siswa_id atau user_id diperlukan'
+                ], 400);
             }
-            $userId = $siswa->user->id ?? null;
-        }
 
-        // Query transaksi
-        $query = Keuangan_transaksi::where('penerima_id', $siswaId ?? $userId)
-            ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-            ->with(['createdBy']);
+            // Jika menggunakan siswa_id, ambil user_id dari siswa
+            if ($siswaId) {
+                $siswa = Siswa::with('user')->find($siswaId);
+                if (!$siswa) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Siswa tidak ditemukan'
+                    ], 404);
+                }
+                $userId = $siswa->user->id ?? null;
+            }
+
+            // Query transaksi
+            $query = Keuangan_transaksi::where('penerima_id', $siswaId ?? $userId)
+                ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->with(['createdBy', 'penerima']);
+        }
 
         // Filter jenis transaksi
         if ($jenisTransaksi) {
@@ -148,13 +157,23 @@ class TabunganController extends Controller
 
         // Transform data
         $transaksi->getCollection()->transform(function ($item) {
+            // Get siswa data from penerima relation
+            $siswaNama = null;
+            if ($item->penerima && $item->penerima_tipe === Siswa::class) {
+                $siswaNama = $item->penerima->name ?? $item->penerima->nama ?? null;
+            }
+
             return [
+                'transaksi_id' => $item->id,
                 'id' => $item->id,
                 'code_pembayaran' => $item->code_pembayaran,
+                'nomor_transaksi' => $item->code_pembayaran,
                 'jenis_transaksi' => $item->jenis_transaksi,
                 'jumlah' => $item->jumlah,
                 'keterangan' => $item->keterangan,
                 'tanggal_transaksi' => $item->tanggal_transaksi ?? $item->created_at,
+                'status_approval' => $item->status_approval,
+                'siswa_nama' => $siswaNama,
                 'created_by' => [
                     'id' => $item->createdBy->id ?? null,
                     'name' => $item->createdBy->name ?? null,
@@ -165,7 +184,13 @@ class TabunganController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $transaksi
+            'data' => $transaksi->items(),
+            'pagination' => [
+                'current_page' => $transaksi->currentPage(),
+                'last_page' => $transaksi->lastPage(),
+                'per_page' => $transaksi->perPage(),
+                'total' => $transaksi->total(),
+            ]
         ]);
     }
 
@@ -684,7 +709,7 @@ class TabunganController extends Controller
         DB::beginTransaction();
 
         try {
-            $transaksi = Keuangan_transaksi::with(['siswa'])->findOrFail($request->transaksi_id);
+            $transaksi = Keuangan_transaksi::with(['penerima'])->findOrFail($request->transaksi_id);
 
             // Cek apakah transaksi tabungan
             if (!in_array($transaksi->jenis_transaksi, ['penarikan_tabungan'])) {
