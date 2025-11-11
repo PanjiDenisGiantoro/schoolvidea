@@ -314,4 +314,184 @@ class KeuanganTransaksiController extends Controller
         // Output PDF ke browser
         return $mpdf->Output('Bukti-Transaksi-' . $transaksi->code_pembayaran . '.pdf', 'I');
     }
+
+    /**
+     * Approve transaksi keuangan
+     */
+    public function approve(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'nullable|string'
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+
+            // Cek apakah transaksi sudah diverifikasi
+            if ($transaksi->status_verifikasi === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah diapprove sebelumnya'
+                ], 400);
+            }
+
+            // Update status verifikasi transaksi di keuangan_transaksis ONLY
+            $transaksi->update([
+                'status_verifikasi' => 'approved',
+                'status_approval' => 'approved',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            // === TABUNGAN SETOR: Tambah saldo setelah approve ===
+            if ($transaksi->jenis_transaksi === 'setoran_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+                $siswa = Siswa::findOrFail($transaksi->penerima_id);
+                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+                if ($saldoSiswa) {
+                    $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
+                }
+            }
+
+            // === TABUNGAN TARIK: Saldo sudah dikurangi saat create, tidak perlu update lagi ===
+            // Jika penarikan tabungan, saldo sudah dikurangi saat transaksi dibuat
+            // Approve hanya mengkonfirmasi transaksi, tidak mengubah saldo
+
+            // === PEMBAYARAN TAGIHAN: Update status tagihan siswa ===
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $pembayaran = $transaksi->pembayaranTagihan;
+                $tagihanSiswa = $pembayaran->tagihanSiswa;
+
+                if ($tagihanSiswa) {
+                    // Kurangi sisa nominal tagihan (jika belum dilakukan saat create)
+                    // Biasanya ini sudah dilakukan saat create pembayaran
+                    // Tapi untuk memastikan, kita bisa update status pembayaran
+
+                    // Update status tagihan berdasarkan sisa nominal
+                    if ($tagihanSiswa->sisa_nominal <= 0) {
+                        $tagihanSiswa->update(['status_pembayaran' => 'Lunas']);
+                    } elseif ($tagihanSiswa->jumlah_dibayar > 0 && $tagihanSiswa->sisa_nominal > 0) {
+                        $tagihanSiswa->update(['status_pembayaran' => 'Cicilan']);
+                    }
+                }
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'approve',
+                'data_lama' => json_encode(['status_verifikasi' => 'pending']),
+                'data_baru' => json_encode(['status_verifikasi' => 'approved']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil diapprove'
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal approve transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject transaksi keuangan
+     */
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'required|string'
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+
+            // Cek apakah transaksi sudah diverifikasi
+            if ($transaksi->status_verifikasi === 'rejected') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah direject sebelumnya'
+                ], 400);
+            }
+
+            // Update status verifikasi transaksi di keuangan_transaksis ONLY
+            $transaksi->update([
+                'status_verifikasi' => 'rejected',
+                'status_approval' => 'rejected',
+                'catatan_verifikasi' => $request->catatan_verifikasi,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            // === TABUNGAN SETOR: Tidak perlu rollback saldo (belum ditambah) ===
+            // Saldo belum ditambah karena status masih pending
+            // Reject hanya mengubah status, tidak perlu update saldo
+
+            // === TABUNGAN TARIK: Kembalikan saldo yang sudah dikurangi ===
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+                $siswa = Siswa::findOrFail($transaksi->penerima_id);
+                $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+                if ($saldoSiswa) {
+                    // Kembalikan saldo yang sudah dikurangi saat create
+                    $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
+                }
+            }
+
+            // === PEMBAYARAN TAGIHAN: Rollback pembayaran ===
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $pembayaran = $transaksi->pembayaranTagihan;
+                $tagihanSiswa = $pembayaran->tagihanSiswa;
+
+                if ($tagihanSiswa) {
+                    // Kembalikan nominal yang sudah dibayar
+                    $tagihanSiswa->increment('sisa_nominal', $pembayaran->jumlah_bayar);
+                    // Kurangi jumlah dibayar
+                    $tagihanSiswa->decrement('jumlah_dibayar', $pembayaran->jumlah_bayar);
+
+                    // Update status tagihan berdasarkan sisa nominal
+                    if ($tagihanSiswa->sisa_nominal >= $tagihanSiswa->nominal) {
+                        $tagihanSiswa->update(['status_pembayaran' => 'Belum Bayar']);
+                    } elseif ($tagihanSiswa->sisa_nominal > 0 && $tagihanSiswa->jumlah_dibayar > 0) {
+                        $tagihanSiswa->update(['status_pembayaran' => 'Cicilan']);
+                    }
+                }
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'reject',
+                'data_lama' => json_encode(['status_verifikasi' => 'pending']),
+                'data_baru' => json_encode(['status_verifikasi' => 'rejected']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil direject'
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reject transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

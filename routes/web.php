@@ -200,6 +200,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
         Route::get('/print-laporan', [TabunganController::class, 'printLaporan'])->name('tabungan.print_laporan');
+
+        // Bukti transfer & verifikasi
+        Route::post('/upload-bukti/{id}', [TabunganController::class, 'uploadBuktiTransfer'])->name('tabungan.upload_bukti');
+        Route::post('/approve/{id}', [TabunganController::class, 'approveTransaksi'])->middleware('permission:edit_tabungan')->name('tabungan.approve');
+        Route::post('/reject/{id}', [TabunganController::class, 'rejectTransaksi'])->middleware('permission:edit_tabungan')->name('tabungan.reject');
     });
 
     Route::prefix('keuangan-transaksi')->middleware('permission:view_report')->group(function () {
@@ -207,6 +212,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
+
+        // Approve/Reject routes
+        Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');
+        Route::post('/reject/{id}', [KeuanganTransaksiController::class, 'reject'])->name('keuangan_transaksi.reject');
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {

@@ -308,50 +308,50 @@
             });
         @endif
     </script>
+    <script>
+        let myDropzone = new Dropzone("#image-dropzone", {
+            url: "{{ route('siswa.upload') }}",
+            paramName: "file",
+            maxFiles: 1,
+            maxFilesize: 1,
+            acceptedFiles: ".jpg,.jpeg,.png",
+            addRemoveLinks: true,
+            thumbnailWidth: 200,
+            thumbnailHeight: 200,
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function(file, response) {
+                console.log('upload response', response);
+                // Simpan path untuk database (uploads/siswa/xxx.jpg)
+                document.querySelector("#image-hidden").value = response.filepath;
+            },
+            removedfile: function(file) {
+                file.previewElement.remove();
+                document.querySelector("#image-hidden").value = "";
+            },
+            init: function() {
+                // ✅ Saat edit data, tampilkan foto lama
+                @if (isset($siswa) && $siswa->image)
+                    const mockFile = {
+                        name: "Current Image",
+                        size: 12345,
+                        type: 'image/jpeg',
+                        accepted: true
+                    };
+                    this.emit("addedfile", mockFile);
+                    this.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
+                    this.emit("complete", mockFile);
+                    this.files.push(mockFile);
 
-    let myDropzone = new Dropzone("#image-dropzone", {
-    url: "{{ route('siswa.upload') }}",
-    paramName: "file",
-    maxFiles: 1,
-    maxFilesize: 1,
-    acceptedFiles: ".jpg,.jpeg,.png",
-    addRemoveLinks: true,
-    thumbnailWidth: 200,
-    thumbnailHeight: 200,
-    headers: {
-    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-    },
-    success: function(file, response) {
-    console.log('upload response', response);
-    // Simpan path untuk database (uploads/siswa/xxx.jpg)
-    document.querySelector("#image-hidden").value = response.filepath;
-    },
-    removedfile: function(file) {
-    file.previewElement.remove();
-    document.querySelector("#image-hidden").value = "";
-    },
-    init: function() {
-    // ✅ Saat edit data, tampilkan foto lama
-    @if (isset($siswa) && $siswa->image)
-        const mockFile = {
-        name: "Current Image",
-        size: 12345,
-        type: 'image/jpeg',
-        accepted: true
-        };
-        this.emit("addedfile", mockFile);
-        this.emit("thumbnail", mockFile, "{{ asset($siswa->image) }}");
-        this.emit("complete", mockFile);
-        this.files.push(mockFile);
-
-        // Klik gambar untuk preview modal
-        mockFile.previewElement.addEventListener("click", function() {
-        document.getElementById("previewImage").src = "{{ asset($siswa->image) }}";
-        new bootstrap.Modal(document.getElementById("imageModal")).show();
+                    // Klik gambar untuk preview modal
+                    mockFile.previewElement.addEventListener("click", function() {
+                        document.getElementById("previewImage").src = "{{ asset($siswa->image) }}";
+                        new bootstrap.Modal(document.getElementById("imageModal")).show();
+                    });
+                @endif
+            }
         });
-    @endif
-    }
-    });
     </script>
 
     <script>
@@ -452,28 +452,26 @@
 
         // --- ✅ Jika lolos validasi, tampilkan konfirmasi SweetAlert ---
         Swal.fire({
-        title: 'Apakah data sudah benar?',
-        text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Simpan!',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d'
+            title: 'Apakah data sudah benar?',
+            text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d'
         }).then((result) => {
-        if (result.isConfirmed) {
-        Swal.fire({
-            title: 'Menyimpan...',
-            text: 'Harap tunggu sebentar.',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menyimpan...',
+                    text: 'Harap tunggu sebentar.',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
 
-        // ✅ Submit form setelah konfirmasi
-        form.submit();
-        }
-        });
-        });
+                // ✅ Submit form setelah konfirmasi
+                form.submit();
+            }
         });
     </script>
 

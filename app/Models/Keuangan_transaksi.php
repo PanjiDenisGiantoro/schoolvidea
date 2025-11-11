@@ -45,4 +45,8 @@ class Keuangan_transaksi extends Model
     {
         return $this->belongsTo(Pembayarantagihan::class, 'referensi_tagihan_id');
     }
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
 }
