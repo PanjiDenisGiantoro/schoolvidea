@@ -632,11 +632,10 @@
                 }
             });
 
-            fetch('/api/v1/tabungan/verify', {
+            fetch('tabungan/verify-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
