@@ -13,6 +13,12 @@
                 <i class="bx bx-check-circle fs-3 me-3"></i>
                 <div class="flex-grow-1">
                     <h5 class="alert-heading mb-2">{{ session('success') }}</h5>
+                    @if(session('info'))
+                        <div class="alert alert-warning mb-3">
+                            <i class="bx bx-info-circle me-1"></i>
+                            <small>{{ session('info') }}</small>
+                        </div>
+                    @endif
                     <div class="mb-3">
                         <strong>Token Verifikasi Anda:</strong>
                         <div class="bg-white p-3 rounded mt-2 border border-success">
@@ -145,25 +151,51 @@
                                         <span class="text-muted">{{ $log->keterangan ?: '-' }}</span>
                                     </td>
                                     <td class="text-center">
-                                        @if($log->status_verifikasi == 'approved')
-                                            <span class="badge bg-success rounded-pill">
+                                        @php
+                                            // Untuk penarikan tabungan, cek status_approval (dengan token)
+                                            // Untuk setoran, langsung approved
+                                            $statusApproval = $log->jenis_transaksi == 'penarikan_tabungan'
+                                                ? $log->status_approval
+                                                : 'approved';
+                                        @endphp
+
+                                        @if($statusApproval == 'approved')
+                                            <span class="badge bg-success rounded-pill px-3 py-2">
                                                 <i class="bx bx-check-circle me-1"></i>Approved
                                             </span>
-                                        @elseif($log->status_verifikasi == 'rejected')
-                                            <span class="badge bg-danger rounded-pill">
+                                        @elseif($statusApproval == 'rejected')
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">
                                                 <i class="bx bx-x-circle me-1"></i>Rejected
                                             </span>
+                                        @elseif($statusApproval == 'pending')
+                                            <div class="d-flex flex-column align-items-center gap-1">
+                                                <span class="badge bg-warning rounded-pill px-3 py-2">
+                                                    <i class="bx bx-time-five me-1"></i>Belum Cocok Token
+                                                </span>
+                                                @if($log->token)
+                                                    <small class="text-muted" style="font-size: 0.7rem;">
+                                                        Token: <span class="badge bg-secondary">{{ $log->token }}</span>
+                                                    </small>
+                                                @endif
+                                            </div>
                                         @else
-                                            <span class="badge bg-warning rounded-pill">
-                                                <i class="bx bx-time-five me-1"></i>Pending
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                <i class="bx bx-info-circle me-1"></i>N/A
                                             </span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-info rounded-pill btn-detail"
-                                                data-id="{{ $log->id }}">
-                                            <i class="bx bx-show me-1"></i>Detail
-                                        </button>
+                                        <div class="d-flex gap-1 justify-content-center">
+
+                                            @if($log->jenis_transaksi == 'penarikan_tabungan' && $log->status_approval == 'pending')
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill btn-verify"
+                                                        data-id="{{ $log->id }}"
+                                                        data-token="{{ $log->token }}"
+                                                        data-jumlah="{{ $log->jumlah }}">
+                                                    <i class="bx bx-key me-1"></i>Verify
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -240,6 +272,16 @@
             button.addEventListener('click', function() {
                 const transaksiId = this.dataset.id;
                 showDetailTransaksi(transaksiId);
+            });
+        });
+
+        // Handle verify button click
+        document.querySelectorAll('.btn-verify').forEach(button => {
+            button.addEventListener('click', function() {
+                const transaksiId = this.dataset.id;
+                const expectedToken = this.dataset.token;
+                const jumlah = this.dataset.jumlah;
+                showVerifyModal(transaksiId, expectedToken, jumlah);
             });
         });
 
@@ -518,6 +560,128 @@
                     icon: 'error',
                     title: 'Error!',
                     text: 'Terjadi kesalahan saat reject transaksi',
+                    confirmButtonColor: '#f56565'
+                });
+                console.error('Error:', error);
+            });
+        }
+
+        // Show Verify Modal untuk input token dan approve/reject
+        function showVerifyModal(transaksiId, expectedToken, jumlah) {
+            Swal.fire({
+                title: 'Verifikasi Token Penarikan',
+                html: `
+                    <div class="text-start">
+                        <div class="alert alert-info mb-3">
+                            <strong><i class="bx bx-info-circle me-1"></i>Informasi:</strong><br>
+                            <small>Masukkan token 6 digit untuk memverifikasi penarikan sebesar <strong>Rp ${new Intl.NumberFormat('id-ID').format(jumlah)}</strong></small>
+                        </div>
+                        <label for="token-input" class="form-label">Token (6 Digit) <span class="text-danger">*</span></label>
+                        <input type="text" id="token-input" class="form-control form-control-lg text-center"
+                               placeholder="000000" maxlength="6"
+                               style="letter-spacing: 8px; font-family: monospace; font-size: 1.5rem;">
+                        <small class="text-muted mt-2 d-block">Token diberikan saat transaksi penarikan dibuat</small>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#48bb78',
+                denyButtonColor: '#f56565',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check-circle me-1"></i> Approve',
+                denyButtonText: '<i class="bx bx-x-circle me-1"></i> Reject',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                preConfirm: () => {
+                    const token = document.getElementById('token-input').value;
+                    if (!token || token.length !== 6) {
+                        Swal.showValidationMessage('Token harus 6 digit');
+                        return false;
+                    }
+                    return { token: token, action: 'approve' };
+                },
+                preDeny: () => {
+                    const token = document.getElementById('token-input').value;
+                    if (!token || token.length !== 6) {
+                        Swal.showValidationMessage('Token harus 6 digit');
+                        return false;
+                    }
+                    return { token: token, action: 'reject' };
+                }
+            }).then((result) => {
+                if (result.isConfirmed || result.isDenied) {
+                    processTokenVerification(transaksiId, result.value.token, result.value.action);
+                }
+            });
+
+            // Auto focus on token input
+            setTimeout(() => {
+                document.getElementById('token-input').focus();
+            }, 500);
+        }
+
+        // Process Token Verification
+        function processTokenVerification(transaksiId, token, action) {
+            Swal.fire({
+                title: 'Memverifikasi...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('/api/v1/tabungan/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    transaksi_id: transaksiId,
+                    token: token,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        html: `
+                            <div class="text-start">
+                                <p>${data.message}</p>
+                                <div class="alert alert-info mt-3">
+                                    <strong>Detail:</strong><br>
+                                    <small>Transaksi ID: ${data.data.transaksi_id}</small><br>
+                                    <small>Code: ${data.data.code_pembayaran}</small><br>
+                                    <small>Status: <span class="badge bg-${action === 'approve' ? 'success' : 'danger'}">${data.data.status_approval}</span></small><br>
+                                    <small>Saldo Akhir: Rp ${new Intl.NumberFormat('id-ID').format(data.data.saldo_akhir)}</small>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat verifikasi token',
                     confirmButtonColor: '#f56565'
                 });
                 console.error('Error:', error);

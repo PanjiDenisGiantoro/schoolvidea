@@ -1,8 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Tabungan Siswa')
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-@endpush
+
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tabungan Siswa',
@@ -101,21 +99,21 @@
                         {{-- Filter Search --}}
                         <div class="col-md-3">
                             <label for="search" class="form-label">Cari Siswa</label>
-                            <input type="text" name="search" id="search" class="form-control p-3"
+                            <input type="text" name="search" id="search" class="form-control"
                                 placeholder="NISN, Nama, Kelas..." value="{{ request('search') }}">
                         </div>
 
                         {{-- Filter Tanggal Dari --}}
                         <div class="col-md-2">
                             <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
-                            <input type="date" name="dari_tanggal" id="dari_tanggal" class="form-control p-3"
+                            <input type="date" name="dari_tanggal" id="dari_tanggal" class="form-control"
                                 value="{{ request('dari_tanggal') }}">
                         </div>
 
                         {{-- Filter Tanggal Sampai --}}
                         <div class="col-md-2">
                             <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
-                            <input type="date" name="sampai_tanggal" id="sampai_tanggal" class="form-control p-3"
+                            <input type="date" name="sampai_tanggal" id="sampai_tanggal" class="form-control"
                                 value="{{ request('sampai_tanggal') }}">
                         </div>
 
@@ -150,7 +148,6 @@
                     </select>
                     <span class="text-muted">data per halaman</span>
                 </div>
-
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('tabungan.create') }}"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
@@ -182,31 +179,13 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <div class="custom-card-header">
-                    <div class="col-md-4">
-                        <span><i class="fa fa-list"></i> Daftar Tabungan Siswa</span>
-                        <button id="btnProsesPembayaran" class="custom-btn-info">
-                            <i class="ri-checkbox-multiple-line"></i>Aktifkan Semua Status
-                        </button>
-                    </div>
-                    <div>
-                        <label for="filter" class="form-label text-white">Filter Data Status</label>
-                        <select class="form-select form-select-sm rounded-3 filter-status">
-                            <option value="semua" data-status="all">Semua</option>
-                            <option value="aktif" data-status="1">Aktif</option>
-                            <option value="nonaktif" data-status="0">Non Aktif</option>
-                        </select>
-                    </div>
-                </div>
-                <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle"
-                    id="table-tabungan">
-                    <thead class="table-light text-center align-middle">
+                <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                    <thead class="table-primary">
                         <tr>
-                            <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
                             <th>#</th>
                             <th>Nama Unit</th>
-                            <th>NISN</th>
-                            <th>Nama Siswa</th>
+                            <th>Nomor Induk</th>
+                            <th>Nama Lengkap</th>
                             <th>Kelas Sekarang</th>
                             <th>Tahun Ajaran</th>
                             <th>Status</th>
@@ -214,16 +193,9 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-tabungan">
+                    <tbody>
                         @forelse($transaksis as $siswa)
-                            @php
-                                $saldo = $siswa->user->saldo ?? null;
-                                $statusBadge = $saldo && $saldo->status == 1 ? 'primary' : 'secondary';
-                                $statusText = $saldo && $saldo->status == 1 ? 'Aktif' : 'Tidak Aktif';
-                            @endphp
-                            <tr data-status="{{ $saldo ? $saldo->status : '0' }}">
-                                <td><input type="checkbox" name="checkbox" id="checkbox" class="custom-checkbox"
-                                        data-id="{{ $saldo->id ?? '' }}"></td>
+                            <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $siswa->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $siswa->nisn ?? '-' }}</td>
@@ -231,21 +203,26 @@
                                 <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
                                 <td>{{ $siswa->tahun_ajaran->tahun_ajaran ?? '-' }}</td>
                                 <td>
+                                    @php
+                                        $saldo = $siswa->user->saldo ?? null;
+                                        $statusBadge = $saldo && $saldo->status == 1 ? 'primary' : 'secondary';
+                                        $statusText = $saldo && $saldo->status == 1 ? 'Aktif' : 'Tidak Aktif';
+                                    @endphp
                                     <span class="badge rounded-pill bg-{{ $statusBadge }}">
                                         {{ $statusText }}
                                     </span>
                                 </td>
                                 <td>Rp {{ number_format($saldo->saldo_akhir ?? 0, 0, ',', '.') }}</td>
                                 <td class="d-flex gap-2">
-                                    <a href="{{ route('tabungan.show', $siswa->id) }}"
+                                    <a href="{{ url('tabungan/show/' . $siswa->id) }}"
                                         class="btn btn-sm btn-outline-primary rounded-pill">Detail</a>
 
                                     @if ($saldo && $saldo->status == 0)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-primary rounded-pill confirm-status">Aktif</a>
+                                            class="btn btn-sm btn-primary rounded-pill">Aktif</a>
                                     @elseif($saldo)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-danger rounded-pill confirm-status">Non Aktif</a>
+                                            class="btn btn-sm btn-danger rounded-pill">Non Aktif</a>
                                     @endif
                                 </td>
                             </tr>
@@ -257,6 +234,7 @@
                     </tbody>
                 </table>
             </div>
+
             {{-- Pagination --}}
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="text-muted">
@@ -264,7 +242,7 @@
                     {{ $transaksis->total() }} data
                 </div>
                 <div>
-                    {{ $transaksis->links('vendor.pagination.custom') }}
+                    {{ $transaksis->links() }}
                 </div>
             </div>
         </div>
@@ -285,7 +263,6 @@
 @endpush
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function changePerPage(perPage) {
             const url = new URL(window.location.href);
@@ -317,7 +294,7 @@
                         let tableRows = '';
                         data.data.forEach((trx, index) => {
                             const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' :
-                            'danger';
+                                'danger';
                             const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' :
                                 'minus-circle';
                             const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' :

@@ -174,6 +174,14 @@
                             {{ $transaksi->catatan_verifikasi }}
                         </div>
                     @endif
+
+{{--                    token--}}
+                    @if($transaksi->token)
+                        <div class="alert alert-info mt-2 small">
+                            <strong>Token:</strong><br>
+                            {{ $transaksi->token }}
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Bukti Transfer --}}

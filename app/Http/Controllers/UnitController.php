@@ -12,7 +12,8 @@ use Illuminate\Support\Str;
 
 class UnitController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $units = Unit::all();
 
         // Build query
@@ -28,7 +29,7 @@ class UnitController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_unit', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
                     ->orWhere('no_hp', 'like', "%{$search}%")
@@ -36,7 +37,7 @@ class UnitController extends Controller
                     ->orWhere('alamat', 'like', "%{$search}%")
                     ->orWhere('website', 'like', "%{$search}%")
                     ->orWhere('nama_pimpinan_unit', 'like', "%{$search}%")
-                    ->orWhereHas('tipe_unit', function($q) use ($search) {
+                    ->orWhereHas('tipe_unit', function ($q) use ($search) {
                         $q->where('nama_tipe_unit', 'like', "%{$search}%");
                     });
             });
@@ -59,17 +60,17 @@ class UnitController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.unit.unit', compact('unit','headers','units'));
+        return view('pages.data_master.unit.unit', compact('unit', 'headers', 'units'));
     }
     public function create()
     {
         $unit = Unit::where('id', Auth::user()->unit_id)->first();
 
         // Filter yayasan berdasarkan user access
-        if(Auth::user()->yayasan_id){
+        if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
             $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
-        } elseif(Auth::user()->unit_id){
+        } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
             $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
                 $query->where('id', $yayasanId);
@@ -79,8 +80,8 @@ class UnitController extends Controller
             $yayasan = Yayasan::where('status', '1')->get();
         }
 
-        $tipeunit = Tipeunit::where('status','1')->get();
-        return view('pages.data_master.unit.unit_create', compact('yayasan','tipeunit'));
+        $tipeunit = Tipeunit::where('status', '1')->get();
+        return view('pages.data_master.unit.unit_create', compact('yayasan', 'tipeunit'));
     }
     public function store(Request $request)
     {
@@ -95,6 +96,7 @@ class UnitController extends Controller
             'status' => 'required|in:0,1',
             'tipe_unit_id' => 'nullable',
             'nama_pimpinan_unit' => 'nullable|string',
+            'code' => 'nullable|string|max:10|unique:units,code',
         ]);
 
 
@@ -125,10 +127,10 @@ class UnitController extends Controller
         $unit = Unit::findOrFail($id);
 
         // Filter yayasan berdasarkan user access
-        if(Auth::user()->yayasan_id){
+        if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
             $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
-        } elseif(Auth::user()->unit_id){
+        } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
             $yayasan = Yayasan::where('status', '1')->when($unit->yayasan_id, function ($query, $yayasanId) {
                 $query->where('id', $yayasanId);
@@ -138,14 +140,39 @@ class UnitController extends Controller
             $yayasan = Yayasan::where('status', '1')->get();
         }
 
-        $tipeunit = Tipeunit::where('status','1')->get();
+        $tipeunit = Tipeunit::where('status', '1')->get();
 
-        return view('pages.data_master.unit.unit_create', compact('unit','yayasan','tipeunit'));
+        return view('pages.data_master.unit.unit_create', compact('unit', 'yayasan', 'tipeunit'));
     }
     public function update(Request $request, $id)
     {
         $unit = Unit::findOrFail($id);
-        $unit->update($request->all());
+        $request->validate([
+            'nama_unit' => 'required|string|max:255|unique:units,nama_unit,' . $id,
+            'image' => 'nullable|string',
+            'no_hp' => 'nullable|string|max:20',
+            'email' => 'nullable|email',
+            'alamat' => 'nullable|string',
+            'website' => 'nullable|string',
+            'status' => 'required|in:0,1',
+            'tipe_unit_id' => 'nullable',
+            'nama_pimpinan_unit' => 'nullable|string',
+            'code' => 'nullable|string|max:10|unique:units,code,' . $id,
+        ]);
+
+        $unit->update($request->only([
+            'nama_unit',
+            'image',
+            'no_hp',
+            'email',
+            'alamat',
+            'website',
+            'status',
+            'tipe_unit_id',
+            'nama_pimpinan_unit',
+            'code',
+        ]));
+
         return redirect()->route('unit.index')
             ->with('success', 'Data berhasil diupdate');
     }
@@ -162,10 +189,10 @@ class UnitController extends Controller
         $show = true;
 
         // Filter yayasan berdasarkan user access
-        if(Auth::user()->yayasan_id){
+        if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, hanya tampilkan yayasan tersebut
             $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
-        } elseif(Auth::user()->unit_id){
+        } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan yayasan yang terkait dengan unit tersebut
             $yayasan = Yayasan::with('units')
                 ->when(Auth::user()->unit_id, function ($query, $unitId) {
@@ -178,9 +205,9 @@ class UnitController extends Controller
             $yayasan = Yayasan::where('status', '1')->get();
         }
 
-        $tipeunit = Tipeunit::where('status','1')->get();
+        $tipeunit = Tipeunit::where('status', '1')->get();
 
-        return view('pages.data_master.unit.unit_create', compact('unit','show','yayasan','tipeunit'));
+        return view('pages.data_master.unit.unit_create', compact('unit', 'show', 'yayasan', 'tipeunit'));
     }
     public function upload(Request $request)
     {

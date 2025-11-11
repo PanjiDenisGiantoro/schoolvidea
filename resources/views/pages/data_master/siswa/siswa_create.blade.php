@@ -208,15 +208,9 @@
                             <label for="kelas_id" class="form-label">Kelas <span
                                     style="color: #dc3545 !important;">*</span></label>
 
-                            <select name="kelas_id" id="kelas_id" class="form-select" data-choices
-                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
+                            <select name="kelas_id" id="kelas_id" class="form-select"
+                                @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Kelas --</option>
-                                @foreach ($kelas as $k)
-                                    <option value="{{ $k->id }}"
-                                        {{ old('kelas_id', $siswa?->kelas_id ?? '') == $k->id ? 'selected' : '' }}>
-                                        {{ $k->nama_kelas }}
-                                    </option>
-                                @endforeach
                             </select>
                         </div>
                         <x-input-field type="text" id="bank" name="bank" label="Bank"
@@ -687,4 +681,128 @@
             });
         </script>
     @endif
+
+    {{-- Filter Kelas dan Jurusan berdasarkan Unit/Kelas --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit_id');
+            const kelasSelect = document.getElementById('kelas_id');
+            const jurusanSelect = document.getElementById('jurusan');
+
+            // Event: Filter Kelas berdasarkan Unit
+            if (unitSelect && kelasSelect) {
+                unitSelect.addEventListener('change', function() {
+                    const unitId = this.value;
+
+                    // Reset kelas dan jurusan
+                    kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                    if (jurusanSelect) {
+                        jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+                    }
+
+                    if (!unitId) {
+                        return;
+                    }
+
+                    // Fetch kelas berdasarkan unit
+                    fetch(`/siswa/kelas-by-unit/${unitId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+
+                            if (data.length === 0) {
+                                kelasSelect.innerHTML =
+                                    '<option value="">Tidak ada kelas tersedia</option>';
+                                return;
+                            }
+
+                            data.forEach(kelas => {
+                                const option = document.createElement('option');
+                                option.value = kelas.id;
+                                option.textContent = kelas.nama_kelas;
+                                kelasSelect.appendChild(option);
+                            });
+
+                            @if (isset($siswa) && $siswa->kelas_id)
+                                // Set selected value jika edit mode
+                                kelasSelect.value = '{{ $siswa->kelas_id }}';
+                                // Trigger change untuk load jurusan
+                                kelasSelect.dispatchEvent(new Event('change'));
+                            @endif
+                        })
+                        .catch(error => {
+                            console.error('Error fetching kelas:', error);
+                            kelasSelect.innerHTML = '<option value="">Gagal memuat data kelas</option>';
+                        });
+                });
+
+                // Trigger change saat load pertama jika ada unit terpilih (edit mode)
+                @if (isset($siswa) && $siswa->unit_id)
+                    unitSelect.value = '{{ $siswa->unit_id }}';
+                    unitSelect.dispatchEvent(new Event('change'));
+                @endif
+            }
+
+            // Event: Filter Jurusan berdasarkan Kelas
+            if (kelasSelect && jurusanSelect) {
+                kelasSelect.addEventListener('change', function() {
+                    const kelasId = this.value;
+
+                    // Reset jurusan
+                    jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+
+                    if (!kelasId) {
+                        return;
+                    }
+
+                    // Get unit_id dari selected kelas untuk fetch jurusan
+                    const unitId = unitSelect.value;
+
+                    if (!unitId) {
+                        return;
+                    }
+
+                    // Fetch jurusan berdasarkan unit
+                    fetch(`/siswa/jurusan-by-unit/${unitId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            jurusanSelect.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+
+                            if (data.length === 0) {
+                                jurusanSelect.innerHTML =
+                                    '<option value="">Tidak ada jurusan tersedia</option>';
+                                return;
+                            }
+
+                            data.forEach(jurusan => {
+                                const option = document.createElement('option');
+                                option.value = jurusan.id;
+                                option.textContent = jurusan.nama_jurusan;
+                                jurusanSelect.appendChild(option);
+                            });
+
+                            @if (isset($siswa) && $siswa->jurusan_id)
+                                // Set selected value jika edit mode
+                                jurusanSelect.value = '{{ $siswa->jurusan_id }}';
+                            @endif
+                        })
+                        .catch(error => {
+                            console.error('Error fetching jurusan:', error);
+                            jurusanSelect.innerHTML =
+                                '<option value="">Gagal memuat data jurusan</option>';
+                        });
+                });
+            }
+        });
+    </script>
 @endpush
