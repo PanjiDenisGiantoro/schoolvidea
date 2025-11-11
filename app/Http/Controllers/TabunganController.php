@@ -362,7 +362,7 @@ class TabunganController extends Controller
             // Catat log transaksi
             Keuangan_transaksi_logs::create([
                 'transaksi_id'   => $transaksi->id,
-                'aksi'           => 'create_withdraw_request',
+                'aksi'           => 'withdraw_request',
                 'data_lama'      => json_encode(['saldo_saat_ini' => $saldoSiswa->saldo_akhir]),
                 'data_baru'      => json_encode(['status' => 'pending', 'token_generated' => true]),
                 'dilakukan_oleh' => Auth::id(),

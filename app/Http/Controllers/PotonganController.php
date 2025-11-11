@@ -153,9 +153,12 @@ class PotonganController extends Controller
     private function applyPotonganToSiswa($potongan, $siswaId, $kelasId)
     {
         // Fetch the related tagihan_id from the tagihan_siswa table
-        $tagihanSiswa = Tagihansiswa::with('siswa')->where('siswa_id', $siswaId)
-            ->whereHas('tagihan', function ($query) use ($kelasId) {
-                $query->where('kelas_id', $kelasId);
+        $tagihanSiswa = Tagihansiswa::with(['siswa', 'tagihan.items'])->where('siswa_id', $siswaId)
+            ->whereHas('tagihan', function ($query) use ($kelasId, $potongan) {
+                $query->where('kelas_id', $kelasId)
+                      ->whereHas('items', function($q) use ($potongan) {
+                          $q->where('kategori_id', $potongan->kategori_tagihan_id);
+                      });
             })
             ->where(function ($query) {
                 $query->where('status', '=', '0')
@@ -168,8 +171,19 @@ class PotonganController extends Controller
             // Now get the tagihan using tagihan_siswa
             $tagihan = $tagihanSiswa->tagihan;
 
+            // Get nominal tagihan untuk kategori yang sesuai
+            $nominalTagihan = $tagihan->items()
+                ->where('kategori_id', $potongan->kategori_tagihan_id)
+                ->sum('nominal');
+
             // Calculate the nominal for the discount (potongan)
-            $nominal = $this->calculateNominal($potongan, $tagihanSiswa->sisa_nominal);
+            // Untuk persentase, hitung dari nominal tagihan asli, bukan sisa
+            $nominal = $this->calculateNominal($potongan, $nominalTagihan);
+
+            // Pastikan nominal potongan tidak melebihi sisa nominal
+            if ($nominal > $tagihanSiswa->sisa_nominal) {
+                $nominal = $tagihanSiswa->sisa_nominal;
+            }
 
             // Store the PotonganSiswa entry
             Potongansiswa::create([
@@ -180,15 +194,9 @@ class PotonganController extends Controller
             ]);
 
             // Update sisa_nominal in tagihan_siswa
-            Tagihansiswa::where('siswa_id', $tagihanSiswa->siswa_id)
-                ->where('tagihan_id', $tagihan->id)
-                ->where(function ($query) {
-                    $query->where('status', '=', '0')
-                        ->orWhere('status', '=', '2');
-                })
-                ->update([
-                    'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
-                ]);
+            $tagihanSiswa->update([
+                'sisa_nominal' => $tagihanSiswa->sisa_nominal - $nominal,
+            ]);
         }
     }
 
@@ -242,18 +250,34 @@ class PotonganController extends Controller
 
     public function destroy($id)
     {
-        $potongan = Potongan::findOrFail($id);
+        try {
+            $potongan = Potongan::findOrFail($id);
 
-        $tagihansiswa = Potongansiswa::where('potongan_id', $id)->get();
-        foreach ($tagihansiswa as $tagihansiswa) {
-            Tagihansiswa::where('id', $tagihansiswa->tagihan_siswa_id)
-                ->update([
-                    'sisa_nominal' => $tagihansiswa->sisa_nominal + $tagihansiswa->nominal,
-                ]);
+            // Get all potongan_siswa related to this potongan
+            $potonganSiswas = Potongansiswa::where('potongan_id', $id)->get();
+
+            foreach ($potonganSiswas as $potonganSiswa) {
+                // Get the tagihan_siswa record
+                $tagihanSiswa = Tagihansiswa::find($potonganSiswa->tagihan_siswa_id);
+
+                if ($tagihanSiswa) {
+                    // Kembalikan potongan ke sisa_nominal (restore the discount)
+                    $tagihanSiswa->update([
+                        'sisa_nominal' => $tagihanSiswa->sisa_nominal + $potonganSiswa->nominal,
+                    ]);
+                }
+
+                // Delete potongan_siswa record
+                $potonganSiswa->delete();
+            }
+
+            // Delete the main potongan record
+            $potongan->delete();
+
+            return redirect()->route('potongan.index')->with('success', 'Potongan berhasil dihapus dan tagihan siswa telah dikembalikan.');
+        } catch (\Exception $e) {
+            return redirect()->route('potongan.index')->with('danger', 'Gagal menghapus potongan: ' . $e->getMessage());
         }
-
-        $potongan->delete();
-        return redirect()->route('potongan.index')->with('success', 'Potongan successfully deleted.');
     }
     public function update(Request $request, $id)
     {
@@ -270,25 +294,50 @@ class PotonganController extends Controller
             $potongan->save();
 
             // Update setiap potongan_siswa dan tagihan_siswa terkait
-            $potonganSiswas = Potongansiswa::where('potongan_id', $potongan->id)->get();
-            foreach ($potonganSiswas as $potonganSiswa) {
-                $tagihanSiswa = Tagihansiswa::where('siswa_id', $potonganSiswa->tagihan_siswa_id)->where('tagihan_id', $potongan->kategori_tagihan_id)->first();
-                $nominalPotonganSiswa = intval($potonganSiswa->nominal); // atau gunakan (int) $potonganSiswa->nominal
-                $nominalTagihanSisa = intval($tagihanSiswa->sisa_nominal);
+            $potonganSiswas = Potongansiswa::with(['tagihanSiswa.tagihan.items'])->where('potongan_id', $potongan->id)->get();
 
-                $nominalBaru = $this->calculateNominal($potongan, $nominalTagihanSisa + $nominalPotonganSiswa);
+            foreach ($potonganSiswas as $potonganSiswa) {
+                // Get tagihan_siswa by id
+                $tagihanSiswa = Tagihansiswa::with('tagihan.items')->find($potonganSiswa->tagihan_siswa_id);
+
+                if (!$tagihanSiswa) {
+                    continue;
+                }
+
+                // Get nominal tagihan untuk kategori yang sesuai
+                $nominalTagihan = $tagihanSiswa->tagihan->items()
+                    ->where('kategori_id', $potongan->kategori_tagihan_id)
+                    ->sum('nominal');
+
+                // Simpan nilai potongan lama
+                $nominalPotonganLama = $potonganSiswa->nominal;
+
+                // Hitung nominal potongan baru dari nominal tagihan asli
+                $nominalPotonganBaru = $this->calculateNominal($potongan, $nominalTagihan);
+
+                // Kembalikan potongan lama ke sisa_nominal terlebih dahulu
+                $sisaNominalSetelahDikembalikan = $tagihanSiswa->sisa_nominal + $nominalPotonganLama;
+
+                // Pastikan nominal potongan baru tidak melebihi sisa setelah dikembalikan
+                if ($nominalPotonganBaru > $sisaNominalSetelahDikembalikan) {
+                    $nominalPotonganBaru = $sisaNominalSetelahDikembalikan;
+                }
+
                 // Update nominal di potongan_siswa
-                $potonganSiswa->nominal = $nominalBaru;
-                $potonganSiswa->save();
+                $potonganSiswa->update([
+                    'nominal' => $nominalPotonganBaru
+                ]);
 
                 // Update sisa_nominal di tagihan_siswa
-                $tagihanSiswa->sisa_nominal = (intval($tagihanSiswa->sisa_nominal) + intval($potonganSiswa->nominal)) - $nominalBaru;
-                $tagihanSiswa->save();
+                // sisa_nominal = (sisa sekarang + potongan lama) - potongan baru
+                $tagihanSiswa->update([
+                    'sisa_nominal' => $sisaNominalSetelahDikembalikan - $nominalPotonganBaru
+                ]);
             }
 
             return redirect()->route('potongan.index')->with('success', 'Potongan dan potongan siswa berhasil diupdate.');
         } catch (\Exception $e) {
-            return redirect()->route('potongan.index')->with('danger', $e->getMessage());
+            return redirect()->route('potongan.index')->with('danger', 'Gagal update potongan: ' . $e->getMessage());
         }
     }
 }
