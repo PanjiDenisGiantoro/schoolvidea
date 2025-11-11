@@ -148,38 +148,25 @@ class TagihanController extends Controller
         }
 
         try {
-            // 1. Simpan tagihan utama
-            $tagihan = Tagihan::create([
-                'unit_id' => $request->unit_id,
-                'kelas_id' => $request->kelas ?? null,
-                'target' => $request->target,
-                'jenis_tagihan' => $request->jenis_tagihan,
-                'periode' => $request->jenis_tagihan === 'bulanan' ? $request->periode : null,
-                'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $request->nominal_bebas : null,
-                'bulan_mulai' => $request->bulan_mulai,
-                'tahun_mulai' => $request->tahun_mulai,
-            ]);
-
-            // 2. Simpan item tagihan dan kumpulkan data item
+            // 1. Kumpulkan data items terlebih dahulu
             $itemsData = [];
             foreach ($request->items as $item) {
                 if (!empty($item['id'])) {
                     $kategori = KategoriTagihan::find($item['id']);
                     $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
 
-                    $tagihanItem = Tagihanitem::create([
-                        'tagihan_id' => $tagihan->id,
-                        'kategori_id' => $item['id'],
-                        'nominal' => $nominal_item,
-                    ]);
-
                     $itemsData[] = [
-                        'item_id' => $tagihanItem->id,
                         'kategori_id' => $item['id'],
                         'nominal' => $nominal_item,
+                        'kategori' => $kategori,
                     ];
                 }
             }
+
+            if (empty($itemsData)) {
+                throw new \Exception("Tidak ada item tagihan yang valid.");
+            }
+
             $kategoriIds = collect($itemsData)->pluck('kategori_id')->filter()->all();
 
             // Ambil siswa target
@@ -190,6 +177,7 @@ class TagihanController extends Controller
                 $siswaList = Siswa::where('kelas_id', $request->kelas)->get();
             }
 
+            // Cek apakah siswa sudah punya tagihan aktif untuk kategori yang sama
             foreach ($siswaList as $siswa) {
                 $sudahAda = Tagihansiswa::where('siswa_id', $siswa->id)
                     ->where('status', '!=', '1') // belum lunas
@@ -202,25 +190,22 @@ class TagihanController extends Controller
                     return back()->withInput()->with('danger', "Siswa {$siswa->nama} masih punya tagihan aktif dengan kategori yang sama.");
                 }
             }
-            // 3. Simpan tagihan_siswa dan jurnal
+
+            // 2. Ambil setting akun untuk jurnal
             $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
             if (Auth::user()->yayasan_id) {
-                // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
                 $settings->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             } elseif (Auth::user()->unit_id) {
-                // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan akun dari unit tersebut saja
                 $settings->where('unit_id', Auth::user()->unit_id);
             } elseif ($request->filled('unit_id')) {
-                // Super admin filtering by selected unit
                 $settings->where('unit_id', $request->unit_id);
             }
 
             $settings = $settings->where('status','1')->get();
-
             $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
 
@@ -228,15 +213,35 @@ class TagihanController extends Controller
                 throw new \Exception("Setting akun untuk kategori tagihan-masuk belum lengkap.");
             }
 
-            foreach ($siswaList as $siswa) {
-                // Loop untuk setiap item tagihan - SETIAP ITEM TERPISAH
-                foreach ($itemsData as $itemData) {
+            // 3. LOOP SETIAP ITEM - BUAT TAGIHAN TERPISAH
+            foreach ($itemsData as $itemData) {
+                // Buat tagihan baru untuk SETIAP item
+                $tagihan = Tagihan::create([
+                    'unit_id' => $request->unit_id,
+                    'kelas_id' => $request->kelas ?? null,
+                    'target' => $request->target,
+                    'jenis_tagihan' => $request->jenis_tagihan,
+                    'periode' => $request->jenis_tagihan === 'bulanan' ? $request->periode : null,
+                    'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
+                    'bulan_mulai' => $request->bulan_mulai,
+                    'tahun_mulai' => $request->tahun_mulai,
+                ]);
+
+                // Buat tagihan item untuk tagihan ini
+                $tagihanItem = Tagihanitem::create([
+                    'tagihan_id' => $tagihan->id,
+                    'kategori_id' => $itemData['kategori_id'],
+                    'nominal' => $itemData['nominal'],
+                ]);
+
+                // Loop setiap siswa untuk item ini
+                foreach ($siswaList as $siswa) {
                     if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
-                        // generate sesuai jumlah bulan untuk setiap item
+                        // generate sesuai jumlah bulan untuk item ini
                         for ($i = 1; $i <= $tagihan->periode; $i++) {
                             Tagihansiswa::create([
                                 'tagihan_id'     => $tagihan->id,
-                                'tagihanitem_id' => $itemData['item_id'], // PENTING: simpan item_id
+                                'tagihanitem_id' => $tagihanItem->id,
                                 'siswa_id'       => $siswa->id,
                                 'bulan_ke'       => $i,
                                 'tanggal_bayar'  => null,
@@ -245,10 +250,10 @@ class TagihanController extends Controller
                             ]);
                         }
                     } else {
-                        // jenis bebas → 1 row per item
+                        // jenis bebas → 1 row per siswa per item
                         Tagihansiswa::create([
                             'tagihan_id'     => $tagihan->id,
-                            'tagihanitem_id' => $itemData['item_id'], // PENTING: simpan item_id
+                            'tagihanitem_id' => $tagihanItem->id,
                             'siswa_id'       => $siswa->id,
                             'bulan_ke'       => null,
                             'tanggal_bayar'  => null,
@@ -256,13 +261,13 @@ class TagihanController extends Controller
                         ]);
                     }
 
-                    // Transaksi per item
+                    // Transaksi per siswa per item
                     $transaksi = Keuangan_transaksi::create([
                         'penerima_id'      => $siswa->id,
                         'penerima_tipe'    => Siswa::class,
                         'jenis_transaksi'  => 'tagihan',
                         'jumlah'           => $itemData['nominal'],
-                        'keterangan'       => "Tagihan ID: {$tagihan->id} - Item ID: {$itemData['item_id']}",
+                        'keterangan'       => "Tagihan {$itemData['kategori']->nama_kategori} - ID: {$tagihan->id}",
                         'created_by'       => Auth::id(),
                     ]);
 
@@ -272,7 +277,7 @@ class TagihanController extends Controller
                         'akun_id'      => $akun_debit,
                         'debit'        => $itemData['nominal'],
                         'kredit'       => 0,
-                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - Item: {$itemData['kategori_id']}",
+                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
                     ]);
 
                     // Jurnal kredit
@@ -281,7 +286,7 @@ class TagihanController extends Controller
                         'akun_id'      => $akun_kredit,
                         'debit'        => 0,
                         'kredit'       => $itemData['nominal'],
-                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - Item: {$itemData['kategori_id']}",
+                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
                     ]);
 
                     // Log transaksi
@@ -291,7 +296,8 @@ class TagihanController extends Controller
                         'data_lama'      => null,
                         'data_baru'      => json_encode([
                             'tagihan_id' => $tagihan->id,
-                            'item_id'    => $itemData['item_id'],
+                            'item_id'    => $tagihanItem->id,
+                            'kategori'   => $itemData['kategori']->nama_kategori,
                             'jumlah'     => $itemData['nominal'],
                         ]),
                         'dilakukan_oleh' => Auth::id(),
