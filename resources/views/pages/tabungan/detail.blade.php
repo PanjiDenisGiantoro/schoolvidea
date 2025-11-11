@@ -632,7 +632,7 @@
                 }
             });
 
-            fetch('tabungan/verify-token', {
+            fetch('/tabungan/verify-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
