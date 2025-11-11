@@ -222,7 +222,7 @@ class TabunganApiController extends Controller
             ]);
 
             // Update saldo siswa (kurangi saldo)
-            $saldoSiswa->decrement('saldo_akhir', $request->jumlah);
+//            $saldoSiswa->decrement('saldo_akhir', $request->jumlah);
 
             // Catat log transaksi
             Keuangan_transaksi_logs::create([
