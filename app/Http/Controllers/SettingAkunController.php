@@ -20,7 +20,7 @@ class SettingAkunController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan setting dari semua unit di yayasan tersebut
-            $query->whereHas('unit', function($q) {
+            $query->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -33,15 +33,15 @@ class SettingAkunController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_setting', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%")
                   ->orWhere('kategori', 'like', "%{$search}%")
-                  ->orWhereHas('akun', function($q) use ($search) {
+                  ->orWhereHas('akun', function ($q) use ($search) {
                       $q->where('nama_akun', 'like', "%{$search}%")
                         ->orWhere('kode_akun', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('unit', function($q) use ($search) {
+                  ->orWhereHas('unit', function ($q) use ($search) {
                       $q->where('nama_unit', 'like', "%{$search}%");
                   });
             });
@@ -73,7 +73,9 @@ class SettingAkunController extends Controller
         $options = [];
 
         foreach ($akunList->where('parent_id', $parentId) as $akun) {
-            if ($akun->id == $excludeId) continue;
+            if ($akun->id == $excludeId) {
+                continue;
+            }
 
             $options[] = [
                 'id' => $akun->id,
@@ -95,16 +97,16 @@ class SettingAkunController extends Controller
         // Filter units berdasarkan user access
         if (Auth::user()->yayasan_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $akuns = Akun::whereHas('unit', function($q) {
+            $akuns = Akun::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->orderBy('kode_akun')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('id', $unitId);
-            })->where('status','1')->get();
+            })->where('status', '1')->get();
             $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
-            })->where('status','1')->orderBy('kode_akun')->get();
+            })->where('status', '1')->orderBy('kode_akun')->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $akuns = Akun::where('status', '1')
@@ -115,7 +117,7 @@ class SettingAkunController extends Controller
 
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
 
-        return view('pages.data_master.setting_akun.setting_akun_create', compact('units','akuns','akunOptions'));
+        return view('pages.data_master.setting_akun.setting_akun_create', compact('units', 'akuns', 'akunOptions'));
     }
 
 
@@ -125,16 +127,16 @@ class SettingAkunController extends Controller
 
         if (Auth::user()->yayasan_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $akuns = Akun::whereHas('unit', function($q) {
+            $akuns = Akun::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->orderBy('kode_akun')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('id', $unitId);
-            })->where('status','1')->get();
+            })->where('status', '1')->get();
             $akuns = Akun::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('unit_id', $unitId);
-            })->where('status','1')->orderBy('kode_akun')->get();
+            })->where('status', '1')->orderBy('kode_akun')->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $akuns = Akun::where('status', '1')
@@ -143,7 +145,7 @@ class SettingAkunController extends Controller
         }
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
 
-        return view('pages.data_master.setting_akun.setting_akun_create', compact('setting','units','akuns','akunOptions'));
+        return view('pages.data_master.setting_akun.setting_akun_create', compact('setting', 'units', 'akuns', 'akunOptions'));
     }
 
     public function store(Request $request)
@@ -157,12 +159,15 @@ class SettingAkunController extends Controller
             'unit_id'          => 'nullable',
             'status'           => 'required|in:0,1',
             'kategori'         => 'required|string|max:255',
+            'debit'  => 'required|in:1,0',
+            'kredit' => 'required|in:1,0',
+
         ]);
 
         // Validasi akun debit dan kredit tidak boleh sama
-//        if ($request->akun_debit_id == $request->akun_kredit_id) {
-//            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
-//        }
+        //        if ($request->akun_debit_id == $request->akun_kredit_id) {
+        //            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
+        //        }
 
         setting_akun::create([
             'nama_setting'   => $request->nama_setting,
@@ -171,6 +176,8 @@ class SettingAkunController extends Controller
             'unit_id'        => $request->unit_id,
             'status'         => $request->status,
             'kategori'       => $request->kategori,
+            'debit' => $request->debit,
+            'kredit' => $request->kredit
         ]);
 
         return redirect()->route('setting_akun.index')
@@ -188,12 +195,14 @@ class SettingAkunController extends Controller
             'unit_id'          => 'nullable|exists:units,id',
             'status'           => 'required|in:0,1',
             'kategori'         => 'required|string|max:255',
+            'debit'            => 'required|in:1,0',
+            'kredit'           => 'required|in:1,0'
         ]);
 
         // Validasi akun debit dan kredit tidak boleh sama
-//        if ($request->akun_debit_id == $request->akun_kredit_id) {
-//            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
-//        }
+        //        if ($request->akun_debit_id == $request->akun_kredit_id) {
+        //            return back()->withErrors(['akun_kredit_id' => 'Akun Debit dan Kredit tidak boleh sama'])->withInput();
+        //        }
 
         $setting->update([
             'nama_setting'   => $request->nama_setting,
@@ -202,6 +211,8 @@ class SettingAkunController extends Controller
             'unit_id'        => $request->unit_id,
             'status'         => $request->status,
             'kategori'       => $request->kategori,
+            'debit'          => $request->debit,
+            'kredit'         => $request->kredit
         ]);
 
         return redirect()->route('setting_akun.index')
@@ -226,7 +237,10 @@ class SettingAkunController extends Controller
         $show = true;
 
         return view('pages.data_master.setting_akun.setting_akun_create', compact(
-            'setting','show','units','akuns'
+            'setting',
+            'show',
+            'units',
+            'akuns'
         ));
     }
 }

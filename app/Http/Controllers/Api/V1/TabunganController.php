@@ -700,7 +700,7 @@ class TabunganController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'transaksi_id' => 'required|exists:keuangan_transaksis,id',
-            'token' => 'required|string|size:5',
+            'token' => 'required|string|size:6',
             'action' => 'required|in:approve,reject'
         ]);
 

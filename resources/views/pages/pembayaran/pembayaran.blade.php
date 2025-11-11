@@ -13,7 +13,7 @@
             .table thead th {
                 font-weight: 600;
                 font-size: 0.9rem;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2596be 0%, #2596be 100%);
                 color: white;
                 border: none;
                 padding: 15px 10px;
@@ -61,12 +61,12 @@
 
             .form-select:focus,
             .form-control:focus {
-                border-color: #667eea;
+                border-color: #2596be;
                 box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
             }
 
             .custom-btn-info {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2596be 0%, #1eb7f3 100%);
                 border: none;
                 color: white;
                 padding: 10px 20px;
@@ -81,9 +81,9 @@
             }
 
             .custom-btn-outline-primary {
-                border: 2px solid #667eea;
+                border: 2px solid #2596be;
                 background: white;
-                color: #667eea;
+                color: #2596be;
                 padding: 10px 25px;
                 border-radius: 10px;
                 font-weight: 600;
@@ -91,9 +91,9 @@
             }
 
             .custom-active-btn {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2596be 0%, #1eb7f3 100%);
                 color: white;
-                border-color: #667eea;
+                border-color: #2596be;
             }
 
             .custom-toggle-header {
@@ -123,7 +123,7 @@
             }
 
             .profile-card {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2596be 0%, #1eb7f3 100%);
                 color: white;
                 border-radius: 15px;
                 padding: 20px;
@@ -168,8 +168,8 @@
     @endpush
 
     <div class="row g-4">
-        <div class="col-md-12">
-            <div class="card rounded-4 border-0 p-4 shadow-sm">
+        <div class="col-md-12 p-4">
+            <div class="card rounded-4 mb-3 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
@@ -194,7 +194,7 @@
                     </div>
                 </div>
 
-                <div class="row g-3 mt-2">
+                <div class="row g-3 mt-2 mb-4">
                     <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan </label>
                         <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
@@ -398,7 +398,7 @@
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #4e73df;
+            border-color: #2596be;
             box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
         }
     </style>

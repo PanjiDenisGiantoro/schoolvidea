@@ -173,7 +173,7 @@
                             <label for="unit_id" class="form-label">Unit <span
                                     style="color: #dc3545 !important;">*</span></label>
                             <select name="unit_id" id="unit_id" class="form-select" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Unit --</option>
                                 @foreach ($units as $u)
                                     <option value="{{ $u->id }}"
@@ -209,7 +209,7 @@
                                     style="color: #dc3545 !important;">*</span></label>
 
                             <select name="kelas_id" id="kelas_id" class="form-select" data-choices
-                                data-choices-sorting-false required @if (isset($show) && $show) disabled @endif>
+                                data-choices-sorting-false @if (isset($show) && $show) disabled @endif>
                                 <option value="">-- Pilih Kelas --</option>
                                 @foreach ($kelas as $k)
                                     <option value="{{ $k->id }}"
@@ -431,11 +431,8 @@
         if (email && email.value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
             errors.push('Format email tidak valid.');
         }
-
         // Cek NISN hanya angka
-        const nisn = form.querySelector('[name="nisn"]');
-        if (nisn && nisn.value.trim() !== '' && !/^[0-9]+$/.test(nisn.value)) {
-            errors.push('NISN hanya boleh berisi angka.');
+        errors.push('NISN hanya boleh berisi angka.');
         }
 
         // Jika ada error, tampilkan SweetAlert error dan hentikan submit

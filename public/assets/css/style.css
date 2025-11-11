@@ -84,21 +84,21 @@
     height: 20px;
     border-radius: 30%;
     appearance: none; /* Hilangkan style bawaan browser */
-    border: 2px solid #2596be;
+    border: 2px solid #ffffff;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease-in-out;
 }
 
 .custom-checkbox:checked {
-    background-color: #2596be;
+    background-color: #ffffff;
     border-color: #2596be;
 }
 
 /* Biar ada centang putih di tengah */
 .custom-checkbox:checked::after {
     content: "✔";
-    color: #fff;
+    color:  #2596be;
     font-size: 13px;
     position: absolute;
     top: 50%;

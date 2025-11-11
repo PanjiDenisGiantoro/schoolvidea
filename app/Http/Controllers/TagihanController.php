@@ -27,10 +27,10 @@ class TagihanController extends Controller
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan semua unit dalam yayasan
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
-            $kategoriTagihan = Kategoritagihan::whereHas('unit', function($q) {
+            $kategoriTagihan = Kategoritagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
@@ -66,7 +66,7 @@ class TagihanController extends Controller
             })
             ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
-                $query->whereHas('unit', function($q) {
+                $query->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
@@ -82,10 +82,10 @@ class TagihanController extends Controller
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nama_tagihan', 'like', "%{$search}%")
                       ->orWhere('keterangan', 'like', "%{$search}%")
-                      ->orWhereHas('kelas', function($q) use ($search) {
+                      ->orWhereHas('kelas', function ($q) use ($search) {
                           $q->where('nama_kelas', 'like', "%{$search}%");
                       });
                 });
@@ -208,7 +208,7 @@ class TagihanController extends Controller
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
             if (Auth::user()->yayasan_id) {
                 // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
-                $settings->whereHas('unit', function($q) {
+                $settings->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             } elseif (Auth::user()->unit_id) {
@@ -219,7 +219,7 @@ class TagihanController extends Controller
                 $settings->where('unit_id', $request->unit_id);
             }
 
-            $settings = $settings->where('status','1')->get();
+            $settings = $settings->where('status', '1')->get();
 
             $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
@@ -393,7 +393,7 @@ class TagihanController extends Controller
             'potonganSiswa.potongan'
         ])
             ->where('siswa_id', $siswaId)
-            ->whereHas('tagihan', function($query) {
+            ->whereHas('tagihan', function ($query) {
                 $query->where('jenis_tagihan', 'bulanan');
             })
             ->orderBy('bulan_ke')
@@ -436,7 +436,7 @@ class TagihanController extends Controller
                 'jumlah_potongan'   => (int) $totalPotongan,
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
                 'jumlah_dibayar'    => (int) $jumlahDibayar,
-                'nominal_pembayaran'=> (int) ($jumlahTagihan - $jumlahDibayar),
+                'nominal_pembayaran' => (int) ($jumlahTagihan - $jumlahDibayar),
                 'catatan'           => $ts->catatan ?? '',
                 'status'            => $ts->status,
                 'kategori_id'       => $tagihan->items->first()->kategori_id ?? 1,
@@ -506,7 +506,7 @@ class TagihanController extends Controller
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
                 'jumlah_dibayar'    => (int) $jumlahDibayar,
                 'jumlah_tunggakan'  => (int) $jumlahTunggakan,
-                'nominal_pembayaran'=> (int) $jumlahTagihan,
+                'nominal_pembayaran' => (int) $jumlahTagihan,
                 'catatan'           => $ts->catatan ?? '',
                 'status'            => $ts->status,
             ];
@@ -666,7 +666,7 @@ class TagihanController extends Controller
             })
             ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
-                $query->whereHas('unit', function($q) {
+                $query->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             })
@@ -682,10 +682,10 @@ class TagihanController extends Controller
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nama_tagihan', 'like', "%{$search}%")
                       ->orWhere('keterangan', 'like', "%{$search}%")
-                      ->orWhereHas('kelas', function($q) use ($search) {
+                      ->orWhereHas('kelas', function ($q) use ($search) {
                           $q->where('nama_kelas', 'like', "%{$search}%");
                       });
                 });
