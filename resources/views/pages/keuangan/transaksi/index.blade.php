@@ -67,9 +67,6 @@
                             <option value="penarikan_tabungan" {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
                                 Penarikan Tabungan
                             </option>
-                            <option value="pembayaran" {{ request('jenis_transaksi') == 'pembayaran' ? 'selected' : '' }}>
-                                Pembayaran
-                            </option>
                             <option value="tagihan" {{ request('jenis_transaksi') == 'tagihan' ? 'selected' : '' }}>
                                 Pembayaran Tagihan
                             </option>
