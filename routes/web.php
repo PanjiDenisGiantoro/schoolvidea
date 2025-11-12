@@ -186,6 +186,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('kategoritagihan/update/{id}', [KategoritagihanController::class, 'update'])->middleware('permission:edit_kategoritagihan')->name('kategoritagihan.update');
         Route::get('/delete/{id}', [KategoritagihanController::class, 'destroy'])->middleware('permission:delete_kategoritagihan')->name('kategoritagihan.destroy');
         Route::get('/show/{id}', [KategoritagihanController::class, 'show'])->name('kategoritagihan.show');
+        Route::get('/by-unit-kelas/{unitId}/{kelasId?}', [KategoritagihanController::class, 'getByUnitAndKelas'])->name('kategoritagihan.byUnitKelas');
     });
 
     Route::prefix('tabungan')->middleware('permission:view_tabungan')->group(function () {

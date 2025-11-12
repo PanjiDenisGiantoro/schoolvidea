@@ -117,7 +117,7 @@
                         </div>
                     </div>
 
-                    {{-- Item Tagihan --}}
+                    {{-- Item Tagihan (Dynamic based on Unit & Kelas) --}}
                     <div id="itemTagihan">
                         <div class="mb-3 item-wrapper" data-item-index="0">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -126,15 +126,10 @@
                                     <i class="fa fa-trash"></i> Hapus
                                 </button>
                             </div>
-                            <select name="items[0][id]" class="form-control">
-                                <option value="">-- Pilih Item --</option>
-                                @foreach ($kategoriTagihan as $kat)
-                                    <option value="{{ $kat->id }}">
-                                        {{ $kat->nama_kategori }} - Rp
-                                        {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
-                                    </option>
-                                @endforeach
+                            <select name="items[0][id]" class="form-control item-select">
+                                <option value="">-- Pilih Unit dan Kelas Terlebih Dahulu --</option>
                             </select>
+                            <small class="text-muted d-block mt-1">Pilih unit dan kelas untuk menampilkan item tagihan yang tersedia</small>
                         </div>
                     </div>
                     <button type="button" class="btn btn-sm btn-success" onclick="tambahItem()">+ Tambah Item</button>
@@ -151,8 +146,10 @@
 
 @push('scripts')
     <script>
+        let kategoriBudget = {}; // Cache untuk kategori per unit
+
         $(document).ready(function() {
-            // Dependent Dropdown: Unit -> Kelas
+            // Dependent Dropdown: Unit -> Kelas -> Item Tagihan
             $('select[name="unit_id"]').on('change', function() {
                 let unitId = $(this).val();
                 let kelasSelect = $('#kelas');
@@ -163,6 +160,7 @@
                 // Reset dependent fields
                 $('#pilihanSiswa').addClass('d-none');
                 $('#tableSiswaWrapper').addClass('d-none');
+                resetItemDropdowns();
 
                 if (unitId) {
                     // Fetch kelas berdasarkan unit
@@ -175,6 +173,9 @@
                     }).fail(function() {
                         console.error('Gagal mengambil data kelas');
                     });
+
+                    // Fetch kategori tagihan berdasarkan unit
+                    fetchKategoriByUnit(unitId);
                 }
             });
 
@@ -199,9 +200,13 @@
                     $('input[name="target"][value="all"]').prop('checked', true);
                     $('#tableSiswaWrapper').addClass('d-none'); // reset
                     loadSiswa(kelasId);
+
+                    // Refresh item dropdowns ketika kelas berubah
+                    updateItemDropdowns();
                 } else {
                     $('#pilihanSiswa').addClass('d-none');
                     $('#tableSiswaWrapper').addClass('d-none');
+                    resetItemDropdowns();
                 }
             });
 
@@ -251,19 +256,16 @@
                     <i class="fa fa-trash"></i> Hapus
                 </button>
             </div>
-            <select name="items[${itemCount}][id]" class="form-control">
+            <select name="items[${itemCount}][id]" class="form-control item-select">
                 <option value="">-- Pilih Item --</option>
-                @foreach ($kategoriTagihan as $kat)
-            <option value="{{ $kat->id }}">
-                        {{ $kat->nama_kategori }} - Rp {{ number_format($kat->biaya_tagihan, 0, ',', '.') }}
-            </option>
-@endforeach
             </select>
+            <small class="text-muted d-block mt-1">Pilih unit dan kelas untuk menampilkan item tagihan yang tersedia</small>
         </div>
     `;
             container.insertAdjacentHTML('beforeend', html);
             itemCount++;
             updateDeleteButtons();
+            updateItemDropdowns();
         }
 
         // Hapus item tagihan
@@ -294,6 +296,65 @@
                 const label = item.querySelector('.form-label');
                 label.textContent = `Item Tagihan ${index + 1}`;
             });
+        }
+
+        /**
+         * Fetch kategori berdasarkan unit
+         */
+        function fetchKategoriByUnit(unitId) {
+            $.ajax({
+                url: `/kategoritagihan/by-unit-kelas/${unitId}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        kategoriBudget[unitId] = response.data;
+                        updateItemDropdowns();
+                    }
+                },
+                error: function(error) {
+                    console.error('Gagal mengambil data kategori:', error);
+                }
+            });
+        }
+
+        /**
+         * Update semua item dropdown dengan data kategori
+         */
+        function updateItemDropdowns() {
+            let unitId = $('select[name="unit_id"]').val();
+            let kelasId = $('#kelas').val();
+
+            if (!unitId) {
+                resetItemDropdowns();
+                return;
+            }
+
+            let options = '<option value="">-- Pilih Item --</option>';
+
+            if (kategoriBudget[unitId]) {
+                kategoriBudget[unitId].forEach(function(item) {
+                    let nominal = item.biaya_tagihan.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    options += `<option value="${item.id}">${item.nama_kategori} - Rp ${nominal}</option>`;
+                });
+            }
+
+            // Update semua item select
+            $('.item-select').each(function() {
+                let currentValue = $(this).val();
+                $(this).html(options);
+                if (currentValue) {
+                    $(this).val(currentValue);
+                }
+            });
+        }
+
+        /**
+         * Reset semua item dropdown
+         */
+        function resetItemDropdowns() {
+            const html = '<option value="">-- Pilih Unit dan Kelas Terlebih Dahulu --</option>';
+            $('.item-select').html(html);
         }
     </script>
 @endpush

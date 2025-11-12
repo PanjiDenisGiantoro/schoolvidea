@@ -425,9 +425,9 @@ class KeuanganTransaksiController extends Controller
 
                     // Update status tagihan berdasarkan sisa nominal
                     if ($tagihanSiswa->sisa_nominal <= 0) {
-                        $tagihanSiswa->update(['status_pembayaran' => 'Lunas']);
+                        $tagihanSiswa->update(['status' => '1']);
                     } elseif ($tagihanSiswa->jumlah_dibayar > 0 && $tagihanSiswa->sisa_nominal > 0) {
-                        $tagihanSiswa->update(['status_pembayaran' => 'Cicilan']);
+                        $tagihanSiswa->update(['status' => '2']);
                     }
                 }
             }

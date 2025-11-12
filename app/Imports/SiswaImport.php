@@ -93,7 +93,7 @@ class SiswaImport implements ToModel, WithHeadingRow
                     'tahun_ajaran_id' => $this->tahun_ajaran_id], // Find by nisn
                 [
                     'nisn' => $row['nisn'] ?? '',
-                    'kelas_id' => $kelas_id,
+                    'kelas_id' => $kelas_id ?? '',
                     'unit_id' => $this->unit_id,
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                     'user_id' => $user->id,
