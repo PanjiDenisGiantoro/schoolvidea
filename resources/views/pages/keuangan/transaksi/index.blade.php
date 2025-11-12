@@ -262,18 +262,18 @@
                                                 title="Lihat Detail">
                                             <i class="bx bx-show"></i>
                                         </button>
-                                        @if($transaksi->status_verifikasi == 'pending')
-                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx"
-                                                    data-id="{{ $transaksi->id }}"
-                                                    title="Approve">
-                                                <i class="bx bx-check"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx"
-                                                    data-id="{{ $transaksi->id }}"
-                                                    title="Reject">
-                                                <i class="bx bx-x"></i>
-                                            </button>
-                                        @endif
+{{--                                        @if($transaksi->status_verifikasi == 'pending')--}}
+{{--                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx"--}}
+{{--                                                    data-id="{{ $transaksi->id }}"--}}
+{{--                                                    title="Approve">--}}
+{{--                                                <i class="bx bx-check"></i>--}}
+{{--                                            </button>--}}
+{{--                                            <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx"--}}
+{{--                                                    data-id="{{ $transaksi->id }}"--}}
+{{--                                                    title="Reject">--}}
+{{--                                                <i class="bx bx-x"></i>--}}
+{{--                                            </button>--}}
+{{--                                        @endif--}}
                                     </div>
                                 </td>
                             </tr>
