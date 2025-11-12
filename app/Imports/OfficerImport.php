@@ -121,4 +121,24 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'alamat' => $row['alamat'] ?? null,
                     'bank' => $row['bank'] ?? null,
                     'no_rekening' => $row['no_rekening'] ?? null,
-                    'no_kartu_rfid' => $row['no_kartu_rfid'] ??
+                    'no_kartu_rfid' => $row['no_kartu_rfid'] ?? null,
+                    'qr_code' => $row['qr_code'] ?? null,
+                    'va_guru' => $row['va_guru'] ?? null,
+                ]
+            );
+
+            DB::commit();
+            return $officer;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error during officer import: ' . $e->getMessage() . ' | Row: ' . json_encode($row));
+            return null;
+        }
+    }
+
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+}
