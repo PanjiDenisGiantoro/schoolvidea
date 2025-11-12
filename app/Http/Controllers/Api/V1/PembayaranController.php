@@ -790,8 +790,9 @@ class PembayaranController extends Controller
             $tagihanSiswa->update([
                 'status' => $statusTagihan,
                 'sisa_nominal' => $sisaSetelahBayar,
+                'jumlah_dibayar' => ($tagihanSiswa->jumlah_dibayar ?? 0) + $jumlahBayar
             ]);
-            Log::info('✓ Tagihan siswa updated | Status: ' . ($statusTagihan == 1 ? 'LUNAS' : 'CICILAN') . ' | Sisa Nominal: ' . $sisaSetelahBayar);
+            Log::info('✓ Tagihan siswa updated | Status: ' . ($statusTagihan == 1 ? 'LUNAS' : 'CICILAN') . ' | Sisa Nominal: ' . $sisaSetelahBayar . ' | Jumlah Dibayar: ' . (($tagihanSiswa->jumlah_dibayar ?? 0) + $jumlahBayar));
 
             // Check if all student bills for this tagihan are paid
             Log::info('Checking if all bills are paid for tagihan ID: ' . $tagihanSiswa->tagihan_id);
