@@ -121,6 +121,7 @@ class SiswaImport implements ToModel, WithHeadingRow
                     'nama_ortu' => $row['nama_orang_tua'],
                     'bank' => $row['bank'],
                     'no_rekening' => $row['no_rekening'],
+                    'status' => '1'
                 ]
             );
 
