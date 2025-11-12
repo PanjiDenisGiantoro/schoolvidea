@@ -238,6 +238,7 @@ class KelasController extends Controller
     public function getSiswa($id)
     {
         $siswa = Siswa::where('kelas_id', $id)
+            ->where('status','1')
             ->with('user:id,name') // ambil nama dari relasi user
             ->get(['id','user_id','kelas_id','nisn']);
 

@@ -499,7 +499,9 @@ class SiswaController extends Controller
     }
     public function getByKelas($kelasId)
     {
-        $siswas = \App\Models\Siswa::with('user')->where('kelas_id', $kelasId)->get();
+        $siswas = \App\Models\Siswa::with('user')
+            ->where('status','1')
+            ->where('kelas_id', $kelasId)->get();
         return response()->json($siswas);
     }
     public function showdetail($id)
