@@ -86,8 +86,8 @@
                 </table>
 
                 <!-- Pagination -->
-                <div class="col-lg-12">
-                    <div class="pagination-wrapper">
+                <div class="row">
+                    <div class="pagination-wrapper align-items-center justify-content-between">
                         <div class="pagination-info">
 
                             Menampilkan {{ $positions->firstItem() ?? 0 }} sampai {{ $positions->lastItem() ?? 0 }} dari

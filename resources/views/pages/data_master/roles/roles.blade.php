@@ -80,8 +80,8 @@
                 </table>
 
                 <!-- Pagination -->
-                <div class="col-lg-12">
-                    <div class="pagination-wrapper">
+                <div class="row">
+                    <div class="pagination-wrapper d-flex justify-content-between align-items-center">
                         <div class="pagination-info">
 
                             Menampilkan {{ $roles->firstItem() ?? 0 }} sampai {{ $roles->lastItem() ?? 0 }} dari
@@ -92,6 +92,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

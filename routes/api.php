@@ -58,6 +58,14 @@ Route::prefix("v1")->group(function () {
             TagihanController::class,
             "getBySiswa",
         ]);
+        Route::get("tagihan/daftarTagihan/{siswaId}", [
+            TagihanController::class,
+            "daftarTagihan",
+        ]);
+        Route::get("tagihan/perbulan/{siswaId}/{tagihanId}", [
+            TagihanController::class,
+            "perbulan",
+        ]);
 
         // Tagihan Siswa routes
         Route::get("tagihan-siswa/siswa/{siswaId}", [

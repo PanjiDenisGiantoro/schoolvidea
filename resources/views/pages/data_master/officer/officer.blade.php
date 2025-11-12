@@ -105,8 +105,8 @@
                 </table>
 
                 <!-- Pagination -->
-                <div class="col-lg-12">
-                    <div class="pagination-wrapper">
+                <div class="row">
+                    <div class="pagination-wrapper d-flex justify-content-between align-items-center">
                         <div class="pagination-info">
 
                             Menampilkan {{ $officer->firstItem() ?? 0 }} sampai {{ $officer->lastItem() ?? 0 }} dari

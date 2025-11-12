@@ -149,7 +149,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-3">
+                <div class="d-flex justify-content-end gap-2 mt-3">
                     <button type="submit" class="btn btn-primary">Proses Tambah Potongan</button>
                     <button class="btn btn-secondary" onclick="history.go(-1)">Kembali</button>
 

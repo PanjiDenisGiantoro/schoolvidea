@@ -69,6 +69,17 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="row">
+                <div class="pagination-wrapper d-flex align-items-center justify-content-between">
+                   <div class="pagination-info">
+                        Menampilkan {{ $user->firstItem() ?? 0 }} sampai {{ $user->lastItem() ?? 0 }} dari {{ $user->total() }} data
+                    </div>
+                    <div>
+                        {{ $user->links('vendor.pagination.custom') }}
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>

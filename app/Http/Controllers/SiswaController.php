@@ -143,7 +143,7 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required',
+            'nisn' => 'required|max:20',
             'name' => 'required|string|max:255',
             'username' => 'nullable|string',
             'email' => 'required|string|email|max:255',
@@ -163,7 +163,7 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13',
+            'no_hp' => 'nullable|string|digits_between:0,14',
             'tahun_ajaran_id' => 'required'
         ]);
 
@@ -326,7 +326,7 @@ class SiswaController extends Controller
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:10,13|unique:siswas,no_hp,' . $siswa->id,
+            'no_hp' => 'nullable|string|digits_between:0,14|unique:siswas,no_hp,' . $siswa->id,
             'password' => 'nullable|string|min:6',
             'tahun_ajaran_id' => 'required'
         ], [
@@ -514,9 +514,9 @@ class SiswaController extends Controller
             'nisn'           => $siswa->nisn ?? '-',
             'unit'           => $siswa->unit->nama_unit ?? '-',
             'kelas'          => $siswa->kelas->nama_kelas ?? '-',
-            'jurusan'        => $siswa->kelas->jurusan->nama_jurusan ?? '-',
-            'tempat_lahir'   => $siswa->tempat_lahir ?? '-',
-            'tanggal_lahir'  => $siswa->tanggal_lahir ?? '-',
+            'va'        => $siswa->va_siswa ?? '-',
+            'bank'   => $siswa->bank ?? '-',
+            'norek'  => $siswa->no_rekening ?? '-',
             'no_hp'          => $siswa->no_hp ?? '-',
             'foto'           => $siswa->image
                 ? asset($siswa->image)
@@ -563,13 +563,36 @@ class SiswaController extends Controller
     {
         $nisn = $request->nisn;
         $email = $request->email;
+        $nis = $request->nis;
+        $nik = $request->nik;
+        $rfid_no = $request->rfid_no;
+        $va_siswa = $request->va_siswa;
+        $no_rekening = $request->no_rekening;
+        $no_hp = $request->no_hp;
 
         $duplicates = [];
 
         if ($nisn && \App\Models\Siswa::where('nisn', $nisn)->exists()) {
             $duplicates[] = 'nisn';
         }
-
+        if ($nis && \App\Models\Siswa::where('nis', $nis)->exists()) {
+            $duplicates[] = 'nis';
+        }
+        if ($nik && \App\Models\Siswa::where('nik', $nik)->exists()) {
+            $duplicates[] = 'nik';
+        }
+        if ($rfid_no && \App\Models\Siswa::where('rfid_no', $rfid_no)->exists()) {
+            $duplicates[] = 'rfid_no';
+        }
+        if ($va_siswa && \App\Models\Siswa::where('va_siswa', $va_siswa)->exists()) {
+            $duplicates[] = 'va_siswa';
+        }
+        if ($no_rekening && \App\Models\Siswa::where('no_rekening', $nisn)->exists()) {
+            $duplicates[] = 'no_rekening';
+        }
+        if ($no_hp && \App\Models\Siswa::where('no_hp', $no_hp)->exists()) {
+            $duplicates[] = 'no_hp';
+        }
         if ($email && \App\Models\User::where('email', $email)->exists()) {
             $duplicates[] = 'email';
         }

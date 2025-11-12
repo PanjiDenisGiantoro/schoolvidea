@@ -10,7 +10,8 @@ use Spatie\Permission\Models\Role;
 
 class RolesController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         // Build query
         $query = Role::withCount(['permissions', 'users']);
 
@@ -21,7 +22,7 @@ class RolesController extends Controller
         }
 
         // Paginate results
-        $roles = $query->paginate(15)->appends($request->except('page'));
+        $roles = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -30,7 +31,7 @@ class RolesController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.roles.roles', compact('roles','headers'));
+        return view('pages.data_master.roles.roles', compact('roles', 'headers'));
     }
     public function create()
     {
@@ -98,7 +99,7 @@ class RolesController extends Controller
     {
         $roles = Role::with(['permissions', 'users'])->findOrFail($id);
         $show = true;
-        return view('pages.data_master.roles.roles_create', compact('roles','show'));
+        return view('pages.data_master.roles.roles_create', compact('roles', 'show'));
     }
     public function permissions($id)
     {
@@ -111,42 +112,42 @@ class RolesController extends Controller
         // Kelompokkan permissions berdasarkan modul dengan label yang lebih friendly
         $permissionGroups = [
             'Dashboard' => [
-                'permissions' => $allPermissions->filter(fn($p) => str_contains($p->name, 'dashboard')),
+                'permissions' => $allPermissions->filter(fn ($p) => str_contains($p->name, 'dashboard')),
             ],
             'Master Data' => [
-                'Role' => $allPermissions->filter(fn($p) => str_contains($p->name, '_role')),
-                'User' => $allPermissions->filter(fn($p) => str_contains($p->name, '_user')),
-                'Officer' => $allPermissions->filter(fn($p) => str_contains($p->name, '_officer')),
-                'Unit' => $allPermissions->filter(fn($p) => str_contains($p->name, '_unit') && !str_contains($p->name, 'lembaga') && !str_contains($p->name, 'tipe')),
-                'Tipe Unit' => $allPermissions->filter(fn($p) => str_contains($p->name, '_tipe_unit')),
-                'Lembaga Unit' => $allPermissions->filter(fn($p) => str_contains($p->name, '_lembagaunit')),
-                'Tahun Ajaran' => $allPermissions->filter(fn($p) => str_contains($p->name, '_tahun_ajaran')),
-                'Positions' => $allPermissions->filter(fn($p) => str_contains($p->name, '_positions')),
-                'Jurusan' => $allPermissions->filter(fn($p) => str_contains($p->name, '_jurusan')),
-                'Kelas' => $allPermissions->filter(fn($p) => str_contains($p->name, '_kelas')),
-                'Siswa' => $allPermissions->filter(fn($p) => str_contains($p->name, '_siswa')),
+                'Role' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_role')),
+                'User' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_user')),
+                'Officer' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_officer')),
+                'Unit' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_unit') && !str_contains($p->name, 'lembaga') && !str_contains($p->name, 'tipe')),
+                'Tipe Unit' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_tipe_unit')),
+                'Lembaga Unit' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_lembagaunit')),
+                'Tahun Ajaran' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_tahun_ajaran')),
+                'Positions' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_positions')),
+                'Jurusan' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_jurusan')),
+                'Kelas' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_kelas')),
+                'Siswa' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_siswa')),
             ],
             'Keuangan' => [
-                'Akun' => $allPermissions->filter(fn($p) => str_contains($p->name, '_akun') && !str_contains($p->name, 'setting')),
-                'Setting Akun' => $allPermissions->filter(fn($p) => str_contains($p->name, '_setting_akun')),
-                'Kategori Tagihan' => $allPermissions->filter(fn($p) => str_contains($p->name, '_kategoritagihan')),
-                'Rekening' => $allPermissions->filter(fn($p) => str_contains($p->name, '_rekening')),
+                'Akun' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_akun') && !str_contains($p->name, 'setting')),
+                'Setting Akun' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_setting_akun')),
+                'Kategori Tagihan' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_kategoritagihan')),
+                'Rekening' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_rekening')),
             ],
             'Transaksi' => [
-                'Tagihan' => $allPermissions->filter(fn($p) => str_contains($p->name, '_tagihan') && !str_contains($p->name, 'kategori')),
-                'Pembayaran' => $allPermissions->filter(fn($p) => str_contains($p->name, '_pembayaran')),
-                'Potongan' => $allPermissions->filter(fn($p) => str_contains($p->name, '_potongan')),
-                'Tabungan' => $allPermissions->filter(fn($p) => str_contains($p->name, '_tabungan')),
+                'Tagihan' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_tagihan') && !str_contains($p->name, 'kategori')),
+                'Pembayaran' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_pembayaran')),
+                'Potongan' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_potongan')),
+                'Tabungan' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_tabungan')),
             ],
             'Penggajian' => [
-                'Payroll Components' => $allPermissions->filter(fn($p) => str_contains($p->name, '_payroll_components')),
-                'Payroll Deductions' => $allPermissions->filter(fn($p) => str_contains($p->name, '_payroll_deductions')),
-                'Payroll Settings' => $allPermissions->filter(fn($p) => str_contains($p->name, '_payroll_settings')),
+                'Payroll Components' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_payroll_components')),
+                'Payroll Deductions' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_payroll_deductions')),
+                'Payroll Settings' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_payroll_settings')),
             ],
             'Reports & Others' => [
-                'Report' => $allPermissions->filter(fn($p) => str_contains($p->name, '_report')),
-                'Migrasi' => $allPermissions->filter(fn($p) => str_contains($p->name, '_migrasi')),
-                'Activity Log' => $allPermissions->filter(fn($p) => str_contains($p->name, '_activity')),
+                'Report' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_report')),
+                'Migrasi' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_migrasi')),
+                'Activity Log' => $allPermissions->filter(fn ($p) => str_contains($p->name, '_activity')),
             ],
         ];
 
@@ -155,7 +156,7 @@ class RolesController extends Controller
 
         // Mengembalikan view dengan data role, permissions, dan modul
         return view('pages.data_master.roles.permissions', compact('role', 'permissionGroups', 'rolePermissions'));
-     }
+    }
 
     public function updatePermissions(Request $request, $id)
     {
@@ -193,7 +194,7 @@ class RolesController extends Controller
     {
         $role = Role::with('users')->findOrFail($id);
         $users = $role->users;
-        $allUsers = User::doesntHave('roles')->orWhereHas('roles', function($q) use ($id) {
+        $allUsers = User::doesntHave('roles')->orWhereHas('roles', function ($q) use ($id) {
             $q->where('roles.id', '!=', $id);
         })->get();
 

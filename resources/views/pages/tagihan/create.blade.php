@@ -30,12 +30,8 @@
                     {{-- Pilih Kelas --}}
                     <div class="mb-3">
                         <label for="kelas" class="form-label">Pilih Kelas</label>
-                        <select id="kelas" class="form-control" data-choices data-choices-sorting-false required
-                            name="kelas">
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach ($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
-                            @endforeach
+                        <select id="kelas" class="form-control" required name="kelas">
+                            <option value="">-- Pilih Unit Terlebih Dahulu --</option>
                         </select>
                     </div>
 
@@ -156,6 +152,31 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+            // Dependent Dropdown: Unit -> Kelas
+            $('select[name="unit_id"]').on('change', function() {
+                let unitId = $(this).val();
+                let kelasSelect = $('#kelas');
+
+                // Reset kelas dropdown
+                kelasSelect.html('<option value="">-- Pilih Kelas --</option>');
+
+                // Reset dependent fields
+                $('#pilihanSiswa').addClass('d-none');
+                $('#tableSiswaWrapper').addClass('d-none');
+
+                if (unitId) {
+                    // Fetch kelas berdasarkan unit
+                    $.get(`/kelas/by-unit/${unitId}`, function(data) {
+                        data.forEach(function(kelas) {
+                            kelasSelect.append(
+                                `<option value="${kelas.id}">${kelas.nama_kelas}</option>`
+                            );
+                        });
+                    }).fail(function() {
+                        console.error('Gagal mengambil data kelas');
+                    });
+                }
+            });
 
             $('#jenisTagihanSwitch').on('change', function() {
                 if ($(this).is(':checked')) {

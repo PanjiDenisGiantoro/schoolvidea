@@ -169,7 +169,7 @@
 
     <div class="row g-4">
         <div class="col-md-12 p-4">
-            <div class="card rounded-4 mb-3 border-0 p-4 shadow-sm">
+            <div class="card rounded-4 mb-0 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
@@ -307,17 +307,17 @@
             <div id="tabelBelumLunas" class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table-hover table-striped mb-0 table align-middle">
-                        <thead class="table-light text-center">
+                        <thead class="table-light text-center align-middle">
                             <tr>
-                                <th><input class="custom-checkbox" type="checkbox" id="checkAll"></th>
+                                <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
                                 <th>#</th>
                                 <th>Periode Tagihan</th>
                                 <th>Tagihan Kelas</th>
                                 <th>Rincian Tagihan</th>
                                 <th>Jumlah Potongan</th>
                                 <th>Jumlah Tagihan</th>
-                                <th>Total Tunggakan</th>
                                 <th>Nominal Pembayaran</th>
+                                <th>Total Tunggakan</th>
                                 <th>Catatan</th>
                                 <th>Aksi</th>
                             </tr>
@@ -603,11 +603,11 @@
                 <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
-                <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
-                <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
-                <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
-                <td class="text-end">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
+                <td class="text-center fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
+                <td class="text-center">Rp ${parseInt(tagihan.nominal_pembayaran).toLocaleString('id-ID')}</td>
+                <td class="text-center text-success">Rp ${parseInt(tagihan.jumlah_dibayar).toLocaleString('id-ID')}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-warning btn-sm rounded-pill"
                                 onclick="tambahCatatan(${tagihan.id})">

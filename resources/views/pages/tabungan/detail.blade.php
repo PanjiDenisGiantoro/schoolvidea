@@ -170,7 +170,7 @@
                                         @elseif($statusApproval == 'pending')
                                             <div class="d-flex flex-column align-items-center gap-1">
                                                 <span class="badge bg-warning rounded-pill px-3 py-2">
-                                                    <i class="bx bx-time-five me-1"></i>Belum Cocok Token
+                                                    <i class="bx bx-time-five me-1"></i>Proses Verify
                                                 </span>
                                                 @if($log->token)
                                                     <small class="text-muted" style="font-size: 0.7rem;">
@@ -632,11 +632,10 @@
                 }
             });
 
-            fetch('/api/v1/tabungan/verify', {
+            fetch('/tabungan/verify-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },

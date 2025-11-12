@@ -246,7 +246,7 @@
                         Menampilkan {{ $tagihans->firstItem() ?? 0 }} sampai {{ $tagihans->lastItem() ?? 0 }} dari {{ $tagihans->total() }} data
                     </div>
                     <div>
-                        {{ $tagihans->links() }}
+                        {{ $tagihans->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>

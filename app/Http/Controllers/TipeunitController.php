@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 
 class TipeunitController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         // Build query
         $query = Tipeunit::query();
 
@@ -21,7 +22,7 @@ class TipeunitController extends Controller
         }
 
         // Paginate results
-        $tipe_unit = $query->paginate(15)->appends($request->except('page'));
+        $tipe_unit = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
 
         $headers = [
             'No',
@@ -30,7 +31,7 @@ class TipeunitController extends Controller
             'Action'
         ];
 
-        return view('pages.data_master.tipe_unit.tipe_unit', compact('tipe_unit','headers'));
+        return view('pages.data_master.tipe_unit.tipe_unit', compact('tipe_unit', 'headers'));
     }
     public function create()
     {
@@ -75,6 +76,6 @@ class TipeunitController extends Controller
     {
         $tipe_unit = Tipeunit::findOrFail($id);
         $show = true;
-        return view('pages.data_master.tipe_unit.tipe_unit_create', compact('tipe_unit','show'));
+        return view('pages.data_master.tipe_unit.tipe_unit_create', compact('tipe_unit', 'show'));
     }
 }

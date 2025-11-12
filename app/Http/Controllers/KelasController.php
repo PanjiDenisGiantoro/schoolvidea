@@ -263,4 +263,14 @@ class KelasController extends Controller
         return response()->json($jurusan);
     }
 
+    public function getKelasByUnit($unitId)
+    {
+        $kelas = Kelas::where('unit_id', $unitId)
+            ->where('status', '1')
+            ->orderBy('nama_kelas')
+            ->get(['id', 'nama_kelas', 'kode_kelas']);
+
+        return response()->json($kelas);
+    }
+
 }
