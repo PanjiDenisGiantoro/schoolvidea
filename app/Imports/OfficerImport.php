@@ -36,7 +36,7 @@ class OfficerImport implements ToModel, WithHeadingRow
             // Validasi kolom yang dibutuhkan
             if (
                 empty($row['name']) || empty($row['email']) || empty($row['password']) ||
-                empty($row['role_id']) || empty($row['nip']) || empty($row['nuptk']) || empty($row['nik'])
+                empty($row['role_id']) || empty($row['nip']) || empty($row['nuptk']) || empty($row['nip'])
             ) {
                 Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
                 return null;  // Skip this row if any required fields are missing
@@ -54,6 +54,11 @@ class OfficerImport implements ToModel, WithHeadingRow
 
             DB::beginTransaction();  // Mulai transaksi untuk memastikan konsistensi
 
+            if($row['password'] == ''){
+                $password = bcrypt($row['nip']);
+            }else{
+                $password = bcrypt($row['password']);
+            }
             // 1. Update atau buat User berdasarkan email
             $user = User::updateOrCreate(
                 ['email' => $row['email'],
@@ -61,7 +66,7 @@ class OfficerImport implements ToModel, WithHeadingRow
                 [
                     'name' => $row['name'],
                     'email' => $row['email'],
-                    'password' => bcrypt($row['password']),
+                    'password' => $password,
                     'rfid_no' => $row['rfid_no'],
                     'unit_id' => $this->unit_id,
                 ]
