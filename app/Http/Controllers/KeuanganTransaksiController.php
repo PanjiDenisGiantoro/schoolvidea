@@ -462,20 +462,21 @@ class KeuanganTransaksiController extends Controller
             \App\Models\Jurnals::create([
                 'transaksi_id' => $transaksi->id,
                 'akun_id' => 1, // Kas
-                'tipe_transaksi' => 'debit',
-                'nominal' => $jumlahBayar,
+                'debit' => $jumlahBayar,
+                'kredit' => 0,
                 'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                'tanggal_jurnal' => now(),
+                'tanggal' => now(),
+
             ]);
 
             // Kredit: Tagihan (mengurangi hutang siswa)
             \App\Models\Jurnals::create([
                 'transaksi_id' => $transaksi->id,
                 'akun_id' => 3, // Tagihan Masuk (receivable)
-                'tipe_transaksi' => 'kredit',
-                'nominal' => $jumlahBayar,
+                'kredit' => $jumlahBayar,
+                'debit' => 0,
                 'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                'tanggal_jurnal' => now(),
+                'tanggal' => now(),
             ]);
             // Log activity
             Keuangan_transaksi_logs::create([
