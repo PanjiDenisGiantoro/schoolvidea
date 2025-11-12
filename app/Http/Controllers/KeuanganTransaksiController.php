@@ -448,6 +448,35 @@ class KeuanganTransaksiController extends Controller
                     'status_verifikasi' => 'approved',
                     'status_approval' => 'approved'
                 ]);
+
+                // Create journal entries untuk pembayaran tagihan
+                $pembayaran = $transaksi->pembayaranTagihan;
+                $tagihanSiswa = $pembayaran->tagihanSiswa;
+                $tagihan = $tagihanSiswa->tagihan;
+                $siswa = $tagihanSiswa->siswa;
+                $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+
+                $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+                // Debit: Kas (uang masuk dari siswa)
+                \App\Models\Keuangan_jurnal::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => 1, // Kas
+                    'tipe_transaksi' => 'debit',
+                    'nominal' => $jumlahBayar,
+                    'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                    'tanggal_jurnal' => now(),
+                ]);
+
+                // Kredit: Tagihan (mengurangi hutang siswa)
+                \App\Models\Keuangan_jurnal::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => 3, // Tagihan Masuk (receivable)
+                    'tipe_transaksi' => 'kredit',
+                    'nominal' => $jumlahBayar,
+                    'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                    'tanggal_jurnal' => now(),
+                ]);
             }
 
             // Log activity
@@ -548,6 +577,9 @@ class KeuanganTransaksiController extends Controller
                     'status_verifikasi' => 'rejected',
                     'status_approval' => 'rejected'
                 ]);
+
+                // Delete journal entries jika ada (rollback journal saat reject)
+                \App\Models\Keuangan_jurnal::where('transaksi_id', $transaksi->id)->delete();
             }
 
             // Log activity
