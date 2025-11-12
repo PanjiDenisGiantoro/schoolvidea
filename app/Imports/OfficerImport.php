@@ -35,7 +35,7 @@ class OfficerImport implements ToModel, WithHeadingRow
         try {
             // Validasi kolom yang dibutuhkan
             if (
-                empty($row['name']) || empty($row['email']) || empty($row['password']) ||
+                empty($row['name']) || empty($row['email']) ||
                 empty($row['role_id']) || empty($row['nip'])
             ) {
                 Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
