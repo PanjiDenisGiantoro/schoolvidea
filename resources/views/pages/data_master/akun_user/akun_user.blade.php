@@ -31,11 +31,15 @@
                         </div>
                     </form>
                 </div>
+                <div class="table-responsive">
                 <table class="table-bordered table-striped table">
-                    <thead>                         @if (!empty($headers) && is_array($headers))
-                        <tr class="text-center align-middle">                                 @foreach ($headers as $header)
+                    <thead>
+                    @if (!empty($headers) && is_array($headers))
+                        <tr class="text-center align-middle">
+                            @foreach ($headers as $header)
                                 <th>{{ $header }}</th>
-                            @endforeach                             </tr>
+                            @endforeach
+                        </tr>
                     @else
                         <tr>
                             <th>No data</th>
@@ -65,6 +69,18 @@
                         </tr>
                     @endforelse                     </tbody>
                 </table>
+
+                </div>
+                <div class="col-lg-12">
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Menampilkan {{ $user->firstItem() ?? 0 }} sampai {{ $user->lastItem() ?? 0 }} dari {{ $user->total() }} data
+                        </div>
+                        <div>
+                            {{ $user->links('vendor.pagination.custom') }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
