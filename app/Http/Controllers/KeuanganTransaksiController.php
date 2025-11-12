@@ -433,16 +433,21 @@ class KeuanganTransaksiController extends Controller
                         $statusBaru = '2'; // Cicilan
                     }
 
-                    // Update tagihan siswa dengan nilai yang benar
+                    // Update tagihan siswa dengan nilai yang benar (HANYA field yang ada di tabel)
                     $tagihanSiswa->update([
                         'status' => $statusBaru,
                         'sisa_nominal' => $sisaNominalBaru,
-//                        'jumlah_dibayar' => $jumlahDibayarBaru,
                         'tanggal_bayar' => now(),
-                        'status_approval' => 'approved',
-                        'status_verifikasi' => 'approved'
                     ]);
                 }
+            }
+
+            // Update keuangan_transaksi status untuk pembayaran tagihan
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $transaksi->update([
+                    'status_verifikasi' => 'approved',
+                    'status_approval' => 'approved'
+                ]);
             }
 
             // Log activity
@@ -528,15 +533,21 @@ class KeuanganTransaksiController extends Controller
                         $statusBaru = '2'; // Cicilan jika masih ada pembayaran sebelumnya
                     }
 
-                    // Update tagihan siswa dengan rollback nilai
+                    // Update tagihan siswa dengan rollback nilai (HANYA field yang ada di tabel)
                     $tagihanSiswa->update([
                         'status' => $statusBaru,
                         'sisa_nominal' => $sisaNominalBaru,
-                        'jumlah_dibayar' => max(0, $jumlahDibayarBaru), // Jangan negative
-                        'status_approval' => 'reject',
-                        'status_verifikasi' => 'reject'
+                        'jumlah_dibayar' => max(0, $jumlahDibayarBaru)
                     ]);
                 }
+            }
+
+            // Update keuangan_transaksi status untuk pembayaran tagihan saat reject
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $transaksi->update([
+                    'status_verifikasi' => 'rejected',
+                    'status_approval' => 'rejected'
+                ]);
             }
 
             // Log activity
