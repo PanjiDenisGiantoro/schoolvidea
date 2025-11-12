@@ -133,10 +133,7 @@
                 </a>
                 <div class="collapse" id="sidebarTransaksi">
                     <ul class="sub-menu-nav">
-                        @hasPermission('view_report')
-                        <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
-                                Transaksi</a></li>
-                        @endhasPermission
+
 
                         @hasPermission('view_tabungan')
                         <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a>
@@ -175,10 +172,12 @@
                             </a>
                             <div class="collapse" id="sidebarPembayaran">
                                 <ul class="sub-menu-nav">
+                                    @hasPermission('view_report')
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
+                                            Transaksi</a></li>
+                                    @endhasPermission
                                     <li class="sub-menu-item"><a class="sub-menu-link"
                                             href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('') }}">Pembayaran Online</a></li>
                                 </ul>
                             </div>
                         </li>
