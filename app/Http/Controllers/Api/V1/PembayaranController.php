@@ -244,6 +244,7 @@ class PembayaranController extends Controller
                 'keterangan' => $keterangan,
                 'created_by' => Auth::id(),
                 'status_approval' => 'pending', // Set as PENDING - waiting for approval
+                'status_verifikasi' => 'pending'
             ]);
 
             Log::info('✓ Financial transaction created | Transaksi ID: ' . $transaksi->id);
