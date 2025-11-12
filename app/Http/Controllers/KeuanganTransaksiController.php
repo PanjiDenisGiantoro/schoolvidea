@@ -390,32 +390,24 @@ class KeuanganTransaksiController extends Controller
                         'last_updated' => now()
                     ]);
 
-                    // Create journal entries untuk pembayaran tagihan
-                    $pembayaran = $transaksi->pembayaranTagihan;
-                    $tagihanSiswa = $pembayaran->tagihanSiswa;
-                    $tagihan = $tagihanSiswa->tagihan;
-                    $siswa = $tagihanSiswa->siswa;
-                    $jumlahBayar = (int) $pembayaran->jumlah_bayar;
-
-                    $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
-
-                    // Debit: Kas (uang masuk dari siswa)
+                    // Create journal entries untuk penarikan tabungan
+                    // Debit: Tabungan Keluar (mengurangi kas)
                     \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
-                        'akun_id' => 1, // Kas
+                        'akun_id' => 2, // Tabungan Keluar
                         'tipe_transaksi' => 'debit',
-                        'nominal' => $jumlahBayar,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                        'nominal' => $transaksi->jumlah,
+                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
                         'tanggal_jurnal' => now(),
                     ]);
 
-                    // Kredit: Tagihan (mengurangi hutang siswa)
+                    // Kredit: Kas (mengurangi kas sekolah)
                     \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
-                        'akun_id' => 3, // Tagihan Masuk (receivable)
+                        'akun_id' => 1, // Kas
                         'tipe_transaksi' => 'kredit',
-                        'nominal' => $jumlahBayar,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                        'nominal' => $transaksi->jumlah,
+                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
                         'tanggal_jurnal' => now(),
                     ]);
                 }
@@ -445,7 +437,6 @@ class KeuanganTransaksiController extends Controller
                     $tagihanSiswa->update([
                         'status' => $statusBaru,
                         'sisa_nominal' => $sisaNominalBaru,
-                        'jumlah_dibayar' => $jumlahDibayarBaru,
                         'tanggal_bayar' => now(),
                     ]);
                 }
@@ -458,7 +449,34 @@ class KeuanganTransaksiController extends Controller
                     'status_approval' => 'approved'
                 ]);
             }
+// Create journal entries untuk pembayaran tagihan
+            $pembayaran = $transaksi->pembayaranTagihan;
+            $tagihanSiswa = $pembayaran->tagihanSiswa;
+            $tagihan = $tagihanSiswa->tagihan;
+            $siswa = $tagihanSiswa->siswa;
+            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
 
+            $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+            // Debit: Kas (uang masuk dari siswa)
+            \App\Models\Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 1, // Kas
+                'tipe_transaksi' => 'debit',
+                'nominal' => $jumlahBayar,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal_jurnal' => now(),
+            ]);
+
+            // Kredit: Tagihan (mengurangi hutang siswa)
+            \App\Models\Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 3, // Tagihan Masuk (receivable)
+                'tipe_transaksi' => 'kredit',
+                'nominal' => $jumlahBayar,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal_jurnal' => now(),
+            ]);
             // Log activity
             Keuangan_transaksi_logs::create([
                 'transaksi_id' => $transaksi->id,
