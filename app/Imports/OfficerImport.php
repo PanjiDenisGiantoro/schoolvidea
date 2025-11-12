@@ -1,129 +1,144 @@
 <?php
+
 namespace App\Imports;
 
 use App\Models\User;
 use App\Models\Officer;
 use App\Models\Roles_petugas;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class OfficerImport implements ToModel, WithHeadingRow
 {
     protected $unit_id;
     protected $tahun_ajaran_id;
 
-    // Constructor untuk unit_id dan tahun_ajaran_id
     public function __construct($unit_id, $tahun_ajaran_id)
     {
         $this->unit_id = $unit_id;
         $this->tahun_ajaran_id = $tahun_ajaran_id;
     }
 
-    /**
-     * Map the incoming row to a model
-     *
-     * @param array $row
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
     public function model(array $row)
     {
-        // Log the incoming row data to inspect
         Log::info('Incoming row data: ' . json_encode($row));
 
         try {
-            // Validasi kolom yang dibutuhkan
+            // ===== 1. Validasi kolom wajib =====
             if (
-                empty($row['name']) || empty($row['email']) || empty($row['password']) ||
-                empty($row['role_id']) || empty($row['nip']) || empty($row['nuptk']) || empty($row['nik'])
+                empty($row['name']) ||
+                empty($row['email']) ||
+                empty($row['role_id']) ||
+                empty($row['nip'])
             ) {
                 Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
-                return null;  // Skip this row if any required fields are missing
+                return null;
             }
 
-            // Validasi bahwa kolom numeric valid
+            // ===== 2. Validasi kolom numeric =====
             $numericFields = ['no_hp', 'rfid_no', 'nip', 'nuptk', 'nik'];
             foreach ($numericFields as $field) {
-                if (empty($row[$field])) continue;  // Skip empty fields
-                if (!is_numeric($row[$field])) {
-                    Log::warning("Skipping row due to invalid $field value: " . json_encode($row));
-                    return null;  // Skip this row if any numeric field is invalid
+                if (!empty($row[$field]) && !is_numeric($row[$field])) {
+                    Log::warning("Skipping row due to invalid numeric value in $field: " . json_encode($row));
+                    return null;
                 }
             }
 
-            DB::beginTransaction();  // Mulai transaksi untuk memastikan konsistensi
+            // ===== 3. Konversi tanggal lahir dari Excel ke format tanggal =====
+            $tanggalLahir = null;
+            if (!empty($row['tanggal_lahir'])) {
+                if (is_numeric($row['tanggal_lahir'])) {
+                    $tanggalLahir = ExcelDate::excelToDateTimeObject($row['tanggal_lahir'])->format('Y-m-d');
+                } else {
+                    $tanggalLahir = date('Y-m-d', strtotime($row['tanggal_lahir']));
+                }
+            }
 
-            // 1. Update atau buat User berdasarkan email
+            DB::beginTransaction();
+
+            // ===== 4. Tentukan password =====
+            $password = !empty($row['password'])
+                ? bcrypt($row['password'])
+                : bcrypt($row['nip']); // default pakai NIP jika kosong
+
+            // ===== 5. Update atau buat user =====
             $user = User::updateOrCreate(
-                ['email' => $row['email'],
-                    'unit_id' => $this->unit_id], // Kondisi pencarian berdasarkan email
+                [
+                    'email' => $row['email'],
+                    'unit_id' => $this->unit_id,
+                ],
                 [
                     'name' => $row['name'],
-                    'email' => $row['email'],
-                    'password' => bcrypt($row['password']),
-                    'rfid_no' => $row['rfid_no'],
+                    'password' => $password,
+                    'rfid_no' => $row['rfid_no'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]
             );
 
-            // 2. Cari role dari Roles_petugas berdasarkan role_id
+            // ===== 6. Ambil role =====
             $rolePetugas = Roles_petugas::where('name', $row['role_id'])->first();
+
             if (!$rolePetugas) {
-                throw new \Exception('Role not found for role_id: ' . $row['role_id']);
+                Log::warning("Role not found for role_id: {$row['role_id']}");
+                DB::rollBack();
+                return null;
             }
 
-            // 3. Create Spatie role if not already exist
+            // ===== 7. Sinkronisasi Spatie Role =====
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
 
-            // Menetapkan role ke user
-            $user->assignRole($roleSpatie->name);
+            if (!$user->hasRole($roleSpatie->name)) {
+                $user->assignRole($roleSpatie->name);
+            }
 
-            // 4. Update atau buat Officer berdasarkan nip
+            // ===== 8. Update atau buat Officer =====
             $officer = Officer::updateOrCreate(
-                ['nip' => $row['nip'],
+                [
+                    'nip' => $row['nip'],
                     'unit_id' => $this->unit_id,
-                    'tahun_ajaran_id' => $this->tahun_ajaran_id], // Kondisi pencarian berdasarkan nip
+                    'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                ],
                 [
                     'name' => $row['name'],
-                    'nip' => $row['nip'],
-                    'iamge' => $row['image'],
-                    'tempat_lahir' => $row['tempat_lahir'],
-                    'no_hp' => $row['no_hp'],
+                    'image' => $row['image'] ?? null,
+                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
+                    'no_hp' => $row['no_hp'] ?? null,
                     'unit_id' => $this->unit_id,
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                     'user_id' => $user->id,
                     'role_id' => $rolePetugas->id,
-                    'nuptk' => $row['nuptk'],
-                    'nik' => $row['nik'],
-                    'jenis_kelamin' => $row['jenis_kelamin'],
-                    'agama' => $row['agama'],
-                    'tanggal_lahir' => $row['tanggal_lahir'],
-                    'alamat' => $row['alamat'],
-                    'bank' => $row['bank'],
-                    'no_rekening' => $row['no_rekening'],
-                    'no_kartu_rfid' => $row['no_kartu_rfid'],
-                    'qr_code' => $row['qr_code'],
-                    'va_guru' => $row['va_guru'],
+                    'nuptk' => $row['nuptk'] ?? null,
+                    'nik' => $row['nik'] ?? null,
+                    'jenis_kelamin' => $row['jenis_kelamin'] ?? null,
+                    'agama' => $row['agama'] ?? null,
+                    'tanggal_lahir' => $tanggalLahir,
+                    'alamat' => $row['alamat'] ?? null,
+                    'bank' => $row['bank'] ?? null,
+                    'no_rekening' => $row['no_rekening'] ?? null,
+                    'no_kartu_rfid' => $row['no_kartu_rfid'] ?? null,
+                    'qr_code' => $row['qr_code'] ?? null,
+                    'va_guru' => $row['va_guru'] ?? null,
                 ]
             );
 
-            DB::commit();  // Commit transaksi
-
-            return $officer;  // Mengembalikan model officer yang berhasil diproses
+            DB::commit();
+            return $officer;
 
         } catch (\Exception $e) {
-            DB::rollBack();  // Rollback transaksi jika ada error
-            Log::error('Error during officer import: ' . $e->getMessage());
-            return null;  // Skip this row in case of error
+            DB::rollBack();
+            Log::error('Error during officer import: ' . $e->getMessage() . ' | Row: ' . json_encode($row));
+            return null;
         }
     }
 
     public function chunkSize(): int
     {
-        return 100; // Proses 100 baris data per chunk untuk menghindari timeout
+        return 100;
     }
 }

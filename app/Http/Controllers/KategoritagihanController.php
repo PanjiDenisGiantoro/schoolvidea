@@ -171,4 +171,38 @@ class KategoritagihanController extends Controller
             'kategoritagihan', 'show', 'units', 'tahun_ajaran', 'tahun_ajaran_selected'
         ));
     }
+
+    /**
+     * Get kategori tagihan by unit and kelas (AJAX endpoint)
+     * Used for dependent dropdown in tagihan creation form
+     */
+    public function getByUnitAndKelas($unitId, $kelasId = null)
+    {
+        try {
+            // Build query with unit filter
+            $query = Kategoritagihan::where('unit_id', $unitId)
+                ->where('status', '1')
+                ->select('id', 'nama_kategori', 'biaya_tagihan', 'kode_kategori');
+
+            // If kelas is provided, you can add additional filtering logic here
+            // For now, we return all kategori for the unit
+            if ($kelasId) {
+                // Optional: Could filter by kelas-specific pricing if you have that relationship
+                // For example: ->where('kelas_id', $kelasId)
+            }
+
+            $kategori = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $kategori,
+                'message' => 'Data kategori berhasil diambil'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data kategori: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
