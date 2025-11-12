@@ -5,10 +5,10 @@ namespace App\Imports;
 use App\Models\User;
 use App\Models\Officer;
 use App\Models\Roles_petugas;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class OfficerImport implements ToModel, WithHeadingRow
@@ -47,13 +47,12 @@ class OfficerImport implements ToModel, WithHeadingRow
                 }
             }
 
-            // ===== 3. Konversi tanggal lahir dari format Excel =====
+            // ===== 3. Konversi tanggal lahir dari Excel ke format tanggal =====
             $tanggalLahir = null;
             if (!empty($row['tanggal_lahir'])) {
                 if (is_numeric($row['tanggal_lahir'])) {
                     $tanggalLahir = ExcelDate::excelToDateTimeObject($row['tanggal_lahir'])->format('Y-m-d');
                 } else {
-                    // Jika sudah berupa string tanggal (misal "1995-02-01")
                     $tanggalLahir = date('Y-m-d', strtotime($row['tanggal_lahir']));
                 }
             }
@@ -94,12 +93,11 @@ class OfficerImport implements ToModel, WithHeadingRow
                 ['guard_name' => 'web']
             );
 
-            // Pastikan user memiliki role yang sesuai
             if (!$user->hasRole($roleSpatie->name)) {
                 $user->assignRole($roleSpatie->name);
             }
 
-            // ===== 8. Update atau buat data Officer =====
+            // ===== 8. Update atau buat Officer =====
             $officer = Officer::updateOrCreate(
                 [
                     'nip' => $row['nip'],
@@ -123,24 +121,4 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'alamat' => $row['alamat'] ?? null,
                     'bank' => $row['bank'] ?? null,
                     'no_rekening' => $row['no_rekening'] ?? null,
-                    'no_kartu_rfid' => $row['no_kartu_rfid'] ?? null,
-                    'qr_code' => $row['qr_code'] ?? null,
-                    'va_guru' => $row['va_guru'] ?? null,
-                ]
-            );
-
-            DB::commit();
-
-            return $officer;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error during officer import: ' . $e->getMessage() . ' | Row: ' . json_encode($row));
-            return null;
-        }
-    }
-
-    public function chunkSize(): int
-    {
-        return 100;
-    }
-}
+                    'no_kartu_rfid' => $row['no_kartu_rfid'] ??
