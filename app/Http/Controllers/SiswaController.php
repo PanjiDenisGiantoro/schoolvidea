@@ -28,8 +28,7 @@ class SiswaController extends Controller
         $units = Unit::all();
 
         // Build query
-        $query = Siswa::with('unit', 'kelas', 'user', 'jurusan')
-            ->where('status', '1');
+        $query = Siswa::with('unit', 'kelas', 'user', 'jurusan');
 
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
