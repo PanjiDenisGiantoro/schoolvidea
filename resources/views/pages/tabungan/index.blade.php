@@ -178,7 +178,7 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <div class="custom-card-header">
+                <div class="custom-card-header rounded-top-3">
                     <div class="col-md-4">
                         <span><i class="fa fa-list"></i> Daftar Tabungan Siswa</span>
                         <button type="button" id="btnProsesStatus" class="custom-btn-info">
@@ -232,16 +232,16 @@
                                     </span>
                                 </td>
                                 <td>Rp {{ number_format($saldo->saldo_akhir ?? 0, 0, ',', '.') }}</td>
-                                <td class="d-flex gap-2">
+                                <td class="d-flex align-items-center place-items-between gap-2">
                                     <a href="{{ route('tabungan.show', $siswa->id) }}"
-                                        class="btn btn-sm btn-outline-primary rounded-pill">Detail</a>
+                                        class="btn btn-sm btn-outline-primary rounded-pill" >Detail</a>
 
                                     @if ($saldo && $saldo->status == 0)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-primary rounded-pill confirm-status">Aktif</a>
+                                            class="btn btn-sm btn-primary rounded-pill confirm-status" >Aktif</a>
                                     @elseif($saldo)
                                         <a href="{{ route('tabungan.status', $saldo->id) }}"
-                                            class="btn btn-sm btn-danger rounded-pill confirm-status">Non Aktif</a>
+                                            class="btn btn-sm btn-danger rounded-pill confirm-status" >Nonaktif</a>
                                     @endif
                                 </td>
                             </tr>

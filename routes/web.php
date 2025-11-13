@@ -26,6 +26,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollSettingController;
+use App\Http\Controllers\DataRekeningController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -384,6 +385,16 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/update/{id}', [AkunUserController::class, 'update'])->name('akun-user.update');
         Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
 
+    });
+    Route::prefix('data-rekening')->middleware('permission:view_data_rekening')->group(function () {
+        Route::get('/', [DataRekeningController::class, 'index'])->name('data-rekening.index');
+        Route::get('/create', [DataRekeningController::class, 'create'])->name('data-rekening.create');
+        Route::get('/edit/{id}', [DataRekeningController::class, 'edit'])->name('data-rekening.edit');
+        Route::get('/show/{id}', [DataRekeningController::class, 'show'])->name('data-rekening.show');
+        Route::post('/store', [DataRekeningController::class, 'store'])->name('data-rekening.store');
+        Route::put('/update/{id}', [DataRekeningController::class, 'update'])->name('data-rekening.update');
+        Route::get('/delete/{id}', [DataRekeningController::class, 'destroy'])->name('data-rekening.destroy');
+        Route::post('/upload', [DataRekeningController::class, 'upload'])->middleware('permission:upload_data_rekening')->name('data-rekening.upload');
     });
 
 

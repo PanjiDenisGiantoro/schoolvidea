@@ -337,7 +337,7 @@
 
                 <div class="timeline">
                     @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
+                        <div class="timeline-item mb-3 ">
                             <div class="d-flex gap-3">
                                 <div>
                                     @php

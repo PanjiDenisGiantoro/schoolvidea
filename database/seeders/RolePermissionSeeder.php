@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -94,6 +95,9 @@ class RolePermissionSeeder extends Seeder
 
             // Permissions untuk Activity Log
             'view_activity',
+
+            // Permissions untuk Data Rekening
+            'view_data_rekening', 'create_data_rekening', 'edit_data_rekening', 'delete_data_rekening', 'upload_data_rekening',
         ];
 
         // Buat permission sesuai dengan yang ada di daftar
@@ -160,7 +164,16 @@ class RolePermissionSeeder extends Seeder
             'view_siswa', 'view_kelas', 'view_jurusan',
             'view_tagihan', 'view_pembayaran',
         ]);
-        echo "✓ User (basic view)\n";
+        echo "✓ Siswa (basic view)\n";
+
+        // === Siswa Role (Basic) ===
+        $user = Role::firstOrCreate(['name' => 'siswa', 'guard_name' => 'web']);
+        $user->syncPermissions([
+            'view_dashboard',
+            'view_siswa', 'view_kelas', 'view_jurusan',
+            'view_tagihan', 'view_pembayaran',
+        ]);
+        echo "✓ Siswa (basic view)\n";
 
         echo "\n✅ Seeder completed successfully!\n";
     }

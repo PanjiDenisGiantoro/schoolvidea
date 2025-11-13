@@ -146,8 +146,8 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
-                    <thead class="table-primary">
+                <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>#</th>
                             <th>Kode Pembayaran</th>
