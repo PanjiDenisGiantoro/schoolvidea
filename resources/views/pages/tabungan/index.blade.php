@@ -218,7 +218,7 @@
                                 $statusText = $saldo && $saldo->status == 1 ? 'Aktif' : 'Tidak Aktif';
                             @endphp
                             <tr data-status="{{ $saldo ? $saldo->status : '0' }}">
-                                <td><input type="checkbox" name="checkbox" id="checkbox" class="custom-checkbox"
+                                <td><input type="checkbox" name="checkbox" id="checkbox" class=""
                                         data-id="{{ $saldo->id ?? '' }}"></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $siswa->unit->nama_unit ?? '-' }}</td>

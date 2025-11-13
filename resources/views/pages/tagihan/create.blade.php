@@ -118,20 +118,40 @@
                     </div>
 
                     {{-- Item Tagihan (Dynamic based on Unit & Kelas) --}}
-                    <div id="itemTagihan">
-                        <div class="mb-3 item-wrapper" data-item-index="0">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label mb-0">Item Tagihan 1</label>
-                                <button type="button" class="btn btn-sm btn-danger d-none" onclick="hapusItem(this)">
-                                    <i class="fa fa-trash"></i> Hapus
-                                </button>
-                            </div>
-                            <select name="items[0][id]" class="form-control item-select">
-                                <option value="">-- Pilih Unit dan Kelas Terlebih Dahulu --</option>
-                            </select>
-                            <small class="text-muted d-block mt-1">Pilih unit dan kelas untuk menampilkan item tagihan yang tersedia</small>
-                        </div>
-                    </div>
+<div id="itemTagihan">
+    <div class="mb-3 item-wrapper" data-item-index="0">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Item Tagihan 1</label>
+            <button type="button" class="btn btn-sm btn-danger d-none" onclick="hapusItem(this)">
+                <i class="fa fa-trash"></i> Hapus
+            </button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center gap-3">
+            {{-- Pilih kategori tagihan --}}
+            <select name="items[0][id]" class="form-control item-select">
+                <option value="">-- Pilih Kategori Tagihan --</option>
+                @foreach ($kategoriTagihan as $kategori)
+                    <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
+                @endforeach
+            </select>
+
+            {{-- Pilih rekening --}}
+            <select name="items[0][rekening_id]" class="form-control rekening-select">
+                <option value="">-- Pilih Rekening --</option>
+                @foreach ($datarekening as $rekening)
+                    <option value="{{ $rekening->id }}">
+                        {{ $rekening->account_name }} - {{ $rekening->allotment }} ({{ $rekening->account_number }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <small class="text-muted d-block mt-1">
+            Pilih kategori tagihan dan rekening pembayaran
+        </small>
+    </div>
+</div>
                     <button type="button" class="btn btn-sm btn-success" onclick="tambahItem()">+ Tambah Item</button>
 
                     <div class="mt-4">
@@ -243,60 +263,67 @@
             });
         }
 
-        let itemCount = 1;
+let itemCount = 1;
+const rekeningOptions = `@foreach ($datarekening as $rekening)
+    <option value="{{ $rekening->id }}">
+        {{ $rekening->account_name }} - {{ $rekening->allotment }} ({{ $rekening->account_number }})
+    </option>
+@endforeach`;
 
-        // Tambah item tagihan
-        function tambahItem() {
-            let container = document.getElementById('itemTagihan');
-            let html = `
+const kategoriOptions = `@foreach ($kategoriTagihan as $kategori)
+    <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
+@endforeach`;
+
+function tambahItem() {
+    const container = document.getElementById('itemTagihan');
+    const html = `
         <div class="mb-3 item-wrapper" data-item-index="${itemCount}">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="form-label mb-0">Item Tagihan ${itemCount+1}</label>
+                <label class="form-label mb-0">Item Tagihan ${itemCount + 1}</label>
                 <button type="button" class="btn btn-sm btn-danger" onclick="hapusItem(this)">
                     <i class="fa fa-trash"></i> Hapus
                 </button>
             </div>
-            <select name="items[${itemCount}][id]" class="form-control item-select">
-                <option value="">-- Pilih Item --</option>
-            </select>
-            <small class="text-muted d-block mt-1">Pilih unit dan kelas untuk menampilkan item tagihan yang tersedia</small>
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <select name="items[${itemCount}][id]" class="form-control item-select">
+                    <option value="">-- Pilih Kategori Tagihan --</option>
+                    ${kategoriOptions}
+                </select>
+
+                <select name="items[${itemCount}][rekening_id]" class="form-control rekening-select">
+                    <option value="">-- Pilih Rekening --</option>
+                    ${rekeningOptions}
+                </select>
+            </div>
+            <small class="text-muted d-block mt-1">Pilih kategori tagihan dan rekening pembayaran</small>
         </div>
     `;
-            container.insertAdjacentHTML('beforeend', html);
-            itemCount++;
-            updateDeleteButtons();
-            updateItemDropdowns();
-        }
+    container.insertAdjacentHTML('beforeend', html);
+    itemCount++;
+    updateDeleteButtons();
+}
 
-        // Hapus item tagihan
-        function hapusItem(btn) {
-            const wrapper = btn.closest('.item-wrapper');
-            wrapper.remove();
-            updateDeleteButtons();
-            updateItemLabels();
-        }
+function hapusItem(btn) {
+    btn.closest('.item-wrapper').remove();
+    updateDeleteButtons();
+    updateItemLabels();
+}
 
-        // Update visibility tombol hapus
-        function updateDeleteButtons() {
-            const items = document.querySelectorAll('.item-wrapper');
-            items.forEach((item, index) => {
-                const deleteBtn = item.querySelector('.btn-danger');
-                if (items.length > 1) {
-                    deleteBtn.classList.remove('d-none');
-                } else {
-                    deleteBtn.classList.add('d-none');
-                }
-            });
-        }
+function updateDeleteButtons() {
+    const items = document.querySelectorAll('.item-wrapper');
+    items.forEach(item => {
+        const btn = item.querySelector('.btn-danger');
+        btn.classList.toggle('d-none', items.length <= 1);
+    });
+}
 
-        // Update label item tagihan
-        function updateItemLabels() {
-            const items = document.querySelectorAll('.item-wrapper');
-            items.forEach((item, index) => {
-                const label = item.querySelector('.form-label');
-                label.textContent = `Item Tagihan ${index + 1}`;
-            });
-        }
+function updateItemLabels() {
+    document.querySelectorAll('.item-wrapper').forEach((item, i) => {
+        item.querySelector('.form-label').textContent = `Item Tagihan ${i + 1}`;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', updateDeleteButtons);
 
         /**
          * Fetch kategori berdasarkan unit

@@ -140,11 +140,6 @@
                 </a>
                 <div class="collapse" id="sidebarTransaksi">
                     <ul class="sub-menu-nav">
-                        @hasPermission('view_report')
-                            <li class="sub-menu-item"><a class="sub-menu-link"
-                                    href="{{ url('keuangan-transaksi') }}">Daftar
-                                    Transaksi</a></li>
-                        @endhasPermission
 
                         @hasPermission('view_tabungan')
                             <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('tabungan') }}">Tabungan</a>
@@ -160,36 +155,39 @@
                             </a>
                             <div class="collapse" id="sidebarTagihan">
                                 <ul class="sub-menu-nav">
+                                    @hasPermission('view_tagihan')
+                                        <li class="sub-menu-item"><a class="sub-menu-link"
+                                                href="{{ url('tagihan') }}">Kelola Data</a></li>
+                                    @endhasPermission
                                     @hasPermission('view_potongan')
                                         <li class="sub-menu-item"><a class="sub-menu-link"
                                                 href="{{ url('potongan') }}">Potongan</a></li>
                                     @endhasPermission
 
-                                    @hasPermission('view_tagihan')
-                                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                                href="{{ url('tagihan') }}">Kelola Data</a></li>
-                                    @endhasPermission
+
                                 </ul>
                             </div>
                         </li>
                         @endcanViewMenu
 
                         @hasPermission('view_pembayaran')
-                            <li class="sub-menu-item">
-                                <a class="sub-menu-item menu-link menu-arrow" href="#sidebarPembayaran"
-                                    data-bs-toggle="collapse" role="button" aria-expanded="false"
-                                    aria-controls="sidebarPembayaran">
-                                    Pembayaran
-                                </a>
-                                <div class="collapse" id="sidebarPembayaran">
-                                    <ul class="sub-menu-nav">
-                                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                                href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
-                                        <li class="sub-menu-item"><a class="sub-menu-link"
-                                                href="{{ url('') }}">Pembayaran Online</a></li>
-                                    </ul>
-                                </div>
-                            </li>
+                        <li class="sub-menu-item">
+                            <a class="sub-menu-item menu-link menu-arrow" href="#sidebarPembayaran"
+                                data-bs-toggle="collapse" role="button" aria-expanded="false"
+                                aria-controls="sidebarPembayaran">
+                                Pembayaran
+                            </a>
+                            <div class="collapse" id="sidebarPembayaran">
+                                <ul class="sub-menu-nav">
+                                    @hasPermission('view_report')
+                                    <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
+                                            Transaksi</a></li>
+                                    @endhasPermission
+                                    <li class="sub-menu-item"><a class="sub-menu-link"
+                                            href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
+                                </ul>
+                            </div>
+                        </li>
                         @endhasPermission
                     </ul>
                 </div>

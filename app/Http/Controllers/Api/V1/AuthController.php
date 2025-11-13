@@ -359,6 +359,7 @@ class AuthController extends Controller
             ], 401);
         }
 
+
         // Cari siswa berdasarkan NISN dan unit_id
         $siswa = \App\Models\Siswa::with([
             'user',
@@ -370,6 +371,7 @@ class AuthController extends Controller
         ])
         ->where('nisn', $request->nisn)
         ->where('unit_id', $unit->id)
+            ->where('status','1')
         ->first();
 
         if (!$siswa) {

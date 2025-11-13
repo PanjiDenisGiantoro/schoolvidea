@@ -124,6 +124,7 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'no_kartu_rfid' => $row['no_kartu_rfid'] ?? null,
                     'qr_code' => $row['qr_code'] ?? null,
                     'va_guru' => $row['va_guru'] ?? null,
+                    'status' => '1'
                 ]
             );
 

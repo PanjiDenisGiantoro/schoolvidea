@@ -1,4 +1,7 @@
 
+
+
+
 /*Ligiht Theme*/
 .custom-toggle-header {
     display: flex;
@@ -12,9 +15,9 @@
 
 /* Tombol toggle */
 .custom-btn-outline-primary {
-    border: 1px solid #2596be;
+    border: 1px solid #0c8f84;
     color: #fff;
-    background-color: #2596be;
+    background-color: #0c8f84;
     font-weight: 500;
     font-size: 0.875rem; /* lebih kecil */
     padding: 6px 12px; /* lebih kecil juga */
@@ -23,22 +26,22 @@
 }
 
 .custom-btn-outline-primary:not(:last-child) {
-    border-right: 1px solid #2596be;
+    border-right: 1px solid #0c8f84;
 }
 
 .custom-btn-outline-primary:hover {
     background-color: white;
-    color: #2596be!important;
+    color: #0c8f84!important;
 }
 
 /* Saat tombol aktif */
 .custom-active-btn {
     background-color: #ffff;
-    color: #2596be;
+    color: #0c8f84;
 }
 /* Header card (judul Daftar Tagihan) */
 .custom-card-header {
-    background-color: #2596be;
+    background-color: #0c8f84;
     color: white;
     font-weight: 600;
     font-size: 1rem;
@@ -84,7 +87,7 @@
     height: 20px;
     border-radius: 30%;
     appearance: none; /* Hilangkan style bawaan browser */
-    border: 2px solid #000000;
+    border: 2px solid #fff;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease-in-out;
@@ -92,13 +95,13 @@
 
 .custom-checkbox:checked {
     background-color: #ffffff;
-    border-color: #2596be;
+    border-color: #0c8f84;
 }
 
 /* Biar ada centang putih di tengah */
 .custom-checkbox:checked::after {
     content: "✔";
-    color:  #2596be;
+    color:  #0c8f84;
     font-size: 13px;
     position: absolute;
     top: 50%;
@@ -109,7 +112,7 @@
 /* Tombol ungu */
 
 .custom-btn-purple {
-    background-color: #2596be;
+    background-color: #0c8f84;
     color: #fff !important;
     border: none;
     border-radius: 0.4rem; /* kotak tapi sedikit rounded biar halus */
@@ -123,13 +126,13 @@
 }
 
 .custom-btn-purple:hover {
-    background-color: #2596be;
+    background-color: #0c8f84;
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(0, 204, 255, 0.5);
 }
 
 .custom-btn-purple i {
-    color: #2596be !important;
+    color: #0c8f84 !important;
     font-size: 18px;
 }
 
@@ -142,7 +145,7 @@
 
 /* Header modal */
 .custom-modal-header {
-    color: #2596be;
+    color: #0c8f84;
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
     text-align: center;
@@ -327,6 +330,332 @@ table td:first-child {
     vertical-align: middle;
 }
 
+
+/* =============================== */
+/* CUSTOM PAGINATION STYLES */
+/* =============================== */
+
+/* Pagination container */
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    gap: 6px;
+    margin-bottom: 0;
+    align-items: center;
+}
+
+/* Pagination item */
+.pagination .page-item {
+    margin: 0;
+}
+
+/* Pagination link - Presisi dengan border yang jelas */
+.pagination .page-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0c8f84;
+    text-decoration: none;
+    background-color: #ffffff;
+    border: 2px solid #0c8f84;
+    border-radius: 0.5rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 40px;
+    height: 40px;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination link hover */
+.pagination .page-link:hover:not(.disabled) {
+    z-index: 2;
+    color: #ffffff;
+    background-color: #0c8f84;
+    border-color: #0c8f84;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 12px rgba(37, 150, 190, 0.35);
+}
+
+/* Active page - Border lebih tebal dan warna penuh */
+.pagination .page-item.active .page-link {
+    z-index: 3;
+    color: #ffffff;
+    background-color: #0c8f84;
+    border-color: #0c8f84;
+    border-width: 2px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(37, 150, 190, 0.4);
+}
+
+/* Disabled state - Border tetap terlihat */
+.pagination .page-item.disabled .page-link {
+    color: #9ca3af;
+    pointer-events: none;
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    border-width: 2px;
+    opacity: 0.65;
+    box-shadow: none;
+}
+
+/* Prev/Next buttons styling - Lebih lebar */
+.pagination .page-item:first-child .page-link,
+.pagination .page-item:last-child .page-link {
+    padding: 0.5rem 1rem;
+    min-width: auto;
+    font-weight: 600;
+    border-width: 2px;
+}
+
+.pagination .page-link i {
+    font-size: 1.1rem;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+/* Rounded pagination - dengan border presisi */
+.pagination-rounded .page-link {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 2px;
+}
+
+/* Three dots separator styling */
+.pagination .page-item.disabled .page-link {
+    min-width: 40px;
+}
+
+/* Pagination info text - Dengan border */
+.pagination-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    background-color: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Container for pagination and info - Border wrapper */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    background-color: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: 1.25rem;
+        padding: 1rem;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .pagination .page-link {
+        min-width: 36px;
+        height: 36px;
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8125rem;
+        border-width: 2px;
+    }
+
+    .pagination .page-item:first-child .page-link,
+    .pagination .page-item:last-child .page-link {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .pagination-rounded .page-link {
+        width: 36px;
+        height: 36px;
+    }
+
+    .pagination-info {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.875rem;
+    }
+}
+
+            .table thead th {
+                font-weight: 600;
+                font-size: 0.9rem;
+                background: linear-gradient(135deg, #0c8f84 0%, #0c8f84 100%);
+                color: white;
+                border: none;
+                padding: 15px 10px;
+            }
+
+            .table tbody td {
+                font-size: 0.85rem;
+                vertical-align: middle;
+                padding: 12px 10px;
+            }
+
+            .table-hover tbody tr:hover {
+                background-color: #f8f9fc;
+                transform: scale(1.01);
+                transition: all 0.2s ease;
+            }
+
+            .card {
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-header {
+                font-size: 1rem;
+            }
+
+            .btn {
+                transition: all 0.25s ease-in-out;
+                font-weight: 500;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .form-select,
+            .form-control {
+                border: 2px solid #e3e6f0;
+                transition: all 0.3s ease;
+            }
+
+            .form-select:focus,
+            .form-control:focus {
+                border-color: #14b1a0;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+
+            .custom-btn-info {
+                background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
+                border: none;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .custom-btn-info:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            }
+
+            .custom-btn-outline-primary {
+                border: 2px solid #14b1a0;
+                background: white;
+                color: #14b1a0;
+                padding: 10px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .custom-active-btn {
+                background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
+                color: white;
+                border-color: #14b1a0;
+            }
+
+            .custom-toggle-header {
+                display: flex;
+                gap: 10px;
+                padding: 20px;
+                background: transparent;
+                border-radius: 15px 15px 0 0;
+            }
+
+
+            .custom-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                background: transparent;
+                border-bottom: 2px solid transparent;
+                font-weight: 600;
+                font-size: 1.1rem;
+                color: #5a5c69;
+            }
+
+            .badge {
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+
+            .profile-card {
+                background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 8px 4px 15px rgba(0, 0, 0, 0.2);
+                margin-right: 20px;
+            }
+
+            .profile-card .list-unstyled li {
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .profile-card .list-unstyled li:last-child {
+                border-bottom: none;
+            }
+
+            .profile-card strong {
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            .profile-photo-wrapper {
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 4px solid #fff;
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+                background-color: #f5f5f5;
+                /* warna latar saat kosong */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .profile-photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+            }
+
 /* =============================== */
 /* 🌙 DARK THEME MODE */
 /* Aktifkan dengan menambahkan class "dark-theme" pada <body> */
@@ -472,174 +801,6 @@ body.dark-theme ::-webkit-scrollbar-thumb {
     background-color: #4b5563;
 }
 
-/* =============================== */
-/* CUSTOM PAGINATION STYLES */
-/* =============================== */
-
-/* Pagination container */
-.pagination {
-    display: flex;
-    padding-left: 0;
-    list-style: none;
-    gap: 6px;
-    margin-bottom: 0;
-    align-items: center;
-}
-
-/* Pagination item */
-.pagination .page-item {
-    margin: 0;
-}
-
-/* Pagination link - Presisi dengan border yang jelas */
-.pagination .page-link {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 0.875rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #2596be;
-    text-decoration: none;
-    background-color: #ffffff;
-    border: 2px solid #2596be;
-    border-radius: 0.5rem;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 40px;
-    height: 40px;
-    line-height: 1;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Pagination link hover */
-.pagination .page-link:hover:not(.disabled) {
-    z-index: 2;
-    color: #ffffff;
-    background-color: #2596be;
-    border-color: #2596be;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 12px rgba(37, 150, 190, 0.35);
-}
-
-/* Active page - Border lebih tebal dan warna penuh */
-.pagination .page-item.active .page-link {
-    z-index: 3;
-    color: #ffffff;
-    background-color: #2596be;
-    border-color: #2596be;
-    border-width: 2px;
-    font-weight: 700;
-    box-shadow: 0 4px 10px rgba(37, 150, 190, 0.4);
-}
-
-/* Disabled state - Border tetap terlihat */
-.pagination .page-item.disabled .page-link {
-    color: #9ca3af;
-    pointer-events: none;
-    background-color: #f9fafb;
-    border-color: #d1d5db;
-    border-width: 2px;
-    opacity: 0.65;
-    box-shadow: none;
-}
-
-/* Prev/Next buttons styling - Lebih lebar */
-.pagination .page-item:first-child .page-link,
-.pagination .page-item:last-child .page-link {
-    padding: 0.5rem 1rem;
-    min-width: auto;
-    font-weight: 600;
-    border-width: 2px;
-}
-
-.pagination .page-link i {
-    font-size: 1.1rem;
-    vertical-align: middle;
-    line-height: 1;
-}
-
-/* Rounded pagination - dengan border presisi */
-.pagination-rounded .page-link {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-width: 2px;
-}
-
-/* Three dots separator styling */
-.pagination .page-item.disabled .page-link {
-    min-width: 40px;
-}
-
-/* Pagination info text - Dengan border */
-.pagination-info {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-    color: #374151;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    background-color: #f9fafb;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Container for pagination and info - Border wrapper */
-.pagination-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.25rem;
-    padding: 1.25rem;
-    background-color: #ffffff;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-/* Responsive pagination */
-@media (max-width: 768px) {
-    .pagination-wrapper {
-        flex-direction: column;
-        gap: 1.25rem;
-        padding: 1rem;
-    }
-
-    .pagination {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 4px;
-    }
-
-    .pagination .page-link {
-        min-width: 36px;
-        height: 36px;
-        padding: 0.375rem 0.625rem;
-        font-size: 0.8125rem;
-        border-width: 2px;
-    }
-
-    .pagination .page-item:first-child .page-link,
-    .pagination .page-item:last-child .page-link {
-        padding: 0.375rem 0.75rem;
-    }
-
-    .pagination-rounded .page-link {
-        width: 36px;
-        height: 36px;
-    }
-
-    .pagination-info {
-        font-size: 0.8125rem;
-        padding: 0.5rem 0.875rem;
-    }
-}
 
 /* Dark theme pagination - Border yang jelas di dark mode */
 body.dark-theme .pagination .page-link {
@@ -658,7 +819,7 @@ body.dark-theme .pagination .page-link:hover:not(.disabled) {
 }
 
 body.dark-theme .pagination .page-item.active .page-link {
-    background-color: #2563eb;
+    background-color: #1a1b1e;
     border-color: #2563eb;
     border-width: 2px;
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5);
@@ -685,4 +846,3 @@ body.dark-theme .pagination-info {
     color: #d1d5db;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
-

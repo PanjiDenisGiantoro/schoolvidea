@@ -392,7 +392,7 @@ class KeuanganTransaksiController extends Controller
 
                     // Create journal entries untuk penarikan tabungan
                     // Debit: Tabungan Keluar (mengurangi kas)
-                    \App\Models\Keuangan_jurnal::create([
+                    \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id' => 2, // Tabungan Keluar
                         'tipe_transaksi' => 'debit',
@@ -402,7 +402,7 @@ class KeuanganTransaksiController extends Controller
                     ]);
 
                     // Kredit: Kas (mengurangi kas sekolah)
-                    \App\Models\Keuangan_jurnal::create([
+                    \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id' => 1, // Kas
                         'tipe_transaksi' => 'kredit',
@@ -419,19 +419,65 @@ class KeuanganTransaksiController extends Controller
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
                 if ($tagihanSiswa) {
-                    // Kurangi sisa nominal tagihan (jika belum dilakukan saat create)
-                    // Biasanya ini sudah dilakukan saat create pembayaran
-                    // Tapi untuk memastikan, kita bisa update status pembayaran
+                    // Update sisa nominal dan jumlah_dibayar jika belum dilakukan
+                    $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+                    $sisaNominalBaru = $tagihanSiswa->sisa_nominal - $jumlahBayar;
+                    $jumlahDibayarBaru = ($tagihanSiswa->jumlah_dibayar ?? 0) + $jumlahBayar;
 
-                    // Update status tagihan berdasarkan sisa nominal
-                    if ($tagihanSiswa->sisa_nominal <= 0) {
-                        $tagihanSiswa->update(['status' => '1']);
-                    } elseif ($tagihanSiswa->jumlah_dibayar > 0 && $tagihanSiswa->sisa_nominal > 0) {
-                        $tagihanSiswa->update(['status' => '2']);
+                    // Tentukan status baru berdasarkan sisa nominal
+                    $statusBaru = '0'; // Default: Belum Bayar
+                    if ($sisaNominalBaru <= 0) {
+                        $statusBaru = '1'; // Lunas
+                        $sisaNominalBaru = 0;
+                    } elseif ($jumlahDibayarBaru > 0 && $sisaNominalBaru > 0) {
+                        $statusBaru = '2'; // Cicilan
                     }
+
+                    // Update tagihan siswa dengan nilai yang benar (HANYA field yang ada di tabel)
+                    $tagihanSiswa->update([
+                        'status' => $statusBaru,
+                        'sisa_nominal' => $sisaNominalBaru,
+                        'tanggal_bayar' => now(),
+                    ]);
                 }
             }
 
+            // Update keuangan_transaksi status untuk pembayaran tagihan
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $transaksi->update([
+                    'status_verifikasi' => 'approved',
+                    'status_approval' => 'approved'
+                ]);
+            }
+// Create journal entries untuk pembayaran tagihan
+            $pembayaran = $transaksi->pembayaranTagihan;
+            $tagihanSiswa = $pembayaran->tagihanSiswa;
+            $tagihan = $tagihanSiswa->tagihan;
+            $siswa = $tagihanSiswa->siswa;
+            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+
+            $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+            // Debit: Kas (uang masuk dari siswa)
+            \App\Models\Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 1, // Kas
+                'debit' => $jumlahBayar,
+                'kredit' => 0,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal' => now(),
+
+            ]);
+
+            // Kredit: Tagihan (mengurangi hutang siswa)
+            \App\Models\Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 3, // Tagihan Masuk (receivable)
+                'kredit' => $jumlahBayar,
+                'debit' => 0,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal' => now(),
+            ]);
             // Log activity
             Keuangan_transaksi_logs::create([
                 'transaksi_id' => $transaksi->id,
@@ -504,18 +550,32 @@ class KeuanganTransaksiController extends Controller
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
                 if ($tagihanSiswa) {
-                    // Kembalikan nominal yang sudah dibayar
-                    $tagihanSiswa->increment('sisa_nominal', $pembayaran->jumlah_bayar);
-                    // Kurangi jumlah dibayar
-                    $tagihanSiswa->decrement('jumlah_dibayar', $pembayaran->jumlah_bayar);
+                    // Kembalikan nominal yang sudah dibayar saat reject
+                    $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+                    $sisaNominalBaru = $tagihanSiswa->sisa_nominal + $jumlahBayar;
+                    $jumlahDibayarBaru = ($tagihanSiswa->jumlah_dibayar ?? 0) - $jumlahBayar;
 
-                    // Update status tagihan berdasarkan sisa nominal
-                    if ($tagihanSiswa->sisa_nominal >= $tagihanSiswa->nominal) {
-                        $tagihanSiswa->update(['status_pembayaran' => 'Belum Bayar']);
-                    } elseif ($tagihanSiswa->sisa_nominal > 0 && $tagihanSiswa->jumlah_dibayar > 0) {
-                        $tagihanSiswa->update(['status_pembayaran' => 'Cicilan']);
+                    // Tentukan status baru setelah reject
+                    $statusBaru = '0'; // Default: Belum Bayar
+                    if ($jumlahDibayarBaru > 0 && $sisaNominalBaru > 0) {
+                        $statusBaru = '2'; // Cicilan jika masih ada pembayaran sebelumnya
                     }
+
+                    // Update tagihan siswa dengan rollback nilai (HANYA field yang ada di tabel)
+                    $tagihanSiswa->update([
+                        'status' => $statusBaru,
+                        'sisa_nominal' => $sisaNominalBaru,
+                        'jumlah_dibayar' => max(0, $jumlahDibayarBaru)
+                    ]);
                 }
+            }
+
+            // Update keuangan_transaksi status untuk pembayaran tagihan saat reject
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $transaksi->update([
+                    'status_verifikasi' => 'rejected',
+                    'status_approval' => 'rejected'
+                ]);
             }
 
             // Log activity

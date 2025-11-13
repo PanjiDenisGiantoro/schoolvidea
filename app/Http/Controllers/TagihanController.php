@@ -12,6 +12,7 @@ use App\Models\Siswa;
 use App\Models\Tagihan;
 use App\Models\Tagihanitem;
 use App\Models\Tagihansiswa;
+use App\Models\DataRekening;
 use App\Models\Unit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -33,19 +34,24 @@ class TagihanController extends Controller
             $kategoriTagihan = Kategoritagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->where('status', '1')->get();
+            $datarekening = DataRekening::whereHas('unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan hanya data dari unit tersebut
             $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
             $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
             $kategoriTagihan = Kategoritagihan::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
             // Super admin - tampilkan semua
             $units = Unit::where('status', '1')->get();
             $kelas = Kelas::where('status', '1')->get();
             $kategoriTagihan = Kategoritagihan::where('status', '1')->get();
+            $datarekening = DataRekening::where('status', '1')->get();
         }
 
-        return view('pages.tagihan.create', compact('units', 'kelas', 'kategoriTagihan'));
+        return view('pages.tagihan.create', compact('units', 'kelas', 'kategoriTagihan', 'datarekening'));
     }
     public function index(Request $request)
     {
@@ -153,12 +159,15 @@ class TagihanController extends Controller
             foreach ($request->items as $item) {
                 if (!empty($item['id'])) {
                     $kategori = KategoriTagihan::find($item['id']);
+                    $rekening = DataRekening::find($item['rekening_id']);
                     $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
 
                     $itemsData[] = [
-                        'kategori_id' => $item['id'],
+                        'kategori_id' => $kategori->id,
                         'nominal' => $nominal_item,
                         'kategori' => $kategori,
+                        'rekening_id' => $rekening->id,
+                        'rekening' => $rekening,
                     ];
                 }
             }
@@ -233,6 +242,7 @@ class TagihanController extends Controller
                     'tagihan_id' => $tagihan->id,
                     'kategori_id' => $itemData['kategori_id'],
                     'nominal' => $itemData['nominal'],
+                    'rekening_id' => $itemData['rekening_id'],
                 ]);
 
                 // Loop setiap siswa untuk item ini
@@ -265,6 +275,7 @@ class TagihanController extends Controller
                     // Transaksi per siswa per item
                     $transaksi = Keuangan_transaksi::create([
                         'penerima_id'      => $siswa->id,
+                        'rekening_id'      => $itemData['rekening_id'],
                         'penerima_tipe'    => Siswa::class,
                         'jenis_transaksi'  => 'tagihan',
                         'jumlah'           => $itemData['nominal'],
@@ -300,6 +311,7 @@ class TagihanController extends Controller
                             'item_id'    => $tagihanItem->id,
                             'kategori'   => $itemData['kategori']->nama_kategori,
                             'jumlah'     => $itemData['nominal'],
+                            'rekening_id' => $itemData['rekening_id'],
                         ]),
                         'dilakukan_oleh' => Auth::id(),
                         'dilakukan_pada' => now(),
