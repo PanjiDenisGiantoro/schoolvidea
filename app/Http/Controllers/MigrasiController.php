@@ -29,7 +29,23 @@ class MigrasiController extends Controller
 {
     public function index()
     {
-        $units = \App\Models\Unit::where('status', '1')->get();
+
+        // Ambil user yang sedang login
+        $user = Auth::user();
+
+        // Buat query dasar untuk Unit aktif
+        $unitsQuery = \App\Models\Unit::where('status', '1');
+
+        // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+        if ($user->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan semua unit di yayasan tersebut
+            $unitsQuery->where('yayasan_id', $user->yayasan_id);
+        } elseif ($user->unit_id) {
+            // Jika user punya unit_id, tampilkan hanya unit itu
+            $unitsQuery->where('id', $user->unit_id);
+        }
+        // Ambil unit sesuai filter
+        $units = $unitsQuery->get();
 
         $unit_migrasi = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
             $query->where('id', $unitId);
