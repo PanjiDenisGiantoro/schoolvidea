@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', 'Transaksi Keuangan')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Transaksi Keuangan',
@@ -8,18 +10,18 @@
     ])
 
     {{-- Summary Cards --}}
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-0">
         <div class="col-md-4">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-success">
                     <h6>Total Pemasukan</h6>
-                    <h4>Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h4>
+                    <h4 class="fe-bold">Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger">
+                <div class="card-body text-danger fw-bold">
                     <h6>Total Pengeluaran</h6>
                     <h4>Rp {{ number_format($total_pengeluaran ?? 0, 0, ',', '.') }}</h4>
                 </div>
@@ -27,13 +29,53 @@
         </div>
         <div class="col-md-4">
             <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary">
-                    <h6>Total Transaksi</h6>
+                <div class="card-body text-primary fw-bold">
+                    <h6>Total Data Transaksi</h6>
                     <h4>{{ number_format($total_transaksi ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
     </div>
+        <div class="row mt-0">
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Transaksi</h6>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Hari Ini</h6>
+                        <h6 class="text-white fw bold" style="font-size: 14px">
+                            [{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}]
+                        </h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Non-Tunai</h6>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
+                        <h4 class="text-white fw-bold">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
+                    <div class="card-body text-primary">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Tunai</h6>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
+                        <h4 class="text-white fw-bold">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
@@ -143,16 +185,16 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
-                    <thead class="table-light">
+                <table class="table-bordered table-hover table overflow-hidden text-nowrap text-center align-middle">
+                    <thead class="table-primary">
                         <tr>
                             <th>#</th>
-                            <th>Kode Pembayaran</th>
-                            <th>Tanggal</th>
+                            <th>No Transaksi</th>
+                            <th>Nama & NISN</th>                  
                             <th>Jenis Transaksi</th>
-                            <th>Siswa</th>
-                            <th>Jumlah</th>
+                            <th>Tot. Transaksi</th>
                             <th>Metode</th>
+                            <th>Wkt. Transaksi</th>
                             <th>Status</th>
                             <th>Petugas</th>
                             <th>Aksi</th>
@@ -165,7 +207,20 @@
                                 <td>
                                     <span class="badge bg-secondary">{{ $transaksi->code_pembayaran }}</span>
                                 </td>
-                                <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
+                                <td>
+                                    @if ($transaksi->penerima)
+                                        @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
+                                            {{ $transaksi->penerima->user->name ?? '-' }}
+                                            <br>
+                                            <small class="text-muted">NISN:
+                                                {{ $transaksi->penerima->nisn ?? '-' }}</small>
+                                        @else
+                                            {{ $transaksi->penerima->name ?? '-' }}
+                                        @endif
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @php
                                         $badgeColor = match ($transaksi->jenis_transaksi) {
@@ -207,20 +262,7 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td>
-                                    @if ($transaksi->penerima)
-                                        @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
-                                            {{ $transaksi->penerima->user->name ?? '-' }}
-                                            <br>
-                                            <small class="text-muted">NISN:
-                                                {{ $transaksi->penerima->nisn ?? '-' }}</small>
-                                        @else
-                                            {{ $transaksi->penerima->name ?? '-' }}
-                                        @endif
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
+
                                 <td>
                                     @if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
                                         <span class="text-success fw-bold">+ Rp
@@ -243,6 +285,7 @@
                                     @endphp
                                     <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->metode }}</span>
                                 </td>
+                                <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
                                 <td>
                                     @if ($transaksi->status_verifikasi == 'approved')
                                         <span class="badge bg-success rounded-pill">
@@ -261,9 +304,13 @@
                                 <td>{{ $transaksi->creator->name ?? '-' }}</td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-1">
-                                        <button type="button" class="btn btn-sm btn-info rounded-pill btn-detail-trx"
+                                        <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
                                             data-id="{{ $transaksi->id }}" title="Lihat Detail">
                                             <i class="bx bx-show"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning rounded-pill btn-detail-trx"
+                                            data-id="{{ $transaksi->id }}" title="Cetak">
+                                            <i class="bx bx-printer"></i>
                                         </button>
                                         {{--                                        @if ($transaksi->status_verifikasi == 'pending') --}}
                                         {{--                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}

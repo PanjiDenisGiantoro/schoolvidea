@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Kelola Tagihan')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
@@ -12,34 +14,34 @@
         {{-- Summary Cards --}}
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm">
-                    <div class="card-body text-primary">
-                        <h6>Jumlah Data</h6>
-                        <h4>{{ $summary['jumlah_data'] ?? 0 }}</h4>
+                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Jumlah Data</h6>
+                        <h4 class="text-white">{{ $summary['jumlah_data'] ?? 0 }}</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm">
-                    <div class="card-body text-primary">
-                        <h6>Nominal Tagihan</h6>
-                        <h4>Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
+                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Nominal Tagihan</h6>
+                        <h4 class="text-white">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm">
-                    <div class="card-body text-primary">
-                        <h6>Sudah Dibayar</h6>
-                        <h4>Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Sudah Dibayar</h6>
+                        <h4 class="text-white">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm">
+                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
                     <div class="card-body text-primary">
-                        <h6>Belum Dibayar</h6>
-                        <h4>Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Belum Dibayar</h6>
+                        <h4 class="text-white">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
@@ -61,8 +63,15 @@
                 </h5>
                 <form method="GET" action="{{ route('tagihan.index') }}">
                     <div class="row g-3 align-items-end">
+                        {{-- Filter Search --}}
+                        <div class="col-md-2">
+                            <label for="search" class="form-label">Cari Tagihan</label>
+                            <input type="text" name="search" id="search"
+                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
+                                   value="{{ request('search') }}">
+                        </div>
                         {{-- Filter Unit --}}
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="unit_id" class="form-label">Unit</label>
                             <select name="unit_id" id="unit_id" class="form-select">
                                 <option value="">Semua Unit</option>
@@ -73,27 +82,43 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md-2">
+                            <label for="kelas_id" class="form-label">Kelas</label>
 
-                        {{-- Filter Search --}}
-                        <div class="col-md-3">
-                            <label for="search" class="form-label">Cari Tagihan</label>
-                            <input type="text" name="search" id="search"
-                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
-                                   value="{{ request('search') }}">
+                            <select name="kelas_id" id="kelas_id" class="form-select"
+                                @if (isset($show) && $show) disabled @endif>
+                                <option value="">Semua Kelas</option>
+                            </select>
                         </div>
 
                         {{-- Filter Tanggal Dari --}}
                         <div class="col-md-2">
-                            <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
-                            <input type="date" name="dari_tanggal" id="dari_tanggal"
-                                   class="form-control p-3" value="{{ request('dari_tanggal') }}">
+                            <label class="form-label">Bulan Periode</label>
+                            <select name="bulan_mulai" class="form-select" required>
+                                <option value="">Pilih Bulan</option>
+                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $bulan)
+                                    <option value="{{ $i + 1 }}">{{ $bulan }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         {{-- Filter Tanggal Sampai --}}
                         <div class="col-md-2">
-                            <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
-                            <input type="date" name="sampai_tanggal" id="sampai_tanggal"
-                                   class="form-control p-3" value="{{ request('sampai_tanggal') }}">
+                            <label class="form-label">Tahun Periode</label>
+                            <select name="tahun_mulai" class="form-select" required>
+                                <option value="">Pilih Tahun</option>
+                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Status Tagihan</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Pilih Status</option>
+                                <option value="Lunas">Lunas</option>
+                                <option value="Belum Lunas">Belum Lunas</option>
+                            </select>
                         </div>
 
                         {{-- Tombol Filter --}}
@@ -168,16 +193,16 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table-bordered table-striped table text-center align-middle">
-                        <thead class="table-primary">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                        <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
                                 <th>#</th>
-                                <th>Nomor Induk</th>
+                                <th>NISN</th>
                                 <th>Nama Lengkap</th>
                                 <th>Tagihan Unit</th>
                                 <th>Tagihan Kelas</th>
-                                <th>Item Tagihan</th>
-                                <th>Type Tagihan</th>
+                                <th>Nama Tagihan</th>
+                                <th>Tipe Tagihan</th>
                                 <th>Periode</th>
                                 <th>Jml. Tagihan</th>
                                 <th>Jml. Dibayar</th>

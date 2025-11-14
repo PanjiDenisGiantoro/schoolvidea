@@ -317,7 +317,14 @@
                     </a>
                 </li>
             @endhasPermission
-
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url('#') }}">
+                        <span class="nav-icon">
+                            <i class="ri-hard-drive-3-line"></i>
+                        </span>
+                        <span class="nav-text"> Backup Data </span>
+                    </a>
+                </li>
             @hasPermission('view_activity')
                 <li class="menu-item">
                     <a class="menu-link" href="{{ url('activity') }}">

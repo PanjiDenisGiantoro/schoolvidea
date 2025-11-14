@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Tabungan Siswa')
+@section('title', 'Tabungan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 @endpush
 @section('content')
     @include('partials.page-title', [
-        'title' => 'Tabungan Siswa',
-        'subTitle' => 'Kelola transaksi tabungan siswa',
+        'title' => 'Tabungan',
+        'subTitle' => 'Kelola transaksi tabungan',
     ])
 
     {{-- Summary Cards --}}
@@ -30,7 +30,7 @@
         <div class="col-md-3">
             <div class="card rounded-3 border-0 text-center shadow-sm">
                 <div class="card-body text-primary">
-                    <h6>Saldo Tabungan</h6>
+                    <h6>Saldo Tabungan Aktif</h6>
                     <h4>Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h4>
                 </div>
             </div>
@@ -46,28 +46,54 @@
     </div>
 
     {{-- Additional Statistics --}}
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-warning">
-                    <h6>Total Pending Penarikan</h6>
-                    <h4>Rp {{ number_format($total_pending ?? 0, 0, ',', '.') }}</h4>
+    <div class="row g-3 mb-4" >
+        <div class="col-md-2">
+            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Setoran</h6>
+                    <h4 class="text-white">{{ $total_pending_setoran ?? 0 }}</h4>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-success">
-                    <h6>Total Approved Penarikan</h6>
-                    <h4>Rp {{ number_format($total_approved ?? 0, 0, ',', '.') }}</h4>
+        <div class="col-md-2">
+            <div class="card rounded-3  bg-success border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Setoran</h6>
+                    <h4 class="text-white">{{ $total_approved_setoran ?? 0 }}</h4>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger">
-                    <h6>Total Reject Penarikan</h6>
-                    <h4>Rp {{ number_format($total_rejected ?? 0, 0, ',', '.') }}</h4>
+        <div class="col-md-2">
+            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Setoran</h6>
+                    <h4 class="text-white">{{ $total_rejected_setoran ?? 0 }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Penarikan</h6>
+                    <h4 class="text-white">{{ $total_pending ?? 0 }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card rounded-3 bg-success border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Penarikan</h6>
+                    <h4 class="text-white">{{ $total_approved ?? 0 }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
+                <div class="card-body">
+                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Penarikan</h6>
+                    <h4 class="text-white">{{ $total_rejected ?? 0 }}</h4>
                 </div>
             </div>
         </div>
@@ -103,7 +129,12 @@
                                placeholder="NISN, Nama, Kelas..."
                                value="{{ request('search') }}">
                     </div>
-
+                    <div class="col-md-3">
+                        <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
+                        <select id="filter_kelas" class="form-select shadow-sm">
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                    </div>
                     {{-- Filter Tanggal Dari --}}
                     <div class="col-md-2">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
@@ -180,9 +211,9 @@
             <div class="table-responsive">
                 <div class="custom-card-header rounded-top-3">
                     <div class="col-md-4">
-                        <span><i class="fa fa-list"></i> Daftar Tabungan Siswa</span>
-                        <button type="button" id="btnProsesStatus" class="custom-btn-info">
-                            <i class="ri-checkbox-multiple-line"></i>Aktifkan Semua Status
+                        <span class="fw-bold text-primary me-3" style="font-size: 14px">Daftar Tabungan</span>
+                        <button type="button" id="btnProsesStatus" class="custom-btn-info gap-3">
+                            <i class="ri-checkbox-multiple-line me-2"></i>Aktifkan Semua Status
                         </button>
                     </div>
                     <div>
@@ -202,7 +233,7 @@
                             <th>#</th>
                             <th>Nama Unit</th>
                             <th>NISN</th>
-                            <th>Nama Siswa</th>
+                            <th>Nama Lengkap</th>
                             <th>Kelas Sekarang</th>
                             <th>Tahun Ajaran</th>
                             <th>Status</th>

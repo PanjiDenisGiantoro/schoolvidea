@@ -25,7 +25,7 @@
                 <!-- App Search-->
                 <form class="app-search d-none d-md-block me-auto">
                     <div class="position-relative">
-                        <input type="search" class="form-control" placeholder="Start typing..." autocomplete="off"
+                        <input type="search" class="form-control" placeholder="Pencarian Cepat..." autocomplete="off"
                             value="">
                         <i class="ri-search-line search-widget-icon"></i>
                     </div>

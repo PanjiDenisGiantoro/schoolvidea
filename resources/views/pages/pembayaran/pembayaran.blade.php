@@ -11,7 +11,46 @@
 
 
     <div class="row g-4">
-        <div class="col-md-12 p-4">
+        {{-- Summary Cards --}}
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Tunggakan</h6>
+                        <h6 class="text-white " style="font-size: 14px">Periode Bulain ini [November 2025]</h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
+                        <h6 class="text-white" style="font-size: 14px">[November 2025]</h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">[Non-Tunai]</h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
+                    <div class="card-body text-primary">
+                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
+                        <h6 class="text-white fw-bold" style="font-size: 14px">[Tunai]</h6>
+                        <h4 class="text-white">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-0 p-4">
             <div class="card rounded-4 mb-0 border-0 p-4 shadow-sm">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
@@ -36,7 +75,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="row g-3 mt-2 mb-4">
                     <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan </label>
@@ -64,7 +102,7 @@
                             <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa" id="foto_siswa"
                                 class="profile-photo">
                         </div>
-                        <h5 class="fw-bold mb-1" style="font-size: 18px" id="detail_nama">-</h5>
+                        <h5 class="fw-bold mb-1 text-white fw-bold" style="font-size: 18px" id="detail_nama">-</h5>
                         <p class="mb-0 opacity-75" id="detail_nisn">-</p>
                     </div>
 
@@ -111,10 +149,10 @@
             </div>
 
             <!-- Header kartu -->
-            <div class="custom-card-header">
-                <span><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</span>
+            <div class="custom-card-header px-4 mb-0">
+                <h5 class="text-primary fw-bold"><i class="fa fa-list"></i> Daftar Tagihan Per Bulan</h5>
                 <button id="btnProsesPembayaran" class="custom-btn-info">
-                    <i class="ri-checkbox-multiple-line"></i> Proses Pembayaran
+                    <i class="ri-checkbox-multiple-line me-2"></i> Proses Pembayaran
                 </button>
             </div>
 
@@ -147,10 +185,10 @@
                 </div>
             </div>
 
-            <div id="tabelBelumLunas" class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table-hover table-striped mb-0 table align-middle">
-                        <thead class="table-light text-center align-middle">
+            <div id="tabelBelumLunas" class="card-body mt-0">
+                <div class="table-responsive mt-0">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle mt-0">
+                        <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
                                 <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
                                 <th>No</th>
@@ -175,10 +213,10 @@
                     </table>
                 </div>
             </div>
-            <div class="card-body p-0" id="tabelSudahLunas">
+            <div class="card-body" id="tabelSudahLunas">
                 <div class="table-responsive">
-                    <table class="table-hover table-striped mb-0 table align-middle">
-                        <thead class="table-light items-center text-center">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                        <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
                                 <th>No</th>
                                 <th>Periode Tagihan</th>
@@ -187,6 +225,7 @@
                                 <th>Jml.Potongan</th>
                                 <th>Jml.Tagihan</th>
                                 <th>Jml.Bayar</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -388,7 +427,10 @@
 
                     // Isi dropdown nama tagihan
                     const tagihanSelect = document.getElementById('nama_tagihan');
-                    tagihanSelect.innerHTML = '<option value="">-- Pilih Tagihan --</option>';
+        tagihanSelect.innerHTML = `
+            <option value="">-- Pilih Tagihan --</option>
+            <option value="all">Semua Tagihan</option>
+        `;
                     data.detail.forEach((tagihan) => {
                         const opt = document.createElement('option');
                         opt.value = tagihan.id;
@@ -478,6 +520,10 @@
                 <td class="text-end fw-bold">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
+                                <td>
+                                    <a href="{{ url('#') }}" class="btn btn-success"><i class='ri-eye-line' style="font-size: 16px"></i></a>
+                                    <a href="{{ url('#') }}" class="btn btn-warning"><i class="ri-printer-line" style="font-size: 16px"></i></a>
+                                </td>
             </tr>
         `).join('');
                 });
