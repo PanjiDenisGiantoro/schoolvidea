@@ -11,6 +11,7 @@ use App\Models\Unit;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class KelasController extends Controller
 {
@@ -113,36 +114,30 @@ class KelasController extends Controller
     }
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'nama_kelas'      => 'required|string|max:255',
-                'kode_kelas' => 'required',
-                'tahun_ajaran_id' => 'required',
-                'unit_id'         => 'required',
-                'officer_id'      => 'nullable',
-                'status'          => 'required|in:0,1', // atau 0/1 kalau status disimpan angka
-                'jurusan_id'      => 'nullable',
-            ]);
+        $validated = $request->validate([
+            'nama_kelas'      => 'required|string|max:255',
+            'kode_kelas'      => 'required',
+            'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
+            'unit_id'         => 'required|exists:units,id',
+            'officer_id'      => 'nullable',
+            'status'          => 'required|in:0,1',
+            'jurusan_id'      => 'nullable',
+        ]);
 
-            Kelas::create([
-                'nama_kelas'      => $request->nama_kelas,
-                'kode_kelas' => $request->kode_kelas,
-                'tahun_ajaran_id' => $request->tahun_ajaran_id,
-                'unit_id'         => $request->unit_id,
-                'officer_id'      => $request->officer_id,
-                'status'          => $request->status,
-                'jurusan_id'      => $request->jurusan_id,
-            ]);
+        try {
+            Kelas::create($validated);
 
             return redirect()->route('kelas.index')
-                ->with('success', 'Data kelas berhasil ditambahkan: ' . $request->nama_kelas);
+                ->with('success', 'Data kelas berhasil ditambahkan: ' . $validated['nama_kelas']);
+            dd($request->all());
 
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Gagal menambahkan data kelas: ' . $e->getMessage());
-        }
+            Log::error($e);
 
+            return back()->with('error', 'Terjadi kesalahan saat menambahkan kelas.');
+        }
     }
+
     public function edit($id)
     {
         $kelas = Kelas::findOrFail($id);
@@ -191,12 +186,13 @@ class KelasController extends Controller
         $data = $request->all();
         $kelas = Kelas::findOrFail($id);
         $kelas->update($data);
+
         return redirect()->route('kelas.index')
             ->with('success', 'Data berhasil diupdate');
     }
     public function destroy($id)
     {
-        $kelas = Tahun_ajaran::findOrFail($id);
+        $kelas = Kelas::findOrFail($id);
         $kelas->delete();
         return redirect()->route('kelas.index')
             ->with('success', 'Data berhasil dihapus');
@@ -239,7 +235,7 @@ class KelasController extends Controller
     public function getSiswa($id)
     {
         $siswa = Siswa::where('kelas_id', $id)
-            ->where('status','1')
+            ->where('status', '1')
             ->with('user:id,name') // ambil nama dari relasi user
             ->get(['id','user_id','kelas_id','nisn']);
 

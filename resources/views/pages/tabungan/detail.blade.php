@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Detail Tabungan Siswa')
+@section('title', 'Detail Tabungan')
 
 @section('content')
     @include('partials.page-title', [
@@ -42,9 +42,9 @@
         <div class="col-md-4">
             <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
                 <div class="card-header bg-gradient-info text-white text-center py-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="bx bx-user-circle me-1"></i>Informasi Siswa
-                    </h6>
+                    <h5 class="mb-0 fw-bold text-white">
+                        <i class="bx bx-user-circle me-1 text-white"></i>Informasi Siswa
+                    </h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
@@ -76,13 +76,20 @@
 
                     <div class="saldo-info">
                         <div class="alert alert-warning border-0 shadow-sm mb-2">
-                            <small class="text-muted d-block mb-1">Saldo Sebelumnya</small>
-                            <div class="fs-6 fw-bold">Rp {{ number_format($saldo_awal, 0, ',', '.') }}</div>
+                            <small class="text-muted d-block mb-1">Saldo Awal</small>
+                            <div class="fs-5 fw-bold">Rp {{ number_format($saldo_awal, 0, ',', '.') }}</div>
                         </div>
                         <div class="alert alert-success border-0 shadow-sm mb-0">
-                            <small class="text-muted d-block mb-1">Saldo Saat Ini</small>
+                            <small class="text-muted d-block mb-1">Saldo Akhir</small>
                             <div class="fs-5 fw-bold">Rp {{ number_format($saldo_akhir, 0, ',', '.') }}</div>
                         </div>
+                    </div>
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{{ url('tabungan/') }}" class="btn btn-secondary"><i class='bx  bx-chevron-left'></i> </a>
+                        <a href="{{ route('tabungan.create') }}" class="btn btn-success"><i class="bx bx-plus-circle me-1""></i> Setor</a>
+                        <a href="{{ route('tabungan.tarik') }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1""></i>Tarik</a>
+                        <a href="{{ url('tabungan/') }}" class="btn btn-info"><i class="bx bx-qr" style="font-size: 20px"></i></a>
+                        <a href="{{ url('tabungan/') }}" class="btn btn-warning"><i class="bx bx-printer" style="font-size: 20px"></i></a>
                     </div>
                 </div>
             </div>
@@ -92,17 +99,17 @@
         <div class="col-md-8">
             <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
                 <div class="card-header bg-gradient-info text-white py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bx bx-list-ul me-2"></i>Riwayat Transaksi Tabungan
+                    <h5 class="mb-0 fw-bold text-white">
+                        <i class="bx bx-list-ul me-2 text-white"></i>Riwayat Transaksi Tabungan
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead>
-                            <tr class="border-bottom border-2">
+                            <tr class="border-bottom border-2 justify-middle text-center">
                                 <th class="text-muted fw-semibold">
-                                    <i class="bx bx-calendar me-1"></i>Tanggal
+                                    <i class="bx bx-calendar me-1"></i>Waktu
                                 </th>
                                 <th class="text-muted fw-semibold">
                                     <i class="bx bx-transfer me-1"></i>Jenis
@@ -110,11 +117,20 @@
                                 <th class="text-muted fw-semibold">
                                     <i class="bx bx-money me-1"></i>Jumlah
                                 </th>
-                                <th class="text-muted fw-semibold">
+                                <th class="text-muted fw-semibold text-nowrap">
+                                    <i class="bx bx-transfer me-1"></i>Debit/Kredit
+                                </th>
+                                <th class="text-muted fw-semibold text-nowrap">
                                     <i class="bx bx-note me-1"></i>Keterangan
                                 </th>
-                                <th class="text-muted fw-semibold text-center">
+                                <th class="text-muted fw-semibold text-center text-nowrap">
+                                    <i class="bx bx-check-shield me-1"></i>Saldo Awal
+                                </th>
+                                <th class="text-muted fw-semibold text-center text-nowrap">
                                     <i class="bx bx-check-shield me-1"></i>Status
+                                </th>
+                                <th class="text-muted fw-semibold text-center text-nowrap">
+                                    <i class="bx bx-check-shield me-1"></i>Saldo Akhir
                                 </th>
                                 <th class="text-muted fw-semibold text-center">
                                     <i class="bx bx-cog me-1"></i>Aksi
@@ -123,7 +139,7 @@
                             </thead>
                             <tbody>
                             @forelse($logs as $log)
-                                <tr class="transaction-row">
+                                <tr class="transaction-row text-center">
                                     <td>
                                         <small class="text-muted">{{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y') }}</small>
                                         <br>
@@ -148,7 +164,13 @@
                                         @endif
                                     </td>
                                     <td>
+                                        <span class="text-muted">-</span>
+                                    </td>
+                                    <td>
                                         <span class="text-muted">{{ $log->keterangan ?: '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">-</span>
                                     </td>
                                     <td class="text-center">
                                         @php
@@ -184,15 +206,18 @@
                                             </span>
                                         @endif
                                     </td>
+                                    <td>
+                                        <span class="text-muted">-</span>
+                                    </td>
                                     <td class="text-center">
                                         <div class="d-flex gap-1 justify-content-center">
 
                                             @if($log->jenis_transaksi == 'penarikan_tabungan' && $log->status_approval == 'pending')
-                                                <button type="button" class="btn btn-sm btn-success rounded-pill btn-verify"
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap  btn-verify"
                                                         data-id="{{ $log->id }}"
                                                         data-token="{{ $log->token }}"
                                                         data-jumlah="{{ $log->jumlah }}">
-                                                    <i class="bx bx-key me-1"></i>Verify
+                                                    <i class="bx bx-key me-3"></i>Verify
                                                 </button>
                                             @endif
                                         </div>
@@ -218,7 +243,7 @@
 @push('styles')
     <style>
         .bg-gradient-info {
-            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            background: linear-gradient(135deg, #1bb394  0%, #1bb394 100%);
         }
         .student-info .info-item {
             transition: all 0.2s ease;
@@ -248,7 +273,7 @@
             }
         }
         .table thead th {
-            border-bottom: 2px solid #4299e1 !important;
+            border-bottom: 2px solid #1bb394  !important;
             padding: 1rem;
             background-color: #f8fafc;
         }
@@ -574,7 +599,8 @@
                     <div class="text-start">
                         <div class="alert alert-info mb-3">
                             <strong><i class="bx bx-info-circle me-1"></i>Informasi:</strong><br>
-                            <small>Masukkan token 6 digit untuk memverifikasi penarikan sebesar <strong>Rp ${new Intl.NumberFormat('id-ID').format(jumlah)}</strong></small>
+                            <small class="d-block">Masukkan token 6 digit untuk memverifikasi penarikan sebesar : </small>
+                            <small class="d-block"><strong>Rp ${new Intl.NumberFormat('id-ID').format(jumlah)}</strong></small>
                         </div>
                         <label for="token-input" class="form-label">Token (6 Digit) <span class="text-danger">*</span></label>
                         <input type="text" id="token-input" class="form-control form-control-lg text-center"

@@ -53,12 +53,13 @@
                             <option value="tagihan-keluar"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tagihan-keluar' ? 'selected' : '' }}>
                                 Transaksi Keluar</option>
-                            <option value="tabungan-tarik"
-                                {{ old('kategori', $setting->kategori ?? '') == 'tabungan-tarik' ? 'selected' : '' }}>
-                                Tabungan Tarik</option>
                             <option value="tabungan"
                                 {{ old('kategori', $setting->kategori ?? '') == 'tabungan' ? 'selected' : '' }}>Tabungan
                                 Setor</option>
+                            <option value="tabungan-tarik"
+                                {{ old('kategori', $setting->kategori ?? '') == 'tabungan-tarik' ? 'selected' : '' }}>
+                                Tabungan Tarik</option>
+
                         </select>
                     </div>
                     {{-- Akun --}}

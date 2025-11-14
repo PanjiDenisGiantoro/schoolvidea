@@ -47,7 +47,7 @@ class DataRekeningController extends Controller
         }
         $datarekening = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
         $headers = [
-            'No', 'Unit', 'Kode Rekening', 'Nama Rekening', 'Nama Pemilik', 'Status', 'Peruntukan Rekening', 'Aksi'
+            'No', 'Unit', 'Kode Rekening', 'Nama Bank', 'Nama Pemilik', 'Status', 'Peruntukan Rekening', 'Aksi'
         ];
         return view('pages.data_master.data_rekening.index', compact('datarekening', 'headers', 'units'));
     }

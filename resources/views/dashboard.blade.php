@@ -62,14 +62,14 @@
         </div>
 
         <!-- Chart / Ringkasan -->
-        <div class="row">
-            <div class="col-lg-8">
+        <div class="row ">
+            <div class="col-lg-8 mb-4">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between">
+                    <div class="card-header d-flex justify-content-between mb-4">
                         <h4 class="card-title">Statistik Tagihan Pembayaran</h4>
                         <span class="text-muted">Per Tahun Ajaran</span>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body mb-3">
                         <div id="chartTagihan" class="apex-charts" data-colors="#604ae3,#0dcaf0,#198754"></div>
                     </div>
                 </div>
@@ -80,7 +80,18 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Tabungan Siswa</h4>
+                        <h4 class="card-title">Tabungan</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">Saldo Aktif</p>
+                        <h3 class="fw-bold text-success">{{ $totalSaldo }}</h3>
+                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ $jumlahTransaksi }}</b></p>
+                        <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Tagihan</h4>
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-2">Saldo Total</p>
@@ -90,6 +101,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- Table contoh daftar terbaru -->

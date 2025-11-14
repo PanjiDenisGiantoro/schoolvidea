@@ -60,7 +60,7 @@
 
                     {{-- Nama --}}
                     <div class="col-md-4">
-                        <x-input-field type="text" name="account_name" label="Nama Rekening"
+                        <x-input-field type="text" name="account_name" label="Bank"
                             placeholder="Masukkan Nama Rekening" icon="bx bx-barcode" :value="old('account_name', $datarekening->account_name ?? '')" required />
                     </div>
 

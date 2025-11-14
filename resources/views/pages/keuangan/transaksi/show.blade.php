@@ -43,9 +43,9 @@
                     <li class="mb-2">
                         <strong>Jumlah:</strong><br>
                         @if(in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
-                            <span class="text-success fw-bold fs-5">+ Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                            <span class="text-success fw-bold fs-5"> Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                         @else
-                            <span class="text-danger fw-bold fs-5">- Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                            <span class="text-danger fw-bold fs-5"> Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
                         @endif
                     </li>
 
@@ -121,7 +121,7 @@
                 @endif
 
                 <h6 class="fw-bold text-primary mb-2">
-                    <i class="bx bx-user"></i> Penerima
+                    <i class="bx bx-user"></i> Siswa
                 </h6>
                 @if($transaksi->penerima)
                     @if($transaksi->penerima_tipe === 'App\Models\Siswa')
@@ -254,13 +254,16 @@
                 </div>
                 @endif
 
-                <div class="mt-3">
+                <div class="mt-4 d-flex justify-content-between">
+                    <a href="{{ route('keuangan_transaksi.index') }}" class="btn btn-secondary  rounded-2 shadow-sm mb-2">
+                        <i class="bx bx-arrow-back"></i> Kembali
+                    </a>
                     <a href="{{ route('keuangan_transaksi.print_detail', $transaksi->id) }}" target="_blank"
-                       class="btn btn-primary w-100 rounded-pill shadow-sm mb-2">
+                       class="btn btn-primary  rounded-2 shadow-sm mb-2">
                         <i class="bx bx-printer"></i> Cetak Detail
                     </a>
-                    <a href="{{ route('keuangan_transaksi.index') }}" class="btn btn-secondary w-100 rounded-pill shadow-sm">
-                        <i class="bx bx-arrow-back"></i> Kembali
+                    <a href="{{ route('keuangan_transaksi.index') }}" id="btnBatalkan" class="btn btn-danger  rounded-2 shadow-sm mb-2">
+                        <i class="bx bx-x"></i> Batalkan Transaksi
                     </a>
                 </div>
             </div>
@@ -564,5 +567,65 @@
                 });
             });
         }
+    </script>
+<script>
+        document.getElementById('btnBatalkan').addEventListener('click', function(e) {
+            e.preventDefault(); // Mencegah navigasi link
+
+            // Ambil data transaksi yang dibutuhkan untuk ditampilkan
+            const codePembayaran = "{{ $transaksi->code_pembayaran }}";
+            const jumlahFormat = "Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}";
+            
+            Swal.fire({
+                title: 'Verifikasi Pembatalan Transaksi',
+                html: `
+                    <div class="text-start">
+                        <div class="alert alert-info mb-3">
+                            <strong><i class="bx bx-info-circle me-1"></i>Informasi:</strong><br>
+                            <small class="d-block">Pembatalan Transaksi Ini !!! Harap Minta Token Kepada Atasan Anda</small>
+                            <small class="d-block mt-1">No Transaksi : <strong>${codePembayaran}</strong></small>
+                        </div>
+                        <label for="token-input-batal" class="form-label">Token (6 Digit) <span class="text-danger">*</span></label>
+                        <input type="text" id="token-input-batal" class="form-control form-control-lg text-center"
+                               placeholder="000000" maxlength="6"
+                               style="letter-spacing: 8px; font-family: monospace; font-size: 1.5rem;">
+                        <small class="text-muted mt-2 d-block">Minta token pembatalan dari Atasan/Admin.</small>
+                    </div>
+                `,
+                icon: 'warning', // Gunakan 'warning' untuk aksi kritis
+                showCancelButton: true,
+                confirmButtonColor: '#f8ac59', // Merah untuk Batalkan
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-lock me-1"></i> Verifikasi Token',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                focusConfirm: false, // Fokus pada input
+                preConfirm: () => {
+                    const token = document.getElementById('token-input-batal').value;
+                    if (!token || token.length !== 6) {
+                        Swal.showValidationMessage('Token harus 6 digit');
+                        return false;
+                    }
+                    // TIDAK ADA LOGIKA AJAX/FORM SUBMIT DI SINI
+                    // Hanya mengembalikan nilai untuk tujuan tampilan (atau Anda dapat menghapusnya jika benar-benar hanya tampilan)
+                    return token;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Jika Anda ingin menampilkan pesan sukses setelah verifikasi token (tanpa aksi backend)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Token Diterima',
+                        text: `Token: ${result.value} diterima. Harap hubungi Atasan untuk memproses pembatalan.`,
+                        confirmButtonColor: '#0d6efd'
+                    });
+                }
+            });
+
+            // Auto focus pada input token
+            setTimeout(() => {
+                document.getElementById('token-input-batal').focus();
+            }, 500);
+        });
     </script>
 @endpush

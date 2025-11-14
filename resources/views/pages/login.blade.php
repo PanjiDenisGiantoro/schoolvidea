@@ -33,9 +33,9 @@
 
                                 {{-- Heading --}}
                                 <div class="text-center">
-                                    <h3 class="fw-bold text-dark fs-20">Login Sistem Sekolah</h3>
+                                    <h3 class="fw-bold text-dark fs-20">Videa School Payment System</h3>
                                     <p class="text-muted mb-4 mt-1">
-                                        Silakan masukkan Email dan password untuk masuk ke sistem akademik.
+                                        Masukkan Email & Password Untuk Login SPS
                                     </p>
                                 </div>
 
@@ -47,7 +47,7 @@
 
                                         <x-input-field type="text" name="email" label="Email"
                                             placeholder="Masukkan email" icon="bx bx-envelope" />
-                                        <x-input-field name="password" label="user password" type="password"
+                                        <x-input-field name="password" label="Password" type="password"
                                             icon="bx bx-lock" />
                                         <div class="mb-3">
                                             <div class="form-check">
@@ -69,7 +69,7 @@
 
                                 {{-- Footer text --}}
                                 <p class="text-muted mb-0 mt-4 text-center">
-                                    &copy; {{ date('Y') }} Sistem Akademik Sekolah
+                                    &copy; {{ date('Y') }} VideaClass by PT. Inovasi Dalam Negeri - All Rights Reserved
                                 </p>
                             </div>
                         </div>

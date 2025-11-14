@@ -51,7 +51,6 @@
     justify-content: space-between;
     border-top: none;
     border-bottom: none;
-    padding: 12px 18px;
     gap: 5px;
     margin-top: 0; /* biar nempel langsung */
 }
@@ -599,7 +598,6 @@ table td:first-child {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 20px;
                 background: transparent;
                 border-bottom: 2px solid transparent;
                 font-weight: 600;

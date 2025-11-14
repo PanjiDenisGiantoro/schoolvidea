@@ -107,9 +107,20 @@ class TabunganController extends Controller
             ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
                 $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
             })
-            ->sum('jumlah');
-
+            ->count();
+        $total_pending_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->where('status_approval', 'pending')
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->count();
         // Total approved penarikan
+        
         $total_approved = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['approve', 'approved'])
@@ -120,8 +131,18 @@ class TabunganController extends Controller
             ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
                 $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
             })
-            ->sum('jumlah');
-
+            ->count();
+        $total_approved_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['approve', 'approved' ])
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->count();
         // Total reject penarikan
         $total_rejected = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
             ->where('penerima_tipe', Siswa::class)
@@ -133,8 +154,18 @@ class TabunganController extends Controller
             ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
                 $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
             })
-            ->sum('jumlah');
-
+            ->count();
+        $total_rejected_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('penerima_tipe', Siswa::class)
+            ->whereIn('status_approval', ['reject', 'rejected'])
+            ->whereIn('penerima_id', $siswaIds)
+            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            })
+            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
+                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            })
+            ->count();
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
@@ -152,6 +183,9 @@ class TabunganController extends Controller
             'total_pending',
             'total_approved',
             'total_rejected',
+            'total_pending_setoran',
+            'total_approved_setoran',
+            'total_rejected_setoran',
             'units'
         ));
     }
@@ -225,7 +259,7 @@ class TabunganController extends Controller
                 'keterangan'      => $request->keterangan,
                 'metode' => 'TUNAI',
                 'token'           => null,
-                'status_approval' => null,
+                'status_approval' => 'approved',
                 'created_by'      => Auth::id(),
             ]);
 
