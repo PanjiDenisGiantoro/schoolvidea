@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\OfficerController;
 use App\Http\Controllers\Api\V1\TagihanController;
 use App\Http\Controllers\Api\V1\DashboardTagihanController;
 use App\Http\Controllers\Api\V1\TabunganController;
+use App\Http\Controllers\Api\V1\RiwayatApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -206,6 +207,35 @@ Route::prefix("v1")->group(function () {
             ]);
             Route::post("/verify", [TabunganController::class, "verifyToken"]);
             Route::post("/regenerate-token", [TabunganController::class, "regenerateToken"]);
+        });
+
+        // Riwayat (History) routes
+        Route::prefix("riwayat")->group(function () {
+            // Main history endpoints
+            Route::get("/", [RiwayatApiController::class, "index"]);
+            Route::get("/dashboard", [RiwayatApiController::class, "dashboard"]);
+
+            // Tabungan history
+            Route::get("/tabungan", [RiwayatApiController::class, "riwayatTabungan"]);
+            Route::get("/tabungan/setor", [RiwayatApiController::class, "riwayatTabunganSetor"]);
+            Route::get("/tabungan/tarik", [RiwayatApiController::class, "riwayatTabunganTarik"]);
+            Route::get("/tabungan/siswa/{siswaId}", [RiwayatApiController::class, "riwayatTabunganSiswa"]);
+            Route::get("/tabungan/{id}", [RiwayatApiController::class, "detailTabungan"]);
+
+            // Tagihan history
+            Route::get("/tagihan", [RiwayatApiController::class, "riwayatTagihan"]);
+            Route::get("/tagihan/siswa/{siswaId}", [RiwayatApiController::class, "riwayatTagihanSiswa"]);
+            Route::get("/tagihan/{id}", [RiwayatApiController::class, "detailTagihan"]);
+
+            // Tagihan pembayaran history
+            Route::get("/tagihan-pembayaran", [RiwayatApiController::class, "riwayatPembayaranTagihan"]);
+
+            // Tagihan mutasi history
+            Route::get("/tagihan-mutasi", [RiwayatApiController::class, "riwayatMutasiTagihan"]);
+            Route::get("/tagihan-mutasi/{siswaId}", [RiwayatApiController::class, "riwayatMutasiTagihanSiswa"]);
+
+            // Audit trail
+            Route::get("/audit-trail/{transactionId}", [RiwayatApiController::class, "auditTrail"]);
         });
     });
 });
