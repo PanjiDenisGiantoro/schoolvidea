@@ -29,7 +29,8 @@
 
             @canViewMenu(['view_tahun_ajaran', 'view_role', 'view_lembagaunit', 'view_tipe_unit', 'view_unit',
             'view_positions', 'view_jurusan', 'view_officer', 'view_kelas', 'view_siswa', 'view_user',
-            'view_data_rekening'])
+            ]) 
+            {{-- 'view_data_rekening' --}}
             <li class="menu-item">
                 <a class="menu-link menu-arrow" href="#sidebarMasterData" data-bs-toggle="collapse" role="button"
                     aria-expanded="false" aria-controls="sidebarMasterData">
@@ -90,11 +91,14 @@
                             <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('akun-user') }}">Akun User</a>
                             </li>
                         @endhasPermission
-                        @hasPermission('view_data_rekening')
+                        {{-- @hasPermission('view_data_rekening')
                             <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('data-rekening') }}">Data
                                     Rekening</a>
                             </li>
-                        @endhasPermission
+                        @endhasPermission --}}
+                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('data-rekening') }}">Data
+                                    Rekening</a>
+                            </li>
                     </ul>
                 </div>
             </li>

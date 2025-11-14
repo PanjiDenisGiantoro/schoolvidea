@@ -140,7 +140,7 @@
             {{-- Action Buttons & Pagination Control --}}
             <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <label for="per_page" class="mb-0">Tampilkan:</label>
+                    <label for="per_page" class="mb-0 text-primary">Tampilkan:</label>
                     <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
                         <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
@@ -186,7 +186,7 @@
                         </button>
                     </div>
                     <div>
-                        <label for="filter" class="form-label text-white">Filter Data Status</label>
+                        <label for="filter" class="form-label text-primary fw-bold">Filter Data Status</label>
                         <select class="form-select form-select-sm rounded-3 filter-status">
                             <option value="semua" data-status="all">Semua</option>
                             <option value="aktif" data-status="1">Aktif</option>

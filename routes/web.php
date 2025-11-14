@@ -386,7 +386,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [AkunUserController::class, 'show'])->name('akun-user.show');
 
     });
-    Route::prefix('data-rekening')->middleware('permission:view_data_rekening')->group(function () {
+    Route::prefix('data-rekening')->group(function () {
         Route::get('/', [DataRekeningController::class, 'index'])->name('data-rekening.index');
         Route::get('/create', [DataRekeningController::class, 'create'])->name('data-rekening.create');
         Route::get('/edit/{id}', [DataRekeningController::class, 'edit'])->name('data-rekening.edit');
@@ -395,7 +395,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/update/{id}', [DataRekeningController::class, 'update'])->name('data-rekening.update');
         Route::get('/delete/{id}', [DataRekeningController::class, 'destroy'])->name('data-rekening.destroy');
         Route::post('/upload', [DataRekeningController::class, 'upload'])->middleware('permission:upload_data_rekening')->name('data-rekening.upload');
-    });
+    }); //->middleware('permission:view_data_rekening')
 
 
 

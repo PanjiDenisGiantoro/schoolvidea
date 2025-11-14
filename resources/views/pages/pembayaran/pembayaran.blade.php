@@ -153,7 +153,7 @@
                         <thead class="table-light text-center align-middle">
                             <tr>
                                 <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
-                                <th>#</th>
+                                <th>No</th>
                                 <th>Periode Tagihan</th>
                                 <th>Tagihan Kelas</th>
                                 <th>Rincian Tagihan</th>
@@ -180,7 +180,7 @@
                     <table class="table-hover table-striped mb-0 table align-middle">
                         <thead class="table-light items-center text-center">
                             <tr>
-                                <th>#</th>
+                                <th>No</th>
                                 <th>Periode Tagihan</th>
                                 <th>Tagihan Kelas</th>
                                 <th>Rincian Tagihan</th>
