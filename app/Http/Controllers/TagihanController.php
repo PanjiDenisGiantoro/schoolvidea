@@ -172,6 +172,22 @@ class TagihanController extends Controller
                 throw new \Exception("Tidak ada item tagihan yang valid.");
             }
 
+            // 1b. Kumpulkan data rekening terlebih dahulu
+            $rekeningData = [];
+            if ($request->has('rekening')) {
+                foreach ($request->rekening as $rekening) {
+                    if (!empty($rekening['id'])) {
+                        $rekeningData[] = [
+                            'rekening_id' => $rekening['id'],
+                        ];
+                    }
+                }
+            }
+
+            if (empty($rekeningData)) {
+                throw new \Exception("Tidak ada rekening pembayaran yang valid.");
+            }
+
             $kategoriIds = collect($itemsData)->pluck('kategori_id')->filter()->all();
 
             // Ambil siswa target
@@ -239,6 +255,11 @@ class TagihanController extends Controller
                     'kategori_id' => $itemData['kategori_id'],
                     'nominal' => $itemData['nominal'],
                 ]);
+
+                // Attach rekening pembayaran ke tagihan
+                foreach ($rekeningData as $rekening) {
+                    $tagihan->rekeningen()->attach($rekening['rekening_id']);
+                }
 
                 // Loop setiap siswa untuk item ini
                 foreach ($siswaList as $siswa) {

@@ -93,6 +93,7 @@
                                 <th>Nominal Akhir</th>
                                 <th>Status</th>
                                 <th>Tgl. Bayar</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -116,10 +117,20 @@
                                     <td>
                                         {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
                                     </td>
+                                    <td>
+                                        @if ($row['status'] === 'Lunas')
+                                            <button type="button" class="btn btn-sm btn-success rounded-2"
+                                                onclick="cetakStruklanas('{{ $row['kode_tagihan'] }}', '{{ $row['bulan'] }}', '{{ $row['tahun'] }}', {{ $row['nominal_akhir'] }})">
+                                                <i class="bx bx-printer"></i> Cetak
+                                            </button>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10">Tidak ada data tagihan.</td>
+                                    <td colspan="11">Tidak ada data tagihan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -236,6 +247,63 @@
         function printStruk(pembayaranId, kodeTagihan, jumlahBayar) {
             // Buka halaman cetak struk dalam tab baru
             window.open(`/pembayaran/${pembayaranId}/print-struk`, '_blank');
+        }
+
+        function cetakStruklanas(kodeTagihan, bulan, tahun, nominal) {
+            // Generate struk untuk tagihan yang sudah lunas
+            let striped = `
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        body {
+                            width: 80mm;
+                            margin: 0;
+                            padding: 5mm;
+                            font-family: 'Courier New', monospace;
+                            font-size: 11px;
+                        }
+                        .center { text-align: center; }
+                        .bold { font-weight: bold; }
+                        .divider { border-top: 1px dashed #000; margin: 5px 0; }
+                        .text-right { text-align: right; }
+                        .row { display: flex; justify-content: space-between; }
+                    </style>
+                </head>
+                <body>
+                    <div class="center bold">STRUK PEMBAYARAN</div>
+                    <div class="divider"></div>
+
+                    <div class="bold">Kode Tagihan: ${kodeTagihan}</div>
+                    <div>Bulan: ${bulan}/${tahun}</div>
+                    <div>Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
+                    <div>Waktu: ${new Date().toLocaleTimeString('id-ID')}</div>
+
+                    <div class="divider"></div>
+
+                    <div class="row">
+                        <div>Total Pembayaran:</div>
+                        <div class="bold">Rp ${parseInt(nominal).toLocaleString('id-ID')}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="center">
+                        <div>Terima Kasih</div>
+                        <div>Atas Pembayaran Anda</div>
+                    </div>
+
+                    <script>
+                        window.print();
+                        window.onafterprint = function() { window.close(); };
+                    </script>
+                </body>
+                </html>
+            `;
+
+            let printWindow = window.open('', '', 'width=300,height=400');
+            printWindow.document.write(striped);
+            printWindow.document.close();
         }
     </script>
 

@@ -117,6 +117,31 @@
                         </div>
                     </div>
 
+                    {{-- Rekening Pembayaran (Dynamic) --}}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label mb-0"><strong>Rekening Pembayaran</strong></label>
+                        </div>
+                        <div id="rekeningWrapper">
+                            <div class="mb-3 rekening-wrapper" data-rekening-index="0">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Rekening Pembayaran 1</label>
+                                    <button type="button" class="btn btn-sm btn-danger d-none" onclick="hapusRekening(this)">
+                                        <i class="fa fa-trash"></i> Hapus
+                                    </button>
+                                </div>
+                                <select name="rekening[0][id]" class="form-control rekening-select" required>
+                                    <option value="">-- Pilih Rekening --</option>
+                                    @foreach ($datarekening as $rekening)
+                                        <option value="{{ $rekening->id }}">{{ $rekening->nomor_rekening }} - {{ $rekening->nama_bank }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted d-block mt-1">Pilih rekening untuk pembayaran tagihan</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success" onclick="tambahRekening()">+ Tambah Rekening</button>
+                    </div>
+
                     {{-- Item Tagihan (Dynamic based on Unit & Kelas) --}}
                     <div id="itemTagihan">
                         <div class="mb-3 item-wrapper" data-item-index="0">
@@ -356,6 +381,61 @@
         function resetItemDropdowns() {
             const html = '<option value="">-- Pilih Unit dan Kelas Terlebih Dahulu --</option>';
             $('.item-select').html(html);
+        }
+
+        let rekeningCount = 1;
+
+        // Tambah rekening pembayaran
+        function tambahRekening() {
+            let container = document.getElementById('rekeningWrapper');
+            let rekeningOptions = document.querySelector('.rekening-select').innerHTML;
+            let html = `
+        <div class="mb-3 rekening-wrapper" data-rekening-index="${rekeningCount}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Rekening Pembayaran ${rekeningCount+1}</label>
+                <button type="button" class="btn btn-sm btn-danger" onclick="hapusRekening(this)">
+                    <i class="fa fa-trash"></i> Hapus
+                </button>
+            </div>
+            <select name="rekening[${rekeningCount}][id]" class="form-control rekening-select" required>
+                ${rekeningOptions}
+            </select>
+            <small class="text-muted d-block mt-1">Pilih rekening untuk pembayaran tagihan</small>
+        </div>
+    `;
+            container.insertAdjacentHTML('beforeend', html);
+            rekeningCount++;
+            updateRekeningDeleteButtons();
+        }
+
+        // Hapus rekening pembayaran
+        function hapusRekening(btn) {
+            const wrapper = btn.closest('.rekening-wrapper');
+            wrapper.remove();
+            updateRekeningDeleteButtons();
+            updateRekeningLabels();
+        }
+
+        // Update visibility tombol hapus rekening
+        function updateRekeningDeleteButtons() {
+            const rekeningen = document.querySelectorAll('.rekening-wrapper');
+            rekeningen.forEach((rekening, index) => {
+                const deleteBtn = rekening.querySelector('.btn-danger');
+                if (rekeningen.length > 1) {
+                    deleteBtn.classList.remove('d-none');
+                } else {
+                    deleteBtn.classList.add('d-none');
+                }
+            });
+        }
+
+        // Update label rekening pembayaran
+        function updateRekeningLabels() {
+            const rekeningen = document.querySelectorAll('.rekening-wrapper');
+            rekeningen.forEach((rekening, index) => {
+                const label = rekening.querySelector('.form-label');
+                label.textContent = `Rekening Pembayaran ${index + 1}`;
+            });
         }
     </script>
 @endpush

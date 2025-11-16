@@ -262,7 +262,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
-        Route::get('/perbulan/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
+        Route::get('/perbulanAll/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
         Route::get('/daftarTagihan/{id}', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftarTagihan');
         Route::get('/daftarTagihanBebas/{id}', [TagihanController::class, 'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
