@@ -57,115 +57,79 @@ class TabunganController extends Controller
         // Ambil semua siswa_id dari siswa yang lolos filter
         $siswaIds = $transaksis->pluck('id')->unique()->toArray();
 
-        // Filter transaksi keuangan berdasarkan penerima_id (siswa_id) dan penerima_tipe dengan date range
+        // Build base query with unit filtering if auth user has unit_id
+        $baseQuery = function ($query) use ($siswaIds, $request) {
+            return $query->where('penerima_tipe', Siswa::class)
+                ->whereIn('penerima_id', $siswaIds)
+                ->when(Auth::user()->unit_id, function ($q) {
+                    // Join with siswa table to filter by unit_id
+                    $q->join('siswas', 'keuangan_transaksis.penerima_id', '=', 'siswas.id')
+                      ->where('siswas.unit_id', Auth::user()->unit_id)
+                      ->select('keuangan_transaksis.*');
+                })
+                ->when($request->filled('dari_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+                })
+                ->when($request->filled('sampai_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+                });
+        };
+
+        // Total setoran
         $total_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->where('penerima_tipe', Siswa::class)
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->sum('jumlah');
 
+        // Total penarikan (approved/approve status only)
         $total_penarikan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->where(function ($query) {
                 $query->where('status_approval', '=', 'approve')
                       ->orWhere('status_approval', '=', 'approved');
             })
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->sum('jumlah');
 
-        // Jumlah transaksi (count)
+        // Total transaksi (count)
         $jumlah_transaksi = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-            ->where('penerima_tipe', Siswa::class)
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
 
-        // Total pending transaksi tabungan (penarikan yang masih pending)
+        // Total pending penarikan
         $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->where('status_approval', 'pending')
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
+
+        // Total pending setoran
         $total_pending_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->where('status_approval', 'pending')
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
+
         // Total approved penarikan
-        
         $total_approved = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['approve', 'approved'])
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
+
+        // Total approved setoran
         $total_approved_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->where('penerima_tipe', Siswa::class)
-            ->whereIn('status_approval', ['approve', 'approved' ])
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->whereIn('status_approval', ['approve', 'approved'])
+            ->tap($baseQuery)
             ->count();
-        // Total reject penarikan
+
+        // Total rejected penarikan
         $total_rejected = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['reject', 'rejected'])
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
+
+        // Total rejected setoran
         $total_rejected_setoran = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-            ->where('penerima_tipe', Siswa::class)
             ->whereIn('status_approval', ['reject', 'rejected'])
-            ->whereIn('penerima_id', $siswaIds)
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
-            })
+            ->tap($baseQuery)
             ->count();
+
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
@@ -417,30 +381,93 @@ class TabunganController extends Controller
             return back()->with('danger', $e->getMessage());
         }
     }
-    public function show($siswa_id)
+    public function show(Request $request, $siswa_id)
     {
         $siswa = Siswa::with('kelas', 'user')->findOrFail($siswa_id);
 
-        // Ambil semua transaksi siswa
-        $logs = Keuangan_transaksi::where('penerima_id', $siswa_id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Query untuk search
+        $query = Keuangan_transaksi::where('penerima_id', $siswa_id)
+            ->orderBy('created_at', 'asc');
+
+        // Filter berdasarkan jenis transaksi jika ada
+        if ($request->filled('jenis_transaksi')) {
+            $query->where('jenis_transaksi', $request->jenis_transaksi);
+        }
+
+        // Filter berdasarkan status jika ada
+        if ($request->filled('status')) {
+            $query->where('status_approval', $request->status);
+        }
+
+        // Filter berdasarkan tanggal jika ada
+        if ($request->filled('dari_tanggal')) {
+            $query->whereDate('created_at', '>=', $request->dari_tanggal);
+        }
+
+        if ($request->filled('sampai_tanggal')) {
+            $query->whereDate('created_at', '<=', $request->sampai_tanggal);
+        }
+
+        // Ambil semua data untuk perhitungan running balance
+        $allLogs = $query->get();
 
         // Ambil saldo akhir dari saldo_keuangan
         $saldo = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
         $saldo_akhir = $saldo?->saldo_akhir ?? 0;
 
-        // Hitung saldo awal dari transaksi terakhir
+        // Hitung saldo awal dan saldo untuk setiap transaksi
         $saldo_awal = 0;
-        if ($logs->isNotEmpty()) {
-            $lastTrans = $logs->first();
+        $runningBalance = 0;
 
-            if ($lastTrans->jenis_transaksi === 'setoran_tabungan') {
-                $saldo_awal = $saldo_akhir - $lastTrans->jumlah;
-            } else {
-                $saldo_awal = $saldo_akhir + $lastTrans->jumlah;
+        if ($allLogs->isNotEmpty()) {
+            // Hitung saldo awal (kebalikan dari saldo akhir dengan semua transaksi)
+            foreach ($allLogs as $log) {
+                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                    $runningBalance += $log->jumlah;
+                } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                          in_array($log->status_approval, ['approve', 'approved'])) {
+                    $runningBalance -= $log->jumlah;
+                }
             }
+            $saldo_awal = $saldo_akhir - $runningBalance;
         }
+
+        // Tambahkan saldo_sebelum dan saldo_sesudah untuk setiap transaksi
+        $runningBalance = $saldo_awal;
+        foreach ($allLogs as $log) {
+            $log->saldo_sebelum = $runningBalance;
+
+            if ($log->jenis_transaksi === 'setoran_tabungan') {
+                $runningBalance += $log->jumlah;
+            } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                      in_array($log->status_approval, ['approve', 'approved'])) {
+                $runningBalance -= $log->jumlah;
+            }
+
+            $log->saldo_sesudah = $runningBalance;
+        }
+
+        // Reverse untuk display (paling baru di atas)
+        $allLogs = $allLogs->reverse()->values();
+
+        // Pagination: 10 per halaman
+        $perPage = 10;
+        $currentPage = $request->get('page', 1);
+        $total = $allLogs->count();
+
+        $paginatedLogs = $allLogs->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        // Buat LengthAwarePaginator object
+        $logs = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedLogs,
+            $total,
+            $perPage,
+            $currentPage,
+            [
+                'path' => route('tabungan.show', $siswa_id),
+                'query' => $request->query(),
+            ]
+        );
 
         return view('pages.tabungan.detail', compact(
             'siswa',
@@ -622,7 +649,10 @@ class TabunganController extends Controller
                 $transaksi->update([
                     'status_approval' => 'approved',
                     'approved_at' => now(),
-                    'approved_by' => Auth::id()
+                    'approved_by' => Auth::id(),
+                    'status_verifikasi' => 'approved',
+                    'verified_at' => now(),
+                    'verified_by' => Auth::id(),
                 ]);
 
                 $message = 'Transaksi berhasil disetujui dan saldo telah diperbarui!';
@@ -633,7 +663,10 @@ class TabunganController extends Controller
                 $transaksi->update([
                     'status_approval' => 'rejected',
                     'approved_at' => now(),
-                    'approved_by' => Auth::id()
+                    'approved_by' => Auth::id(),
+                    'status_verifikasi' => 'rejected',
+                    'verified_at' => now(),
+                    'verified_by' => Auth::id(),
                 ]);
 
                 $message = 'Transaksi berhasil ditolak.';
@@ -823,6 +856,183 @@ class TabunganController extends Controller
         // Output PDF ke browser
         return $mpdf->Output('Laporan-Tabungan-' . date('Ymd') . '.pdf', 'I');
     }
+
+    /**
+     * Print Mutasi Tabungan per 20 transaksi
+     */
+    public function printMutasi($siswa_id)
+    {
+        $siswa = Siswa::with('kelas', 'user')->findOrFail($siswa_id);
+
+        // Ambil semua transaksi siswa (urutkan dari paling lama ke paling baru)
+        $allLogs = Keuangan_transaksi::where('penerima_id', $siswa_id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Ambil saldo akhir dari saldo_keuangan
+        $saldo = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+        $saldo_akhir = $saldo?->saldo_akhir ?? 0;
+
+        // Hitung saldo awal
+        $saldo_awal = 0;
+        $runningBalance = 0;
+
+        if ($allLogs->isNotEmpty()) {
+            foreach ($allLogs as $log) {
+                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                    $runningBalance += $log->jumlah;
+                } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                          in_array($log->status_approval, ['approve', 'approved'])) {
+                    $runningBalance -= $log->jumlah;
+                }
+            }
+            $saldo_awal = $saldo_akhir - $runningBalance;
+        }
+
+        // Tambahkan saldo_sebelum dan saldo_sesudah untuk setiap transaksi
+        $runningBalance = $saldo_awal;
+        foreach ($allLogs as $log) {
+            $log->saldo_sebelum = $runningBalance;
+
+            if ($log->jenis_transaksi === 'setoran_tabungan') {
+                $runningBalance += $log->jumlah;
+            } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                      in_array($log->status_approval, ['approve', 'approved'])) {
+                $runningBalance -= $log->jumlah;
+            }
+
+            $log->saldo_sesudah = $runningBalance;
+        }
+
+        // Reverse untuk display (paling baru di atas)
+        $allLogs = $allLogs->reverse()->values();
+
+        // Split per 20 transaksi
+        $logsChunked = $allLogs->chunk(20);
+        $perPage = 20;
+
+        // Ambil halaman dari request, default 1
+        $page = request('page', 1);
+        $pageIndex = max(1, $page) - 1; // Index dimulai dari 0
+
+        if ($pageIndex >= $logsChunked->count()) {
+            $pageIndex = $logsChunked->count() - 1;
+        }
+
+        $logs = $logsChunked[$pageIndex];
+        $totalPages = $logsChunked->count();
+        $currentPage = $pageIndex + 1;
+
+        // Generate HTML dari view
+        $html = view('pages.tabungan.print_mutasi', compact(
+            'siswa',
+            'logs',
+            'saldo_awal',
+            'saldo_akhir',
+            'currentPage',
+            'totalPages'
+        ))->render();
+
+        // Konfigurasi mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'L', // Landscape untuk tabel lebar
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Mutasi Tabungan - ' . $siswa->user->name);
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Mutasi-' . $siswa->nisn . '-' . $currentPage . '-' . date('Ymd') . '.pdf', 'I');
+    }
+
+    /**
+     * Print Struk Transaksi (Thermal Printer)
+     */
+    public function printStruk($transaksi_id)
+    {
+        $transaksi = Keuangan_transaksi::findOrFail($transaksi_id);
+        $siswa = Siswa::with('kelas', 'user')->findOrFail($transaksi->penerima_id);
+
+        // Ambil saldo siswa sebelum dan sesudah transaksi
+        $allLogs = Keuangan_transaksi::where('penerima_id', $transaksi->penerima_id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Ambil saldo akhir dari saldo_keuangan
+        $saldo = Saldo_keuangan::where('user_id', $siswa->user->id)->first();
+        $saldo_akhir = $saldo?->saldo_akhir ?? 0;
+
+        // Hitung saldo awal
+        $saldo_awal = 0;
+        $runningBalance = 0;
+
+        if ($allLogs->isNotEmpty()) {
+            foreach ($allLogs as $log) {
+                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                    $runningBalance += $log->jumlah;
+                } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                          in_array($log->status_approval, ['approve', 'approved'])) {
+                    $runningBalance -= $log->jumlah;
+                }
+            }
+            $saldo_awal = $saldo_akhir - $runningBalance;
+        }
+
+        // Tambahkan saldo_sebelum dan saldo_sesudah untuk setiap transaksi
+        $runningBalance = $saldo_awal;
+        foreach ($allLogs as $log) {
+            $log->saldo_sebelum = $runningBalance;
+
+            if ($log->jenis_transaksi === 'setoran_tabungan') {
+                $runningBalance += $log->jumlah;
+            } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
+                      in_array($log->status_approval, ['approve', 'approved'])) {
+                $runningBalance -= $log->jumlah;
+            }
+
+            $log->saldo_sesudah = $runningBalance;
+
+            if ($log->id === $transaksi->id) {
+                $current_transaction = $log;
+            }
+        }
+
+        // Generate HTML dari view
+        $html = view('pages.tabungan.struk', compact(
+            'siswa',
+            'transaksi',
+            'current_transaction'
+        ))->render();
+
+        // Konfigurasi mPDF untuk thermal printer (80mm width)
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200], // 80mm lebar, 200mm panjang (adjustable)
+            'margin_left' => 2,
+            'margin_right' => 2,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+        ]);
+
+        $mpdf->SetTitle('Struk Transaksi Tabungan');
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-' . $transaksi->code_pembayaran . '-' . date('Ymd') . '.pdf', 'I');
+    }
+
     public function massStatus(Request $request)
     {
         $ids = $request->input('ids', []);

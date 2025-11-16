@@ -46,13 +46,13 @@
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
                     <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
-                        <div class="card-header bg-gradient-primary py-3 text-center text-white">
-                            <h6 class="fw-bold mb-0">Informasi Siswa</h6>
+                        <div class="card-header bg-gradient-success py-3 text-center text-white ">
+                            <h6 class="fw-bold mb-0 text-white">INFORMASI SISWA</h6>
                         </div>
                         <div class="card-body p-4">
                             <div class="mb-4 text-center">
                                 <div class="position-relative d-inline-block">
-                                    <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa" id="foto_siswa"
+                                    <img src="{{ asset('assets/images/videa.png') }}" alt="Foto Siswa" id="foto_siswa"
                                         class="img-fluid rounded-circle border-3 border-primary border shadow"
                                         style="width: 120px; height: 120px; object-fit: cover;">
                                     <span
@@ -96,8 +96,8 @@
 
                         <div class="card rounded-4 overflow-hidden border-0 shadow-sm">
                             <div class="card-header bg-gradient-success py-3 text-white">
-                                <h5 class="fw-bold mb-0">
-                                    <i class="bx bx-wallet me-2"></i>Transaksi Setoran Tabungan
+                                <h5 class="fw-bold mb-0  text-white">
+                                    <i class="bx bx-wallet me-2 "></i>Transaksi Setoran Tabungan
                                 </h5>
                             </div>
                             <div class="card-body gap-4 p-4">
@@ -458,7 +458,7 @@
                     if (data.foto) {
                         fotoSiswa.src = data.foto;
                     } else {
-                        fotoSiswa.src = `{{ asset('images/default-user.png') }}`;
+                        fotoSiswa.src = `{{ asset('assets/images/videa.png') }}`;
                     }
 
                     // Update saldo awal

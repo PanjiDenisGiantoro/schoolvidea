@@ -175,18 +175,21 @@ class DataRekeningController extends Controller
         $datarekening = DataRekening::findOrFail($id);
 
         $request->validate([
-            'account_name'  => 'required|string|max:50',
-            'account_code'  => 'required|string|max:50',
+            'account_name'   => 'required|string|max:50',
+            'account_code'   => 'required|string|max:50',
             'account_number' => 'required|string|max:50',
-            'owner_name'    => 'required|string|max:50',
-            'allotment'     => 'required|string|max:50',
-            'kcp_name'      => 'string|max:50',
-            'unit_id'       => 'required|exists:units,id',
-            'status'        => 'required|in:1,0',
-            'image'         => 'nullable|string'
+            'owner_name'     => 'required|string|max:50',
+            'allotment'      => 'required|string|max:50',
+            'kcp_name'       => 'string|max:50',
+            'unit_id'        => 'required|exists:units,id',
+            'status'         => 'required|in:1,0',
+            'image'          => 'nullable|string'
         ]);
 
-        $datarekening::update([
+        // Simpan nilai gambar lama
+        $oldImage = $datarekening->account_pict;
+
+        $datarekening->update([
             'account_name'   => $request->account_name,
             'account_code'   => $request->account_code,
             'account_number' => $request->account_number,
@@ -195,22 +198,18 @@ class DataRekeningController extends Controller
             'kcp_name'       => $request->kcp_name,
             'unit_id'        => $request->unit_id,
             'status'         => $request->status,
-            'account_pict'   => $request->image ?? null,
+            'account_pict'   => $request->image ?? $oldImage,
         ]);
 
-        if ($request->image && $request->image !== $datarekening->account_pict) {
-            // Hapus file lama jika ada
-            if ($datarekening->account_pict && file_exists(public_path($datarekening->account_pict))) {
-                unlink(public_path($datarekening->account_pict));
+        // Jika ada image baru → hapus yang lama
+        if ($request->image && $request->image !== $oldImage) {
+            if ($oldImage && file_exists(public_path($oldImage))) {
+                unlink(public_path($oldImage));
             }
         }
-
-        return response()->json([
-            'success' => true,
-            'filepath' => asset('storage/' . $path)
-        ]);
-
+        return redirect()->route('data-rekening.index')->with('success', 'Data rekening berhasil diubah');
     }
+
 
     /**
      * Remove the specified resource from storage.

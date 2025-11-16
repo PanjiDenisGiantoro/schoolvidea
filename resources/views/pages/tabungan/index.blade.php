@@ -9,91 +9,264 @@
         'subTitle' => 'Kelola transaksi tabungan',
     ])
 
-    {{-- Summary Cards --}}
+    {{-- Main Summary Cards --}}
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-success">
-                    <h6>Total Setoran</h6>
-                    <h4>Rp {{ number_format($total_setoran ?? 0, 0, ',', '.') }}</h4>
+        {{-- Total Setoran Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Setoran</p>
+                            <h3 class="fw-bold text-success mb-0">Rp {{ number_format($total_setoran ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-success"></i> Tabungan masuk</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger">
-                    <h6>Total Penarikan</h6>
-                    <h4>Rp {{ number_format($total_penarikan ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Penarikan Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Penarikan</p>
+                            <h3 class="fw-bold text-danger mb-0">Rp {{ number_format($total_penarikan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money-withdraw text-danger" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-danger"></i> Tabungan keluar</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary">
-                    <h6>Saldo Tabungan Aktif</h6>
-                    <h4>Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Saldo Aktif Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Saldo Aktif</p>
+                            <h3 class="fw-bold text-primary mb-0">Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-pie-chart-alt text-primary" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-trending-up text-primary"></i> Saldo tersedia</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-info">
-                    <h6>Jumlah Transaksi</h6>
-                    <h4>{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Transaksi Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi</p>
+                            <h3 class="fw-bold text-info mb-0">{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-history text-info" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-list-check text-info"></i> Jumlah total</small>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Additional Statistics --}}
-    <div class="row g-3 mb-4" >
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Setoran</h6>
-                    <h4 class="text-white">{{ $total_pending_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3  bg-success border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Setoran</h6>
-                    <h4 class="text-white">{{ $total_approved_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Setoran</h6>
-                    <h4 class="text-white">{{ $total_rejected_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Penarikan</h6>
-                    <h4 class="text-white">{{ $total_pending ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
+    {{-- Status Statistics Cards --}}
+    <div class="mb-4">
+        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="bx bx-filter-alt text-primary"></i> Status Transaksi
+        </h6>
+        <div class="row g-3">
+            {{-- Setoran Stats Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-setoran transition-all">
+                    <div class="status-card-header">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon">
+                                <i class="bx bx-down-arrow-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Status Setoran</h6>
+                                <small class="text-muted">Tabungan masuk</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Pending --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Pending</small>
+                                        <i class="bx bx-time-five text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold">{{ $total_pending_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
 
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-success border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Penarikan</h6>
-                    <h4 class="text-white">{{ $total_approved ?? 0 }}</h4>
+                        {{-- Approved --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-success"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Approved</small>
+                                        <i class="bx bx-check-circle text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold">{{ $total_approved_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Rejected --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-danger"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Rejected</small>
+                                        <i class="bx bx-x-circle text-danger" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-danger fw-bold">{{ $total_rejected_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Penarikan</h6>
-                    <h4 class="text-white">{{ $total_rejected ?? 0 }}</h4>
+            {{-- Penarikan Stats Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-penarikan transition-all">
+                    <div class="status-card-header">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon">
+                                <i class="bx bx-up-arrow-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Status Penarikan</h6>
+                                <small class="text-muted">Tabungan keluar</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Pending --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Pending</small>
+                                        <i class="bx bx-time-five text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold">{{ $total_pending ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Approved --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-success"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Approved</small>
+                                        <i class="bx bx-check-circle text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold">{{ $total_approved ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Rejected --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-danger"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Rejected</small>
+                                        <i class="bx bx-x-circle text-danger" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-danger fw-bold">{{ $total_rejected ?? 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Ringkasan Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-summary transition-all">
+                    <div class="status-card-header-summary">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon-summary">
+                                <i class="bx bx-chart"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-0">Ringkasan</h6>
+                                <small class="text-white-50">Rekapitulasi total</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Total Transaksi --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-info"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Total Transaksi</small>
+                                        <i class="bx bx-list text-info" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-black fw-bold" style="font-size: 1.25rem;">{{ $jumlah_transaksi ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Pending Total --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Menunggu Approval</small>
+                                        <i class="bx bx-hourglass text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold" style="font-size: 1.25rem;">{{ ($total_pending ?? 0) + ($total_pending_setoran ?? 0) }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Completed Total --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-success"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Selesai (Approved/Rejected)</small>
+                                        <i class="bx bx-check-double text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold" style="font-size: 1.25rem;">{{ ($total_approved ?? 0) + ($total_approved_setoran ?? 0) + ($total_rejected ?? 0) + ($total_rejected_setoran ?? 0) }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,7 +386,7 @@
                     <div class="col-md-4">
                         <span class="fw-bold text-primary me-3" style="font-size: 14px">Daftar Tabungan</span>
                         <button type="button" id="btnProsesStatus" class="custom-btn-info gap-3">
-                            <i class="ri-checkbox-multiple-line me-2"></i>Aktifkan Semua Status
+                            <i class="ri-checkbox-multiple-line me-2"></i>Aktivasi Semua Status
                         </button>
                     </div>
                     <div>
@@ -299,8 +472,97 @@
 
 @push('styles')
     <style>
+        /* Stat Cards Styling */
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.5;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .stat-card-green::before {
+            background: linear-gradient(90deg, transparent, #28a745, transparent);
+        }
+
+        .stat-card-red::before {
+            background: linear-gradient(90deg, transparent, #dc3545, transparent);
+        }
+
+        .stat-card-blue::before {
+            background: linear-gradient(90deg, transparent, #0d6efd, transparent);
+        }
+
+        .stat-card-purple::before {
+            background: linear-gradient(90deg, transparent, #0dcaf0, transparent);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.15) rotate(-5deg);
+        }
+
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        /* Card Body Improvements */
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Shadow Styles */
+        .shadow-xs {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Button Animations */
         .animate-btn {
             transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animate-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .animate-btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .animate-btn:hover {
@@ -308,9 +570,57 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
         }
 
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .stat-card {
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-card h3 {
+                font-size: 1.5rem !important;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .stat-icon i {
+                font-size: 20px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stat-card:hover {
+                transform: translateY(-4px) scale(1.01);
+            }
+
+            .stat-card h3 {
+                font-size: 1.25rem !important;
+            }
+
+            .animate-btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
         /* Pending Modal Styles */
         #pendingModal .modal-header {
             border-bottom: 3px solid #ffc107;
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+        }
+
+        #pendingModal .modal-title {
+            color: white;
+        }
+
+        #pendingModal .btn-close {
+            filter: brightness(0) invert(1);
         }
 
         #pendingModal .table thead th {
@@ -318,6 +628,8 @@
             top: 0;
             background-color: #fff3cd;
             z-index: 10;
+            font-weight: 600;
+            color: #664d03;
         }
 
         #pendingModal .table tbody tr {
@@ -327,12 +639,13 @@
         #pendingModal .table tbody tr:hover {
             background-color: #fff9e6;
             transform: scale(1.01);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         #pendingModal .badge {
             font-size: 0.85rem;
             font-weight: 600;
+            padding: 0.5rem 0.75rem !important;
         }
 
         #pendingModal .btn-primary {
@@ -341,6 +654,253 @@
 
         #pendingModal .btn-primary:hover {
             transform: scale(1.05);
+        }
+
+        /* Status Badge Styles */
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* Filter Card */
+        .custom-card-header {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* Table Enhancements */
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f5f7fa;
+            transition: all 0.2s ease;
+        }
+
+        /* Container Padding for Better Spacing */
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        /* Form Control Styling */
+        .form-control, .form-select {
+            border: 1px solid #e0e0e0;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        }
+
+        /* Status Cards Styling */
+        .status-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem !important;
+            position: relative;
+            background: #fff;
+        }
+
+        .status-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .status-card-header {
+            background: linear-gradient(135deg, #f0f4f9 0%, #e8eff7 100%);
+            padding: 1rem;
+            border-bottom: 2px solid #e8eff7;
+        }
+
+        .status-card-header-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            border-bottom: 0;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.75rem;
+            background: #e8eff7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover .status-icon {
+            transform: scale(1.1);
+            background: #dde5f7;
+        }
+
+        .status-icon-summary {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .status-card-summary:hover .status-icon-summary {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-item {
+            padding: 1.25rem;
+            border-bottom: 1px solid #f0f4f9;
+            transition: all 0.2s ease;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-item:hover {
+            background: #f9fbfd;
+        }
+
+        .status-item-summary {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .status-item-summary:last-child {
+            border-bottom: none;
+        }
+
+        .status-item-summary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot-warning {
+            background: #ffc107;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+        }
+
+        .status-dot-success {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
+        }
+
+        .status-dot-danger {
+            background: #dc3545;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+        }
+
+        .status-dot-info {
+            background: #0dcaf0;
+            box-shadow: 0 0 8px rgba(13, 202, 240, 0.4);
+        }
+
+        .status-dot-summary {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Status Cards */
+        @media (max-width: 768px) {
+            .status-card {
+                margin-bottom: 0.5rem;
+            }
+
+            .status-item,
+            .status-item-summary {
+                padding: 1rem;
+            }
+
+            .status-card-header {
+                padding: 0.875rem;
+            }
+
+            .status-card-header-summary {
+                padding: 0.875rem;
+            }
+
+            .status-icon,
+            .status-icon-summary {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+
+            .status-count {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .status-card:hover {
+                transform: translateY(-4px);
+            }
+
+            .status-item,
+            .status-item-summary {
+                padding: 0.875rem;
+            }
+
+            .status-icon,
+            .status-icon-summary {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .status-count {
+                font-size: 1.1rem;
+            }
+
+            .status-card-header h6,
+            .status-card-header-summary h6 {
+                font-size: 0.95rem !important;
+            }
         }
     </style>
 @endpush

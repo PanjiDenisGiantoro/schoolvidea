@@ -49,7 +49,7 @@
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
                         <div class="position-relative d-inline-block">
-                            <img src="{{ $siswa->image ? asset($siswa->image) : asset('images/default-user.png') }}"
+                            <img src="{{ $siswa->image ? asset($siswa->image) : asset('assets/images/videa.png') }}"
                                  alt="Foto Siswa"
                                  class="img-fluid rounded-circle shadow border border-3 border-info"
                                  style="width: 120px; height: 120px; object-fit: cover;">
@@ -86,10 +86,10 @@
                     </div>
                     <div class="mt-4 d-flex justify-content-between">
                         <a href="{{ url('tabungan/') }}" class="btn btn-secondary"><i class='bx  bx-chevron-left'></i> </a>
-                        <a href="{{ route('tabungan.create') }}" class="btn btn-success"><i class="bx bx-plus-circle me-1""></i> Setor</a>
-                        <a href="{{ route('tabungan.tarik') }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1""></i>Tarik</a>
-                        <a href="{{ url('tabungan/') }}" class="btn btn-info"><i class="bx bx-qr" style="font-size: 20px"></i></a>
-                        <a href="{{ url('tabungan/') }}" class="btn btn-warning"><i class="bx bx-printer" style="font-size: 20px"></i></a>
+                        <a href="{{ route('tabungan.create') }}" class="btn btn-success"><i class="bx bx-plus-circle me-1"></i> Setor</a>
+                        <a href="{{ route('tabungan.tarik') }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1"></i>Tarik</a>
+                        <a href="{{ url('keuangan-transaksi?siswa_id=' . $siswa->nisn) }}" class="btn btn-info" title="Lihat detail keuangan siswa"><i class="bx bx-qr" style="font-size: 20px"></i></a>
+                        <a href="{{ route('tabungan.print_mutasi', $siswa->id) }}" class="btn btn-warning" target="_blank"><i class="bx bx-printer" style="font-size: 20px"></i></a>
                     </div>
                 </div>
             </div>
@@ -104,6 +104,48 @@
                     </h5>
                 </div>
                 <div class="card-body p-4">
+                    {{-- Search & Filter Form --}}
+                    <form method="GET" action="{{ route('tabungan.show', $siswa->id) }}" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select name="jenis_transaksi" class="form-select form-select-sm">
+                                    <option value="">Semua Jenis</option>
+                                    <option value="setoran_tabungan" {{ request('jenis_transaksi') == 'setoran_tabungan' ? 'selected' : '' }}>
+                                        <i class="bx bx-plus-circle"></i>Setoran
+                                    </option>
+                                    <option value="penarikan_tabungan" {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
+                                        <i class="bx bx-minus-circle"></i>Penarikan
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="">Semua Status</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Verified</option>
+                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" name="dari_tanggal" class="form-control form-control-sm"
+                                       placeholder="Dari Tanggal" value="{{ request('dari_tanggal') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" name="sampai_tanggal" class="form-control form-control-sm"
+                                       placeholder="Sampai Tanggal" value="{{ request('sampai_tanggal') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-sm btn-primary w-100">
+                                    <i class="bx bx-search me-1"></i>Cari
+                                </button>
+                                <a href="{{ route('tabungan.show', $siswa->id) }}" class="btn btn-sm btn-secondary w-100 mt-1">
+                                    <i class="bx bx-x me-1"></i>Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead>
@@ -117,9 +159,9 @@
                                 <th class="text-muted fw-semibold">
                                     <i class="bx bx-money me-1"></i>Jumlah
                                 </th>
-                                <th class="text-muted fw-semibold text-nowrap">
-                                    <i class="bx bx-transfer me-1"></i>Debit/Kredit
-                                </th>
+{{--                                <th class="text-muted fw-semibold text-nowrap">--}}
+{{--                                    <i class="bx bx-transfer me-1"></i>Debit/Kredit--}}
+{{--                                </th>--}}
                                 <th class="text-muted fw-semibold text-nowrap">
                                     <i class="bx bx-note me-1"></i>Keterangan
                                 </th>
@@ -163,14 +205,14 @@
                                             <span class="fw-bold text-danger">- Rp {{ number_format($log->jumlah, 0, ',', '.') }}</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="text-muted">-</span>
-                                    </td>
+{{--                                    <td>--}}
+{{--                                        <span class="text-muted">-</span>--}}
+{{--                                    </td>--}}
                                     <td>
                                         <span class="text-muted">{{ $log->keterangan ?: '-' }}</span>
                                     </td>
                                     <td>
-                                        <span class="text-muted">-</span>
+                                        <span class="fw-bold text-info">Rp {{ number_format($log->saldo_sebelum, 0, ',', '.') }}</span>
                                     </td>
                                     <td class="text-center">
                                         @php
@@ -180,16 +222,17 @@
                                                 ? $log->status_approval
                                                 : 'approved';
                                         @endphp
+{{--                                        {{ $log->status_approval }}--}}
 
-                                        @if($statusApproval == 'approved')
+                                        @if($log->status_approval == 'approved')
                                             <span class="badge bg-success rounded-pill px-3 py-2">
                                                 <i class="bx bx-check-circle me-1"></i>Approved
                                             </span>
-                                        @elseif($statusApproval == 'rejected')
+                                        @elseif($log->status_approval == 'rejected')
                                             <span class="badge bg-danger rounded-pill px-3 py-2">
                                                 <i class="bx bx-x-circle me-1"></i>Rejected
                                             </span>
-                                        @elseif($statusApproval == 'pending')
+                                        @elseif($log->status_approval == 'pending' || $log->status_approval =='verified')
                                             <div class="d-flex flex-column align-items-center gap-1">
                                                 <span class="badge bg-warning rounded-pill px-3 py-2">
                                                     <i class="bx bx-time-five me-1"></i>Proses Verify
@@ -207,17 +250,25 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="text-muted">-</span>
+                                        <span class="fw-bold text-success">Rp {{ number_format($log->saldo_sesudah, 0, ',', '.') }}</span>
                                     </td>
                                     <td class="text-center">
-                                        <div class="d-flex gap-1 justify-content-center">
-
-                                            @if($log->jenis_transaksi == 'penarikan_tabungan' && $log->status_approval == 'pending')
-                                                <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap  btn-verify"
+                                        @if($log->status_approval != 'pending')
+                                        <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                            <a href="{{ route('tabungan.print_struk', $log->id) }}"
+                                               class="btn btn-sm btn-info rounded-pill text-nowrap"
+                                               target="_blank"
+                                               title="Cetak Struk (Thermal Printer)">
+                                                <i class="bx bx-printer"></i>
+                                            </a>
+                                            @endif
+                                            @if($log->jenis_transaksi == 'penarikan_tabungan' && $log->status_approval == 'pending' || $log->status_approval == 'verified')
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap btn-verify"
                                                         data-id="{{ $log->id }}"
                                                         data-token="{{ $log->token }}"
-                                                        data-jumlah="{{ $log->jumlah }}">
-                                                    <i class="bx bx-key me-3"></i>Verify
+                                                        data-jumlah="{{ $log->jumlah }}"
+                                                        title="Verifikasi dengan Token">
+                                                    <i class="bx bx-key"></i>
                                                 </button>
                                             @endif
                                         </div>
@@ -234,6 +285,19 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Pagination --}}
+                    @if($logs->total() > 0)
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted small">
+                            Menampilkan {{ $logs->count() }} dari {{ $logs->total() }} transaksi
+                            (Halaman {{ $logs->currentPage() }} dari {{ $logs->lastPage() }})
+                        </div>
+                        <div>
+                            {{ $logs->links('pagination::bootstrap-4') }}
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -599,7 +663,7 @@
                     <div class="text-start">
                         <div class="alert alert-info mb-3">
                             <strong><i class="bx bx-info-circle me-1"></i>Informasi:</strong><br>
-                            <small class="d-block">Masukkan token 6 digit untuk memverifikasi penarikan sebesar : </small>
+                            <small class="d-block">Masukkan 6 digit token untuk memverifikasi penarikan sebesar : </small>
                             <small class="d-block"><strong>Rp ${new Intl.NumberFormat('id-ID').format(jumlah)}</strong></small>
                         </div>
                         <label for="token-input" class="form-label">Token (6 Digit) <span class="text-danger">*</span></label>

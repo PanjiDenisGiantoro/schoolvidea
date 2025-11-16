@@ -150,8 +150,6 @@
         // Saat reload halaman, terapkan tema sebelumnya
         if (localStorage.getItem("theme") === "light") {
             document.body.classList.remove("dark-theme");
-        } else {
-            document.body.classList.("dark-theme");
         }
     });
 </script>

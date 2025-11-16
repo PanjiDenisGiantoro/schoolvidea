@@ -4,7 +4,7 @@
 @section('content')
     @include('partials.page-title', [
         'title' => isset($datarekening) ? (isset($show) && $show ? 'Lihat Data' : 'Edit Data') : 'Tambah Data',
-        'subTitle' => 'Jurusan',
+        'subTitle' => 'Data Rekening',
     ])
 
     <div class="card">

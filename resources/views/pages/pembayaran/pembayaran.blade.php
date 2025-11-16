@@ -452,7 +452,12 @@
 
             if (!tagihanId) return;
 
-            fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
+            // Jika "Semua Tagihan" dipilih, gunakan endpoint perbulanAll
+            const endpoint = tagihanId === 'all'
+                ? `/tagihan/perbulanAll/${siswaId}`
+                : `/tagihan/perbulan/${siswaId}/${tagihanId}`;
+
+            fetch(endpoint)
                 .then(res => res.json())
                 .then(data => {
                     if (!data.belum_lunas.length && !data.sudah_lunas.length) {

@@ -43,13 +43,13 @@
                 {{-- Detail Siswa --}}
                 <div class="col-md-4">
                     <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
-                        <div class="card-header bg-gradient-primary text-white text-center py-3">
-                            <h6 class="mb-0 fw-bold">Informasi Siswa</h6>
+                        <div class="card-header bg-gradient-danger text-white text-center py-3">
+                            <h6 class="mb-0 fw-bold text-white">INFOMASI SISWA</h6>
                         </div>
                         <div class="card-body p-4">
                             <div class="text-center mb-4">
                                 <div class="position-relative d-inline-block">
-                                    <img src="{{ asset('images/default-user.png') }}"
+                                    <img src="{{ asset('assets/images/videa.png') }}"
                                          alt="Foto Siswa"
                                          id="foto_siswa"
                                          class="img-fluid rounded-circle shadow border border-3 border-danger"
@@ -90,7 +90,7 @@
 
                         <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
                             <div class="card-header bg-gradient-danger text-white py-3">
-                                <h5 class="mb-0 fw-bold">
+                                <h5 class="mb-0 fw-bold text-white">
                                     <i class="bx bx-wallet-alt me-2"></i>Transaksi Penarikan Tabungan
                                 </h5>
                             </div>
@@ -321,7 +321,7 @@
                     if (data.foto) {
                         fotoSiswa.src = data.foto;
                     } else {
-                        fotoSiswa.src = `{{ asset('images/default-user.png') }}`;
+                        fotoSiswa.src = `{{ asset('assets/images/videa.png') }}`;
                     }
                 });
         });

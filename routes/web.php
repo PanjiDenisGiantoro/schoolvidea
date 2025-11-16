@@ -205,6 +205,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
         Route::get('/print-laporan', [TabunganController::class, 'printLaporan'])->name('tabungan.print_laporan');
+        Route::get('/print-mutasi/{siswa_id}', [TabunganController::class, 'printMutasi'])->name('tabungan.print_mutasi');
+        Route::get('/print-struk/{transaksi_id}', [TabunganController::class, 'printStruk'])->name('tabungan.print_struk');
 
         // Bukti transfer & verifikasi
         Route::post('/upload-bukti/{id}', [TabunganController::class, 'uploadBuktiTransfer'])->name('tabungan.upload_bukti');
@@ -231,6 +233,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [\App\Http\Controllers\AkunController::class, 'edit'])->middleware('permission:edit_akun')->name('akun.edit');
         Route::put('/{id}', [\App\Http\Controllers\AkunController::class, 'update'])->middleware('permission:edit_akun')->name('akun.update');
         Route::get('/destroy/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->middleware('permission:delete_akun')->name('akun.destroy');
+        Route::get('/import-template', [\App\Http\Controllers\AkunController::class, 'importTemplate'])->middleware('permission:create_akun')->name('akun.import-template');
+        Route::post('/import-template/store', [\App\Http\Controllers\AkunController::class, 'storeImportTemplate'])->middleware('permission:create_akun')->name('akun.import-template.store');
     });
 
     Route::prefix('setting_akun')->middleware('permission:view_setting_akun')->group(function () {
@@ -280,6 +284,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
+        Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
 
     Route::prefix('migrasi')->middleware('permission:view_migrasi')->group(function () {

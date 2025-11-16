@@ -70,12 +70,12 @@ class TagihanController extends Controller
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->where('unit_id', $request->unit_id);
             })
-            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
-                // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
-                $query->whereHas('unit', function ($q) {
-                    $q->where('yayasan_id', Auth::user()->yayasan_id);
-                });
-            })
+//            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+//                // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
+//                $query->whereHas('unit', function ($q) {
+//                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+//                });
+//            })
             ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
                 // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
                 $query->where('unit_id', Auth::user()->unit_id);
@@ -138,16 +138,16 @@ class TagihanController extends Controller
     {
         $request->validate([
             'unit_id' => 'required|exists:units,id',
-            'kelas' => 'nullable|exists:kelas,id',
+//            'kelas' => 'nullable|exists:kelas,id',
             'target' => 'required|in:all,per',
             'periode' => 'nullable|integer',
             'nominal_bebas' => 'nullable|numeric',
             'bulan_mulai' => 'required|integer|min:1|max:12',
             'tahun_mulai' => 'required|integer',
-            'siswa.*' => 'nullable|exists:siswas,id',
+//            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
@@ -159,15 +159,11 @@ class TagihanController extends Controller
             foreach ($request->items as $item) {
                 if (!empty($item['id'])) {
                     $kategori = KategoriTagihan::find($item['id']);
-                    $rekening = DataRekening::find($item['rekening_id']);
                     $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
-
                     $itemsData[] = [
-                        'kategori_id' => $kategori->id,
+                        'kategori_id' => $item['id'],
                         'nominal' => $nominal_item,
                         'kategori' => $kategori,
-                        'rekening_id' => $rekening->id,
-                        'rekening' => $rekening,
                     ];
                 }
             }
@@ -205,7 +201,7 @@ class TagihanController extends Controller
 
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
             if (Auth::user()->yayasan_id) {
-                $settings->whereHas('unit', function ($q) {
+                $settings->whereHas('unit', function($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             } elseif (Auth::user()->unit_id) {
@@ -214,8 +210,7 @@ class TagihanController extends Controller
                 $settings->where('unit_id', $request->unit_id);
             }
 
-            $settings = $settings->where('status', '1')->get();
-
+            $settings = $settings->where('status','1')->get();
             $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
             $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
 
@@ -235,6 +230,7 @@ class TagihanController extends Controller
                     'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
                     'bulan_mulai' => $request->bulan_mulai,
                     'tahun_mulai' => $request->tahun_mulai,
+//                    'rekening_id' => $request->rekening_id,
                 ]);
 
                 // Buat tagihan item untuk tagihan ini
@@ -242,7 +238,6 @@ class TagihanController extends Controller
                     'tagihan_id' => $tagihan->id,
                     'kategori_id' => $itemData['kategori_id'],
                     'nominal' => $itemData['nominal'],
-                    'rekening_id' => $itemData['rekening_id'],
                 ]);
 
                 // Loop setiap siswa untuk item ini
@@ -275,7 +270,6 @@ class TagihanController extends Controller
                     // Transaksi per siswa per item
                     $transaksi = Keuangan_transaksi::create([
                         'penerima_id'      => $siswa->id,
-                        'rekening_id'      => $itemData['rekening_id'],
                         'penerima_tipe'    => Siswa::class,
                         'jenis_transaksi'  => 'tagihan',
                         'jumlah'           => $itemData['nominal'],
@@ -311,7 +305,6 @@ class TagihanController extends Controller
                             'item_id'    => $tagihanItem->id,
                             'kategori'   => $itemData['kategori']->nama_kategori,
                             'jumlah'     => $itemData['nominal'],
-                            'rekening_id' => $itemData['rekening_id'],
                         ]),
                         'dilakukan_oleh' => Auth::id(),
                         'dilakukan_pada' => now(),
@@ -319,10 +312,10 @@ class TagihanController extends Controller
                 }
             }
 
-            DB::commit();
+//            DB::commit();
             return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
         } catch (\Exception $e) {
-            DB::rollBack();
+//            DB::rollBack();
             return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -337,6 +330,7 @@ class TagihanController extends Controller
             'tagihan.items.kategori',
             'siswa.pembayaranTagihan.tagihanSiswa',
             'siswa.pembayaranTagihan.user', // tambahkan relasi user dari pembayaran
+            'potonganSiswa.potongan', // potongan untuk tagihan
         ])
             ->where('tagihan_id', $id)
             ->where('siswa_id', $siswaId)
@@ -356,20 +350,31 @@ class TagihanController extends Controller
 
         $nominal        = $firstTagihan->items->sum('nominal');
         $namaKategori   = $firstTagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+        $kodeKategori   = $firstTagihan->items->pluck('kategori.kode_kategori')->implode(', ');
 
         $bulanMulai     = (int) $firstTagihan->bulan_mulai;
         $tahunMulai     = (int) $firstTagihan->tahun_mulai;
 
-        $dataPerbulan = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori) {
+        $dataPerbulan = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori, $kodeKategori, $id) {
             $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
+
+            // Total potongan untuk tagihan ini
+            $totalPotongan = $ts->potonganSiswa->sum('nominal');
+
+            // Nominal setelah potongan
+            $nominalSetelahPotongan = $nominal - $totalPotongan;
 
             return [
                 'id'            => $ts->id,
                 'tagihan_id'    => $ts->tagihan_id,
+                'kode_kategori' => $kodeKategori,
                 'nama_kategori' => $namaKategori,
+                'kode_tagihan'  => 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT),
                 'bulan'         => $date->translatedFormat('F'),
                 'tahun'         => $date->year,
                 'nominal'       => $nominal,
+                'potongan'      => $totalPotongan,
+                'nominal_akhir' => $nominalSetelahPotongan,
                 'status'        => $ts->status == 1 ? 'Lunas' : 'Belum Lunas',
                 'tanggal_bayar' => $ts->tanggal_bayar
             ];
@@ -380,7 +385,7 @@ class TagihanController extends Controller
             ->filter(function ($p) use ($id) {
                 return $p->tagihanSiswa && $p->tagihanSiswa->tagihan_id == $id;
             })
-            ->map(function ($p) use ($bulanMulai, $tahunMulai) {
+            ->map(function ($p) use ($bulanMulai, $tahunMulai, $kodeKategori, $id) {
                 $ts = $p->tagihanSiswa;
                 $bulanKe = $ts?->bulan_ke;
 
@@ -389,13 +394,19 @@ class TagihanController extends Controller
                     : null;
 
                 return [
-                    'id'            => $p->id,
-                    'tanggal_bayar' => $p->tanggal_bayar,
-                    'jumlah_bayar'  => $p->jumlah_bayar,
-                    'bulan_ke'      => $bulanKe,
-                    'bulan'         => $date ? $date->translatedFormat('F') : null,
-                    'tahun'         => $date ? $date->year : null,
-                    'create_by'     => $p->user?->name,  // ambil nama user
+                    'id'                => $p->id,
+                    'kode_kategori'     => $kodeKategori,
+                    'kode_tagihan'      => 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT),
+                    'potongan'          => $ts ? $ts->potonganSiswa->sum('nominal') : 0,
+                    'tanggal_bayar'     => $p->tanggal_bayar,
+                    'waktu_transaksi'   => $p->created_at,
+                    'jumlah_bayar'      => $p->jumlah_bayar,
+                    'bulan_ke'          => $bulanKe,
+                    'bulan'             => $date ? $date->translatedFormat('F') : null,
+                    'tahun'             => $date ? $date->year : null,
+                    'metode_bayar'      => $p->metode_bayar ?? 'cash',
+                    'status_approval'   => $p->status_approval ?? 'pending',
+                    'create_by'         => $p->user?->name,  // ambil nama user
                 ];
             });
 

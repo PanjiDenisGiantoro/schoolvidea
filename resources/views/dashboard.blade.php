@@ -84,8 +84,8 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-2">Saldo Aktif</p>
-                        <h3 class="fw-bold text-success">{{ $totalSaldo }}</h3>
-                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ $jumlahTransaksi }}</b></p>
+                        <h3 class="fw-bold text-success">{{  number_format($totalSaldo, 0, ',', '.')  }}</h3>
+                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
                         <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
@@ -95,8 +95,8 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-2">Saldo Total</p>
-                        <h3 class="fw-bold text-success">{{ $totalSaldo }}</h3>
-                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ $jumlahTransaksi }}</b></p>
+                        <h3 class="fw-bold text-success">{{ number_format($totalSaldo, 0, ',', '.') }}</h3>
+                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
                         <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
