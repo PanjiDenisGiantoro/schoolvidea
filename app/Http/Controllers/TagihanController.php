@@ -154,41 +154,32 @@ class TagihanController extends Controller
         }
 
         try {
-            // 1. Kumpulkan data items terlebih dahulu
-            $itemsData = [];
-            foreach ($request->items as $item) {
-                if (!empty($item['id'])) {
-                    $kategori = KategoriTagihan::find($item['id']);
-                    $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
-                    $itemsData[] = [
-                        'kategori_id' => $item['id'],
-                        'nominal' => $nominal_item,
-                        'kategori' => $kategori,
-                    ];
-                }
-            }
+            // 1. Kumpulkan data items & rekening kombinasi
+            $itemRekeningData = [];
+            if ($request->has('items') && $request->has('rekening')) {
+                $items = $request->items ?? [];
+                $rekeningen = $request->rekening ?? [];
 
-            if (empty($itemsData)) {
-                throw new \Exception("Tidak ada item tagihan yang valid.");
-            }
-
-            // 1b. Kumpulkan data rekening terlebih dahulu
-            $rekeningData = [];
-            if ($request->has('rekening')) {
-                foreach ($request->rekening as $rekening) {
-                    if (!empty($rekening['id'])) {
-                        $rekeningData[] = [
-                            'rekening_id' => $rekening['id'],
+                // Combine items dengan rekening berdasarkan index
+                foreach ($items as $index => $item) {
+                    if (!empty($item['id']) && !empty($rekeningen[$index]['id'])) {
+                        $kategori = KategoriTagihan::find($item['id']);
+                        $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
+                        $itemRekeningData[] = [
+                            'kategori_id' => $item['id'],
+                            'nominal' => $nominal_item,
+                            'kategori' => $kategori,
+                            'rekening_id' => $rekeningen[$index]['id'],
                         ];
                     }
                 }
             }
 
-            if (empty($rekeningData)) {
-                throw new \Exception("Tidak ada rekening pembayaran yang valid.");
+            if (empty($itemRekeningData)) {
+                throw new \Exception("Tidak ada kombinasi item & rekening yang valid. Pastikan setiap item memiliki rekening pembayaran.");
             }
 
-            $kategoriIds = collect($itemsData)->pluck('kategori_id')->filter()->all();
+            $kategoriIds = collect($itemRekeningData)->pluck('kategori_id')->filter()->all();
 
             // Ambil siswa target
             $siswaList = [];
@@ -234,9 +225,9 @@ class TagihanController extends Controller
                 throw new \Exception("Setting akun untuk kategori tagihan-masuk belum lengkap.");
             }
 
-            // 3. LOOP SETIAP ITEM - BUAT TAGIHAN TERPISAH
-            foreach ($itemsData as $itemData) {
-                // Buat tagihan baru untuk SETIAP item
+            // 3. LOOP SETIAP ITEM & REKENING KOMBINASI - BUAT TAGIHAN TERPISAH
+            foreach ($itemRekeningData as $itemData) {
+                // Buat tagihan baru untuk SETIAP kombinasi item & rekening
                 $tagihan = Tagihan::create([
                     'unit_id' => $request->unit_id,
                     'kelas_id' => $request->kelas ?? null,
@@ -246,7 +237,6 @@ class TagihanController extends Controller
                     'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
                     'bulan_mulai' => $request->bulan_mulai,
                     'tahun_mulai' => $request->tahun_mulai,
-//                    'rekening_id' => $request->rekening_id,
                 ]);
 
                 // Buat tagihan item untuk tagihan ini
@@ -256,10 +246,8 @@ class TagihanController extends Controller
                     'nominal' => $itemData['nominal'],
                 ]);
 
-                // Attach rekening pembayaran ke tagihan
-                foreach ($rekeningData as $rekening) {
-                    $tagihan->rekeningen()->attach($rekening['rekening_id']);
-                }
+                // Attach rekening pembayaran ke tagihan (1 item = 1 rekening)
+                $tagihan->rekeningen()->attach($itemData['rekening_id']);
 
                 // Loop setiap siswa untuk item ini
                 foreach ($siswaList as $siswa) {
