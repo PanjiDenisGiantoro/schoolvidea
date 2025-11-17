@@ -3,72 +3,207 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <style>
+        /* Summary Cards Container */
+        .summary-cards-container {
+            margin-bottom: 2rem;
+        }
+
+        /* Base Card Styling */
         .summary-card {
             border: none;
-            border-radius: 0.75rem;
+            border-radius: 1.25rem;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
         }
 
+        /* Hover Effects */
         .summary-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
         }
 
+        .summary-card:hover .card-icon {
+            transform: scale(1.12);
+        }
+
+        /* Card Body */
         .summary-card .card-body {
-            padding: 1.75rem 1.5rem;
+            padding: 2rem 1.5rem;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
         }
 
+        /* Card Icon */
         .summary-card .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-
-        .summary-card .card-label {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
             opacity: 0.95;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
         }
 
-        .summary-card .card-sublabel {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            margin-bottom: 1rem;
-        }
-
-        .summary-card .card-value {
-            font-size: 1.75rem;
+        /* Card Label */
+        .summary-card .card-label {
+            font-size: 1rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            margin-bottom: 0.4rem;
+            opacity: 0.98;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
         }
 
+        /* Card Sublabel */
+        .summary-card .card-sublabel {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* Card Value */
+        .summary-card .card-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        /* Gradient Backgrounds - Modern Minimalist Design */
         .card-pemasukan {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-pemasukan::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card-pemasukan:hover::before {
+            opacity: 0.2;
         }
 
         .card-pengeluaran {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         }
 
         .card-transaksi {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
         }
 
         .card-harian {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         }
 
         .card-tunai {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
         }
 
         .card-nontunai {
-            background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        /* Responsive Typography */
+        @media (max-width: 1200px) {
+            .summary-card .card-label {
+                font-size: 0.95rem;
+            }
+
+            .summary-card .card-value {
+                font-size: 1.7rem;
+            }
+
+            .summary-card .card-icon {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-card .card-body {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .summary-card .card-label {
+                font-size: 0.85rem;
+            }
+
+            .summary-card .card-sublabel {
+                font-size: 0.75rem;
+            }
+
+            .summary-card .card-value {
+                font-size: 1.5rem;
+            }
+
+            .summary-card .card-icon {
+                font-size: 2.2rem;
+                margin-bottom: 0.8rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .summary-card .card-body {
+                padding: 1.5rem 1rem;
+            }
+
+            .summary-card .card-label {
+                font-size: 0.8rem;
+            }
+
+            .summary-card .card-sublabel {
+                font-size: 0.7rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .summary-card .card-value {
+                font-size: 1.3rem;
+            }
+
+            .summary-card .card-icon {
+                font-size: 2rem;
+                margin-bottom: 0.6rem;
+            }
+
+            .summary-card:hover {
+                transform: translateY(-4px) scale(1.005);
+            }
+        }
+
+        /* Mobile Portrait - Extra Small */
+        @media (max-width: 360px) {
+            .summary-card .card-body {
+                padding: 1.25rem 0.75rem;
+            }
+
+            .summary-card .card-label {
+                font-size: 0.75rem;
+            }
+
+            .summary-card .card-value {
+                font-size: 1.15rem;
+            }
         }
     </style>
 @endpush
@@ -79,98 +214,100 @@
     ])
 
     {{-- Summary Cards --}}
-    <div class="row g-4 mb-4">
-        {{-- Total Pemasukan --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-pemasukan">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-arrow-up"></i>
-                    </div>
-                    <div class="card-label">Total Pemasukan</div>
-                    <div class="card-sublabel">Masuk</div>
-                    <div class="card-value">
-                        Rp {{ number_format($summary['total_pemasukan'] ?? 0, 0, ',', '.') }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Total Pengeluaran --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-pengeluaran">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-arrow-down"></i>
-                    </div>
-                    <div class="card-label">Total Pengeluaran</div>
-                    <div class="card-sublabel">Keluar</div>
-                    <div class="card-value">
-                        Rp {{ number_format($summary['total_pengeluaran'] ?? 0, 0, ',', '.') }}
+    <div class="summary-cards-container">
+        <div class="row g-3 g-lg-4">
+            {{-- Total Pemasukan --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-pemasukan">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-arrow-up"></i>
+                        </div>
+                        <div class="card-label">Pemasukan</div>
+                        <div class="card-sublabel">Masuk</div>
+                        <div class="card-value">
+                            Rp {{ number_format($summary['total_pemasukan'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Total Transaksi --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-transaksi">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-exchange"></i>
-                    </div>
-                    <div class="card-label">Total Transaksi</div>
-                    <div class="card-sublabel">Jumlah</div>
-                    <div class="card-value">
-                        {{ number_format($summary['total_transaksi'] ?? 0, 0, ',', '.') }}
+            {{-- Total Pengeluaran --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-pengeluaran">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-arrow-down"></i>
+                        </div>
+                        <div class="card-label">Pengeluaran</div>
+                        <div class="card-sublabel">Keluar</div>
+                        <div class="card-value">
+                            Rp {{ number_format($summary['total_pengeluaran'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Total Harian --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-harian">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-calendar"></i>
-                    </div>
-                    <div class="card-label">Total Hari Ini</div>
-                    <div class="card-sublabel">{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
-                    <div class="card-value">
-                        Rp {{ number_format($summary['total_harian'] ?? 0, 0, ',', '.') }}
+            {{-- Total Transaksi --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-transaksi">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-exchange"></i>
+                        </div>
+                        <div class="card-label">Transaksi</div>
+                        <div class="card-sublabel">Jumlah</div>
+                        <div class="card-value">
+                            {{ number_format($summary['total_transaksi'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Total Tunai --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-tunai">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-money"></i>
-                    </div>
-                    <div class="card-label">Tunai</div>
-                    <div class="card-sublabel">Kas Langsung</div>
-                    <div class="card-value">
-                        Rp {{ number_format($summary['total_tunai'] ?? 0, 0, ',', '.') }}
+            {{-- Total Harian --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-harian">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <div class="card-label">Hari Ini</div>
+                        <div class="card-sublabel">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</div>
+                        <div class="card-value">
+                            Rp {{ number_format($summary['total_harian'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Total Non-Tunai --}}
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card summary-card card-nontunai">
-                <div class="card-body">
-                    <div class="card-icon">
-                        <i class="fa fa-credit-card"></i>
+            {{-- Total Tunai --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-tunai">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-money"></i>
+                        </div>
+                        <div class="card-label">Tunai</div>
+                        <div class="card-sublabel">Kas Langsung</div>
+                        <div class="card-value">
+                            Rp {{ number_format($summary['total_tunai'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
-                    <div class="card-label">Non-Tunai</div>
-                    <div class="card-sublabel">Transfer, E-Wallet</div>
-                    <div class="card-value">
-                        Rp {{ number_format($summary['total_non_tunai'] ?? 0, 0, ',', '.') }}
+                </div>
+            </div>
+
+            {{-- Total Non-Tunai --}}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                <div class="card summary-card card-nontunai">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="fa fa-credit-card"></i>
+                        </div>
+                        <div class="card-label">Non-Tunai</div>
+                        <div class="card-sublabel">Transfer, E-Wallet</div>
+                        <div class="card-value">
+                            Rp {{ number_format($summary['total_non_tunai'] ?? 0, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
