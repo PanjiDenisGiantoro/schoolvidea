@@ -502,6 +502,7 @@ class RiwayatApiController extends Controller
             $query = Pembayarantagihan::with([
                 'tagihanSiswa.siswa',
                 'tagihanSiswa.tagihanItem.kategori',
+                'tagihanSiswa.potonganSiswa.potongan',
                 'keuanganTransaksi',
                 'user',
                 'approvedBy'
@@ -527,13 +528,33 @@ class RiwayatApiController extends Controller
             $pembayaran = $query->paginate($perPage, ['*'], 'page', $page);
 
             $data = $pembayaran->map(function ($p) {
-                // Get kategori nama from tagihanItem
-                $namaKategori = $p->tagihanSiswa && $p->tagihanSiswa->tagihanItem && $p->tagihanSiswa->tagihanItem->kategori
-                    ? $p->tagihanSiswa->tagihanItem->kategori->nama_kategori
-                    : 'N/A';
+                // Get kategori info from tagihanItem
+                $kategoriCode = null;
+                $namaKategori = 'N/A';
+                if ($p->tagihanSiswa && $p->tagihanSiswa->tagihanItem && $p->tagihanSiswa->tagihanItem->kategori) {
+                    $kategoriCode = $p->tagihanSiswa->tagihanItem->kategori->kode_kategori ?? null;
+                    $namaKategori = $p->tagihanSiswa->tagihanItem->kategori->nama_kategori;
+                }
 
                 // Get status_verifikasi from keuangan_transaksi
                 $statusVerifikasi = $p->keuanganTransaksi ? $p->keuanganTransaksi->status_verifikasi : null;
+
+                // Get potongan from tagihanSiswa
+                $potonganList = [];
+                if ($p->tagihanSiswa && $p->tagihanSiswa->potonganSiswa) {
+                    $potonganList = $p->tagihanSiswa->potonganSiswa->map(function ($potongan) {
+                        return [
+                            'id' => $potongan->id,
+                            'nominal' => (float)$potongan->nominal,
+                            'keterangan' => $potongan->keterangan,
+                            'potongan_data' => $potongan->potongan ? [
+                                'id' => $potongan->potongan->id,
+                                'nama' => $potongan->potongan->nama,
+                                'nominal' => (float)$potongan->potongan->nominal,
+                            ] : null,
+                        ];
+                    })->toArray();
+                }
 
                 return [
                     'id' => $p->id,
@@ -541,7 +562,10 @@ class RiwayatApiController extends Controller
                     'tagihan_siswa_id' => $p->tagihan_siswa_id,
                     'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
                     'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
-                    'nama_kategori' => $namaKategori,
+                    'kategori' => [
+                        'kode' => $kategoriCode,
+                        'nama' => $namaKategori,
+                    ],
                     'jumlah_bayar' => (float)$p->jumlah_bayar,
                     'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
                     'metode_bayar' => $p->metode_bayar,
@@ -549,6 +573,7 @@ class RiwayatApiController extends Controller
                     'status_verifikasi' => $statusVerifikasi,
                     'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
                     'keterangan' => $p->keterangan,
+                    'potongan' => $potonganList,
                     'created_by' => $p->user ? $p->user->name : null,
                     'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
                     'approved_at' => $p->approved_at ? $p->approved_at->format('Y-m-d H:i:s') : null,
