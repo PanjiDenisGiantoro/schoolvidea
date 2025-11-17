@@ -303,18 +303,69 @@ class RiwayatApiController extends Controller
 
             $tagihans = $query->paginate($perPage, ['*'], 'page', $page);
 
-            $data = $tagihans->map(function ($tgh) {
+            // Helper function to map status to text
+            $mapStatus = function($status) {
+                $statusMap = [
+                    '0' => 'Belum Lunas',
+                    '1' => 'Lunas',
+                    '2' => 'Cicilan'
+                ];
+                return $statusMap[$status] ?? 'Unknown';
+            };
+
+            // Helper function to get month name in Indonesian
+            $getBulanText = function($bulanKe, $tahun) {
+                if (!$bulanKe || !$tahun) return 'N/A';
+
+                $bulanArray = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                    4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                    7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                    10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                $bulan = isset($bulanArray[$bulanKe]) ? $bulanArray[$bulanKe] : $bulanKe;
+                return "$bulan $tahun";
+            };
+
+            $data = $tagihans->map(function ($tgh) use ($mapStatus, $getBulanText) {
+                // Get nominal tagihan
+                $nominalTagihan = (float)($tgh->tagihanitem ? $tgh->tagihanitem->nominal : 0);
+
+                // Get pembayaran details
+                $pembayaran = Pembayarantagihan::where('tagihan_siswa_id', $tgh->id)
+                    ->first();
+
+                // Get tahun dari tagihan
+                $tahunTagihan = $tgh->tagihan ? $tgh->tagihan->tahun_mulai : null;
+
+                // Build bulan text
+                $bulanText = $getBulanText($tgh->bulan_ke, $tahunTagihan);
+
                 return [
                     'id' => $tgh->id,
                     'tagihan_id' => $tgh->tagihan_id,
                     'siswa_id' => $tgh->siswa_id,
-                    'siswa_nama' => $tgh->siswa ? $tgh->siswa->nama_lengkap : 'N/A',
+                    'siswa_nama' => $tgh->siswa ? $tgh->siswa->user->name : 'N/A',
+                    'nisn' => $tgh->siswa ? $tgh->siswa->nisn : 'N/A',
+                    'nama_tagihan' => $tgh->tagihan ? $tgh->tagihan->nama_tagihan : 'N/A',
                     'bulan_ke' => $tgh->bulan_ke,
-//                    'nominal_tagihan' => (float)$tgh->tagihanitem ? $tgh->tagihanitem->nominal : 0,
+                    'bulan_text' => $bulanText,
+                    'nominal_tagihan' => $nominalTagihan,
                     'sisa_nominal' => (float)$tgh->sisa_nominal,
-                    'status' => $tgh->status,
-                    'tanggal_bayar' => $tgh->tanggal_bayar ? $tgh->tanggal_bayar : null,
+                    'status_code' => $tgh->status,
+                    'status_text' => $mapStatus($tgh->status),
                     'tanggal_tagihan' => $tgh->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_bayar' => $tgh->tanggal_bayar ? $tgh->tanggal_bayar->format('Y-m-d') : null,
+                    'payment_details' => $pembayaran ? [
+                        'id' => $pembayaran->id,
+                        'code_pembayaran' => $pembayaran->code_pembayaran,
+                        'jumlah_bayar' => (float)$pembayaran->jumlah_bayar,
+                        'metode_bayar' => $pembayaran->metode_bayar,
+                        'file_bukti' => $pembayaran->file_bukti ? url($pembayaran->file_bukti) : null,
+                        'tanggal_bayar' => $pembayaran->tanggal_bayar ? $pembayaran->tanggal_bayar->format('Y-m-d') : null,
+                        'status_approval' => $pembayaran->status_approval,
+                        'keterangan' => $pembayaran->keterangan,
+                    ] : null,
                 ];
             });
 
