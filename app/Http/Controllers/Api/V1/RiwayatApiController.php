@@ -283,7 +283,7 @@ class RiwayatApiController extends Controller
             $startDate = $request->get('start_date');
             $endDate = $request->get('end_date');
 
-            $query = Tagihansiswa::with(['siswa', 'tagihan', 'tagihanitem'])
+            $query = Tagihansiswa::with(['siswa', 'tagihan', 'tagihanitem.kategori'])
                 ->orderBy('created_at', 'desc');
 
             // Filter by siswa
@@ -331,6 +331,9 @@ class RiwayatApiController extends Controller
                 // Get nominal tagihan
                 $nominalTagihan = (float)($tgh->tagihanitem ? $tgh->tagihanitem->nominal : 0);
 
+                // Get kategori nama
+                $namaKategori = $tgh->tagihanitem && $tgh->tagihanitem->kategori ? $tgh->tagihanitem->kategori->nama_kategori : 'N/A';
+
                 // Get pembayaran details
                 $pembayaran = Pembayarantagihan::where('tagihan_siswa_id', $tgh->id)
                     ->first();
@@ -348,6 +351,7 @@ class RiwayatApiController extends Controller
                     'siswa_nama' => $tgh->siswa ? $tgh->siswa->user->name : 'N/A',
                     'nisn' => $tgh->siswa ? $tgh->siswa->nisn : 'N/A',
                     'nama_tagihan' => $tgh->tagihan ? $tgh->tagihan->nama_tagihan : 'N/A',
+                    'nama_kategori' => $namaKategori,
                     'bulan_ke' => $tgh->bulan_ke,
                     'bulan_text' => $bulanText,
                     'nominal_tagihan' => $nominalTagihan,
