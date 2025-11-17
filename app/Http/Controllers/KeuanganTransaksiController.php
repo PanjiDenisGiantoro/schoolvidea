@@ -41,6 +41,39 @@ class KeuanganTransaksiController extends Controller
     }
 
     /**
+     * Helper function to parse date from DD/MM/YYYY format to YYYY-MM-DD
+     */
+    private function parseDateFormat($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        try {
+            // Check if date contains slashes (DD/MM/YYYY format)
+            if (strpos($date, '/') !== false) {
+                // Manual parsing: DD/MM/YYYY to YYYY-MM-DD
+                $parts = explode('/', $date);
+                if (count($parts) === 3 && is_numeric($parts[0]) && is_numeric($parts[1]) && is_numeric($parts[2])) {
+                    $day = (int)$parts[0];
+                    $month = (int)$parts[1];
+                    $year = (int)$parts[2];
+                    // Validate date
+                    if ($day > 0 && $day <= 31 && $month > 0 && $month <= 12 && $year > 1900) {
+                        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+                    }
+                }
+            } else {
+                // If already in YYYY-MM-DD format, return as-is
+                return $date;
+            }
+            return null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Helper function to apply common filters
      */
     private function applyCommonFilters($query, $request)
@@ -62,10 +95,12 @@ class KeuanganTransaksiController extends Controller
             });
         }
         if ($request->dari_tanggal) {
-            $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+            $parsedDate = $this->parseDateFormat($request->dari_tanggal);
+            $query->whereDate('tanggal_transaksi', '>=', $parsedDate);
         }
         if ($request->sampai_tanggal) {
-            $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+            $parsedDate = $this->parseDateFormat($request->sampai_tanggal);
+            $query->whereDate('tanggal_transaksi', '<=', $parsedDate);
         }
 
         return $query;

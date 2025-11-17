@@ -373,7 +373,7 @@
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
                         <input type="text" name="dari_tanggal" id="dari_tanggal" class="form-control datepicker p-3"
                             placeholder="DD/MM/YYYY"
-                            value="{{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : '' }}">
+                            value="{{ request('dari_tanggal') }}">
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
@@ -381,7 +381,7 @@
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
                         <input type="text" name="sampai_tanggal" id="sampai_tanggal" class="form-control datepicker p-3"
                             placeholder="DD/MM/YYYY"
-                            value="{{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : '' }}">
+                            value="{{ request('sampai_tanggal') }}">
                     </div>
 
                     {{-- Tombol Filter --}}
