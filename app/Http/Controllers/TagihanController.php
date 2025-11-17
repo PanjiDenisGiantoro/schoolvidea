@@ -147,13 +147,13 @@ class TagihanController extends Controller
 //            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-        DB::beginTransaction();
+//        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
         }
 
-        try {
+//        try {
             // 1. Kumpulkan data items & rekening kombinasi
             $itemRekeningData = [];
             if ($request->has('items') && $request->has('rekening')) {
@@ -249,6 +249,7 @@ class TagihanController extends Controller
                     'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
                     'bulan_mulai' => $request->bulan_mulai,
                     'tahun_mulai' => $request->tahun_mulai,
+                    'rekening_id' => $itemData['rekening_id'], // Simpan rekening_id langsung
                 ]);
 
                 // Buat tagihan item untuk tagihan ini
@@ -257,9 +258,6 @@ class TagihanController extends Controller
                     'kategori_id' => $itemData['kategori_id'],
                     'nominal' => $itemData['nominal'],
                 ]);
-
-                // Attach rekening pembayaran ke tagihan (1 item = 1 rekening)
-                $tagihan->rekeningen()->attach($itemData['rekening_id']);
 
                 // Loop setiap siswa untuk item ini
                 foreach ($siswaList as $siswa) {
@@ -333,12 +331,12 @@ class TagihanController extends Controller
                 }
             }
 
-            DB::commit();
+//            DB::commit();
             return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+//        } catch (\Exception $e) {
+////            DB::rollBack();
+//            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
+//        }
     }
 
 

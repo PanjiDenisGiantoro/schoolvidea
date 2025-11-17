@@ -157,7 +157,7 @@ class RiwayatApiController extends Controller
                     'tanggal_transaksi' => $trx->created_at->format('Y-m-d H:i:s'),
                     'bukti_transfer' => $trx->bukti_transfer ? url($trx->bukti_transfer) : null,
                     'verified_by' => $trx->verifier ? $trx->verifier->name : null,
-                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
+//                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
                     'catatan_verifikasi' => $trx->catatan_verifikasi,
                 ];
             });
@@ -310,10 +310,10 @@ class RiwayatApiController extends Controller
                     'siswa_id' => $tgh->siswa_id,
                     'siswa_nama' => $tgh->siswa ? $tgh->siswa->nama_lengkap : 'N/A',
                     'bulan_ke' => $tgh->bulan_ke,
-                    'nominal_tagihan' => (float)$tgh->tagihanitem ? $tgh->tagihanitem->nominal : 0,
+//                    'nominal_tagihan' => (float)$tgh->tagihanitem ? $tgh->tagihanitem->nominal : 0,
                     'sisa_nominal' => (float)$tgh->sisa_nominal,
                     'status' => $tgh->status,
-                    'tanggal_bayar' => $tgh->tanggal_bayar ? $tgh->tanggal_bayar->format('Y-m-d') : null,
+                    'tanggal_bayar' => $tgh->tanggal_bayar ? $tgh->tanggal_bayar : null,
                     'tanggal_tagihan' => $tgh->created_at->format('Y-m-d H:i:s'),
                 ];
             });

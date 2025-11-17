@@ -38,10 +38,9 @@ class Tagihan extends Model
         return $this->hasMany(Tagihansiswa::class);
     }
 
-    // Relasi ke Rekening (Many to Many)
-    public function rekeningen()
+    // Relasi ke Rekening Pembayaran (One to Many)
+    public function rekening()
     {
-        return $this->belongsToMany(DataRekening::class, 'tagihan_rekening', 'tagihan_id', 'rekening_id')
-            ->withTimestamps();
+        return $this->belongsTo(DataRekening::class, 'rekening_id');
     }
 }
