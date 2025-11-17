@@ -39,7 +39,7 @@ class KeuanganTransaksiController extends Controller
             ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 // Jika tidak memilih unit spesifik DAN user punya yayasan_id (tapi tidak punya unit_id), filter by yayasan_id
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });
@@ -53,7 +53,7 @@ class KeuanganTransaksiController extends Controller
             })
             ->when($request->nama_siswa, function ($query, $nama) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($nama) {
-                    $q->whereHas('user', function($q2) use ($nama) {
+                    $q->whereHas('user', function ($q2) use ($nama) {
                         $q2->where('name', 'like', '%' . $nama . '%');
                     })->orWhere('nisn', 'like', '%' . $nama . '%');
                 });
@@ -65,7 +65,7 @@ class KeuanganTransaksiController extends Controller
                 $query->whereDate('tanggal_transaksi', '<=', $sampai);
             })
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+            ->paginate($perPage)->onEachSide(1)
             ->appends($request->except('page'));
 
         $total_pemasukan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
@@ -81,7 +81,7 @@ class KeuanganTransaksiController extends Controller
             })
             ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });
@@ -113,7 +113,7 @@ class KeuanganTransaksiController extends Controller
             })
             ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });
@@ -133,10 +133,10 @@ class KeuanganTransaksiController extends Controller
             ->sum('jumlah');
 
         $total_transaksi = Keuangan_transaksi::when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all', function ($query) use ($request) {
-                $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
-                    $q->where('unit_id', $request->unit_id);
-                });
-            })
+            $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        })
             ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->where('unit_id', Auth::user()->unit_id);
@@ -144,7 +144,7 @@ class KeuanganTransaksiController extends Controller
             })
             ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });
@@ -213,7 +213,7 @@ class KeuanganTransaksiController extends Controller
             ])
             ->when(Auth::user()->yayasan_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });
@@ -449,7 +449,7 @@ class KeuanganTransaksiController extends Controller
                     'status_approval' => 'approved'
                 ]);
             }
-// Create journal entries untuk pembayaran tagihan
+            // Create journal entries untuk pembayaran tagihan
             $pembayaran = $transaksi->pembayaranTagihan;
             $tagihanSiswa = $pembayaran->tagihanSiswa;
             $tagihan = $tagihanSiswa->tagihan;

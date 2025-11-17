@@ -271,7 +271,7 @@
                         Menampilkan {{ $tagihans->firstItem() ?? 0 }} sampai {{ $tagihans->lastItem() ?? 0 }} dari {{ $tagihans->total() }} data
                     </div>
                     <div>
-                        {{ $tagihans->appends(request()->query())->links() }}
+                        {{ $tagihans->links('vendor.pagination.custom') }}
                     </div>
                 </div>
             </div>
