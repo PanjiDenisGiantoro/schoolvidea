@@ -2,6 +2,75 @@
 @section('title', 'Transaksi Keuangan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <style>
+        .summary-card {
+            border: none;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .summary-card .card-body {
+            padding: 1.75rem 1.5rem;
+            text-align: center;
+        }
+
+        .summary-card .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .summary-card .card-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+
+        .summary-card .card-sublabel {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .card-pemasukan {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .card-pengeluaran {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .card-transaksi {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .card-harian {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .card-tunai {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .card-nontunai {
+            background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+        }
+    </style>
 @endpush
 @section('content')
     @include('partials.page-title', [
@@ -10,72 +79,103 @@
     ])
 
     {{-- Summary Cards --}}
-    <div class="row g-3 mb-0">
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-success">
-                    <h6>Total Pemasukan</h6>
-                    <h4 class="fe-bold">Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h4>
+    <div class="row g-4 mb-4">
+        {{-- Total Pemasukan --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-pemasukan">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-arrow-up"></i>
+                    </div>
+                    <div class="card-label">Total Pemasukan</div>
+                    <div class="card-sublabel">Masuk</div>
+                    <div class="card-value">
+                        Rp {{ number_format($summary['total_pemasukan'] ?? 0, 0, ',', '.') }}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger fw-bold">
-                    <h6>Total Pengeluaran</h6>
-                    <h4>Rp {{ number_format($total_pengeluaran ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Pengeluaran --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-pengeluaran">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-arrow-down"></i>
+                    </div>
+                    <div class="card-label">Total Pengeluaran</div>
+                    <div class="card-sublabel">Keluar</div>
+                    <div class="card-value">
+                        Rp {{ number_format($summary['total_pengeluaran'] ?? 0, 0, ',', '.') }}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary fw-bold">
-                    <h6>Total Data Transaksi</h6>
-                    <h4>{{ number_format($total_transaksi ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Transaksi --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-transaksi">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-exchange"></i>
+                    </div>
+                    <div class="card-label">Total Transaksi</div>
+                    <div class="card-sublabel">Jumlah</div>
+                    <div class="card-value">
+                        {{ number_format($summary['total_transaksi'] ?? 0, 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Harian --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-harian">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                    <div class="card-label">Total Hari Ini</div>
+                    <div class="card-sublabel">{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
+                    <div class="card-value">
+                        Rp {{ number_format($summary['total_harian'] ?? 0, 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Tunai --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-tunai">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-money"></i>
+                    </div>
+                    <div class="card-label">Tunai</div>
+                    <div class="card-sublabel">Kas Langsung</div>
+                    <div class="card-value">
+                        Rp {{ number_format($summary['total_tunai'] ?? 0, 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Non-Tunai --}}
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card summary-card card-nontunai">
+                <div class="card-body">
+                    <div class="card-icon">
+                        <i class="fa fa-credit-card"></i>
+                    </div>
+                    <div class="card-label">Non-Tunai</div>
+                    <div class="card-sublabel">Transfer, E-Wallet</div>
+                    <div class="card-value">
+                        Rp {{ number_format($summary['total_non_tunai'] ?? 0, 0, ',', '.') }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-        <div class="row mt-0">
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Transaksi</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Hari Ini</h6>
-                        <h6 class="text-white fw bold" style="font-size: 14px">
-                            [{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}]
-                        </h6>
-                        <h4 class="text-white">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Non-Tunai</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white fw-bold">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
-                    <div class="card-body text-primary">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Tunai</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white fw-bold">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
