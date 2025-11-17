@@ -153,9 +153,9 @@
 
 @section('content')
     <div class="container-fluid px-4 py-4">
-        <div class="form-header d-flex justify-content-between align-items-center">
+        <div class="form-header d-flex justify-content-between align-items-center text-white">
             <div>
-                <h3><i class="fa fa-file-invoice-dollar me-2"></i> Tambah Tagihan Baru</h3>
+                <h3><i class="fa fa-file-invoice-dollar me-2 text-white"></i> Tambah Tagihan Baru</h3>
                 <p>Form untuk membuat tagihan siswa dengan item dan rekening pembayaran</p>
             </div>
             <a href="{{ route('tagihan.index') }}" class="btn btn-light">

@@ -36,6 +36,11 @@ class PembayaranController extends Controller
             $kelas = Kelas::whereHas('unit', function($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
+
+            // Get pembayaran data for summary
+            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan.unit', function($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id (tapi tidak punya yayasan_id), tampilkan dari unit tersebut
             $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
@@ -43,6 +48,11 @@ class PembayaranController extends Controller
             $tagihanList = Tagihan::where('unit_id', Auth::user()->unit_id)->get();
             $akunList = setting_akun::where('unit_id', Auth::user()->unit_id)->get();
             $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->get();
+
+            // Get pembayaran data for summary
+            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan', function($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
         } else {
             // Super admin - tampilkan semua
             $units = \App\Models\Unit::where('status', '1')->get();
@@ -50,9 +60,40 @@ class PembayaranController extends Controller
             $tagihanList = Tagihan::all();
             $akunList = setting_akun::all();
             $kelas = Kelas::get();
+
+            // Get all pembayaran data for summary
+            $pembayaranQuery = PembayaranTagihan::query();
         }
 
-        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas','units'));
+        // Calculate summary data
+        $allPembayaran = $pembayaranQuery->get();
+
+        // Total tunggakan (belum dibayar) - dari tagihan_siswa dengan status != 1
+        $totalTunggakan = 0;
+        foreach ($siswaList as $siswa) {
+            $belumBayar = Tagihansiswa::where('siswa_id', $siswa->id)
+                ->where('status', '!=', '1')
+                ->sum('sisa_nominal');
+            $totalTunggakan += $belumBayar;
+        }
+
+        // Total pembayaran all (semua pembayaran)
+        $totalPembayaran = $allPembayaran->sum('jumlah_bayar');
+
+        // Total pembayaran tunai
+        $totalTunai = $allPembayaran->where('metode_bayar', 'tunai')->sum('jumlah_bayar');
+
+        // Total pembayaran non-tunai
+        $totalNonTunai = $allPembayaran->where('metode_bayar', '!=', 'tunai')->sum('jumlah_bayar');
+
+        $summary = [
+            'total_tunggakan' => $totalTunggakan,
+            'total_pembayaran' => $totalPembayaran,
+            'total_tunai' => $totalTunai,
+            'total_nontunai' => $totalNonTunai,
+        ];
+
+        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas','units', 'summary'));
 
     }
     public function bayar(Request $request)
