@@ -501,6 +501,8 @@ class RiwayatApiController extends Controller
 
             $query = Pembayarantagihan::with([
                 'tagihanSiswa.siswa',
+                'tagihanSiswa.tagihanItem.kategori',
+                'keuanganTransaksi',
                 'user',
                 'approvedBy'
             ])->orderBy('created_at', 'desc');
@@ -525,15 +527,25 @@ class RiwayatApiController extends Controller
             $pembayaran = $query->paginate($perPage, ['*'], 'page', $page);
 
             $data = $pembayaran->map(function ($p) {
+                // Get kategori nama from tagihanItem
+                $namaKategori = $p->tagihanSiswa && $p->tagihanSiswa->tagihanItem && $p->tagihanSiswa->tagihanItem->kategori
+                    ? $p->tagihanSiswa->tagihanItem->kategori->nama_kategori
+                    : 'N/A';
+
+                // Get status_verifikasi from keuangan_transaksi
+                $statusVerifikasi = $p->keuanganTransaksi ? $p->keuanganTransaksi->status_verifikasi : null;
+
                 return [
                     'id' => $p->id,
                     'tagihan_siswa_id' => $p->tagihan_siswa_id,
                     'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
                     'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
+                    'nama_kategori' => $namaKategori,
                     'jumlah_bayar' => (float)$p->jumlah_bayar,
                     'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
                     'metode_bayar' => $p->metode_bayar,
                     'status_approval' => $p->status_approval,
+                    'status_verifikasi' => $statusVerifikasi,
                     'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
                     'keterangan' => $p->keterangan,
                     'created_by' => $p->user ? $p->user->name : null,

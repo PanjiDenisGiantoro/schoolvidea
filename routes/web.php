@@ -220,9 +220,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
 
-        // Approve/Reject routes
+        // Approve/Reject/Cancel routes
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');
         Route::post('/reject/{id}', [KeuanganTransaksiController::class, 'reject'])->name('keuangan_transaksi.reject');
+        Route::post('/cancel/{id}', [KeuanganTransaksiController::class, 'cancel'])->name('keuangan_transaksi.cancel');
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {

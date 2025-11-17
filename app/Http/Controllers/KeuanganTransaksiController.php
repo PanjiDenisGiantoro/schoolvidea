@@ -646,4 +646,69 @@ class KeuanganTransaksiController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Cancel transaksi keuangan (batalkan)
+     */
+    public function cancel(Request $request, $id)
+    {
+        $request->validate([
+            'alasan_pembatalan' => 'required|string|min:10'
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            $transaksi = Keuangan_transaksi::findOrFail($id);
+
+            // Cek apakah transaksi sudah dibatalkan sebelumnya
+            if ($transaksi->status_verifikasi === 'cancelled') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah dibatalkan sebelumnya'
+                ], 400);
+            }
+
+            // Cek status - hanya transaksi pending/rejected yang bisa dibatalkan
+            if (!in_array($transaksi->status_verifikasi, ['pending', 'rejected'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya transaksi dengan status Pending atau Rejected yang bisa dibatalkan'
+                ], 400);
+            }
+
+            // Update status transaksi menjadi cancelled
+            $transaksi->update([
+                'status_verifikasi' => 'cancelled',
+                'status_approval' => 'cancelled',
+                'catatan_verifikasi' => $request->alasan_pembatalan,
+                'verified_by' => Auth::id(),
+                'verified_at' => now()
+            ]);
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'cancel',
+                'data_lama' => json_encode(['status_verifikasi' => 'pending']),
+                'data_baru' => json_encode(['status_verifikasi' => 'cancelled']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil dibatalkan'
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membatalkan transaksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
