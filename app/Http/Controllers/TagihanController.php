@@ -147,7 +147,7 @@ class TagihanController extends Controller
 //            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
@@ -164,6 +164,18 @@ class TagihanController extends Controller
                 foreach ($items as $index => $item) {
                     if (!empty($item['id']) && !empty($rekeningen[$index]['id'])) {
                         $kategori = KategoriTagihan::find($item['id']);
+                        $rekeningObj = DataRekening::find($rekeningen[$index]['id']);
+
+                        // Validasi kategori ada
+                        if (!$kategori) {
+                            throw new \Exception("Kategori Tagihan dengan ID {$item['id']} tidak ditemukan.");
+                        }
+
+                        // Validasi rekening ada
+                        if (!$rekeningObj) {
+                            throw new \Exception("Rekening Pembayaran dengan ID {$rekeningen[$index]['id']} tidak ditemukan.");
+                        }
+
                         $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
                         $itemRekeningData[] = [
                             'kategori_id' => $item['id'],
@@ -321,10 +333,10 @@ class TagihanController extends Controller
                 }
             }
 
-//            DB::commit();
+            DB::commit();
             return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
         } catch (\Exception $e) {
-//            DB::rollBack();
+            DB::rollBack();
             return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

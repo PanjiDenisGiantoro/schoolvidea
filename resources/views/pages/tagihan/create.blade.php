@@ -140,10 +140,17 @@
                                         <label class="form-label">Rekening Pembayaran 1</label>
                                         <select name="rekening[0][id]" class="form-control rekening-select" required>
                                             <option value="">-- Pilih Rekening --</option>
-                                            @foreach ($datarekening as $rekening)
-                                                <option value="{{ $rekening->id }}">{{ $rekening->nomor_rekening }} - {{ $rekening->nama_bank }}</option>
-                                            @endforeach
+                                            @forelse ($datarekening as $rekening)
+                                                <option value="{{ $rekening->id }}">{{ $rekening->account_number }} - {{ $rekening->account_name }}</option>
+                                            @empty
+                                                <option value="" disabled>Tidak ada rekening tersedia</option>
+                                            @endforelse
                                         </select>
+                                        @if(empty($datarekening) || $datarekening->isEmpty())
+                                            <small class="text-danger d-block mt-1">
+                                                <i class="fa fa-warning"></i> Tidak ada data rekening. Harap tambah rekening terlebih dahulu di menu Data Master > Data Rekening.
+                                            </small>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

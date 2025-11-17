@@ -1,12 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan:*)",
-      "Bash(git reset:*)",
-      "Bash(git clean:*)",
-      "Bash(git add:*)",
-      "Bash(cd:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implement multiple payment enhancements\n\nFeatures Added:\n1. Cetak Struk Pembayaran - Add print button for paid invoices in tagihan show page\n   - Shows button only for status \"Lunas\" (paid)\n   - Generates thermal printer format (80mm x 200mm) receipt\n   - Shows kode_tagihan, bulan, tanggal, waktu, dan total pembayaran\n\n2. Multiple Rekening_id in Tagihan Create\n   - Changed from single rekening_id to multiple rekening entries\n   - Added \"Rekening Pembayaran\" section with dynamic add/remove buttons\n   - Similar to tagihan items structure: tambah/hapus buttons, label updates\n   - Created pivot table tagihan_rekening for many-to-many relationship\n   - Added rekeningen() relation in Tagihan model\n\n3. Multiple Rekening Storage in Controller\n   - Updated TagihanController.store() to handle multiple rekening entries\n   - Validates at least one rekening is selected\n   - Attaches each rekening to tagihan via pivot table using attach()\n\n4. Fixed Pembayaran \"Semua Tagihan\" Display\n   - Updated route from /perbulan/{siswaId} to /perbulanAll/{siswaId}\n   - Fixed route ordering to prevent parameter conflicts\n   - Ensures /perbulan/{siswaId}/{tagihanId} can properly match 2-parameter route\n\nDatabase:\n- Created migration: create_tagihan_rekening_table\n  * Pivot table with tagihan_id and rekening_id\n  * Foreign keys with cascade delete\n  * Unique constraint on (tagihan_id, rekening_id)\n\nJavaScript Enhancements:\n- Added tambahRekening() function for dynamic form fields\n- Added hapusRekening() function to remove rekening entries\n- Added updateRekeningDeleteButtons() to manage button visibility\n- Added updateRekeningLabels() to update field labels\n\n🤖 Generated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []
