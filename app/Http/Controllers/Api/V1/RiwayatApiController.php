@@ -537,6 +537,7 @@ class RiwayatApiController extends Controller
 
                 return [
                     'id' => $p->id,
+                    'code_pembayaran' => $p->code_pembayaran,
                     'tagihan_siswa_id' => $p->tagihan_siswa_id,
                     'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
                     'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
