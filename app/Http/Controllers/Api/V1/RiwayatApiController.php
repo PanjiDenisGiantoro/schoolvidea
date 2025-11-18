@@ -249,7 +249,7 @@ class RiwayatApiController extends Controller
                     'verified_at' => $transaksi->verified_at ? $transaksi->verified_at->format('Y-m-d H:i:s') : null,
                     'catatan_verifikasi' => $transaksi->catatan_verifikasi,
                     'token' => $transaksi->token,
-                    'token_expired_at' => $transaksi->token_expired_at ? $transaksi->token_expired_at->format('Y-m-d H:i:s') : null,
+                    'token_expired_at' => $transaksi->token_expired_at ? $transaksi->token_expired_at : null,
                 ],
                 'audit_trail' => $logs->map(function ($log) {
                     return [
