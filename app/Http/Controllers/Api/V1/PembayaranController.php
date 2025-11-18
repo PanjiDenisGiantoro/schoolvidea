@@ -261,7 +261,7 @@ class PembayaranController extends Controller
 
             $tagihanSiswa = Tagihansiswa::with(['siswa', 'tagihan'])->findOrFail($request->tagihan_siswa_id);
 
-            if ($tagihanSiswa->status == 1) {
+            if ($tagihanSiswa->status == '1') {
                 Log::warning('⚠️ Tagihan sudah lunas untuk tagihan siswa ID: ' . $request->tagihan_siswa_id);
                 DB::rollBack();
                 return response()->json([
