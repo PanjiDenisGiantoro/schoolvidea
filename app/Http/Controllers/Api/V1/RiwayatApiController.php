@@ -558,6 +558,35 @@ class RiwayatApiController extends Controller
                     })->toArray();
                 }
 
+                // Calculate bulan and tahun info
+                $bulanArray = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                    4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                    7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                    10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
+                $tahunTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
+                $bulanText = $bulanKe && $tahunTagihan ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahunTagihan : 'N/A';
+
+                // Calculate potongan total
+                $totalPotongan = 0;
+                foreach ($potonganList as $potongan) {
+                    $totalPotongan += $potongan['nominal'];
+                }
+
+                // Get kelas info from siswa
+                $kelasNama = 'N/A';
+                if ($p->tagihanSiswa && $p->tagihanSiswa->siswa && $p->tagihanSiswa->siswa->kelas) {
+                    $kelasNama = $p->tagihanSiswa->siswa->kelas->nama_kelas;
+                }
+
+                // Get nominal tagihan from tagihanItem
+                $nominalTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihanItem ? (float)$p->tagihanSiswa->tagihanItem->nominal : 0;
+
+                // Calculate tunggakan
+                $sisaNominal = $p->tagihanSiswa ? (float)$p->tagihanSiswa->sisa_nominal : 0;
+
                 return [
                     'id' => $p->id,
                     'code_pembayaran' => $p->code_pembayaran,
@@ -568,7 +597,15 @@ class RiwayatApiController extends Controller
                         'kode' => $kategoriCode,
                         'nama' => $namaKategori,
                     ],
-                    'jumlah_bayar' => (float)$p->jumlah_bayar,
+                    'periode' => $bulanText,
+                    'tahun' => $tahunTagihan,
+                    'tagihan_kelas' => $kelasNama,
+                    'rincian_tagihan' => $nominalTagihan,
+                    'jumlah_potongan' => $totalPotongan,
+                    'jumlah_tagihan' => $nominalTagihan - $totalPotongan,
+                    'jumlah_dibayar' => (float)$p->jumlah_bayar,
+                    'jumlah_tunggakan' => $sisaNominal,
+                    'nominal_pembayaran' => (float)$p->jumlah_bayar,
                     'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
                     'metode_bayar' => $p->metode_bayar,
                     'status_approval' => $p->status_approval,
