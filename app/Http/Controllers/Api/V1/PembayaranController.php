@@ -270,6 +270,27 @@ class PembayaranController extends Controller
                 ], 400);
             }
 
+            // Check if there's already a pending or approved payment for this bill
+            $existingPayment = Pembayarantagihan::where('tagihan_siswa_id', $request->tagihan_siswa_id)
+                ->whereIn('status_approval', ['pending'])
+                ->first();
+
+            if ($existingPayment) {
+                Log::warning('⚠️ Pembayaran ganda terdeteksi untuk tagihan siswa ID: ' . $request->tagihan_siswa_id);
+                Log::warning('Pembayaran sebelumnya dengan status: ' . $existingPayment->status_approval . ' | ID: ' . $existingPayment->id);
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tagihan ini sudah memiliki pembayaran yang sedang diproses. Tidak boleh submit pembayaran lebih dari 1 kali.',
+                    'data' => [
+                        'existing_payment_id' => $existingPayment->id,
+                        'existing_payment_code' => $existingPayment->code_pembayaran,
+                        'existing_payment_status' => $existingPayment->status_approval,
+                        'existing_payment_amount' => (float)$existingPayment->jumlah_bayar
+                    ]
+                ], 400);
+            }
+
             $siswa = $tagihanSiswa->siswa;
             $tagihan = $tagihanSiswa->tagihan;
             Log::info('✓ Siswa ditemukan: ' . $siswa->user->name . ' | Tagihan: ' . $tagihan->nama_tagihan);
