@@ -411,7 +411,7 @@ class RiwayatApiController extends Controller
         try {
             $tagihan = Tagihansiswa::with([
                 'siswa',
-                'tagihan',
+                'tagihan.rekening',
                 'tagihanitem',
                 'pembayarantagihan'
             ])->findOrFail($id);
