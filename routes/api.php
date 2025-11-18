@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\YayasanListController;
 use App\Http\Controllers\Api\V1\TipeunitListController;
 use App\Http\Controllers\Api\V1\DataRekeningListController;
 use App\Http\Controllers\Api\V1\JurusanListController;
+use App\Http\Controllers\Api\V1\MeDataRekeningController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,7 @@ Route::prefix("v1")->group(function () {
             Route::post("logout", [AuthController::class, "logout"]);
             Route::post("refresh", [AuthController::class, "refresh"]);
             Route::get("me", [AuthController::class, "me"]);
+            Route::get("me/data-rekenings", [MeDataRekeningController::class, "index"]);
         });
     });
 

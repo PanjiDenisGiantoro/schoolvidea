@@ -17,6 +17,7 @@ class UnitListController extends Controller
         $perPage = $request->get('per_page', 15);
         $search = $request->get('search');
         $yayasanId = $request->get('yayasan_id');
+        $userId = $request->get('user_id');
 
         $query = Unit::with(['tipe_unit', 'yayasan', 'dataRekenings']);
 
@@ -26,6 +27,12 @@ class UnitListController extends Controller
 
         if ($yayasanId) {
             $query->where('yayasan_id', $yayasanId);
+        }
+
+        if ($userId) {
+            $query->whereHas('users', function ($q) use ($userId) {
+                $q->where('id', $userId);
+            });
         }
 
         $units = $query->paginate($perPage);
