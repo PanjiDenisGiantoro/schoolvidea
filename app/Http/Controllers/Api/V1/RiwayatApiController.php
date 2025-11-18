@@ -160,7 +160,7 @@ class RiwayatApiController extends Controller
 //                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
                     'catatan_verifikasi' => $trx->catatan_verifikasi,
                     'token' => $trx->token,
-                    'expired_kode' => $trx->token_expired_at ? $trx->token_expired_at->format('Y-m-d H:i:s') : null,
+                    'expired_kode' => $trx->token_expired_at ? $trx->token_expired_at : null,
                 ];
             });
 
