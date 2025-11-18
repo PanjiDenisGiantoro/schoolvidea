@@ -9,6 +9,11 @@ use App\Http\Controllers\Api\V1\TagihanController;
 use App\Http\Controllers\Api\V1\DashboardTagihanController;
 use App\Http\Controllers\Api\V1\TabunganController;
 use App\Http\Controllers\Api\V1\RiwayatApiController;
+use App\Http\Controllers\Api\V1\UnitListController;
+use App\Http\Controllers\Api\V1\YayasanListController;
+use App\Http\Controllers\Api\V1\TipeunitListController;
+use App\Http\Controllers\Api\V1\DataRekeningListController;
+use App\Http\Controllers\Api\V1\JurusanListController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +93,13 @@ Route::prefix("v1")->group(function () {
         //     "unit",
         //     \App\Http\Controllers\Api\V1\UnitController::class,
         // );
+
+        // List API v1 routes (index only)
+        Route::get('units/list', [UnitListController::class, 'index']);
+        Route::get('yayasans/list', [YayasanListController::class, 'index']);
+        Route::get('tipeunits/list', [TipeunitListController::class, 'index']);
+        Route::get('data-rekenings/list', [DataRekeningListController::class, 'index']);
+        Route::get('jurusans/list', [JurusanListController::class, 'index']);
 
         // Tahun Ajaran routes
         // Route::apiResource('tahun-ajaran', \App\Http\Controllers\Api\V1\TahunAjaranController::class);

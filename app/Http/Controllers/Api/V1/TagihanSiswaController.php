@@ -132,6 +132,7 @@ class TagihanSiswaController extends Controller
             'siswa.kelas',
             'siswa.unit',
             'tagihan.kategori',
+            'tagihan.rekening',
             'pembayaranTagihan.user',
             'potonganSiswa'
         ])->find($id);

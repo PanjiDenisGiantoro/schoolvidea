@@ -50,4 +50,9 @@ class Unit extends Model
     {
         return $this->hasMany(User::class, 'unit_id', 'id');
     }
+
+    public function dataRekenings()
+    {
+        return $this->hasMany(DataRekening::class, 'unit_id', 'id');
+    }
 }

@@ -378,6 +378,7 @@ class PembayaranController extends Controller
 
         $pembayaran = Pembayarantagihan::with([
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
             'tagihanSiswa.tagihanItem.kategori',
             'keuanganTransaksi'
         ])
@@ -443,6 +444,7 @@ class PembayaranController extends Controller
         $query = Pembayarantagihan::with([
             'tagihanSiswa.siswa',
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
             'tagihanSiswa.tagihanItem.kategori'
         ])
         ->whereHas('tagihanSiswa.siswa', function($q) use ($kelasId) {
@@ -747,7 +749,7 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'tagihanSiswa.tagihanItem.kategori'])->find($id);
+        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori'])->find($id);
 
         if (!$pembayaran) {
             return response()->json([
@@ -904,11 +906,12 @@ class PembayaranController extends Controller
                 'success' => true,
                 'message' => 'Pembayaran berhasil disetujui dan nominal tagihan telah dikurangi',
                 'data' => [
-                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
                     'tagihan_info' => [
                         'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
                         'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
-                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan
+                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
+                        'data_rekening' => $pembayaran->fresh()->data_rekening
                     ],
                     'transaksi' => $transaksi->fresh(),
                     'tagihan_siswa' => $tagihanSiswa->fresh(),
@@ -988,7 +991,7 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.tagihanItem.kategori'])->find($id);
+        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori'])->find($id);
 
         if (!$pembayaran) {
             return response()->json([
@@ -1030,11 +1033,12 @@ class PembayaranController extends Controller
                 'success' => true,
                 'message' => 'Pembayaran berhasil ditolak',
                 'data' => [
-                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
                     'tagihan_info' => [
                         'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
                         'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
-                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan
+                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
+                        'data_rekening' => $pembayaran->fresh()->data_rekening
                     ],
                     'catatan' => 'Pembayaran ditolak dan sisa nominal tidak berubah. Siswa dapat mengajukan pembayaran ulang.'
                 ]
@@ -1081,6 +1085,7 @@ class PembayaranController extends Controller
         $pembayaran = Pembayarantagihan::with([
             'tagihanSiswa.siswa.kelas',
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
             'tagihanSiswa.tagihanItem.kategori',
             'user'
         ])
