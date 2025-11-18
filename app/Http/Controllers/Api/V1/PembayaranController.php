@@ -111,9 +111,96 @@ class PembayaranController extends Controller
 
         $pembayaran = $query->paginate($perPage);
 
+        // Format data with additional information
+        $data = $pembayaran->map(function ($p) {
+            // Calculate bulan and tahun info
+            $bulanArray = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
+            $tahunTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
+            $bulanText = $bulanKe && $tahunTagihan ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahunTagihan : 'N/A';
+
+            // Get kategori info
+            $kategoriCode = null;
+            $namaKategori = 'N/A';
+            if ($p->tagihanSiswa && $p->tagihanSiswa->tagihanItem && $p->tagihanSiswa->tagihanItem->kategori) {
+                $kategoriCode = $p->tagihanSiswa->tagihanItem->kategori->kode_kategori ?? null;
+                $namaKategori = $p->tagihanSiswa->tagihanItem->kategori->nama_kategori;
+            }
+
+            // Get potongan total
+            $totalPotongan = 0;
+            $potonganList = [];
+            if ($p->tagihanSiswa && $p->tagihanSiswa->potonganSiswa) {
+                $potonganList = $p->tagihanSiswa->potonganSiswa->map(function ($potongan) {
+                    return [
+                        'id' => $potongan->id,
+                        'nominal' => (float)$potongan->nominal,
+                        'keterangan' => $potongan->keterangan,
+                    ];
+                })->toArray();
+
+                foreach ($potonganList as $potongan) {
+                    $totalPotongan += $potongan['nominal'];
+                }
+            }
+
+            // Get kelas info
+            $kelasNama = 'N/A';
+            if ($p->tagihanSiswa && $p->tagihanSiswa->siswa && $p->tagihanSiswa->siswa->kelas) {
+                $kelasNama = $p->tagihanSiswa->siswa->kelas->nama_kelas;
+            }
+
+            // Get nominal tagihan
+            $nominalTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihanItem ? (float)$p->tagihanSiswa->tagihanItem->nominal : 0;
+
+            // Calculate tunggakan
+            $sisaNominal = $p->tagihanSiswa ? (float)$p->tagihanSiswa->sisa_nominal : 0;
+
+            return [
+                'id' => $p->id,
+                'code_pembayaran' => $p->code_pembayaran,
+                'tagihan_siswa_id' => $p->tagihan_siswa_id,
+                'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
+                'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
+                'kategori' => [
+                    'kode' => $kategoriCode,
+                    'nama' => $namaKategori,
+                ],
+                'periode' => $bulanText,
+                'tahun' => $tahunTagihan,
+                'tagihan_kelas' => $kelasNama,
+                'rincian_tagihan' => $nominalTagihan,
+                'jumlah_potongan' => $totalPotongan,
+                'jumlah_tagihan' => $nominalTagihan - $totalPotongan,
+                'jumlah_dibayar' => (float)$p->jumlah_bayar,
+                'jumlah_tunggakan' => $sisaNominal,
+                'nominal_pembayaran' => (float)$p->jumlah_bayar,
+                'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
+                'metode_bayar' => $p->metode_bayar,
+                'status_approval' => $p->status_approval,
+                'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
+                'keterangan' => $p->keterangan,
+                'created_by' => $p->user ? $p->user->name : null,
+                'approved_by' => isset($p->approvedBy) && $p->approvedBy ? $p->approvedBy->name : null,
+                'approved_at' => isset($p->approved_at) && $p->approved_at ? $p->approved_at->format('Y-m-d H:i:s') : null,
+                'created_at' => $p->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $pembayaran
+            'data' => $data,
+            'meta' => [
+                'total' => $pembayaran->total(),
+                'per_page' => $pembayaran->perPage(),
+                'current_page' => $pembayaran->currentPage(),
+                'last_page' => $pembayaran->lastPage(),
+            ]
         ]);
     }
 
