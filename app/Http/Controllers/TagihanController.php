@@ -103,11 +103,38 @@ class TagihanController extends Controller
                           ->orWhere('keterangan', 'like', "%{$search}%");
                     })
                     ->orWhereHas('siswa', function ($sq) use ($search) {
-                        $sq->where('nama', 'like', "%{$search}%");
+                        $sq->where('nama', 'like', "%{$search}%")
+                          ->orWhere('nisn', 'like', "%{$search}%");
                     })
                     ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
                         $sq->where('nama_kelas', 'like', "%{$search}%");
                     });
+                });
+            })
+            ->when($request->filled('kelas_id'), function ($query) use ($request) {
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('kelas_id', $request->kelas_id);
+                });
+            })
+            ->when($request->filled('tagihan_status'), function ($query) use ($request) {
+                $status = $request->tagihan_status;
+                $query->whereHas('siswa', function ($q) use ($status) {
+                    if ($status === 'lunas') {
+                        // Siswa dengan semua pembayaran lunas
+                        $q->whereDoesntHave('pembayaranTagihan', function ($sq) {
+                            $sq->where('status_approval', '!=', 'approved');
+                        });
+                    } elseif ($status === 'belum_lunas') {
+                        // Siswa dengan tagihan belum lunas
+                        $q->whereHas('pembayaranTagihan', function ($sq) {
+                            $sq->where('status_approval', '!=', 'approved');
+                        });
+                    }
+                });
+            })
+            ->when($request->filled('jenis_tagihan'), function ($query) use ($request) {
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('jenis_tagihan', $request->jenis_tagihan);
                 });
             })
             ->paginate($perPage)
@@ -133,6 +160,46 @@ class TagihanController extends Controller
             ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
                 $query->whereHas('tagihan', function ($q) {
                     $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('tagihan', function ($sq) use ($search) {
+                        $sq->where('nama_tagihan', 'like', "%{$search}%")
+                          ->orWhere('keterangan', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('siswa', function ($sq) use ($search) {
+                        $sq->where('nama', 'like', "%{$search}%")
+                          ->orWhere('nisn', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
+                        $sq->where('nama_kelas', 'like', "%{$search}%");
+                    });
+                });
+            })
+            ->when($request->filled('kelas_id'), function ($query) use ($request) {
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('kelas_id', $request->kelas_id);
+                });
+            })
+            ->when($request->filled('tagihan_status'), function ($query) use ($request) {
+                $status = $request->tagihan_status;
+                $query->whereHas('siswa', function ($q) use ($status) {
+                    if ($status === 'lunas') {
+                        $q->whereDoesntHave('pembayaranTagihan', function ($sq) {
+                            $sq->where('status_approval', '!=', 'approved');
+                        });
+                    } elseif ($status === 'belum_lunas') {
+                        $q->whereHas('pembayaranTagihan', function ($sq) {
+                            $sq->where('status_approval', '!=', 'approved');
+                        });
+                    }
+                });
+            })
+            ->when($request->filled('jenis_tagihan'), function ($query) use ($request) {
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('jenis_tagihan', $request->jenis_tagihan);
                 });
             })
             ->get();

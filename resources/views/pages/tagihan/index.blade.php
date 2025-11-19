@@ -55,24 +55,25 @@ di @extends('layouts.app')
         @endif
 
         {{-- Filter --}}
-        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
         <div class="card rounded-3 mb-3 border-0 shadow-sm">
             <div class="card-body">
                 <h5 class="fw-bold text-primary mb-3">
                     <i class="bx bx-filter"></i> Filter Tagihan
                 </h5>
                 <form method="GET" action="{{ route('tagihan.index') }}">
-                    <div class="row g-3 align-items-end">
-                        {{-- Filter Search --}}
+                    <div class="row g-3">
+                        {{-- Filter Search Nama/Tagihan --}}
                         <div class="col-md-2">
-                            <label for="search" class="form-label">Cari Tagihan</label>
+                            <label for="search" class="form-label fw-semibold">Cari Nama/Tagihan</label>
                             <input type="text" name="search" id="search"
-                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
+                                   class="form-control" placeholder="Nama siswa, tagihan..."
                                    value="{{ request('search') }}">
                         </div>
+
                         {{-- Filter Unit --}}
+                        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
                         <div class="col-md-2">
-                            <label for="unit_id" class="form-label">Unit</label>
+                            <label for="unit_id" class="form-label fw-semibold">Unit</label>
                             <select name="unit_id" id="unit_id" class="form-select">
                                 <option value="">Semua Unit</option>
                                 @foreach($units as $unit)
@@ -82,51 +83,42 @@ di @extends('layouts.app')
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <label for="kelas_id" class="form-label">Kelas</label>
+                        @endif
 
-                            <select name="kelas_id" id="kelas_id" class="form-select"
-                                @if (isset($show) && $show) disabled @endif>
+                        {{-- Filter Kelas --}}
+                        <div class="col-md-2">
+                            <label for="kelas_id" class="form-label fw-semibold">Kelas</label>
+                            <select name="kelas_id" id="kelas_id" class="form-select">
                                 <option value="">Semua Kelas</option>
                             </select>
                         </div>
 
-                        {{-- Filter Tanggal Dari --}}
+                        {{-- Filter Tagihan Status --}}
                         <div class="col-md-2">
-                            <label class="form-label">Bulan Periode</label>
-                            <select name="bulan_mulai" class="form-select" required>
-                                <option value="">Pilih Bulan</option>
-                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $bulan)
-                                    <option value="{{ $i + 1 }}">{{ $bulan }}</option>
-                                @endforeach
+                            <label for="tagihan_status" class="form-label fw-semibold">Status Pembayaran</label>
+                            <select name="tagihan_status" id="tagihan_status" class="form-select">
+                                <option value="">Semua Status</option>
+                                <option value="lunas" {{ request('tagihan_status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                                <option value="belum_lunas" {{ request('tagihan_status') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
                             </select>
                         </div>
 
-                        {{-- Filter Tanggal Sampai --}}
+                        {{-- Filter Jenis Tagihan --}}
                         <div class="col-md-2">
-                            <label class="form-label">Tahun Periode</label>
-                            <select name="tahun_mulai" class="form-select" required>
-                                <option value="">Pilih Tahun</option>
-                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
-                                    <option value="{{ $y }}">{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="status" class="form-label">Status Tagihan</label>
-                            <select name="status" id="status" class="form-select">
-                                <option value="">Pilih Status</option>
-                                <option value="Lunas">Lunas</option>
-                                <option value="Belum Lunas">Belum Lunas</option>
+                            <label for="jenis_tagihan" class="form-label fw-semibold">Jenis Tagihan</label>
+                            <select name="jenis_tagihan" id="jenis_tagihan" class="form-select">
+                                <option value="">Semua Jenis</option>
+                                <option value="bulanan" {{ request('jenis_tagihan') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                                <option value="bebas" {{ request('jenis_tagihan') == 'bebas' ? 'selected' : '' }}>Bebas</option>
                             </select>
                         </div>
 
                         {{-- Tombol Filter --}}
-                        <div class="col-md-2 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary">
+                        <div class="col-md-2 d-flex gap-2 align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
                                 <i class="bx bx-search"></i> Filter
                             </button>
-                            <a href="{{ route('tagihan.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('tagihan.index') }}" class="btn btn-outline-secondary" title="Reset Filter">
                                 <i class="bx bx-refresh"></i>
                             </a>
                         </div>
@@ -134,33 +126,6 @@ di @extends('layouts.app')
                 </form>
             </div>
         </div>
-        @else
-
-        <div class="card rounded-3 mb-3 border-0 shadow-sm">
-            <div class="card-body">
-                <form method="GET">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>Filter Data</label>
-                            <select name="filter" class="form-control rounded-pill">
-                                <option value="all">All</option>
-                                <option value="lunas">Lunas</option>
-                                <option value="belum">Belum Lunas</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Tanggal</label>
-                            <input type="date" name="tanggal" class="form-control rounded-pill"
-                                value="{{ request('tanggal') }}">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">Filter</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
@@ -285,5 +250,51 @@ di @extends('layouts.app')
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
         }
+
+        // Load kelas berdasarkan unit yang dipilih
+        document.getElementById('unit_id')?.addEventListener('change', function() {
+            const unitId = this.value;
+            const kelasSelect = document.getElementById('kelas_id');
+
+            if (!unitId) {
+                kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                return;
+            }
+
+            fetch(`/api/kelas-by-unit/${unitId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let html = '<option value="">Semua Kelas</option>';
+                    if (data.kelas && Array.isArray(data.kelas)) {
+                        data.kelas.forEach(kelas => {
+                            html += `<option value="${kelas.id}">${kelas.nama_kelas}</option>`;
+                        });
+                    }
+                    kelasSelect.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading kelas:', error);
+                    kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                });
+        });
+
+        // Trigger change event ketika halaman pertama kali load jika ada unit_id
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit_id');
+            const selectedUnitId = '{{ request("unit_id") }}';
+
+            if (unitSelect && selectedUnitId) {
+                unitSelect.value = selectedUnitId;
+                unitSelect.dispatchEvent(new Event('change'));
+
+                // Set kelas yang dipilih setelah kelas di-load
+                setTimeout(() => {
+                    const kelasSelect = document.getElementById('kelas_id');
+                    if (kelasSelect) {
+                        kelasSelect.value = '{{ request("kelas_id") }}';
+                    }
+                }, 300);
+            }
+        });
     </script>
 @endpush
