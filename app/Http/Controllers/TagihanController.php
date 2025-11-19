@@ -57,7 +57,7 @@ class TagihanController extends Controller
     {
         $perPage = $request->get('per_page', 15);
 
-        // Query per siswa-tagihan, bukan per tagihan
+        // Query distinct per siswa-tagihan (tidak per bulan_ke)
         $tagihans = Tagihansiswa::with([
             'siswa.user',
             'tagihan.unit',
@@ -66,6 +66,9 @@ class TagihanController extends Controller
             'siswa.pembayaranTagihan',
             'potonganSiswa'
         ])
+            ->distinct()
+            ->select('tagihan_siswa.*')
+            ->from('tagihan_siswa')
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->whereHas('tagihan', function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
@@ -102,14 +105,18 @@ class TagihanController extends Controller
                     });
                 });
             })
+            ->groupBy('tagihan_siswa.tagihan_id', 'tagihan_siswa.siswa_id')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
-        // Hitung summary dari Tagihansiswa
+        // Hitung summary dari Tagihansiswa yang sudah di-group
         $allTagihans = Tagihansiswa::with([
             'siswa.pembayaranTagihan',
             'tagihan.items'
         ])
+            ->distinct()
+            ->select('tagihan_siswa.*')
+            ->from('tagihan_siswa')
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->whereHas('tagihan', function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
@@ -120,6 +127,7 @@ class TagihanController extends Controller
                     $q->where('unit_id', Auth::user()->unit_id);
                 });
             })
+            ->groupBy('tagihan_siswa.tagihan_id', 'tagihan_siswa.siswa_id')
             ->get();
 
         $summary = [
