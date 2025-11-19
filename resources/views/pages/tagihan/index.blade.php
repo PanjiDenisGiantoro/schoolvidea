@@ -1,4 +1,4 @@
-@extends('layouts.app')
+di @extends('layouts.app')
 
 @section('title', 'Kelola Tagihan')
 @push('styles')
@@ -212,18 +212,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($tagihans as $tagihan)
+                            @foreach ($tagihans as $tagihanSiswa)
                                 @php
-                                    $siswa = $tagihan->tagihanSiswa->first()?->siswa;
+                                    $siswa = $tagihanSiswa->siswa;
+                                    $tagihan = $tagihanSiswa->tagihan;
 
-                                    $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
+                                    $total_tagihan = $tagihan->items->sum('nominal');
 
-                                    $jumlah_dibayar = $siswa
-                                        ? $tagihan->tagihanSiswa
-                                                ->where('siswa_id', $siswa->id)
-                                                ->where('status', 1)
-                                                ->count() * $tagihan->items->sum('nominal')
-                                        : 0;
+                                    $jumlah_dibayar = $siswa->pembayaranTagihan
+                                        ->where('status_approval', 'approved')
+                                        ->sum('jumlah_bayar');
 
                                     $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
                                 @endphp

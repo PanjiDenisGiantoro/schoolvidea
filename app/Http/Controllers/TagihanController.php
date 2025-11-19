@@ -55,68 +55,85 @@ class TagihanController extends Controller
     }
     public function index(Request $request)
     {
-        //        $tagihans = TagihanSiswa::with(['siswa', 'tagihan.unit', 'tagihan.kelas', 'tagihan.items.kategori'])->get();
-
         $perPage = $request->get('per_page', 15);
 
-        $tagihans = Tagihan::with([
-            'unit',
-            'kelas',
-            'items.kategori',
-            'tagihanSiswa.siswa.user',
-            'tagihanSiswa.siswa.pembayaranTagihan',
-            'tagihanSiswa.potonganSiswa'
+        // Query per siswa-tagihan, bukan per tagihan
+        $tagihans = Tagihansiswa::with([
+            'siswa.user',
+            'tagihan.unit',
+            'tagihan.kelas',
+            'tagihan.items.kategori',
+            'siswa.pembayaranTagihan',
+            'potonganSiswa'
         ])
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
-                $query->where('unit_id', $request->unit_id);
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('unit_id', $request->unit_id);
+                });
             })
-//            ->when(!$request->filled('unit_id') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
-//                // Jika user punya yayasan_id, filter tagihan dari semua unit dalam yayasan
-//                $query->whereHas('unit', function ($q) {
-//                    $q->where('yayasan_id', Auth::user()->yayasan_id);
-//                });
-//            })
             ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
-                // Jika user punya unit_id (tapi tidak punya yayasan_id), filter tagihan dari unit tersebut
-                $query->where('unit_id', Auth::user()->unit_id);
+                // Jika user punya unit_id, filter tagihan dari unit tersebut
+                $query->whereHas('tagihan', function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
             })
             ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereDate('created_at', '>=', $request->dari_tanggal);
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->whereDate('created_at', '>=', $request->dari_tanggal);
+                });
             })
             ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereDate('created_at', '<=', $request->sampai_tanggal);
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->whereDate('created_at', '<=', $request->sampai_tanggal);
+                });
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                    $q->where('nama_tagihan', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%")
-                      ->orWhereHas('kelas', function ($q) use ($search) {
-                          $q->where('nama_kelas', 'like', "%{$search}%");
-                      });
+                    $q->whereHas('tagihan', function ($sq) use ($search) {
+                        $sq->where('nama_tagihan', 'like', "%{$search}%")
+                          ->orWhere('keterangan', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('siswa', function ($sq) use ($search) {
+                        $sq->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
+                        $sq->where('nama_kelas', 'like', "%{$search}%");
+                    });
                 });
             })
             ->paginate($perPage)
             ->appends($request->except('page'));
 
-        //        dd($tagihans);
+        // Hitung summary dari Tagihansiswa
+        $allTagihans = Tagihansiswa::with([
+            'siswa.pembayaranTagihan',
+            'tagihan.items'
+        ])
+            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
+                $query->whereHas('tagihan', function ($q) use ($request) {
+                    $q->where('unit_id', $request->unit_id);
+                });
+            })
+            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
+                $query->whereHas('tagihan', function ($q) {
+                    $q->where('unit_id', Auth::user()->unit_id);
+                });
+            })
+            ->get();
+
         $summary = [
-            'jumlah_data' => $tagihans->count(),
-            'nominal_tagihan' => $tagihans->sum(function ($t) {
-                $total = $t->items->sum('nominal');
-                return $total * $t->tagihanSiswa->count(); // total tagihan semua siswa
+            'jumlah_data' => $allTagihans->count(),
+            'nominal_tagihan' => $allTagihans->sum(function ($ts) {
+                return $ts->tagihan->items->sum('nominal');
             }),
-            'sudah_dibayar' => $tagihans->sum(function ($t) {
-                return $t->tagihanSiswa->sum(function ($ts) {
-                    return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
-                });
+            'sudah_dibayar' => $allTagihans->sum(function ($ts) {
+                return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
             }),
-            'belum_dibayar' => $tagihans->sum(function ($t) {
-                $total_tagihan = $t->items->sum('nominal') ;
-                return $t->tagihanSiswa->sum(function ($ts) use ($total_tagihan) {
-                    $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
-                    return $total_tagihan - $sudah_bayar;
-                });
+            'belum_dibayar' => $allTagihans->sum(function ($ts) {
+                $nominal_tagihan = $ts->tagihan->items->sum('nominal');
+                $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                return $nominal_tagihan - $sudah_bayar;
             }),
         ];
 
