@@ -164,16 +164,20 @@ class RiwayatApiController extends Controller
 
                 return [
                     'id' => $trx->id,
+                    'nomor_transaksi' => $trx->code_pembayaran,
                     'code' => $trx->code_pembayaran,
                     'siswa_id' => $trx->penerima_id,
                     'siswa_nama' => $trx->penerima ? $trx->penerima->nama_lengkap : 'N/A',
                     'jenis' => $trx->jenis_transaksi === 'setoran_tabungan' ? 'Setor' : 'Tarik',
                     'jumlah' => (float)$trx->jumlah,
+                    'tanggal_transaksi' => $trx->created_at,
+                    'tanggal_bayar' => $trx->verified_at ? $trx->verified_at : null,
+                    'metode_pembayaran' => $trx->metode,
                     'metode' => $trx->metode,
                     'keterangan' => $trx->keterangan,
                     'status' => $trx->status_verifikasi,
-                    'tanggal_transaksi' => $trx->created_at,
                     'bukti_transfer' => $trx->bukti_transfer ? url($trx->bukti_transfer) : null,
+                    'data_rekening_tujuan' => $data_rekenings,
                     'data_rekenings' => $data_rekenings,
                     'verified_by' => $trx->verifier ? $trx->verifier->name : null,
                     'verified_at' => $trx->verified_at ? $trx->verified_at : null,
@@ -872,9 +876,12 @@ class RiwayatApiController extends Controller
             // Get current balance (saldo_saat_ini)
             $saldoSaatIni = 0;
             if ($siswaId) {
-                $saldo = Saldo_keuangan::where('user_id', $siswaId)->first();
-                if ($saldo) {
-                    $saldoSaatIni = $saldo->saldo ?? 0;
+                $siswa = Siswa::where('id', $siswaId)->first();
+                if ($siswa) {
+                    $saldo = Saldo_keuangan::where('user_id', $siswa->user_id)->first();
+                    if ($saldo) {
+                        $saldoSaatIni = $saldo->saldo_akhir ?? 0;
+                    }
                 }
             }
 
@@ -909,7 +916,7 @@ class RiwayatApiController extends Controller
                     'start_date' => $startDate->format('Y-m-d'),
                     'end_date' => $endDate->format('Y-m-d'),
                 ],
-                'saldo_saat_ini' => (float)$saldoSaatIni,
+                'saldo_saat_ini' => $saldoSaatIni,
                 'tabungan' => [
                     // Monthly statistics (within the period)
                     'perbulan' => [
