@@ -236,13 +236,8 @@ class TagihanController extends Controller
      */
     public function datatable(Request $request)
     {
-        $search = $request->input('search.value', '');
         $start = $request->input('start', 0);
         $length = $request->input('length', 10);
-        $unitId = $request->input('unit_id', '');
-        $kelasId = $request->input('kelas_id', '');
-        $tagihanStatus = $request->input('tagihan_status', '');
-        $jenisTagihan = $request->input('jenis_tagihan', '');
 
         // Base query
         $subquery = DB::table('tagihan_siswa')
@@ -260,75 +255,18 @@ class TagihanController extends Controller
                 $join->on('tagihan_siswa.id', '=', 'grouped.id');
             });
 
-        // Apply filters
-        if ($unitId) {
-            $query->whereHas('tagihan', function ($q) use ($unitId) {
-                $q->where('unit_id', $unitId);
-            });
-        } elseif (Auth::user()->unit_id) {
+        // Apply unit filter untuk auth
+        if (Auth::user()->unit_id) {
             $query->whereHas('tagihan', function ($q) {
                 $q->where('unit_id', Auth::user()->unit_id);
             });
         }
 
-        if ($kelasId) {
-            $query->whereHas('tagihan', function ($q) use ($kelasId) {
-                $q->where('kelas_id', $kelasId);
-            });
-        }
-
-        if ($jenisTagihan) {
-            $query->whereHas('tagihan', function ($q) use ($jenisTagihan) {
-                $q->where('jenis_tagihan', $jenisTagihan);
-            });
-        }
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('tagihan', function ($sq) use ($search) {
-                    $sq->where('nama_tagihan', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%");
-                })
-                ->orWhereHas('siswa', function ($sq) use ($search) {
-                    $sq->where('nama', 'like', "%{$search}%")
-                      ->orWhere('nisn', 'like', "%{$search}%");
-                })
-                ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
-                    $sq->where('nama_kelas', 'like', "%{$search}%");
-                });
-            });
-        }
-
-        // Filter status pembayaran - filter dalam PHP setelah fetch
-        // Kita akan handle ini di mapping bawah
-
-        // Get all results untuk counting dan filtering
+        // Get all results
         $allResults = $query->get();
 
-        // Filter berdasarkan status pembayaran jika diperlukan
-        $filtered = $allResults;
-        if ($tagihanStatus) {
-            $filtered = $allResults->filter(function ($tagihanSiswa) use ($tagihanStatus) {
-                $siswa = $tagihanSiswa->siswa;
-                $tagihan = $tagihanSiswa->tagihan;
-
-                $total_tagihan = $tagihan->items->sum('nominal');
-                $jumlah_dibayar = $siswa->pembayaranTagihan
-                    ->where('status_approval', 'approved')
-                    ->sum('jumlah_bayar');
-                $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
-
-                if ($tagihanStatus === 'lunas') {
-                    return $tunggakan <= 0;
-                } elseif ($tagihanStatus === 'belum_lunas') {
-                    return $tunggakan > 0;
-                }
-                return true;
-            });
-        }
-
         // Reset index dan convert ke array
-        $filtered = collect($filtered)->values();
+        $filtered = collect($allResults)->values();
 
         // Total count setelah filter
         $totalFiltered = $filtered->count();
@@ -354,7 +292,8 @@ class TagihanController extends Controller
 
             $nama_kategori = $tagihan->items->pluck('kategori.nama_kategori')->filter()->implode(', ') ?? '-';
 
-            $status_badge = $tunggakan <= 0
+            // Status berdasarkan tagihan_siswa.status = 1 (lunas)
+            $status_badge = $tagihanSiswa->status == 1
                 ? '<span class="badge bg-success rounded-pill">Lunas</span>'
                 : '<span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>';
 
@@ -372,8 +311,6 @@ class TagihanController extends Controller
                 'unit' => $tagihan->unit->nama_unit ?? '-',
                 'kelas' => $tagihan->kelas->nama_kelas ?? '-',
                 'nama_tagihan' => $nama_kategori,
-                'jenis_tagihan' => $tagihan->jenis_tagihan ?? '-',
-                'periode' => ($tagihan->periode ?? '-') . ' Bulan',
                 'jml_tagihan' => 'Rp ' . number_format($total_tagihan, 0, ',', '.'),
                 'jml_dibayar' => 'Rp ' . number_format($jumlah_dibayar, 0, ',', '.'),
                 'jml_tunggakan' => 'Rp ' . number_format($tunggakan, 0, ',', '.'),
