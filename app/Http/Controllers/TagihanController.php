@@ -196,9 +196,37 @@ class TagihanController extends Controller
             // Ambil siswa target
             $siswaList = [];
             if ($request->target === 'per' && $request->has('siswa')) {
-                $siswaList = Siswa::whereIn('id', $request->siswa)->get();
+                $query = Siswa::whereIn('id', $request->siswa)
+                    ->where('status','1');
+
+                // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+                if (Auth::user()->yayasan_id) {
+                    $query->whereHas('kelas.unit', function ($q) {
+                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                    });
+                } elseif (Auth::user()->unit_id) {
+                    $query->whereHas('kelas.unit', function ($q) {
+                        $q->where('id', Auth::user()->unit_id);
+                    });
+                }
+
+                $siswaList = $query->get();
             } elseif ($request->target === 'all' && $request->kelas) {
-                $siswaList = Siswa::where('kelas_id', $request->kelas)->get();
+                $query = Siswa::where('kelas_id', $request->kelas)
+                ->where('status','1');
+
+                // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
+                if (Auth::user()->yayasan_id) {
+                    $query->whereHas('kelas.unit', function ($q) {
+                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                    });
+                } elseif (Auth::user()->unit_id) {
+                    $query->whereHas('kelas.unit', function ($q) {
+                        $q->where('id', Auth::user()->unit_id);
+                    });
+                }
+
+                $siswaList = $query->get();
             }
 
             // Cek apakah siswa sudah punya tagihan aktif untuk kategori yang sama

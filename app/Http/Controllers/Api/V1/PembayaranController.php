@@ -209,7 +209,17 @@ class PembayaranController extends Controller
      *     path="/pembayaran",
      *     tags={"Pembayaran"},
      *     summary="Process payment",
-     *     description="Process student payment for a bill",
+     *     description="Process student payment for a bill.
+     *
+Status tagihan_siswa:
+- 0 = Belum Bayar - dapat lanjut bayar (jika tidak ada pembayaran pending)
+- 1 = Lunas - sudah bayar lunas, tidak dapat membayar lagi
+- 2 = Cicilan - masih cicilan, dapat lanjut bayar (jika tidak ada pembayaran pending)
+
+Pembayaran akan dicek:
+1. Jika status = 1 (Lunas): Reject pembayaran
+2. Jika ada pembayaran_tagihan dengan status_approval = pending: Reject pembayaran
+3. Jika status = 0 atau 2 dan tidak ada pending: Accept pembayaran",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -217,17 +227,21 @@ class PembayaranController extends Controller
      *             required={"tagihan_siswa_id","jumlah_bayar"},
      *             @OA\Property(property="tagihan_siswa_id", type="integer", example=1),
      *             @OA\Property(property="jumlah_bayar", type="integer", example=500000),
-     *             @OA\Property(property="metode", type="string", example="CASH", description="CASH, TRANSFER, QRIS, etc"),
+     *             @OA\Property(property="metode", type="string", example="CASH", description="CASH, TRANSFER, QRIS, VIRTUAL_ACCOUNT, MOBILE_BANKING, NONTUNAI, TUNAI"),
      *             @OA\Property(property="keterangan", type="string", example="Pembayaran SPP Januari 2024")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Payment successful"
+     *         response=201,
+     *         description="Payment submitted and waiting for approval (status_approval = pending)"
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Validation error or bill already paid"
+     *         description="Validation error, bill already paid (status=1), or have pending payment"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -261,32 +275,47 @@ class PembayaranController extends Controller
 
             $tagihanSiswa = Tagihansiswa::with(['siswa', 'tagihan'])->findOrFail($request->tagihan_siswa_id);
 
-            if ($tagihanSiswa->status == '1') {
+            // ============= VALIDASI STATUS TAGIHAN =============
+            // Status: 0 = Belum Bayar, 1 = Lunas, 2 = Cicilan
+
+            if ($tagihanSiswa->status == 1) {
                 Log::warning('⚠️ Tagihan sudah lunas untuk tagihan siswa ID: ' . $request->tagihan_siswa_id);
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tagihan ini sudah lunas'
+                    'message' => 'Tagihan ini sudah lunas dan tidak perlu dibayar lagi',
+                    'data' => [
+                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'status' => $tagihanSiswa->status,
+                        'status_text' => 'Lunas',
+                        'sisa_nominal' => 0
+                    ]
                 ], 400);
             }
 
-            // Check if there's already a pending or approved payment for this bill
-            $existingPayment = Pembayarantagihan::where('tagihan_siswa_id', $request->tagihan_siswa_id)
-                ->whereIn('status_approval', ['pending'])
+            // ============= CEK PEMBAYARAN PENDING =============
+            // Cek apakah ada pembayaran yang masih pending (menunggu approval)
+            $existingPendingPayment = Pembayarantagihan::where('tagihan_siswa_id', $request->tagihan_siswa_id)
+                ->where('status_approval', 'pending')
                 ->first();
 
-            if ($existingPayment) {
-                Log::warning('⚠️ Pembayaran ganda terdeteksi untuk tagihan siswa ID: ' . $request->tagihan_siswa_id);
-                Log::warning('Pembayaran sebelumnya dengan status: ' . $existingPayment->status_approval . ' | ID: ' . $existingPayment->id);
+            if ($existingPendingPayment) {
+                Log::warning('⚠️ Ada pembayaran yang masih menunggu approval');
+                Log::warning('Pembayaran sebelumnya dengan status: ' . $existingPendingPayment->status_approval . ' | ID: ' . $existingPendingPayment->id);
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tagihan ini sudah memiliki pembayaran yang sedang diproses. Tidak boleh submit pembayaran lebih dari 1 kali.',
+                    'message' => 'Tagihan ini sudah memiliki pembayaran yang sedang menunggu persetujuan admin. Silakan tunggu persetujuan atau tolakan dari admin sebelum submit pembayaran baru.',
                     'data' => [
-                        'existing_payment_id' => $existingPayment->id,
-                        'existing_payment_code' => $existingPayment->code_pembayaran,
-                        'existing_payment_status' => $existingPayment->status_approval,
-                        'existing_payment_amount' => (float)$existingPayment->jumlah_bayar
+                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'existing_payment' => [
+                            'id' => $existingPendingPayment->id,
+                            'code_pembayaran' => $existingPendingPayment->code_pembayaran,
+                            'jumlah_bayar' => (float)$existingPendingPayment->jumlah_bayar,
+                            'status_approval' => $existingPendingPayment->status_approval,
+                            'tanggal_bayar' => $existingPendingPayment->tanggal_bayar->format('Y-m-d'),
+                            'metode' => $existingPendingPayment->metode_bayar
+                        ]
                     ]
                 ], 400);
             }
