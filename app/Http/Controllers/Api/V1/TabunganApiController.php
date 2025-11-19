@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\DataRekening;
 use App\Models\Jurnals;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
@@ -109,6 +110,25 @@ class TabunganApiController extends Controller
 
             DB::commit();
 
+            // Get bank account data if payment method is TRANSFER
+            $dataRekeningTujuan = null;
+            if (strtoupper($transaksi->metode) === 'TRANSFER') {
+                $rekening = DataRekening::where('status', '1')->first();
+                if ($rekening) {
+                    $dataRekeningTujuan = [
+                        'id' => $rekening->id,
+                        'allotment' => $rekening->allotment,
+                        'account_code' => $rekening->account_code,
+                        'account_name' => $rekening->account_name,
+                        'owner_name' => $rekening->owner_name,
+                        'account_number' => $rekening->account_number,
+                        'account_pict' => $rekening->account_pict ? url($rekening->account_pict) : null,
+                        'kcp_name' => $rekening->kcp_name,
+                        'status' => $rekening->status,
+                    ];
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Setoran berhasil dibuat. Silakan upload bukti transfer untuk verifikasi.',
@@ -120,9 +140,14 @@ class TabunganApiController extends Controller
                     'jumlah' => $transaksi->jumlah,
                     'biaya' => $transaksi->jumlah,
                     'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_bayar' => null,
+                    'metode_pembayaran' => $transaksi->metode,
+                    'metode' => $transaksi->metode,
+                    'keterangan' => $transaksi->keterangan,
+                    'bukti_transfer' => null,
+                    'data_rekening_tujuan' => $dataRekeningTujuan,
                     'deskripsi' => $transaksi->keterangan,
                     'status_pembayaran' => $transaksi->status_verifikasi,
-                    'metode' => $transaksi->metode,
                 ]
             ], 201);
 
@@ -247,6 +272,12 @@ class TabunganApiController extends Controller
                     'jumlah' => $transaksi->jumlah,
                     'biaya' => $transaksi->jumlah,
                     'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_bayar' => null,
+                    'metode_pembayaran' => $transaksi->metode,
+                    'metode' => $transaksi->metode,
+                    'keterangan' => $transaksi->keterangan,
+                    'bukti_transfer' => null,
+                    'data_rekening_tujuan' => null,
                     'deskripsi' => $transaksi->keterangan,
                     'status_pembayaran' => $transaksi->status_verifikasi,
                     'token' => $transaksi->token,
