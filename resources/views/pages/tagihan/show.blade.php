@@ -76,106 +76,134 @@
         </div>
 
         {{-- Jumlah Tagihan Seluruh Periode --}}
-        {{-- Jumlah Tagihan Seluruh Periode --}}
         <div class="card rounded-3 mb-4 border-0 shadow-sm">
             <div class="card-body">
-            <h5>Tagihan Seluruh Periode</h5>
-            <div class="table-responsive">
-
-                <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
-                    <thead class="table-primary text-center text-nowrap align-middle ">
-                        <tr>
-                            <th>#</th>
-                            <th>Kode Kategori</th>
-                            <th>Kode Tagihan</th>
-                            <th>Nama Tagihan</th>
-                            <th>Bulan</th>
-                            <th>Biaya Tagihan</th>
-                            <th>Potongan</th>
-                            <th>Jml. Tunggakan</th>
-                            <th>Jml. Dibayar</th>
-                            <th>Status</th>
-                            <th>Wkt. Transaksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($dataPerbulan as $index => $row)
+                <h5>Tagihan Seluruh Periode</h5>
+                <div class="table-responsive">
+                    <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
+                        <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>{{ $row['nama_kategori'] }}</td>
-                                <td>{{ $row['bulan'] }} {{ $row['tahun'] }}</td>
-
-                                <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
-                                 <td>-</td>
-                                <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
-                                <td>-</td>
-                                <td>
-                                    @if ($row['status'] === 'Lunas')
-                                        <span class="badge bg-success">Lunas</span>
-                                    @else
-                                        <span class="badge bg-danger">Belum Lunas</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
-                                </td>
+                                <th>#</th>
+                                <th>Kode Kategori</th>
+                                <th>Kode Tagihan</th>
+                                <th>Nama Tagihan</th>
+                                <th>Bulan</th>
+                                <th>Biaya Tagihan</th>
+                                <th>Potongan</th>
+                                <th>Nominal Akhir</th>
+                                <th>Status</th>
+                                <th>Tgl. Bayar</th>
+                                <th>Aksi</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7">Tidak ada data tagihan.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-
-            </div>
+                        </thead>
+                        <tbody>
+                            @forelse($dataPerbulan as $index => $row)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $row['kode_kategori'] ?? '-' }}</td>
+                                    <td>{{ $row['kode_tagihan'] }}</td>
+                                    <td>{{ $row['nama_kategori'] }}</td>
+                                    <td>{{ $row['bulan'] }} {{ $row['tahun'] }}</td>
+                                    <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($row['potongan'], 0, ',', '.') }}</td>
+                                    <td><strong>Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong></td>
+                                    <td>
+                                        @if ($row['status'] === 'Lunas')
+                                            <span class="badge bg-success">Lunas</span>
+                                        @else
+                                            <span class="badge bg-danger">Belum Lunas</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td>
+                                        @if ($row['status'] === 'Lunas')
+                                            <button type="button" class="btn btn-sm btn-success rounded-2"
+                                                onclick="cetakStruklanas('{{ $row['kode_tagihan'] }}', '{{ $row['bulan'] }}', '{{ $row['tahun'] }}', {{ $row['nominal_akhir'] }})">
+                                                <i class="bx bx-printer"></i> Cetak
+                                            </button>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="11">Tidak ada data tagihan.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div class="card rounded-3 mb-4 border-0 shadow-sm">
             <div class="card-body">
+                <h5>Riwayat Pembayaran</h5>
                 <div class="table-responsive">
-<h5>Riwayat Transaksi</h5>
-                <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
-                    <thead class="table-primary text-center text-nowrap align-middle">
-                        <tr>
-                            <th>#</th>
-                            <th>Wkt. Transaksi</th>
-                            <th>Bulan</th>
-                            <th>Jml. Transaksi</th>
-                            <th>Metode Bayar</th>
-                            <th>Status</th>
-                            <th>Petugas</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pembayaranSiswa as $index => $pembayaran)
+                    <table class="table-bordered table-hover table overflow-hidden text-center align-middle">
+                        <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ \Carbon\Carbon::parse($pembayaran['tanggal_bayar'])->format('d/m/Y') }}</td>
-                                <td>{{ $pembayaran['bulan'] ? $pembayaran['bulan'] . ' ' . $pembayaran['tahun'] : '-' }}</td>
-                                <td>Rp {{ number_format($pembayaran['jumlah_bayar'], 0, ',', '.') }}</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>{{ $pembayaran['create_by'] }}</td>
-                                <td>
-                                    <a href="{{ url('#') }}" class="btn btn-warning"><i class="bx bx-eye" style="font-size: 20px"></i></a>
-                                    <a href="{{ url('#') }}" class="btn btn-warning"><i class="bx bx-printer" style="font-size: 20px"></i></a>
-                                </td>
+                                <th>#</th>
+                                <th>Kode Kategori</th>
+                                <th>Kode Tagihan</th>
+                                <th>Potongan</th>
+                                <th>Jumlah Bayar</th>
+                                <th>Wkt. Transaksi</th>
+                                <th>Metode Bayar</th>
+                                <th>Status</th>
+                                <th>Petugas</th>
+                                <th>Aksi</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="12">Belum ada pembayaran.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-
+                        </thead>
+                        <tbody>
+                            @forelse($pembayaranSiswa as $index => $pembayaran)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $pembayaran['kode_kategori'] ?? '-' }}</td>
+                                    <td>{{ $pembayaran['kode_tagihan'] }}</td>
+                                    <td>Rp {{ number_format($pembayaran['potongan'], 0, ',', '.') }}</td>
+                                    <td><strong>Rp {{ number_format($pembayaran['jumlah_bayar'], 0, ',', '.') }}</strong></td>
+                                    <td>{{ \Carbon\Carbon::parse($pembayaran['waktu_transaksi'])->format('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ ucfirst($pembayaran['metode_bayar']) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusColor = match($pembayaran['status_approval']) {
+                                                'approved' => 'success',
+                                                'rejected' => 'danger',
+                                                default => 'warning'
+                                            };
+                                            $statusText = match($pembayaran['status_approval']) {
+                                                'approved' => 'Disetujui',
+                                                'rejected' => 'Ditolak',
+                                                default => 'Pending'
+                                            };
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}">{{ $statusText }}</span>
+                                    </td>
+                                    <td>{{ $pembayaran['create_by'] ?? '-' }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="printStruk({{ $pembayaran['id'] }}, '{{ $pembayaran['kode_tagihan'] }}', {{ $pembayaran['jumlah_bayar'] }})">
+                                            <i class="bx bx-printer"></i> Struk
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="text-center py-3">Belum ada pembayaran.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                            </div>
+            </div>
         </div>
 
     </div>
@@ -214,6 +242,68 @@
                     console.error('Error:', err);
                     alert('Terjadi kesalahan saat membayar.');
                 });
+        }
+
+        function printStruk(pembayaranId, kodeTagihan, jumlahBayar) {
+            // Buka halaman cetak struk dalam tab baru
+            window.open(`/pembayaran/${pembayaranId}/print-struk`, '_blank');
+        }
+
+        function cetakStruklanas(kodeTagihan, bulan, tahun, nominal) {
+            // Generate struk untuk tagihan yang sudah lunas
+            let striped = `
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        body {
+                            width: 80mm;
+                            margin: 0;
+                            padding: 5mm;
+                            font-family: 'Courier New', monospace;
+                            font-size: 11px;
+                        }
+                        .center { text-align: center; }
+                        .bold { font-weight: bold; }
+                        .divider { border-top: 1px dashed #000; margin: 5px 0; }
+                        .text-right { text-align: right; }
+                        .row { display: flex; justify-content: space-between; }
+                    </style>
+                </head>
+                <body>
+                    <div class="center bold">STRUK PEMBAYARAN</div>
+                    <div class="divider"></div>
+
+                    <div class="bold">Kode Tagihan: ${kodeTagihan}</div>
+                    <div>Bulan: ${bulan}/${tahun}</div>
+                    <div>Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
+                    <div>Waktu: ${new Date().toLocaleTimeString('id-ID')}</div>
+
+                    <div class="divider"></div>
+
+                    <div class="row">
+                        <div>Total Pembayaran:</div>
+                        <div class="bold">Rp ${parseInt(nominal).toLocaleString('id-ID')}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="center">
+                        <div>Terima Kasih</div>
+                        <div>Atas Pembayaran Anda</div>
+                    </div>
+
+                    <script>
+                        window.print();
+                        window.onafterprint = function() { window.close(); };
+                    </script>
+                </body>
+                </html>
+            `;
+
+            let printWindow = window.open('', '', 'width=300,height=400');
+            printWindow.document.write(striped);
+            printWindow.document.close();
         }
     </script>
 

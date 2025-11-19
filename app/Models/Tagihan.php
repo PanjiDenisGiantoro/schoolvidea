@@ -37,4 +37,10 @@ class Tagihan extends Model
     {
         return $this->hasMany(Tagihansiswa::class);
     }
+
+    // Relasi ke Rekening Pembayaran (One to Many)
+    public function rekening()
+    {
+        return $this->belongsTo(DataRekening::class, 'rekening_id');
+    }
 }

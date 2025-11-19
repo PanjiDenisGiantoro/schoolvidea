@@ -659,38 +659,27 @@ table td:first-child {
 /* Aktifkan dengan menambahkan class "dark-theme" pada <body> */
 /* =============================== */
 
-body.dark-theme {
-    background-color: #1a1b1e;
-    color: #e0e0e0;
-}
 
-/* Card & Header */
-body.dark-theme .custom-card-header {
-    background-color: #1f2937;
-    color: #f3f4f6;
-    border-bottom: 1px solid #374151;
-}
-
-body.dark-theme .card {
-    background-color: #25262b;
-    border: 1px solid #374151;
-    color: #e5e7eb;
-}
 
 /* Tombol toggle */
 body.dark-theme .custom-btn-outline-primary {
-    background-color: #111827;
-    color: #93c5fd;
-    border-color: #3b82f6;
+    background-color: #282f36;
+    color: #0c8f84;
+    border-color: #0c8f84;
+}
+
+body.dark-theme .custom-card-header {
+    background: linear-gradient(135deg,#282f36 0%,#0c8f84 100%);
+    color: #f3f4f6;
 }
 
 body.dark-theme .custom-btn-outline-primary:hover {
-    background-color: #111827;
+    background-color: #0c8f84;
     color: #fff !important;
 }
 
 body.dark-theme .custom-active-btn {
-    background-color: transparent;
+    background-color: #0c8f84;
     color: #fff;
 }
 
@@ -708,7 +697,7 @@ body.dark-theme .custom-btn-purple:hover {
 body.dark-theme .custom-btn-info {
     background-color: #1f2937;
     color: #f3f4f6;
-    border: 1px solid #3b82f6;
+    border: 1px solid #fff;
 }
 body.dark-theme .custom-btn-info:hover {
     background-color: #10b981;
@@ -738,28 +727,28 @@ body.dark-theme .dropdown-options li:hover {
 
 /* Checkbox */
 body.dark-theme .custom-checkbox {
-    border-color: #60a5fa;
+    border-color: #fff;
 }
 body.dark-theme .custom-checkbox:checked {
     background-color: #fff;
-    border-color: #3b82f6;
+    border-color: #fff;
 }
 
 /* Tabel */
 body.dark-theme table {
     color: #e5e7eb;
-    background-color: #1f2937;
+    background-color: #26363c;
 }
 body.dark-theme table thead {
     background-color: #111827;
     color: #93c5fd;
 }
 body.dark-theme table tbody tr:hover {
-    background-color: #2d3748;
+    background-color: #26363c;
 }
 body.dark-theme td,
 body.dark-theme th {
-    border-color: #374151 !important;
+    border-color: #26363c !important;
 }
 
 /* Modal */

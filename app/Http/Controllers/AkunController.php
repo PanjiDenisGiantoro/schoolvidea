@@ -233,4 +233,120 @@ class AkunController extends Controller
         $show = true;
         return view('pages.data_master.akun.akun_create', compact('akun','show','parents','units','akunOptions'));
     }
+
+    public function importTemplate()
+    {
+        return view('pages.data_master.akun.import_template');
+    }
+
+    public function storeImportTemplate(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $path = $file->store('temp');
+
+            // Get unit_id from authenticated user
+            $unitId = Auth::user()->unit_id;
+
+            // If user doesn't have unit_id, get it from request
+            if (!$unitId && $request->has('unit_id')) {
+                $unitId = $request->unit_id;
+            }
+
+            // Read file and process
+            if ($file->getClientOriginalExtension() === 'csv') {
+                $data = $this->readCSVTemplate($path);
+            } else {
+                $data = $this->readExcelTemplate($path);
+            }
+
+            // Save all data with unit_id
+            $savedCount = 0;
+            foreach ($data as $row) {
+                if (empty($row['kode_akun']) || empty($row['nama_akun'])) {
+                    continue;
+                }
+
+                // Check if akun already exists
+                $existingAkun = Akun::where('kode_akun', $row['kode_akun'])
+                    ->where('unit_id', $unitId)
+                    ->first();
+
+                if (!$existingAkun) {
+                    // Find parent_id based on parent kode_akun if exists
+                    $parentId = null;
+                    if (!empty($row['parent_kode'])) {
+                        $parent = Akun::where('kode_akun', $row['parent_kode'])
+                            ->where('unit_id', $unitId)
+                            ->first();
+                        $parentId = $parent?->id;
+                    }
+
+                    Akun::create([
+                        'kode_akun' => $row['kode_akun'],
+                        'nama_akun' => $row['nama_akun'],
+                        'tipe' => $row['tipe'] ?? 'ASET',
+                        'parent_id' => $parentId,
+                        'unit_id' => $unitId,
+                        'status' => $row['status'] ?? 1,
+                        'kategori_akun' => $row['kategori_akun'] ?? null,
+                        'keterangan' => $row['keterangan'] ?? null,
+                    ]);
+
+                    $savedCount++;
+                }
+            }
+
+            // Clean up temporary file
+            \Storage::delete($path);
+
+            return redirect()->route('akun.index')
+                ->with('success', "Template berhasil diimpor. Total {$savedCount} akun berhasil ditambahkan.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengimpor file: ' . $e->getMessage());
+        }
+    }
+
+    private function readCSVTemplate($path)
+    {
+        $data = [];
+        $file = \Storage::path($path);
+
+        if (($handle = fopen($file, "r")) !== FALSE) {
+            $header = fgetcsv($handle, 1000, ",");
+
+            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $data[] = array_combine($header, $row);
+            }
+            fclose($handle);
+        }
+
+        return $data;
+    }
+
+    private function readExcelTemplate($path)
+    {
+        $data = [];
+        $file = \Storage::path($path);
+
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            $rows = $worksheet->toArray();
+            $header = array_shift($rows);
+
+            foreach ($rows as $row) {
+                $data[] = array_combine($header, $row);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception("Gagal membaca file Excel: " . $e->getMessage());
+        }
+
+        return $data;
+    }
 }

@@ -20051,7 +20051,12 @@ button.gridjs-sort-desc {
 }
 
 .apexcharts-bar-series path {
-    stroke: #eaedf1;
+    stroke: #ffffff;
+    stroke-width: 4;
+}
+.body .apexcharts-bar-series path {
+    stroke: #ffffff;
+    stroke-width: 2;
 }
 
 .apexcharts-xaxis-tick {

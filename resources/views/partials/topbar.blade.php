@@ -150,8 +150,12 @@
         // Saat reload halaman, terapkan tema sebelumnya
         if (localStorage.getItem("theme") === "light") {
             document.body.classList.remove("dark-theme");
-        } else {
-            document.body.classList.("dark-theme");
         }
+        else if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+        } 
+        // else {
+        //     document.body.classList.remove("dark-theme");
+        // }
     });
 </script>

@@ -13,9 +13,11 @@
             <div class="row g-5">
                 <div class="col-lg-12 d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">List Akun</h5>
-                    <a href="{{ route('akun.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i> Tambah Data
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('akun.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Tambah Data
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Search and Filter Form -->
@@ -117,6 +119,46 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Template Modal -->
+    <div class="modal fade" id="importTemplateModal" tabindex="-1" aria-labelledby="importTemplateLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importTemplateLabel">Import Template Akuns</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('akun.import-template.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Pilih File Template</label>
+                            <input type="file" class="form-control @error('file') is-invalid @enderror" id="file" name="file" accept=".xlsx,.xls,.csv" required>
+                            <small class="text-muted d-block mt-2">Format yang didukung: Excel (.xlsx, .xls) atau CSV</small>
+                            @error('file')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Catatan:</strong>
+                            <ul class="mb-0 mt-2" style="font-size: 13px;">
+                                <li>File harus memiliki header: kode_akun, nama_akun, tipe, parent_kode (opsional), kategori_akun (opsional), status (opsional), keterangan (opsional)</li>
+                                <li>Tipe harus salah satu dari: ASET, LIABILITAS, EKUITAS, PENDAPATAN, BEBAN</li>
+                                <li>Status: 1 = Aktif, 0 = Tidak Aktif</li>
+                                <li>Unit ID akan otomatis diambil dari unit Anda</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-upload me-1"></i> Import
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

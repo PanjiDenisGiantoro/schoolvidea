@@ -73,6 +73,8 @@
                                         <span class="badge bg-danger">Tidak Aktif</span>
                                     @endif
                                 </td>
+                                <td>{{ $item->allotment }}</td>
+
                                 <td>
                                     <div class="d-flex gap-3">
                                         <a href="{{ url('data-rekening/show', $item->id ?? '') }}"

@@ -2,7 +2,8 @@
 @section('title', 'Tambah Transaksi Tabungan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-@endpush
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+    @endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi Pembayaran',
@@ -13,46 +14,76 @@
     <div class="row g-4">
         {{-- Summary Cards --}}
         <div class="row mt-4">
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Tunggakan</h6>
-                        <h6 class="text-white " style="font-size: 14px">Periode Bulain ini [November 2025]</h6>
-                        <h4 class="text-white">Rp 0</h4>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Tunggakan</p>
+                            <h3 class="fw-bold text-danger mb-0 text-absolute">Rp 1.000.000.000</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-time text-danger" style="font-size: 24px;"></i>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
-                        <h6 class="text-white" style="font-size: 14px">[November 2025]</h6>
-                        <h4 class="text-white">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Non-Tunai]</h6>
-                        <h4 class="text-white">Rp 0</h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
-                    <div class="card-body text-primary">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Pembayaran</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Tunai]</h6>
-                        <h4 class="text-white">Rp 0</h4>
-                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> Periode Bulan Ini</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> November 2025</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-12 mt-0 p-4">
-            <div class="card rounded-4 mb-0 border-0 p-4 shadow-sm">
-                <div class="row g-3 align-items-center">
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> Bulan Ini</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> November 2025</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-credit-card text-warning" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-warning"></i> Non-Tunai</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money text-info" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-info"></i> Tunai</small>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-12 mt-4 p-3">
+            <div class="card rounded-4 border-0 shadow-sm">
+                <div class="row g-3 p-4 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
                         <select id="filter_unit" class="form-select rounded-pill shadow-sm">
@@ -75,8 +106,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="row g-3 mt-2 mb-4">
-                    <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
+                <div class="row g-3 mb-4 px-3">
+                    <div class="col-md-12 px-4 mb-4" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan </label>
                         <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Tagihan --</option>
@@ -91,8 +122,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-12">
+        <div class="col-md-12" id="profile-card-wrapper" style="display: none">
             <div class="card rounded-4 overflow-hidden border-0 pr-4 shadow-lg">
                 <div class="row align-items-center g-4">
 
@@ -137,16 +167,30 @@
         {{-- Ringkasan Tagihan --}}
 
         {{-- Daftar Tagihan --}}
-        <div class="card rounded-4 mt-3 border-0 shadow-sm">
+        <div class="card rounded-4 mt-3 p-4 border-0 shadow-sm">
             <!-- Header tombol toggle -->
-            <div class="custom-toggle-header">
-                <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
-                    <i class="ri-money-dollar-circle-line"></i> Belum Lunas
-                </button>
-                <button id="btnSudahLunas" class="custom-btn-outline-primary">
-                    <i class="ri-file-list-3-line"></i> Sudah Lunas
-                </button>
+            <div>
+                <div class="custom-toggle-header">
+                    <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
+                        <i class="ri-money-dollar-circle-line"></i> Belum Lunas
+                    </button>
+                    <button id="btnSudahLunas" class="custom-btn-outline-primary">
+                        <i class="ri-file-list-3-line"></i> Sudah Lunas
+                    </button>
+                </div>
+                {{-- <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="mb-0">Tampilkan:</label>
+                    <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;"
+                        onchange="changePerPage(this.value)">
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                    </select>
+                    <span class="text-muted">data per halaman</span>
+                </div> --}}
             </div>
+
 
             <!-- Header kartu -->
             <div class="custom-card-header px-4 mb-0">
@@ -185,9 +229,9 @@
                 </div>
             </div>
 
-            <div id="tabelBelumLunas" class="card-body mt-0">
-                <div class="table-responsive mt-0">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle mt-0">
+            <div id="tabelBelumLunas" class="mb-3">
+                <div class="table-responsive">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
                                 <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
@@ -212,8 +256,16 @@
                         </tbody>
                     </table>
                 </div>
+                {{-- <div class=" d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Menampilkan {{ $perbulan->firstItem() ?? 0 }} sampai {{ $perbulan->lastItem() ?? 0 }} dari {{ $perbulan->total() }} data
+                </div>
+                <div>
+                    {{ $perbulan->appends(request()->query())->links() }}
+                </div>
+            </div> --}}
             </div>
-            <div class="card-body" id="tabelSudahLunas">
+            <div class="mb-3" id="tabelSudahLunas">
                 <div class="table-responsive">
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
@@ -238,14 +290,20 @@
                         </tbody>
                     </table>
                 </div>
+                {{-- <div class=" d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted">
+                        Menampilkan {{ $perbulan->firstItem() ?? 0 }} sampai {{ $perbulan->lastItem() ?? 0 }} dari {{ $perbulan->total() }} data
+                    </div>
+                    <div>
+                        {{ $perbulan->appends(request()->query())->links() }}
+                    </div>
+                </div> --}}
             </div>
         </div>
 
         {{-- Detail Siswa dan Form Tabungan --}}
         <div class="col-12">
             <div class="row g-4">
-                {{-- Detail Siswa --}}
-                {{-- Form Transaksi --}}
                 <div class="col-md-8">
                     <form action="" method="POST" id="formTagihan">
                         @csrf
@@ -287,6 +345,13 @@
 @endpush
 @push('scripts')
     <script>
+    // function changePerPage(perPage) {
+    //     const url = new URL(window.location.href);
+    //     url.searchParams.set('per_page', perPage);
+    //     url.searchParams.delete('page'); // Reset ke halaman 1
+    //     window.location.href = url.toString();
+    // }
+
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
         const filterUnit = document.getElementById('filter_unit');
@@ -450,9 +515,22 @@
             const tagihanId = this.value;
             const siswaId = siswaSelect.value;
 
+            const card = document.getElementById("profile-card-wrapper");
+
+            if (this.value !== "") {
+                card.style.display = "block"; // tampil
+            } else {
+                card.style.display = "none"; // sembunyi
+            }
+
             if (!tagihanId) return;
 
-            fetch(`/tagihan/perbulan/${siswaId}/${tagihanId}`)
+            // Jika "Semua Tagihan" dipilih, gunakan endpoint perbulanAll
+            const endpoint = tagihanId === 'all'
+                ? `/tagihan/perbulanAll/${siswaId}`
+                : `/tagihan/perbulan/${siswaId}/${tagihanId}`;
+
+            fetch(endpoint)
                 .then(res => res.json())
                 .then(data => {
                     if (!data.belum_lunas.length && !data.sudah_lunas.length) {
@@ -908,4 +986,5 @@
             }
         }
     </script>
+
 @endpush

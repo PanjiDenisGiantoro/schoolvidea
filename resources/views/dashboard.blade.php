@@ -84,8 +84,8 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-2">Saldo Aktif</p>
-                        <h3 class="fw-bold text-success">{{ $totalSaldo }}</h3>
-                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ $jumlahTransaksi }}</b></p>
+                        <h3 class="fw-bold text-success">{{  number_format($totalSaldo, 0, ',', '.')  }}</h3>
+                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
                         <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
@@ -95,8 +95,8 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-2">Saldo Total</p>
-                        <h3 class="fw-bold text-success">{{ $totalSaldo }}</h3>
-                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ $jumlahTransaksi }}</b></p>
+                        <h3 class="fw-bold text-success">{{ number_format($totalSaldo, 0, ',', '.') }}</h3>
+                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
                         <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
@@ -183,7 +183,19 @@
                 chart: {
                     type: "bar",
                     height: 350,
-                    stacked: false
+                    stacked: false,
+                    padding: {
+                        top:0,
+                        bottom:0,
+                        left: 2,
+                        right:2,
+                    }  
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '70%',
+                        
+                    }
                 },
                 colors: ["#604ae3", "#0dcaf0", "#198754"],
                 series: [
@@ -213,6 +225,7 @@
                         formatter: val => "Rp " + val.toLocaleString("id-ID")
                     }
                 }
+                
             };
 
             const chart = new ApexCharts(document.querySelector("#chartTagihan"), options);

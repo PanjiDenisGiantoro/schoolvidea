@@ -2,6 +2,7 @@
 @section('title', 'Transaksi Keuangan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
 @endpush
 @section('content')
     @include('partials.page-title', [
@@ -10,81 +11,142 @@
     ])
 
     {{-- Summary Cards --}}
-    <div class="row g-3 mb-0">
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-success">
-                    <h6>Total Pemasukan</h6>
-                    <h4 class="fe-bold">Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h4>
+    <div class="row g-3 mb-3">
+
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pemasukan</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-trending-up text-success" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tabungan Masuk</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tagihan Masuk</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger fw-bold">
-                    <h6>Total Pengeluaran</h6>
-                    <h4>Rp {{ number_format($total_pengeluaran ?? 0, 0, ',', '.') }}</h4>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pengeluaran</p>
+                            <h3 class="fw-bold text-danger mb-0 text-absolute">Rp {{ number_format($total_pengeluaran ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-trending-down text-danger" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tabungan Keluar</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tagihan Keluar</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary fw-bold">
-                    <h6>Total Data Transaksi</h6>
-                    <h4>{{ number_format($total_transaksi ?? 0, 0, ',', '.') }}</h4>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Data Transaksi</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">{{ number_format($count ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-transfer text-primary" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-transfer text-primary"></i> Akumulasi Data Ttransaksi</small>
                 </div>
             </div>
         </div>
     </div>
-        <div class="row mt-0">
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Transaksi</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white">Rp 0</h4>
+        <div class="row mt-0 mb-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi Keseluruhan</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($sum ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-bar-chart text-primary" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-bar-chart text-primary"></i> Total Keseluruhan Transaksi</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Total Hari Ini</h6>
-                        <h6 class="text-white fw bold" style="font-size: 14px">
-                            [{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}]
-                        </h6>
-                        <h4 class="text-white">Rp 0</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Hari Ini</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-calendar text-info" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-calendar text-primary"></i> {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Non-Tunai</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white fw-bold">Rp 0</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Non-Tunai</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-credit-card text-success" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-success"></i> Transfer, E Wallet</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
-                    <div class="card-body text-primary">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Transaksi Tunai</h6>
-                        <h6 class="text-white fw-bold" style="font-size: 14px">[Keseluruhan]</h6>
-                        <h4 class="text-white fw-bold">Rp 0</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Tunai</p>
+                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 1.000.000.000</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money text-warning" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-warning"></i> Kas Langsung</small>
                 </div>
             </div>
+        </div>
         </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
         <div class="card-body">
-            <h5 class="fw-bold text-primary mb-3">
-                <i class="bx bx-filter"></i> Filter Transaksi
-            </h5>
+            <div class=" justify-content-between align-items-center d-flex gap-3"
+                data-bs-toggle="collapse"
+                data-bs-target="#filterCollapse"
+                style="cursor: pointer;">
+                <h5 class="fw-bold text-primary mt-3 ">
+                    <span> <i class="bx bx-filter"></i> Filter Transaksi</span>
+                </h5>
+                <h5 class="fw-bold text-primary"  style="font-size: 26px;"><i class="bx bx-chevron-down"></i></h5>
+
+            </div>
+
             <form action="{{ route('keuangan_transaksi.index') }}" method="GET">
-                <div class="row g-3">
+                <div class="row g-3 collapse" id="filterCollapse" >
                     {{-- Filter Unit --}}
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
@@ -177,10 +239,21 @@
                     </select>
                     <span class="text-muted">data per halaman</span>
                 </div>
+                <div class="d-flex justify-content-between gap-3">
+                    @if($total_pending > 0)
+                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
+                        <i class="bx bx-time-five"></i> Pending
+                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
+                        </span>
+                   </button>
+                    @endif
                 <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
                     class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                     <i class="bx bx-printer"></i> Cetak Laporan
                 </a>
+                </div>
+
             </div>
 
             {{-- Tabel --}}
@@ -190,7 +263,7 @@
                         <tr>
                             <th>#</th>
                             <th>No Transaksi</th>
-                            <th>Nama & NISN</th>                  
+                            <th>Nama & NISN</th>
                             <th>Jenis Transaksi</th>
                             <th>Tot. Transaksi</th>
                             <th>Metode</th>
@@ -373,6 +446,242 @@
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
         }
+
+    function showPendingTransactions() {
+        // Template modal
+        const modalHtml = `
+            <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title fw-bold" id="pendingModalLabel">
+                                <i class="bx bx-time-five me-2"></i>Transaksi Pending Approval
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                                <div class="spinner-border text-warning" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span class="ms-3">Memuat data transaksi pending...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const existingModal = document.getElementById('pendingModal');
+        if (existingModal) existingModal.remove();
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
+        modal.show();
+
+        fetch('/api/v1/tabungan/transaksi?status=pending', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const modalBody = document.querySelector('#pendingModal .modal-body');
+
+            if (data.success && data.data?.length > 0) {
+                let tableRows = '';
+
+                data.data.forEach((trx, index) => {
+                    const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
+                    const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
+                    const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+
+                    const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    let statusBadge = '';
+                    if (trx.jenis_transaksi === 'penarikan_tabungan') {
+                        statusBadge = trx.status_approval === 'pending'
+                            ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
+                            : '';
+                    } else {
+                        statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
+                    }
+
+                    tableRows += `
+                        <tr class="align-middle">
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center">
+                                <span class="badge bg-${jenisClass} px-3 py-2">
+                                    <i class="bx bx-${jenisIcon} me-1"></i>${jenisText}
+                                </span>
+                            </td>
+                            <td><strong>${trx.nomor_transaksi || trx.code_pembayaran}</strong></td>
+                            <td>${trx.siswa_nama || '-'}</td>
+                            <td class="text-end"><strong>Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</strong></td>
+                            <td class="text-center"><small>${tanggal}</small></td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-primary rounded-pill" onclick="viewDetailPending(${trx.transaksi_id})">
+                                    <i class="bx bx-show me-1"></i>Detail
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                modalBody.innerHTML = `
+                    <div class="alert alert-warning border-0 shadow-sm mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bx bx-info-circle fs-4 me-3"></i>
+                            <div>
+                                <strong>Perhatian:</strong> Terdapat <strong>${data.data.length}</strong> transaksi yang menunggu approval.
+                                <br><small>Untuk penarikan tabungan, verifikasi token terlebih dahulu sebelum approve.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th class="text-center" style="width:50px;">#</th>
+                                    <th class="text-center" style="width:120px;">Jenis</th>
+                                    <th style="width:150px;">Nomor Transaksi</th>
+                                    <th style="width:200px;">Nama Siswa</th>
+                                    <th class="text-end" style="width:130px;">Jumlah</th>
+                                    <th class="text-center" style="width:150px;">Tanggal</th>
+                                    <th class="text-center" style="width:150px;">Status</th>
+                                    <th class="text-center" style="width:100px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bx bx-check-circle text-success" style="font-size:80px;"></i>
+                        <h4 class="mt-3">Tidak Ada Transaksi Pending</h4>
+                        <p class="text-muted">Semua transaksi sudah diproses</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const modalBody = document.querySelector('#pendingModal .modal-body');
+            modalBody.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bx bx-error-circle text-danger" style="font-size:80px;"></i>
+                    <h4 class="mt-3">Gagal Memuat Data</h4>
+                    <p class="text-muted">Terjadi kesalahan saat memuat transaksi pending</p>
+                    <button class="btn btn-primary" onclick="showPendingTransactions()">
+                        <i class="bx bx-refresh me-1"></i>Coba Lagi
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+
+    function viewDetailPending(transaksiId) {
+        const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
+        if (pendingModal) pendingModal.hide();
+        window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
+    }
+
+
+    function showDetailTransaksi(transaksiId) {
+        Swal.fire({
+            title: 'Memuat...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const trx = data.data;
+                const statusBadge = getStatusBadge(trx.status_pembayaran);
+                const buktiHtml = trx.bukti_transfer
+                    ? `<div class="mb-3">
+                        <strong>Bukti Transfer:</strong><br>
+                        <a href="${trx.bukti_transfer}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="bx bx-image me-1"></i>Lihat Bukti Transfer
+                        </a>
+                    </div>`
+                    : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
+
+                const catatanHtml = trx.catatan_verifikasi
+                    ? `<div class="alert alert-info">
+                        <strong>Catatan Verifikasi:</strong><br>
+                        ${trx.catatan_verifikasi}<br>
+                        <small class="text-muted">Oleh: ${trx.verified_by || '-'} pada ${trx.verified_at || '-'}</small>
+                    </div>`
+                    : '';
+
+                const actionButtons = trx.status_pembayaran === 'pending'
+                    ? `<div class="mt-4 d-flex gap-2 justify-content-center">
+                        <button class="btn btn-success" onclick="approveTransaksi(${transaksiId})">
+                            <i class="bx bx-check-circle me-1"></i>Approve
+                        </button>
+                        <button class="btn btn-danger" onclick="rejectTransaksi(${transaksiId})">
+                            <i class="bx bx-x-circle me-1"></i>Reject
+                        </button>
+                    </div>`
+                    : '';
+
+                Swal.fire({
+                    title: 'Detail Transaksi',
+                    html: `
+                        <div class="text-start">
+                            <div class="mb-3">
+                                <strong>Nomor Transaksi:</strong><br>
+                                <span class="badge bg-secondary">${trx.nomor_transaksi}</span>
+                            </div>
+                            <div class="mb-3"><strong>Jenis Transaksi:</strong><br>${trx.jenis_transaksi}</div>
+                            <div class="mb-3"><strong>Jumlah:</strong><br>
+                                <h4 class="text-primary">Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</h4>
+                            </div>
+                            <div class="mb-3"><strong>Tanggal Transaksi:</strong><br>${trx.tanggal_transaksi}</div>
+                            <div class="mb-3"><strong>Deskripsi:</strong><br>${trx.deskripsi || '-'}</div>
+                            <div class="mb-3"><strong>Status:</strong><br>${statusBadge}</div>
+                            ${buktiHtml}
+                            ${catatanHtml}
+                            ${actionButtons}
+                        </div>
+                    `,
+                    width: '600px',
+                    showCloseButton: true,
+                    showConfirmButton: false
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal memuat detail transaksi',
+                confirmButtonColor: '#f56565'
+            });
+        });
+    }
 
         // Handle detail button click
         document.addEventListener('DOMContentLoaded', function() {

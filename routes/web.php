@@ -27,6 +27,7 @@ use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\DataRekeningController;
+use App\Http\Controllers\PayrollPaymentController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -205,6 +206,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/report', [TabunganController::class, 'report'])->name('tabungan.report');
         Route::get('/report-all', [TabunganController::class, 'reportAll'])->name('tabungan.report-all');
         Route::get('/print-laporan', [TabunganController::class, 'printLaporan'])->name('tabungan.print_laporan');
+        Route::get('/print-mutasi/{siswa_id}', [TabunganController::class, 'printMutasi'])->name('tabungan.print_mutasi');
+        Route::get('/print-struk/{transaksi_id}', [TabunganController::class, 'printStruk'])->name('tabungan.print_struk');
 
         // Bukti transfer & verifikasi
         Route::post('/upload-bukti/{id}', [TabunganController::class, 'uploadBuktiTransfer'])->name('tabungan.upload_bukti');
@@ -231,6 +234,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [\App\Http\Controllers\AkunController::class, 'edit'])->middleware('permission:edit_akun')->name('akun.edit');
         Route::put('/{id}', [\App\Http\Controllers\AkunController::class, 'update'])->middleware('permission:edit_akun')->name('akun.update');
         Route::get('/destroy/{id}', [\App\Http\Controllers\AkunController::class, 'destroy'])->middleware('permission:delete_akun')->name('akun.destroy');
+        Route::get('/import-template', [\App\Http\Controllers\AkunController::class, 'importTemplate'])->middleware('permission:create_akun')->name('akun.import-template');
+        Route::post('/import-template/store', [\App\Http\Controllers\AkunController::class, 'storeImportTemplate'])->middleware('permission:create_akun')->name('akun.import-template.store');
     });
 
     Route::prefix('setting_akun')->middleware('permission:view_setting_akun')->group(function () {
@@ -258,7 +263,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
-        Route::get('/perbulan/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
+        Route::get('/perbulanAll/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
         Route::get('/daftarTagihan/{id}', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftarTagihan');
         Route::get('/daftarTagihanBebas/{id}', [TagihanController::class, 'daftarTagihanBebas'])->name('tagihan.daftarTagihanBebas');
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
@@ -280,6 +285,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
+        Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
 
     Route::prefix('migrasi')->middleware('permission:view_migrasi')->group(function () {
@@ -364,6 +370,11 @@ Route::middleware(['auth'])->group(function () {
         // Ambil daftar guru/staff berdasarkan unit (AJAX)
         Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
             ->name('officers.byUnit');
+        Route::get('/officers/detail/{officerId}', [PayrollSettingController::class, 'getOfficerDetail'])
+            ->name('officers.getOfficerDetail');
+        Route::get('/getByOfficers/{officerId}', [PayrollSettingController::class, 'getByOfficer'])
+            ->name('payroll.getByOfficer');
+
     });
     Route::get('/payroll-payment', function () {
         return view('pages.penggajian.payroll_payment.payroll_payment');
@@ -396,7 +407,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/delete/{id}', [DataRekeningController::class, 'destroy'])->name('data-rekening.destroy');
         Route::post('/upload', [DataRekeningController::class, 'upload'])->middleware('permission:upload_data_rekening')->name('data-rekening.upload');
     }); //->middleware('permission:view_data_rekening')
-
+    Route::prefix('payroll-payment')->group(function () {
+        Route::get('/', [PayrollPaymentController::class, 'index'])->name('payroll_payment.index');
+        Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
+        Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
+    });
 
 
 

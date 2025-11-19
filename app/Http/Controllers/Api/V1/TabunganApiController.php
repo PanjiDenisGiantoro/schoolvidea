@@ -26,7 +26,7 @@ class TabunganApiController extends Controller
             'penerima_id' => 'required|exists:siswas,id',
             'jumlah' => 'required|numeric|min:1',
             'keterangan' => 'nullable|string',
-            'metode' => 'nullable|in:CASH,TRANSFER',
+            'metode' => 'nullable|in:CASH,TRANSFER,TUNAI,NONTUNAI',
         ]);
 
         if ($validator->fails()) {
@@ -63,7 +63,7 @@ class TabunganApiController extends Controller
                 'status_verifikasi' => 'pending', // Default pending, butuh upload bukti
                 'token' => null,
                 'token_expired_at' => null,
-                'status_approval' => null,
+                'status_approval' => 'pending',
                 'created_by' => Auth::id() ?? $siswa->user->id,
             ]);
 

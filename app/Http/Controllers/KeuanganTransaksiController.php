@@ -51,6 +51,9 @@ class KeuanganTransaksiController extends Controller
             ->when($request->kode_pembayaran, function ($query, $kode) {
                 $query->where('code_pembayaran', 'like', '%' . $kode . '%');
             })
+            ->when($request->filled('siswa_id'), function ($query, $siswaId) {
+                $query->where('penerima_id', $siswaId)->where('penerima_tipe', Siswa::class);
+            })
             ->when($request->nama_siswa, function ($query, $nama) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($nama) {
                     $q->whereHas('user', function ($q2) use ($nama) {
@@ -69,17 +72,20 @@ class KeuanganTransaksiController extends Controller
             ->appends($request->except('page'));
 
         $total_pemasukan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
-            ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all', function ($query) use ($request) {
+            ->when($request->filled('siswa_id'), function ($query, $siswaId) {
+                $query->where('penerima_id', $siswaId)->where('penerima_tipe', Siswa::class);
+            })
+            ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all' && !$request->filled('siswa_id'), function ($query) use ($request) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
                 });
             })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id, function ($query) {
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->where('unit_id', Auth::user()->unit_id);
                 });
             })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
@@ -101,17 +107,20 @@ class KeuanganTransaksiController extends Controller
             ->sum('jumlah');
 
         $total_pengeluaran = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan'])
-            ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all', function ($query) use ($request) {
+            ->when($request->filled('siswa_id'), function ($query, $siswaId) {
+                $query->where('penerima_id', $siswaId)->where('penerima_tipe', Siswa::class);
+            })
+            ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all' && !$request->filled('siswa_id'), function ($query) use ($request) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
                 });
             })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id, function ($query) {
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->where('unit_id', Auth::user()->unit_id);
                 });
             })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
@@ -132,17 +141,20 @@ class KeuanganTransaksiController extends Controller
             })
             ->sum('jumlah');
 
-        $total_transaksi = Keuangan_transaksi::when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all', function ($query) use ($request) {
-            $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
-                $q->where('unit_id', $request->unit_id);
-            });
+        $total_transaksi = Keuangan_transaksi::when($request->filled('siswa_id'), function ($query, $siswaId) {
+            $query->where('penerima_id', $siswaId)->where('penerima_tipe', Siswa::class);
         })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id, function ($query) {
+            ->when($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all' && !$request->filled('siswa_id'), function ($query) use ($request) {
+                $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
+                    $q->where('unit_id', $request->unit_id);
+                });
+            })
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->where('unit_id', Auth::user()->unit_id);
                 });
             })
-            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id, function ($query) {
+            ->when((!$request->filled('unit_id') || $request->unit_id == '' || $request->unit_id == 'all') && Auth::user()->yayasan_id && !Auth::user()->unit_id && !$request->filled('siswa_id'), function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
@@ -161,6 +173,31 @@ class KeuanganTransaksiController extends Controller
             ->when($request->sampai_tanggal, function ($query, $sampai) {
                 $query->whereDate('tanggal_transaksi', '<=', $sampai);
             })
+            ->get();
+        $sum = $total_transaksi->sum('jumlah');
+        $count = $total_transaksi->count();
+        $siswaIds = $transaksis->pluck('penerima_id')->unique()->toArray();
+        // Build base query with unit filtering if auth user has unit_id
+        $baseQuery = function ($query) use ($siswaIds, $request) {
+            return $query->where('penerima_tipe', Siswa::class)
+                ->whereIn('penerima_id', $siswaIds)
+                ->when(Auth::user()->unit_id, function ($q) {
+                    // Join with siswa table to filter by unit_id
+                    $q->join('siswas', 'keuangan_transaksis.penerima_id', '=', 'siswas.id')
+                      ->where('siswas.unit_id', Auth::user()->unit_id)
+                      ->select('keuangan_transaksis.*');
+                })
+                ->when($request->filled('dari_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+                })
+                ->when($request->filled('sampai_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+                });
+        };
+        // Total pending penarikan
+        $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('status_approval', 'pending')
+            ->tap($baseQuery)
             ->count();
 
         // Get units for filter options
@@ -177,6 +214,9 @@ class KeuanganTransaksiController extends Controller
             'total_pemasukan',
             'total_pengeluaran',
             'total_transaksi',
+            'total_pending',
+            'sum',
+            'count',
             'units'
         ));
     }
@@ -327,7 +367,22 @@ class KeuanganTransaksiController extends Controller
         \DB::beginTransaction();
 
         try {
-            $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+            // Load dengan relasi yang sesuai berdasarkan jenis transaksi
+            if (in_array($request->jenis_transaksi ?? '', ['setoran_tabungan', 'penarikan_tabungan'])) {
+                $transaksi = Keuangan_transaksi::with(['penerima'])->findOrFail($id);
+            } else {
+                $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+            }
+
+            // Jika jenis_transaksi belum diketahui dari request, load dari database
+            if (!isset($request->jenis_transaksi)) {
+                $transaksi = Keuangan_transaksi::findOrFail($id);
+                if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'penarikan_tabungan'])) {
+                    $transaksi->load(['penerima']);
+                } else {
+                    $transaksi->load(['penerima', 'pembayaranTagihan.tagihanSiswa']);
+                }
+            }
 
             // Cek apakah transaksi sudah diverifikasi
             if ($transaksi->status_verifikasi === 'approved') {
@@ -339,13 +394,13 @@ class KeuanganTransaksiController extends Controller
 
             // Khusus penarikan tabungan: HARUS melewati token verification dulu
             if ($transaksi->jenis_transaksi === 'penarikan_tabungan') {
-                if ($transaksi->status_approval !== 'verified') {
+                if (!in_array($transaksi->status_approval, ['verified', 'approved'])) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Penarikan tabungan harus diverifikasi dengan token terlebih dahulu. Status saat ini: ' . $transaksi->status_approval,
                         'data' => [
                             'status_approval' => $transaksi->status_approval,
-                            'required_status' => 'verified',
+                            'required_status' => 'verified or approved',
                             'note' => 'Gunakan endpoint /api/v1/tabungan/verify untuk verifikasi token terlebih dahulu'
                         ]
                     ], 400);
@@ -395,20 +450,20 @@ class KeuanganTransaksiController extends Controller
                     \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id' => 2, // Tabungan Keluar
-                        'tipe_transaksi' => 'debit',
-                        'nominal' => $transaksi->jumlah,
+                        'debit' => $transaksi->jumlah,
+                        'kredit' => 0,
                         'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal_jurnal' => now(),
+                        'tanggal' => now(),
                     ]);
 
                     // Kredit: Kas (mengurangi kas sekolah)
                     \App\Models\Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id' => 1, // Kas
-                        'tipe_transaksi' => 'kredit',
-                        'nominal' => $transaksi->jumlah,
+                        'debit' => 0,
+                        'kredit' => $transaksi->jumlah,
                         'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal_jurnal' => now(),
+                        'tanggal' => now(),
                     ]);
                 }
             }
@@ -448,36 +503,39 @@ class KeuanganTransaksiController extends Controller
                     'status_verifikasi' => 'approved',
                     'status_approval' => 'approved'
                 ]);
+
+                // Create journal entries untuk pembayaran tagihan
+                $pembayaran = $transaksi->pembayaranTagihan;
+                if ($pembayaran && $pembayaran->tagihanSiswa) {
+                    $tagihanSiswa = $pembayaran->tagihanSiswa;
+                    $tagihan = $tagihanSiswa->tagihan;
+                    $siswa = $tagihanSiswa->siswa;
+                    $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+
+                    $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+                    // Debit: Kas (uang masuk dari siswa)
+                    \App\Models\Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => 1, // Kas
+                        'debit' => $jumlahBayar,
+                        'kredit' => 0,
+                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                        'tanggal' => now(),
+
+                    ]);
+
+                    // Kredit: Tagihan (mengurangi hutang siswa)
+                    \App\Models\Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => 3, // Tagihan Masuk (receivable)
+                        'kredit' => $jumlahBayar,
+                        'debit' => 0,
+                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                        'tanggal' => now(),
+                    ]);
+                }
             }
-            // Create journal entries untuk pembayaran tagihan
-            $pembayaran = $transaksi->pembayaranTagihan;
-            $tagihanSiswa = $pembayaran->tagihanSiswa;
-            $tagihan = $tagihanSiswa->tagihan;
-            $siswa = $tagihanSiswa->siswa;
-            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
-
-            $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
-
-            // Debit: Kas (uang masuk dari siswa)
-            \App\Models\Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id' => 1, // Kas
-                'debit' => $jumlahBayar,
-                'kredit' => 0,
-                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                'tanggal' => now(),
-
-            ]);
-
-            // Kredit: Tagihan (mengurangi hutang siswa)
-            \App\Models\Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id' => 3, // Tagihan Masuk (receivable)
-                'kredit' => $jumlahBayar,
-                'debit' => 0,
-                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                'tanggal' => now(),
-            ]);
             // Log activity
             Keuangan_transaksi_logs::create([
                 'transaksi_id' => $transaksi->id,
@@ -516,7 +574,22 @@ class KeuanganTransaksiController extends Controller
         \DB::beginTransaction();
 
         try {
-            $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+            // Load dengan relasi yang sesuai berdasarkan jenis transaksi
+            if (in_array($request->jenis_transaksi ?? '', ['setoran_tabungan', 'penarikan_tabungan'])) {
+                $transaksi = Keuangan_transaksi::with(['penerima'])->findOrFail($id);
+            } else {
+                $transaksi = Keuangan_transaksi::with(['penerima', 'pembayaranTagihan.tagihanSiswa'])->findOrFail($id);
+            }
+
+            // Jika jenis_transaksi belum diketahui dari request, load dari database
+            if (!isset($request->jenis_transaksi)) {
+                $transaksi = Keuangan_transaksi::findOrFail($id);
+                if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'penarikan_tabungan'])) {
+                    $transaksi->load(['penerima']);
+                } else {
+                    $transaksi->load(['penerima', 'pembayaranTagihan.tagihanSiswa']);
+                }
+            }
 
             // Cek apakah transaksi sudah diverifikasi
             if ($transaksi->status_verifikasi === 'rejected') {

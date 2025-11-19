@@ -13,6 +13,7 @@ class PayrollSetting extends Model
         'units_id',
         'officers_id',
         'teaching_hours',
+        'teaching_hours_total',
         'salary',
         'transport_allowance',
         'meal_allowance',
@@ -21,6 +22,7 @@ class PayrollSetting extends Model
         'billing_period',
         'start_month',
         'start_year',
+        'type',
     ];
 
     public function unit()
@@ -45,5 +47,10 @@ class PayrollSetting extends Model
         return $this->belongsToMany(PayrollDeductions::class, 'payroll_setting_deductions', 'payroll_setting_id', 'deduction_id')
             ->withPivot('value')
             ->withTimestamps();
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PayrollPayment::class);
     }
 }

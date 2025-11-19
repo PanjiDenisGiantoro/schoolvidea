@@ -2,6 +2,7 @@
 @section('title', 'Tabungan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
 @endpush
 @section('content')
     @include('partials.page-title', [
@@ -9,91 +10,264 @@
         'subTitle' => 'Kelola transaksi tabungan',
     ])
 
-    {{-- Summary Cards --}}
+    {{-- Main Summary Cards --}}
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-success">
-                    <h6>Total Setoran</h6>
-                    <h4>Rp {{ number_format($total_setoran ?? 0, 0, ',', '.') }}</h4>
+        {{-- Total Setoran Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Setoran</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute" >Rp {{ number_format($total_setoran ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-success"></i> Tabungan masuk</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-danger">
-                    <h6>Total Penarikan</h6>
-                    <h4>Rp {{ number_format($total_penarikan ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Penarikan Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Penarikan</p>
+                            <h3 class="fw-bold text-danger text-absolute mb-0">Rp {{ number_format($total_penarikan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money-withdraw text-danger" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-danger"></i> Tabungan keluar</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-primary">
-                    <h6>Saldo Tabungan Aktif</h6>
-                    <h4>Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Saldo Aktif Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Saldo Aktif</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($total_setoran - $total_penarikan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-pie-chart-alt text-primary" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-trending-up text-primary"></i> Saldo tersedia</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card rounded-3 border-0 text-center shadow-sm">
-                <div class="card-body text-info">
-                    <h6>Jumlah Transaksi</h6>
-                    <h4>{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h4>
+
+        {{-- Total Transaksi Card --}}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-history text-info" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-list-check text-info"></i> Jumlah total</small>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Additional Statistics --}}
-    <div class="row g-3 mb-4" >
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Setoran</h6>
-                    <h4 class="text-white">{{ $total_pending_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3  bg-success border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Setoran</h6>
-                    <h4 class="text-white">{{ $total_approved_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Setoran</h6>
-                    <h4 class="text-white">{{ $total_rejected_setoran ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-warning border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Pending Penarikan</h6>
-                    <h4 class="text-white">{{ $total_pending ?? 0 }}</h4>
-                </div>
-            </div>
-        </div>
+    {{-- Status Statistics Cards --}}
+    <div class="mb-4">
+        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="bx bx-filter-alt text-primary"></i> Status Transaksi
+        </h6>
+        <div class="row g-3">
+            {{-- Setoran Stats Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-setoran transition-all">
+                    <div class="status-card-header">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon">
+                                <i class="bx bx-down-arrow-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Status Setoran</h6>
+                                <small class="text-muted">Tabungan masuk</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Pending --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Pending</small>
+                                        <i class="bx bx-time-five text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold">{{ $total_pending_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
 
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-success border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Approved Penarikan</h6>
-                    <h4 class="text-white">{{ $total_approved ?? 0 }}</h4>
+                        {{-- Approved --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-success"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Approved</small>
+                                        <i class="bx bx-check-circle text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold">{{ $total_approved_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Rejected --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-danger"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Rejected</small>
+                                        <i class="bx bx-x-circle text-danger" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-danger fw-bold">{{ $total_rejected_setoran ?? 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-2">
-            <div class="card rounded-3 bg-danger border-0 text-center shadow-lg">
-                <div class="card-body">
-                    <h6 class="text-white fw-bold" style="font-size: 14px">Reject Penarikan</h6>
-                    <h4 class="text-white">{{ $total_rejected ?? 0 }}</h4>
+            {{-- Penarikan Stats Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-penarikan transition-all">
+                    <div class="status-card-header">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon">
+                                <i class="bx bx-up-arrow-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Status Penarikan</h6>
+                                <small class="text-muted">Tabungan keluar</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Pending --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Pending</small>
+                                        <i class="bx bx-time-five text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold">{{ $total_pending ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Approved --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-success"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Approved</small>
+                                        <i class="bx bx-check-circle text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold">{{ $total_approved ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Rejected --}}
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot status-dot-danger"></span>
+                                    <div>
+                                        <small class="text-muted d-block">Rejected</small>
+                                        <i class="bx bx-x-circle text-danger" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-danger fw-bold">{{ $total_rejected ?? 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Ringkasan Card --}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 status-card status-card-summary transition-all">
+                    <div class="status-card-header-summary">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="status-icon-summary">
+                                <i class="bx bx-chart"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-0">Ringkasan</h6>
+                                <small class="text-white-50">Rekapitulasi total</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {{-- Total Transaksi --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-info"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Total Transaksi</small>
+                                        <i class="bx bx-list text-info" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-black fw-bold" style="font-size: 1.25rem;">{{ $jumlah_transaksi ?? 0 }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Pending Total --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-warning"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Menunggu Approval</small>
+                                        <i class="bx bx-hourglass text-warning" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-warning fw-bold" style="font-size: 1.25rem;">{{ ($total_pending ?? 0) + ($total_pending_setoran ?? 0) }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Completed Total --}}
+                        <div class="status-item-summary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot-summary status-dot-success"></span>
+                                    <div>
+                                        <small class="text-black-50 d-block">Selesai (Approved/Rejected)</small>
+                                        <i class="bx bx-check-double text-success" style="font-size: 18px;"></i>
+                                    </div>
+                                </div>
+                                <span class="status-count text-success fw-bold" style="font-size: 1.25rem;">{{ ($total_approved ?? 0) + ($total_approved_setoran ?? 0) + ($total_rejected ?? 0) + ($total_rejected_setoran ?? 0) }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,11 +277,17 @@
     @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
     <div class="card rounded-3 border-0 shadow-sm mb-4">
         <div class="card-body">
-            <h5 class="fw-bold text-primary mb-3">
-                <i class="bx bx-filter"></i> Filter Tabungan
-            </h5>
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#filterCollapse"
+                    style="cursor: pointer;">
+                <h5 class="fw-bold text-primary">
+                    <i class="bx bx-filter"></i> Filter Tabungan
+                </h5>
+                <i class="bx bx-chevron-down text-primary" style="font-size: 26px"></i>
+            </div>
             <form action="{{ route('tabungan.index') }}" method="GET">
-                <div class="row g-3">
+                <div class="row g-3 collapse" id="filterCollapse">
                     {{-- Filter Unit --}}
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
@@ -213,7 +393,7 @@
                     <div class="col-md-4">
                         <span class="fw-bold text-primary me-3" style="font-size: 14px">Daftar Tabungan</span>
                         <button type="button" id="btnProsesStatus" class="custom-btn-info gap-3">
-                            <i class="ri-checkbox-multiple-line me-2"></i>Aktifkan Semua Status
+                            <i class="ri-checkbox-multiple-line me-2"></i>Aktivasi Semua Status
                         </button>
                     </div>
                     <div>
@@ -296,54 +476,6 @@
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <style>
-        .animate-btn {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .animate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Pending Modal Styles */
-        #pendingModal .modal-header {
-            border-bottom: 3px solid #ffc107;
-        }
-
-        #pendingModal .table thead th {
-            position: sticky;
-            top: 0;
-            background-color: #fff3cd;
-            z-index: 10;
-        }
-
-        #pendingModal .table tbody tr {
-            transition: all 0.2s ease;
-        }
-
-        #pendingModal .table tbody tr:hover {
-            background-color: #fff9e6;
-            transform: scale(1.01);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        #pendingModal .badge {
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        #pendingModal .btn-primary {
-            transition: all 0.2s ease;
-        }
-
-        #pendingModal .btn-primary:hover {
-            transform: scale(1.05);
-        }
-    </style>
-@endpush
 
 
 @push('scripts')

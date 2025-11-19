@@ -152,7 +152,7 @@ class PembayaranController extends Controller
         $validator = Validator::make($request->all(), [
             'tagihan_siswa_id' => 'required|exists:tagihan_siswa,id',
             'jumlah_bayar' => 'required|numeric|min:1',
-            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING',
+            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING,NONTUNAI,TUNAI',
             'keterangan' => 'nullable|string'
         ]);
 

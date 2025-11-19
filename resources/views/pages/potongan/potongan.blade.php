@@ -8,69 +8,74 @@
         'subTitle' => 'Potongan',
     ])
 
-    <div class="card">
+    <div class="card rounded-3 border-0 shadow-sm">
         <div class="card-body">
             <!-- Button to create a new Potongan -->
-            <a href="{{ route('potongan.create') }}" class="btn btn-success mb-3">
+            <a href="{{ route('potongan.create') }}" class="btn btn-success mb-3 rounded-2">
                 <i class="fa fa-plus"></i> Tambah Potongan
             </a>
 
             <!-- Potongan Table -->
             <div class="table-responsive">
-                <table id="potongan_table" class="table-striped table-bordered table">
-                    <thead>
+                <table id="potongan_table" class="table-striped table-bordered table align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th>#</th>
+                            <th width="5%">#</th>
                             <th>Unit</th>
                             <th>Kelas</th>
                             <th>Kategori Tagihan</th>
                             <th>Tipe Potongan</th>
-                            <th>Nilai</th>
+                            <th width="15%">Nilai</th>
                             <th>Keterangan</th>
-                            <th>Aksi</th>
+                            <th width="20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($potongans as $potongan)
+                        @forelse ($potongans as $potongan)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $potongan->unit->nama_unit }}</td>
                                 <td>{{ $potongan->kelas->nama_kelas }}</td>
                                 <td>{{ $potongan->kategoriTagihan->nama_kategori }}</td>
-                                <td>{{ $potongan->tipe_potongan }}</td>
-
                                 <td>
-                                    @php
-                                        if ($potongan->tipe_potongan == 'Persen') {
-                                            $nilai = $potongan->nilai . '%';
-                                        } else {
-                                            $nilai = 'Rp ' . number_format($potongan->nilai, 2, ',', '.');
-                                        }
-                                    @endphp
-                                    {{ $nilai }}
+                                    <span class="badge bg-light text-dark">
+                                        {{ ucfirst($potongan->tipe_potongan) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>
+                                        @if (strtolower($potongan->tipe_potongan) == 'persentase')
+                                            {{ $potongan->nilai }}%
+                                        @else
+                                            Rp {{ number_format($potongan->nilai, 0, ',', '.') }}
+                                        @endif
+                                    </strong>
                                 </td>
                                 <td>{{ $potongan->keterangan ?? '-' }}</td>
-                                <td class="d-flex place-items-center gap-1">
-                                    <!-- View Button -->
-                                    <a href="{{ route('potongan.show', $potongan->id) }}" class="btn btn-info btn-sm">
-                                        <i class="fa fa-eye"></i> Lihat
-                                    </a>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <!-- View Button -->
+                                        <a href="{{ route('potongan.show', $potongan->id) }}"
+                                            class="btn btn-sm btn-info rounded-2" title="Lihat Detail">
+                                            <i class="fa fa-eye"></i> Lihat
+                                        </a>
 
-                                    <a href="{{ route('potongan.destroy', $potongan->id) }}" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')">
-                                        <i class="fa fa-trash"></i> Hapus
-                                    </a>
-                                    {{--                            <!-- Delete Button --> --}}
-                                    {{--                            <form action="{{ route('potongan.destroy', $potongan->id) }}" method="POST" style="display:inline;"> --}}
-                                    {{--                                @csrf --}}
-                                    {{--                                @method('DELETE') --}}
-                                    {{--                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus potongan ini?')"> --}}
-                                    {{--                                    <i class="fa fa-trash"></i> Hapus --}}
-                                    {{--                                </button> --}}
-                                    {{--                            </form> --}}
+
+                                        <!-- Delete Button -->
+                                        <button type="button" class="btn btn-sm btn-danger rounded-2"
+                                            onclick="deletePotongan({{ $potongan->id }})">
+                                            <i class="fa fa-trash"></i> Hapus
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <p class="text-muted mb-0">Belum ada data potongan</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -86,8 +91,15 @@
             $('#potongan_table').DataTable({
                 paging: true,
                 searching: true,
+                ordering: true,
                 responsive: true
             });
         });
+
+        function deletePotongan(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus potongan ini?')) {
+                window.location.href = `{{ route('potongan.destroy', ':id') }}`.replace(':id', id);
+            }
+        }
     </script>
 @endpush

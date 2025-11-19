@@ -17,23 +17,22 @@ use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
-
     public function index()
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan dari semua unit dalam yayasan
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $siswaList = Siswa::whereHas('unit', function($q) {
+            $siswaList = Siswa::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $tagihanList = Tagihan::whereHas('unit', function($q) {
+            $tagihanList = Tagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $akunList = setting_akun::whereHas('unit', function($q) {
+            $akunList = setting_akun::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
         } elseif (Auth::user()->unit_id) {
@@ -52,7 +51,7 @@ class PembayaranController extends Controller
             $kelas = Kelas::get();
         }
 
-        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas','units'));
+        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList', 'kelas', 'units'));
 
     }
     public function bayar(Request $request)
@@ -98,19 +97,21 @@ class PembayaranController extends Controller
 
             // simpan pembayaran
             $pembayaran = PembayaranTagihan::create([
-                'code_pembayaran' => 'PS' . date('YmdHis').rand(1000,9999),
+                'code_pembayaran' => 'PS' . date('YmdHis').rand(1000, 9999),
                 'tagihan_siswa_id' => $tagihanSiswa->id,
                 'jumlah_bayar'     => $jumlahBayar,
                 'tanggal_bayar'    => now(),
                 'metode_bayar'     => $request->metode ?? 'Tunai',
                 'keterangan'       => $keterangan,
                 'create_by'        => Auth::id(),
+                'status_approval' => 'approved',
             ]);
 
             // update status dan sisa_nominal
             $tagihanSiswa->update([
                 'status'        => $statusTagihan,
                 'sisa_nominal'  => $sisaSetelahBayar,
+                'tanggal_bayar' => $tanggalBayar,
             ]);
 
             // Cek apakah masih ada tagihan siswa yang belum lunas untuk tagihan ini
@@ -136,6 +137,12 @@ class PembayaranController extends Controller
                 'tanggal_transaksi'    => now(),
                 'keterangan'           => $keterangan,
                 'created_by'           => Auth::id(),
+                'status_approval' => 'approved',
+                'approved_by'         => Auth::id(),
+                'approved_at'          => now(),
+                'status_verifikasi'  => 'approved',
+                'verified_at'          => now(),
+                'verified_by'          => Auth::id(),
             ]);
 
             // jurnal debit
@@ -175,5 +182,51 @@ class PembayaranController extends Controller
         }
     }
 
+    /**
+     * Print struk pembayaran tagihan
+     */
+    public function printStruk($pembayaranId)
+    {
+        $pembayaran = Pembayarantagihan::with([
+            'tagihanSiswa.tagihan.items.kategori',
+            'tagihanSiswa.siswa.user',
+            'user'
+        ])->findOrFail($pembayaranId);
+
+        $tagihanSiswa = $pembayaran->tagihanSiswa;
+        $siswa = $tagihanSiswa->siswa;
+        $tagihan = $tagihanSiswa->tagihan;
+
+        // Generate kode tagihan
+        $kodeTagihan = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT);
+
+        // Generate HTML untuk cetak
+        $html = view('pages.pembayaran.struk', compact(
+            'pembayaran',
+            'tagihanSiswa',
+            'siswa',
+            'tagihan',
+            'kodeTagihan'
+        ))->render();
+
+        // Konfigurasi mPDF untuk thermal printer (80mm x 200mm)
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200], // 80mm width, 200mm height (thermal printer size)
+            'margin_left' => 5,
+            'margin_right' => 5,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+        ]);
+
+        $mpdf->SetTitle('Struk Pembayaran - ' . $siswa->user->name);
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-Pembayaran-' . date('YmdHis') . '.pdf', 'I');
+    }
 
 }

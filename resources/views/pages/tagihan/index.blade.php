@@ -3,7 +3,8 @@
 @section('title', 'Kelola Tagihan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-@endpush
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+    @endpush
 @section('content')
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
@@ -13,38 +14,71 @@
 
         {{-- Summary Cards --}}
         <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Jumlah Data</h6>
-                        <h4 class="text-white">{{ $summary['jumlah_data'] ?? 0 }}</h4>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Jumlah Data</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">{{ $summary['jumlah_data'] ?? 0 }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-list-check text-info" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-info"></i> Akumulasi Data Tagihan</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Nominal Tagihan</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Nominal Tagihan</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money text-success" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-success"></i> Akumulasi Nominal Tagihan</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Sudah Dibayar</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Sudah Dibayar</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-check-circle text-primary" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-check-circle text-primary"></i> Nominal Tagihan Yang Sudah Dibayar</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
-                    <div class="card-body text-primary">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Belum Dibayar</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Belum Dibayar</p>
+                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-time text-warning" style="font-size: 24px;"></i>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-warning"></i> Nominal Tagihan Yang Belum Dibayar</small>
                 </div>
             </div>
+        </div>
         </div>
 
         {{-- Alert jika ada error --}}
@@ -58,11 +92,17 @@
         @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
         <div class="card rounded-3 mb-3 border-0 shadow-sm">
             <div class="card-body">
-                <h5 class="fw-bold text-primary mb-3">
-                    <i class="bx bx-filter"></i> Filter Tagihan
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#filterCollapse"
+                    style="cursor: pointer;">
+                <h5 class="fw-bold text-primary">
+                    <i class="bx bx-filter"></i> Filter Tabungan
                 </h5>
+                <i class="bx bx-chevron-down text-primary" style="font-size: 26px"></i>
+            </div>
                 <form method="GET" action="{{ route('tagihan.index') }}">
-                    <div class="row g-3 align-items-end">
+                    <div class="row g-3 align-items-end collapse" id="filterCollapse">
                         {{-- Filter Search --}}
                         <div class="col-md-2">
                             <label for="search" class="form-label">Cari Tagihan</label>

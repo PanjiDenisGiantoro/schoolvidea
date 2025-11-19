@@ -521,7 +521,7 @@ class SiswaController extends Controller
             'no_hp'          => $siswa->no_hp ?? '-',
             'foto'           => $siswa->image
                 ? asset($siswa->image)
-                : asset('images/default-avatar.png'),
+                : asset('assets/images/default-avatar.png'),
             'qrcode'         => $siswa->qrcode_image
                 ? asset('storage/' . $siswa->qrcode_image)
                 : null,

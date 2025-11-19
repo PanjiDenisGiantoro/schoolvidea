@@ -6,6 +6,7 @@ use App\Models\Officer;
 use App\Models\PayrollSetting;
 use App\Models\PayrollComponents;
 use App\Models\PayrollDeductions;
+use App\Models\PayrollPayment;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -61,21 +62,24 @@ class PayrollSettingController extends Controller
     /**
      * Simpan atau update data payroll.
      */
+
     public function store(Request $request)
     {
-        // ... (Logika validasi dan penyimpanan tidak berubah)
         $validated = $request->validate([
             "units_id" => "required|exists:units,id",
             "officers_id" => "required|exists:officers,id",
             "teaching_hours" => "nullable|numeric",
+            "teaching_hours_total" => "nullable|numeric",
             "salary" => "nullable|numeric",
+
             "transport_allowance" => "nullable|numeric",
             "meal_allowance" => "nullable|numeric",
             "communication_allowance" => "nullable|numeric",
             "other_allowance" => "nullable|numeric",
-            "billing_period" => "nullable|string",
-            "start_month" => "nullable|string",
-            "start_year" => "nullable|integer",
+
+            "billing_period" => "required|integer",
+            "start_month" => "required|integer",
+            "start_year" => "required|integer",
 
             "components_id" => "array",
             "component_value" => "array",
@@ -84,59 +88,128 @@ class PayrollSettingController extends Controller
         ]);
 
         try {
-            $mainData = collect($validated)
-                ->except([
-                    "components_id",
-                    "component_value",
-                    "deductions_id",
-                    "deduction_value",
-                ])
-                ->toArray();
 
+            Log::info("PAYROLL DEBUG START", $validated);
+
+            // === Simpan payroll_settings ===
             $payrollSetting = PayrollSetting::updateOrCreate(
                 [
                     "units_id" => $validated["units_id"],
                     "officers_id" => $validated["officers_id"],
                 ],
-                $mainData,
+                $validated
             );
 
-            // === Simpan komponen gaji ===
+            // === Sync Komponen ===
+            $totalComponentValue = 0;
             if ($request->filled("components_id")) {
                 $syncComponents = [];
-                foreach ($request->components_id as $index => $compId) {
-                    if ($compId) {
-                        $syncComponents[$compId] = [
-                            "value" => $request->component_value[$index] ?? 0,
-                        ];
-                    }
+
+                foreach ($request->components_id as $i => $compId) {
+                    $value = $request->component_value[$i] ?? 0;
+                    $totalComponentValue += $value;
+
+                    $syncComponents[$compId] = ["value" => $value];
                 }
+
                 $payrollSetting->components()->sync($syncComponents);
             }
 
-            // === Simpan potongan ===
+            // === Sync Potongan ===
+            $totalDeductions = 0;
             if ($request->filled("deductions_id")) {
                 $syncDeductions = [];
-                foreach ($request->deductions_id as $index => $deductId) {
-                    if ($deductId) {
-                        $syncDeductions[$deductId] = [
-                            "value" => $request->deduction_value[$index] ?? 0,
-                        ];
-                    }
+
+                foreach ($request->deductions_id as $i => $deductId) {
+                    $value = $request->deduction_value[$i] ?? 0;
+                    $totalDeductions += $value;
+
+                    $syncDeductions[$deductId] = ["value" => $value];
                 }
+
                 $payrollSetting->deductions()->sync($syncDeductions);
             }
 
+
+            // === Hitung allowance & deduction ===
+            $allowanceTotal =
+                ($payrollSetting->transport_allowance ?? 0) +
+                ($payrollSetting->meal_allowance ?? 0) +
+                ($payrollSetting->communication_allowance ?? 0) +
+                ($payrollSetting->other_allowance ?? 0);
+
+            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+
+            // === Variabel inti ===
+            $billingPeriod = (int) $validated["billing_period"];
+            $startMonth     = (int) $validated["start_month"];
+            $startYear      = (int) $validated["start_year"];
+            $rows           = [];
+
+            // === Loop komponen → bulan ===
+            foreach ($request->components_id as $index => $compId) {
+
+                $value = (int) ($request->component_value[$index] ?? 0);
+
+                for ($i = 0; $i < $billingPeriod; $i++) {
+
+                    // Hitung bulan berjalan
+                    $month = $startMonth + $i;
+                    $year  = $startYear;
+
+                    if ($month > 12) {
+                        $month -= 12;
+                        $year++;
+                    }
+
+                    // Format bulan
+                    $paymentMonth = sprintf("%02d-%04d", $month, $year);
+
+                    // Gaji pokok (per komponen dihitung sama)
+                    $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+
+                    // Total pendapatan per komponen
+                    $totalEarnings = $basicSalary + $allowanceTotal + $value;
+
+                    // Total bersih
+                    $netPayment = $totalEarnings - $deductionsTotal;
+
+                    $rows[] = [
+                        "unit_id"            => $validated["units_id"],
+                        "officer_id"         => $validated["officers_id"],
+                        "payroll_setting_id" => $payrollSetting->id,
+                        "component_id"       => $compId,
+
+                        "teaching_hour_week"  => $request->teaching_hours ?? 0,
+                        "teaching_hour_month" => $request->teaching_hours_total ?? 0,
+
+                        "total_earnings"     => $totalEarnings,
+                        "total_deductions"   => $deductionsTotal,
+                        "net_payment"        => $netPayment,
+
+                        "payment_month"      => $paymentMonth,
+                        "notes"              => null,
+                        "status"             => "pending",
+
+                        "created_at" => now(),
+                        "updated_at" => now(),
+                    ];
+                }
+            }
+
+            // Insert sekali (super cepat)
+            PayrollPayment::insert($rows);
+
             return redirect()
-                ->route("payroll_settings.index")
+                ->route("payroll_payment.index")
                 ->with("success", "Data payroll berhasil disimpan.");
+
         } catch (\Throwable $e) {
-            Log::error("Payroll Setting Store Error: " . $e->getMessage());
-            return redirect()
-                ->back()
-                ->with("error", "Terjadi kesalahan: " . $e->getMessage());
+            Log::error("PAYROLL ERROR: " . $e->getMessage());
+            return back()->with("error", $e->getMessage());
         }
     }
+
 
     /**
      * Update payroll setting (gunakan logika store).
@@ -301,6 +374,48 @@ class PayrollSettingController extends Controller
 
         return response()->json($officers);
     }
+
+
+    public function getOfficerDetail($officerId)
+    {
+        $officer = Officer::with([
+            'position:id,positions_name',
+            'unit:id,nama_unit'
+        ])->find($officerId);
+
+        return response()->json([
+            'officer_name' => $officer->name ?? "-",
+            'officer_unit' => $officer->unit?->nama_unit ?? "-",
+            'officer_nip' => $officer->nip ?? "-",
+            'officer_no_hp' => $officer->no_hp ?? "-",
+            'officer_foto' => $officer-> image ?? "",
+            'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan"
+        ]);
+    }
+
+    public function getByOfficer($officerId)
+    {
+        $settings = PayrollSetting::where('officers_id', $officerId)
+            ->with(['components.component'])->get();
+        $components = $settings
+            ->flatMap(fn ($s) => $s->components)
+            ->pluck('component')
+            ->unique('id')
+        ->values()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+            ]);
+        $periodes = $settings->pluck('billing_period')->unique()->values();
+        $years = $settings->pluck('start_year')->unique()->values();
+
+        return response()->json([
+            'components' => $components,
+            'periodes' => $periodes,
+            'years' => $years,
+        ]);
+    }
+
 
     /**
      * Ambil semua komponen gaji (untuk dropdown dinamis).
