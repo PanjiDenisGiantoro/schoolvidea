@@ -324,14 +324,17 @@ class TagihanController extends Controller
                     return $tunggakan > 0;
                 }
                 return true;
-            })->values();
+            });
         }
+
+        // Reset index dan convert ke array
+        $filtered = collect($filtered)->values();
 
         // Total count setelah filter
         $totalFiltered = $filtered->count();
 
         // Paginate hasil
-        $paginatedResults = $filtered->slice($start, $length);
+        $paginatedResults = $filtered->slice($start, $length)->values();
 
         // Data untuk display
         $data = $paginatedResults->map(function ($tagihanSiswa, $index) use ($start) {
@@ -369,7 +372,7 @@ class TagihanController extends Controller
                 'status' => $status_badge,
                 'action' => $detail_btn,
             ];
-        });
+        })->values()->toArray();
 
         return response()->json([
             'draw' => intval($request->input('draw', 1)),

@@ -209,22 +209,25 @@ di @extends('layouts.app')
                         d.tagihan_status = document.getElementById('tagihan_status')?.value || '';
                         d.jenis_tagihan = document.getElementById('jenis_tagihan')?.value || '';
                         d.search = d.search.value;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('DataTable AJAX Error:', error, xhr.responseText);
                     }
                 },
                 columns: [
-                    { data: 'no', name: 'no', className: 'text-center', width: '5%' },
-                    { data: 'nisn', name: 'nisn', width: '10%' },
-                    { data: 'nama_siswa', name: 'nama_siswa', width: '15%' },
-                    { data: 'unit', name: 'unit', width: '10%' },
-                    { data: 'kelas', name: 'kelas', width: '10%' },
-                    { data: 'nama_tagihan', name: 'nama_tagihan', width: '15%' },
-                    { data: 'jenis_tagihan', name: 'jenis_tagihan', width: '8%' },
-                    { data: 'periode', name: 'periode', width: '10%' },
-                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-end', width: '12%' },
-                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-end', width: '12%' },
-                    { data: 'jml_tunggakan', name: 'jml_tunggakan', className: 'text-end', width: '12%' },
-                    { data: 'status', name: 'status', className: 'text-center', orderable: false, width: '10%' },
-                    { data: 'action', name: 'action', className: 'text-center', orderable: false, searchable: false, width: '8%' }
+                    { data: 'no', name: 'no', className: 'text-center', width: '5%', render: function(data) { return data; } },
+                    { data: 'nisn', name: 'nisn', width: '10%', render: function(data) { return data || '-'; } },
+                    { data: 'nama_siswa', name: 'nama_siswa', width: '15%', render: function(data) { return data || '-'; } },
+                    { data: 'unit', name: 'unit', width: '10%', render: function(data) { return data || '-'; } },
+                    { data: 'kelas', name: 'kelas', width: '10%', render: function(data) { return data || '-'; } },
+                    { data: 'nama_tagihan', name: 'nama_tagihan', width: '15%', render: function(data) { return data || '-'; } },
+                    { data: 'jenis_tagihan', name: 'jenis_tagihan', width: '8%', render: function(data) { return data || '-'; } },
+                    { data: 'periode', name: 'periode', width: '10%', render: function(data) { return data || '-'; } },
+                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-end', width: '12%', render: function(data) { return data || 'Rp 0'; } },
+                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-end', width: '12%', render: function(data) { return data || 'Rp 0'; } },
+                    { data: 'jml_tunggakan', name: 'jml_tunggakan', className: 'text-end', width: '12%', render: function(data) { return data || 'Rp 0'; } },
+                    { data: 'status', name: 'status', className: 'text-center', orderable: false, width: '10%', render: function(data) { return data || '-'; } },
+                    { data: 'action', name: 'action', className: 'text-center', orderable: false, searchable: false, width: '8%', render: function(data) { return data || '-'; } }
                 ],
                 columnDefs: [
                     { orderable: false, targets: [0, 11, 12] }
