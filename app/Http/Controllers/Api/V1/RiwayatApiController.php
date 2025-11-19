@@ -9,6 +9,7 @@ use App\Models\Pembayarantagihan;
 use App\Models\Tagihansiswa;
 use App\Models\Tagihansiswa_mutasi;
 use App\Models\Siswa;
+use App\Models\DataRekening;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -144,6 +145,22 @@ class RiwayatApiController extends Controller
                 ->paginate($perPage, ['*'], 'page', $page);
 
             $data = $transactions->map(function ($trx) {
+                // Get rekening data if metode is TRANSFER
+                $data_rekenings = null;
+                if (strtoupper($trx->metode) === 'TRANSFER') {
+                    $rekening = DataRekening::where('status', '1')->first();
+                    if ($rekening) {
+                        $data_rekenings = [
+                            'id' => $rekening->id,
+                            'nama_rekening' => $rekening->account_name,
+                            'nomor_rekening' => $rekening->account_number,
+                            'nama_pemilik' => $rekening->owner_name,
+                            'bank' => $rekening->account_code,
+                            'kcp_name' => $rekening->kcp_name,
+                        ];
+                    }
+                }
+
                 return [
                     'id' => $trx->id,
                     'code' => $trx->code_pembayaran,
@@ -156,11 +173,14 @@ class RiwayatApiController extends Controller
                     'status' => $trx->status_verifikasi,
                     'tanggal_transaksi' => $trx->created_at->format('Y-m-d H:i:s'),
                     'bukti_transfer' => $trx->bukti_transfer ? url($trx->bukti_transfer) : null,
+                    'data_rekenings' => $data_rekenings,
                     'verified_by' => $trx->verifier ? $trx->verifier->name : null,
-//                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
+                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
                     'catatan_verifikasi' => $trx->catatan_verifikasi,
                     'token' => $trx->token,
                     'expired_kode' => $trx->token_expired_at ? $trx->token_expired_at : null,
+                    'created_at' => $trx->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $trx->updated_at->format('Y-m-d H:i:s'),
                 ];
             });
 
