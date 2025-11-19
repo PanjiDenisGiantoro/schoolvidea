@@ -259,6 +259,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('tagihan')->middleware('permission:view_tagihan')->group(function () {
         Route::get('/', [TagihanController::class, 'index'])->name('tagihan.index');
+        Route::get('/datatable', [TagihanController::class, 'datatable'])->name('tagihan.datatable');
         Route::get('/create', [TagihanController::class, 'create'])->middleware('permission:create_tagihan')->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');

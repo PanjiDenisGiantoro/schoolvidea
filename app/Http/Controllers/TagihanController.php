@@ -231,6 +231,154 @@ class TagihanController extends Controller
         return view('pages.tagihan.index', compact('tagihans', 'summary', 'units'));
     }
 
+    /**
+     * Get data untuk DataTable (AJAX endpoint)
+     */
+    public function datatable(Request $request)
+    {
+        $search = $request->input('search.value', '');
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $unitId = $request->input('unit_id', '');
+        $kelasId = $request->input('kelas_id', '');
+        $tagihanStatus = $request->input('tagihan_status', '');
+        $jenisTagihan = $request->input('jenis_tagihan', '');
+
+        // Base query
+        $subquery = DB::table('tagihan_siswa')
+            ->selectRaw('MIN(id) as id')
+            ->groupBy('tagihan_id', 'siswa_id');
+
+        $query = Tagihansiswa::with([
+            'siswa.user',
+            'tagihan.unit',
+            'tagihan.kelas',
+            'tagihan.items.kategori',
+            'siswa.pembayaranTagihan'
+        ])
+            ->joinSub($subquery, 'grouped', function ($join) {
+                $join->on('tagihan_siswa.id', '=', 'grouped.id');
+            });
+
+        // Apply filters
+        if ($unitId) {
+            $query->whereHas('tagihan', function ($q) use ($unitId) {
+                $q->where('unit_id', $unitId);
+            });
+        } elseif (Auth::user()->unit_id) {
+            $query->whereHas('tagihan', function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        }
+
+        if ($kelasId) {
+            $query->whereHas('tagihan', function ($q) use ($kelasId) {
+                $q->where('kelas_id', $kelasId);
+            });
+        }
+
+        if ($jenisTagihan) {
+            $query->whereHas('tagihan', function ($q) use ($jenisTagihan) {
+                $q->where('jenis_tagihan', $jenisTagihan);
+            });
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('tagihan', function ($sq) use ($search) {
+                    $sq->where('nama_tagihan', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
+                })
+                ->orWhereHas('siswa', function ($sq) use ($search) {
+                    $sq->where('nama', 'like', "%{$search}%")
+                      ->orWhere('nisn', 'like', "%{$search}%");
+                })
+                ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
+                    $sq->where('nama_kelas', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // Filter status pembayaran - filter dalam PHP setelah fetch
+        // Kita akan handle ini di mapping bawah
+
+        // Get all results untuk counting dan filtering
+        $allResults = $query->get();
+
+        // Filter berdasarkan status pembayaran jika diperlukan
+        $filtered = $allResults;
+        if ($tagihanStatus) {
+            $filtered = $allResults->filter(function ($tagihanSiswa) use ($tagihanStatus) {
+                $siswa = $tagihanSiswa->siswa;
+                $tagihan = $tagihanSiswa->tagihan;
+
+                $total_tagihan = $tagihan->items->sum('nominal');
+                $jumlah_dibayar = $siswa->pembayaranTagihan
+                    ->where('status_approval', 'approved')
+                    ->sum('jumlah_bayar');
+                $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
+
+                if ($tagihanStatus === 'lunas') {
+                    return $tunggakan <= 0;
+                } elseif ($tagihanStatus === 'belum_lunas') {
+                    return $tunggakan > 0;
+                }
+                return true;
+            })->values();
+        }
+
+        // Total count setelah filter
+        $totalFiltered = $filtered->count();
+
+        // Paginate hasil
+        $paginatedResults = $filtered->slice($start, $length);
+
+        // Data untuk display
+        $data = $paginatedResults->map(function ($tagihanSiswa, $index) use ($start) {
+            $siswa = $tagihanSiswa->siswa;
+            $tagihan = $tagihanSiswa->tagihan;
+
+            $total_tagihan = $tagihan->items->sum('nominal');
+            $jumlah_dibayar = $siswa->pembayaranTagihan
+                ->where('status_approval', 'approved')
+                ->sum('jumlah_bayar');
+            $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
+
+            $nama_kategori = $tagihan->items->pluck('kategori.nama_kategori')->filter()->implode(', ') ?? '-';
+
+            $status_badge = $tunggakan <= 0
+                ? '<span class="badge bg-success rounded-pill">Lunas</span>'
+                : '<span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>';
+
+            $detail_btn = $siswa
+                ? '<a href="' . route('tagihan.show', [$tagihan->id, $siswa->id]) . '" class="btn btn-sm btn-primary rounded-pill"><i class="ri-eye-line"></i></a>'
+                : '-';
+
+            return [
+                'no' => $start + $index + 1,
+                'nisn' => $siswa?->nisn ?? '-',
+                'nama_siswa' => $siswa?->user->name ?? '-',
+                'unit' => $tagihan->unit->nama_unit ?? '-',
+                'kelas' => $tagihan->kelas->nama_kelas ?? '-',
+                'nama_tagihan' => $nama_kategori,
+                'jenis_tagihan' => $tagihan->jenis_tagihan ?? '-',
+                'periode' => ($tagihan->periode ?? '-') . ' Bulan',
+                'jml_tagihan' => 'Rp ' . number_format($total_tagihan, 0, ',', '.'),
+                'jml_dibayar' => 'Rp ' . number_format($jumlah_dibayar, 0, ',', '.'),
+                'jml_tunggakan' => 'Rp ' . number_format($tunggakan, 0, ',', '.'),
+                'status' => $status_badge,
+                'action' => $detail_btn,
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw', 1)),
+            'recordsTotal' => $totalFiltered,
+            'recordsFiltered' => $totalFiltered,
+            'data' => $data,
+        ]);
+    }
+
 
 
     public function store(Request $request)

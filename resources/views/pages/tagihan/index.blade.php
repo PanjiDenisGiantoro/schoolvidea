@@ -129,19 +129,9 @@ di @extends('layouts.app')
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
-
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <label for="per_page" class="mb-0">Tampilkan:</label>
-                        <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
-                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                            <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
-                        </select>
-                        <span class="text-muted">data per halaman</span>
-                    </div>
+                    <h5 class="fw-bold text-dark">Daftar Tagihan</h5>
                     <div class="d-flex gap-2">
                         <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill shadow-sm">
                             <i class="fa fa-plus"></i> Tambah
@@ -158,128 +148,141 @@ di @extends('layouts.app')
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                    <table id="tagihanTable" class="table table-striped table-hover table-bordered align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
                             <tr>
-                                <th>#</th>
+                                <th class="text-center">#</th>
                                 <th>NISN</th>
-                                <th>Nama Lengkap</th>
-                                <th>Tagihan Unit</th>
-                                <th>Tagihan Kelas</th>
+                                <th>Nama Siswa</th>
+                                <th>Unit</th>
+                                <th>Kelas</th>
                                 <th>Nama Tagihan</th>
-                                <th>Tipe Tagihan</th>
+                                <th>Jenis</th>
                                 <th>Periode</th>
-                                <th>Jml. Tagihan</th>
-                                <th>Jml. Dibayar</th>
-                                <th>Jml. Tunggakan</th>
-                                <th>Status</th>
-                                <th>Detail</th>
+                                <th class="text-end">Jml. Tagihan</th>
+                                <th class="text-end">Jml. Dibayar</th>
+                                <th class="text-end">Jml. Tunggakan</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($tagihans as $tagihanSiswa)
-                                @php
-                                    $siswa = $tagihanSiswa->siswa;
-                                    $tagihan = $tagihanSiswa->tagihan;
-
-                                    $total_tagihan = $tagihan->items->sum('nominal');
-
-                                    $jumlah_dibayar = $siswa->pembayaranTagihan
-                                        ->where('status_approval', 'approved')
-                                        ->sum('jumlah_bayar');
-
-                                    $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
-                                @endphp
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $siswa?->nisn ?? '-' }}</td>
-                                    <td>{{ $siswa?->user->name ?? '-' }}</td>
-                                    <td>{{ $tagihan->unit->nama_unit ?? '-' }}</td>
-                                    <td>{{ $tagihan->kelas->nama_kelas ?? '-' }}</td>
-                                    <td>
-                                        @foreach ($tagihan->items as $item)
-                                            {{ $item->kategori->nama_kategori ?? '-' }}<br>
-                                        @endforeach
-                                    </td>
-                                    <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
-                                    <td>{{ $tagihan->periode ?? '-' }} Bulan</td>
-
-                                    <td>Rp {{ number_format($total_tagihan , 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
-                                    <td>
-                                        @if ($tunggakan <= 0)
-                                            <span class="badge bg-success rounded-pill">Lunas</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($siswa)
-                                            <a href="{{ route('tagihan.show', [$tagihan->id, $siswa->id]) }}"
-                                                class="btn btn-primary rounded-pill">
-                                                <i class="ri-eye-line"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
                         </tbody>
                     </table>
-                </div>
-
-                {{-- Pagination --}}
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Menampilkan {{ $tagihans->firstItem() ?? 0 }} sampai {{ $tagihans->lastItem() ?? 0 }} dari {{ $tagihans->total() }} data
-                    </div>
-                    <div>
-                        {{ $tagihans->appends(request()->query())->links() }}
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+@endpush
+
 @push('scripts')
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
     <script>
-        function changePerPage(perPage) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('per_page', perPage);
-            url.searchParams.delete('page'); // Reset to page 1
-            window.location.href = url.toString();
-        }
+        let tagihanTable;
 
-        // Load kelas berdasarkan unit yang dipilih
-        document.getElementById('unit_id')?.addEventListener('change', function() {
-            const unitId = this.value;
-            const kelasSelect = document.getElementById('kelas_id');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            tagihanTable = $('#tagihanTable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                },
+                ajax: {
+                    url: '{{ route("tagihan.datatable") }}',
+                    type: 'GET',
+                    data: function(d) {
+                        d.unit_id = document.getElementById('unit_id')?.value || '';
+                        d.kelas_id = document.getElementById('kelas_id')?.value || '';
+                        d.tagihan_status = document.getElementById('tagihan_status')?.value || '';
+                        d.jenis_tagihan = document.getElementById('jenis_tagihan')?.value || '';
+                        d.search = d.search.value;
+                    }
+                },
+                columns: [
+                    { data: 'no', name: 'no', className: 'text-center', width: '5%' },
+                    { data: 'nisn', name: 'nisn', width: '10%' },
+                    { data: 'nama_siswa', name: 'nama_siswa', width: '15%' },
+                    { data: 'unit', name: 'unit', width: '10%' },
+                    { data: 'kelas', name: 'kelas', width: '10%' },
+                    { data: 'nama_tagihan', name: 'nama_tagihan', width: '15%' },
+                    { data: 'jenis_tagihan', name: 'jenis_tagihan', width: '8%' },
+                    { data: 'periode', name: 'periode', width: '10%' },
+                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-end', width: '12%' },
+                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-end', width: '12%' },
+                    { data: 'jml_tunggakan', name: 'jml_tunggakan', className: 'text-end', width: '12%' },
+                    { data: 'status', name: 'status', className: 'text-center', orderable: false, width: '10%' },
+                    { data: 'action', name: 'action', className: 'text-center', orderable: false, searchable: false, width: '8%' }
+                ],
+                columnDefs: [
+                    { orderable: false, targets: [0, 11, 12] }
+                ],
+                order: [[2, 'asc']],
+                initComplete: function() {
+                    setupFilterListeners();
+                }
+            });
 
-            if (!unitId) {
-                kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
-                return;
+            // Setup filter listeners
+            function setupFilterListeners() {
+                const filterElements = ['search', 'unit_id', 'kelas_id', 'tagihan_status', 'jenis_tagihan'];
+
+                filterElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', function() {
+                            tagihanTable.ajax.reload();
+                        });
+                        // For search input, use keyup event
+                        if (id === 'search') {
+                            element.addEventListener('keyup', function() {
+                                tagihanTable.search(this.value).draw();
+                            });
+                        }
+                    }
+                });
             }
 
-            fetch(`/api/kelas-by-unit/${unitId}`)
-                .then(response => response.json())
-                .then(data => {
-                    let html = '<option value="">Semua Kelas</option>';
-                    if (data.kelas && Array.isArray(data.kelas)) {
-                        data.kelas.forEach(kelas => {
-                            html += `<option value="${kelas.id}">${kelas.nama_kelas}</option>`;
-                        });
-                    }
-                    kelasSelect.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error loading kelas:', error);
-                    kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
-                });
-        });
+            // Load kelas berdasarkan unit yang dipilih
+            document.getElementById('unit_id')?.addEventListener('change', function() {
+                const unitId = this.value;
+                const kelasSelect = document.getElementById('kelas_id');
 
-        // Trigger change event ketika halaman pertama kali load jika ada unit_id
-        document.addEventListener('DOMContentLoaded', function() {
+                if (!unitId) {
+                    kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                    return;
+                }
+
+                fetch(`/api/kelas-by-unit/${unitId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '<option value="">Semua Kelas</option>';
+                        if (data.kelas && Array.isArray(data.kelas)) {
+                            data.kelas.forEach(kelas => {
+                                html += `<option value="${kelas.id}">${kelas.nama_kelas}</option>`;
+                            });
+                        }
+                        kelasSelect.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error loading kelas:', error);
+                        kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                    });
+            });
+
+            // Trigger change event ketika halaman pertama kali load jika ada unit_id
             const unitSelect = document.getElementById('unit_id');
             const selectedUnitId = '{{ request("unit_id") }}';
 
