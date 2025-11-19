@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\Pembayarantagihan;
+use App\Models\Saldo_keuangan;
 use App\Models\Tagihansiswa;
 use App\Models\Tagihansiswa_mutasi;
 use App\Models\Siswa;
@@ -171,16 +172,16 @@ class RiwayatApiController extends Controller
                     'metode' => $trx->metode,
                     'keterangan' => $trx->keterangan,
                     'status' => $trx->status_verifikasi,
-                    'tanggal_transaksi' => $trx->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_transaksi' => $trx->created_at,
                     'bukti_transfer' => $trx->bukti_transfer ? url($trx->bukti_transfer) : null,
                     'data_rekenings' => $data_rekenings,
                     'verified_by' => $trx->verifier ? $trx->verifier->name : null,
-                    'verified_at' => $trx->verified_at ? $trx->verified_at->format('Y-m-d H:i:s') : null,
+                    'verified_at' => $trx->verified_at ? $trx->verified_at : null,
                     'catatan_verifikasi' => $trx->catatan_verifikasi,
                     'token' => $trx->token,
                     'expired_kode' => $trx->token_expired_at ? $trx->token_expired_at : null,
-                    'created_at' => $trx->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $trx->updated_at->format('Y-m-d H:i:s'),
+                    'created_at' => $trx->created_at,
+                    'updated_at' => $trx->updated_at,
                 ];
             });
 
@@ -263,10 +264,10 @@ class RiwayatApiController extends Controller
                     'keterangan' => $transaksi->keterangan,
                     'status' => $transaksi->status_verifikasi,
                     'status_approval' => $transaksi->status_approval,
-                    'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_transaksi' => $transaksi->created_at,
                     'bukti_transfer' => $transaksi->bukti_transfer ? url($transaksi->bukti_transfer) : null,
                     'verified_by' => $transaksi->verifier ? $transaksi->verifier->name : null,
-                    'verified_at' => $transaksi->verified_at ? $transaksi->verified_at->format('Y-m-d H:i:s') : null,
+                    'verified_at' => $transaksi->verified_at ? $transaksi->verified_at : null,
                     'catatan_verifikasi' => $transaksi->catatan_verifikasi,
                     'token' => $transaksi->token,
                     'token_expired_at' => $transaksi->token_expired_at ? $transaksi->token_expired_at : null,
@@ -279,7 +280,7 @@ class RiwayatApiController extends Controller
                         'keterangan' => $log->keterangan,
                         'data_lama' => $log->data_lama ? json_decode($log->data_lama) : null,
                         'data_baru' => $log->data_baru ? json_decode($log->data_baru) : null,
-                        'dilakukan_pada' => $log->created_at->format('Y-m-d H:i:s'),
+                        'dilakukan_pada' => $log->created_at,
                     ];
                 }),
             ]);
@@ -380,7 +381,7 @@ class RiwayatApiController extends Controller
                     'sisa_nominal' => (float)$tgh->sisa_nominal,
                     'status_code' => $tgh->status,
                     'status_text' => $mapStatus($tgh->status),
-                    'tanggal_tagihan' => $tgh->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_tagihan' => $tgh->created_at,
                     'tanggal_bayar' => $tgh->tanggal_bayar ,
                     'payment_details' => $pembayaran ? [
                         'id' => $pembayaran->id,
@@ -463,7 +464,7 @@ class RiwayatApiController extends Controller
                     'sisa_nominal' => (float)$tagihan->sisa_nominal,
                     'status' => $tagihan->status,
                     'tanggal_bayar' => $tagihan->tanggal_bayar  ,
-                    'tanggal_tagihan' => $tagihan->created_at->format('Y-m-d H:i:s'),
+                    'tanggal_tagihan' => $tagihan->created_at,
                 ],
                 'mutations' => $mutasi->map(function ($m) {
                     return [
@@ -478,8 +479,8 @@ class RiwayatApiController extends Controller
                         'status_mutasi' => $m->status_mutasi,
                         'created_by' => $m->createdBy ? $m->createdBy->name : null,
                         'approved_by' => $m->approvedBy ? $m->approvedBy->name : null,
-                        'approved_at' => $m->approved_at ? $m->approved_at->format('Y-m-d H:i:s') : null,
-                        'created_at' => $m->created_at->format('Y-m-d H:i:s'),
+                        'approved_at' => $m->approved_at ? $m->approved_at : null,
+                        'created_at' => $m->created_at,
                     ];
                 }),
                 'payments' => $pembayaran->map(function ($p) {
@@ -494,8 +495,8 @@ class RiwayatApiController extends Controller
                         'keterangan_siswa' => $p->keterangan_siswa,
                         'catatan_approval' => $p->catatan_approval,
                         'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
-                        'approved_at' => $p->approved_at ? $p->approved_at->format('Y-m-d H:i:s') : null,
-                        'created_at' => $p->created_at->format('Y-m-d H:i:s'),
+                        'approved_at' => $p->approved_at ? $p->approved_at : null,
+                        'created_at' => $p->created_at,
                     ];
                 }),
             ]);
@@ -635,8 +636,8 @@ class RiwayatApiController extends Controller
                     'potongan' => $potonganList,
                     'created_by' => $p->user ? $p->user->name : null,
                     'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
-                    'approved_at' => $p->approved_at ? $p->approved_at->format('Y-m-d H:i:s') : null,
-                    'created_at' => $p->created_at->format('Y-m-d H:i:s'),
+                    'approved_at' => $p->approved_at ? $p->approved_at : null,
+                    'created_at' => $p->created_at,
                 ];
             });
 
@@ -720,8 +721,8 @@ class RiwayatApiController extends Controller
                     'status_mutasi' => $m->status_mutasi,
                     'created_by' => $m->createdBy ? $m->createdBy->name : null,
                     'approved_by' => $m->approvedBy ? $m->approvedBy->name : null,
-                    'approved_at' => $m->approved_at ? $m->approved_at->format('Y-m-d H:i:s') : null,
-                    'created_at' => $m->created_at->format('Y-m-d H:i:s'),
+                    'approved_at' => $m->approved_at ? $m->approved_at : null,
+                    'created_at' => $m->created_at,
                 ];
             });
 
@@ -776,7 +777,7 @@ class RiwayatApiController extends Controller
                     'code' => $transaksi->code_pembayaran,
                     'jenis_transaksi' => $transaksi->jenis_transaksi,
                     'jumlah' => (float)$transaksi->jumlah,
-                    'created_at' => $transaksi->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $transaksi->created_at,
                 ],
                 'audit_logs' => $logs->map(function ($log) {
                     return [
@@ -790,7 +791,7 @@ class RiwayatApiController extends Controller
                         'keterangan' => $log->keterangan,
                         'data_lama' => $log->data_lama ? json_decode($log->data_lama, true) : null,
                         'data_baru' => $log->data_baru ? json_decode($log->data_baru, true) : null,
-                        'dilakukan_pada' => $log->created_at->format('Y-m-d H:i:s'),
+                        'dilakukan_pada' => $log->created_at,
                     ];
                 }),
             ]);
@@ -813,7 +814,8 @@ class RiwayatApiController extends Controller
             $endDate = $request->get('end_date', now()->endOfMonth());
             $siswaId = $request->get('siswa_id');
 
-            // Tabungan Statistics
+            // ===== MONTHLY STATISTICS (within date range) =====
+            // Tabungan Statistics for the period
             $tabunganQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -821,14 +823,60 @@ class RiwayatApiController extends Controller
                 $tabunganQuery->where('penerima_id', $siswaId);
             }
 
-            $totalSetor = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
+            // Monthly deposits and withdrawals
+            $totalSetorPerbulan = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
                 ->sum('jumlah');
-            $totalTarik = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
+            $totalTarikPerbulan = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
                 ->sum('jumlah');
-            $countSetor = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
+            $countSetorPerbulan = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
                 ->count();
-            $countTarik = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
+            $countTarikPerbulan = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
                 ->count();
+
+            // ===== OVERALL STATISTICS (all time) =====
+            // Total deposits all time
+            $totalSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan');
+
+            if ($siswaId) {
+                $totalSetorKeseluruhan->where('penerima_id', $siswaId);
+            }
+            $totalSetorKeseluruhan = $totalSetorKeseluruhan->sum('jumlah');
+
+            // Total withdrawals all time
+            $totalTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan');
+
+            if ($siswaId) {
+                $totalTarikKeseluruhan->where('penerima_id', $siswaId);
+            }
+            $totalTarikKeseluruhan = $totalTarikKeseluruhan->sum('jumlah');
+
+            // Count of deposits all time
+            $jumlahSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan');
+
+            if ($siswaId) {
+                $jumlahSetorKeseluruhan->where('penerima_id', $siswaId);
+            }
+            $jumlahSetorKeseluruhan = $jumlahSetorKeseluruhan->count();
+
+            // Count of withdrawals all time
+            $jumlahTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan');
+
+            if ($siswaId) {
+                $jumlahTarikKeseluruhan->where('penerima_id', $siswaId);
+            }
+            $jumlahTarikKeseluruhan = $jumlahTarikKeseluruhan->count();
+
+            // Total count of both (deposits + withdrawals) all time
+            $jumlahKeduanyaKeseluruhan = $jumlahSetorKeseluruhan + $jumlahTarikKeseluruhan;
+
+            // Get current balance (saldo_saat_ini)
+            $saldoSaatIni = 0;
+            if ($siswaId) {
+                $saldo = Saldo_keuangan::where('user_id', $siswaId)->first();
+                if ($saldo) {
+                    $saldoSaatIni = $saldo->saldo ?? 0;
+                }
+            }
 
             // Tagihan Statistics
             $tagihanQuery = Tagihansiswa::whereBetween('created_at', [$startDate, $endDate]);
@@ -861,12 +909,25 @@ class RiwayatApiController extends Controller
                     'start_date' => $startDate->format('Y-m-d'),
                     'end_date' => $endDate->format('Y-m-d'),
                 ],
+                'saldo_saat_ini' => (float)$saldoSaatIni,
                 'tabungan' => [
-                    'total_setor' => (float)$totalSetor,
-                    'total_tarik' => (float)$totalTarik,
-                    'count_setor' => $countSetor,
-                    'count_tarik' => $countTarik,
-                    'net_balance' => (float)($totalSetor - $totalTarik),
+                    // Monthly statistics (within the period)
+                    'perbulan' => [
+                        'total_setoran' => (float)$totalSetorPerbulan,
+                        'total_penarikan' => (float)$totalTarikPerbulan,
+                        'jumlah_setoran' => $countSetorPerbulan,
+                        'jumlah_penarikan' => $countTarikPerbulan,
+                        'net_balance' => (float)($totalSetorPerbulan - $totalTarikPerbulan),
+                    ],
+                    // Overall statistics (all time)
+                    'keseluruhan' => [
+                        'total_setoran' => (float)$totalSetorKeseluruhan,
+                        'total_penarikan' => (float)$totalTarikKeseluruhan,
+                        'jumlah_setoran' => $jumlahSetorKeseluruhan,
+                        'jumlah_penarikan' => $jumlahTarikKeseluruhan,
+                        'jumlah_keduanya' => $jumlahKeduanyaKeseluruhan,
+                        'net_balance' => (float)($totalSetorKeseluruhan - $totalTarikKeseluruhan),
+                    ],
                 ],
                 'tagihan' => [
                     'total_tagihan' => (float)$totalTagihan,
@@ -907,7 +968,7 @@ class RiwayatApiController extends Controller
             'jumlah' => (float)$trx->jumlah,
             'metode' => $trx->metode,
             'status' => $trx->status_verifikasi,
-            'created_at' => $trx->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $trx->created_at,
         ];
     }
 }
