@@ -214,11 +214,10 @@ class TagihanController extends Controller
             } elseif ($request->target === 'all' && $request->kelas) {
                 $query = Siswa::where('kelas_id', $request->kelas)
                 ->where('status','1');
-
                 // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
                 if (Auth::user()->yayasan_id) {
                     $query->whereHas('kelas.unit', function ($q) {
-                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                        $q->where('id', Auth::user()->unit_id);
                     });
                 } elseif (Auth::user()->unit_id) {
                     $query->whereHas('kelas.unit', function ($q) {
