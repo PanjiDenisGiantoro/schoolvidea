@@ -316,7 +316,13 @@ class TagihanController extends Controller
             $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
             $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
-            $jumlahDibayar = $ts->sisa_nominal;
+
+            // Hitung jumlah yang sudah dibayar
+            // Jika status = 1 (lunas), maka sudah dibayar = jumlahTagihan
+            // Jika status != 1 (belum lunas), maka sudah dibayar = 0
+            $jumlahDibayar = ($ts->status == 1) ? $jumlahTagihan : 0;
+
+            // Tunggakan = sisa nominal yang masih harus dibayar
             $jumlahTunggakan = $ts->sisa_nominal;
 
             $row = [
