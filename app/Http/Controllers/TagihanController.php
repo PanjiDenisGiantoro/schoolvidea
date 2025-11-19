@@ -58,6 +58,11 @@ class TagihanController extends Controller
         $perPage = $request->get('per_page', 15);
 
         // Query distinct per siswa-tagihan (tidak per bulan_ke)
+        // Gunakan subquery untuk mengambil ID pertama per siswa-tagihan
+        $subquery = DB::table('tagihan_siswa')
+            ->selectRaw('MIN(id) as id')
+            ->groupBy('tagihan_id', 'siswa_id');
+
         $tagihans = Tagihansiswa::with([
             'siswa.user',
             'tagihan.unit',
@@ -66,9 +71,9 @@ class TagihanController extends Controller
             'siswa.pembayaranTagihan',
             'potonganSiswa'
         ])
-            ->distinct()
-            ->select('tagihan_siswa.*')
-            ->from('tagihan_siswa')
+            ->joinSub($subquery, 'grouped', function ($join) {
+                $join->on('tagihan_siswa.id', '=', 'grouped.id');
+            })
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->whereHas('tagihan', function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
@@ -105,18 +110,21 @@ class TagihanController extends Controller
                     });
                 });
             })
-            ->groupBy('tagihan_siswa.tagihan_id', 'tagihan_siswa.siswa_id')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
         // Hitung summary dari Tagihansiswa yang sudah di-group
+        $subqueryAll = DB::table('tagihan_siswa')
+            ->selectRaw('MIN(id) as id')
+            ->groupBy('tagihan_id', 'siswa_id');
+
         $allTagihans = Tagihansiswa::with([
             'siswa.pembayaranTagihan',
             'tagihan.items'
         ])
-            ->distinct()
-            ->select('tagihan_siswa.*')
-            ->from('tagihan_siswa')
+            ->joinSub($subqueryAll, 'grouped', function ($join) {
+                $join->on('tagihan_siswa.id', '=', 'grouped.id');
+            })
             ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
                 $query->whereHas('tagihan', function ($q) use ($request) {
                     $q->where('unit_id', $request->unit_id);
@@ -127,7 +135,6 @@ class TagihanController extends Controller
                     $q->where('unit_id', Auth::user()->unit_id);
                 });
             })
-            ->groupBy('tagihan_siswa.tagihan_id', 'tagihan_siswa.siswa_id')
             ->get();
 
         $summary = [
