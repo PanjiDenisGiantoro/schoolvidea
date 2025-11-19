@@ -152,8 +152,8 @@
             document.body.classList.remove("dark-theme");
         }
         else if (localStorage.getItem("theme") === "dark") {
-            document.body.classList.add("dark-theme");
-        } 
+            document.body.classList.remove("dark-theme");
+        }
         // else {
         //     document.body.classList.remove("dark-theme");
         // }
