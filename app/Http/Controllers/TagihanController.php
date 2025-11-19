@@ -336,6 +336,11 @@ class TagihanController extends Controller
         // Paginate hasil
         $paginatedResults = $filtered->slice($start, $length)->values();
 
+        // Sort by tagihan ID DESC
+        $paginatedResults = $paginatedResults->sortByDesc(function ($item) {
+            return $item->tagihan->id;
+        })->values();
+
         // Data untuk display
         $data = $paginatedResults->map(function ($tagihanSiswa, $index) use ($start) {
             $siswa = $tagihanSiswa->siswa;
@@ -357,6 +362,9 @@ class TagihanController extends Controller
                 ? '<a href="' . route('tagihan.show', [$tagihan->id, $siswa->id]) . '" class="btn btn-sm btn-primary rounded-pill"><i class="ri-eye-line"></i></a>'
                 : '-';
 
+            // Format created_at
+            $created_at = $tagihan->created_at ? $tagihan->created_at->format('d/m/Y H:i') : '-';
+
             return [
                 'no' => $start + $index + 1,
                 'nisn' => $siswa?->nisn ?? '-',
@@ -369,6 +377,7 @@ class TagihanController extends Controller
                 'jml_tagihan' => 'Rp ' . number_format($total_tagihan, 0, ',', '.'),
                 'jml_dibayar' => 'Rp ' . number_format($jumlah_dibayar, 0, ',', '.'),
                 'jml_tunggakan' => 'Rp ' . number_format($tunggakan, 0, ',', '.'),
+                'created_at' => $created_at,
                 'status' => $status_badge,
                 'action' => $detail_btn,
             ];
