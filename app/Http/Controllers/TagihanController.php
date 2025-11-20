@@ -210,12 +210,16 @@ class TagihanController extends Controller
                 return $ts->tagihan->items->sum('nominal');
             }),
             'sudah_dibayar' => $allTagihans->sum(function ($ts) {
-                return $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
+                return $ts->siswa->pembayaranTagihan
+                    ->where('status_approval', 'approved')
+                    ->sum('jumlah_bayar');
             }),
             'belum_dibayar' => $allTagihans->sum(function ($ts) {
                 $nominal_tagihan = $ts->tagihan->items->sum('nominal');
-                $sudah_bayar = $ts->siswa->pembayaranTagihan->sum('jumlah_bayar');
-                return $nominal_tagihan - $sudah_bayar;
+                $sudah_bayar = $ts->siswa->pembayaranTagihan
+                    ->where('status_approval', 'approved')
+                    ->sum('jumlah_bayar');
+                return max($nominal_tagihan - $sudah_bayar, 0);
             }),
         ];
 

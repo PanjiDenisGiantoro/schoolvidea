@@ -174,6 +174,28 @@ class KeuanganTransaksiController extends Controller
         } else {
             $units = \App\Models\Unit::orderBy('nama_unit')->get();
         }
+        $siswaIds = $transaksis->pluck('penerima_id')->unique()->toArray();
+
+        $baseQuery = function ($query) use ($siswaIds, $request) {
+            return $query->where('penerima_tipe', Siswa::class)
+                ->whereIn('penerima_id', $siswaIds)
+                ->when(Auth::user()->unit_id, function ($q) {
+                    // Join with siswa table to filter by unit_id
+                    $q->join('siswas', 'keuangan_transaksis.penerima_id', '=', 'siswas.id')
+                        ->where('siswas.unit_id', Auth::user()->unit_id)
+                        ->select('keuangan_transaksis.*');
+                })
+                ->when($request->filled('dari_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+                })
+                ->when($request->filled('sampai_tanggal'), function ($q) use ($request) {
+                    $q->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+                });
+        };
+        $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+            ->where('status_approval', 'pending')
+            ->tap($baseQuery)
+            ->count();
 
         $summary = [
             'total_pemasukan' => $total_pemasukan,
@@ -187,7 +209,8 @@ class KeuanganTransaksiController extends Controller
         return view('pages.keuangan.transaksi.index', compact(
             'transaksis',
             'summary',
-            'units'
+            'units',
+            'total_pending'
         ));
     }
     /**

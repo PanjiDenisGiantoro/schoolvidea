@@ -2,67 +2,7 @@
 @section('title', 'Tambah Transaksi Tabungan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <style>
-        .summary-card {
-            border: none;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            color: white;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        }
-
-        .summary-card .card-body {
-            padding: 1.75rem 1.5rem;
-            text-align: center;
-        }
-
-        .summary-card .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-
-        .summary-card .card-label {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            opacity: 0.95;
-        }
-
-        .summary-card .card-sublabel {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            margin-bottom: 1rem;
-        }
-
-        .summary-card .card-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .card-tunggakan {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        }
-
-        .card-pembayaran {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        }
-
-        .card-nontunai {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-        }
-
-        .card-tunai {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
 @endpush
 @section('content')
     @include('partials.page-title', [
@@ -70,76 +10,80 @@
         'subTitle' => 'Pembayaran / Keuangan',
     ])
 
+
     <div class="row g-4">
         {{-- Summary Cards --}}
-        <div class="row w-100 mt-2">
-            {{-- Total Tunggakan --}}
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card summary-card card-tunggakan">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-exclamation-circle"></i>
+        <div class="row mt-4">
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Tunggakan</p>
+                                <h3 class="fw-bold text-danger mb-0 text-absolute">Rp 1.000.000.000</h3>
+                            </div>
+                            <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-time text-danger" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="card-label">Total Tunggakan</div>
-                        <div class="card-sublabel">Belum Dibayar</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_tunggakan'], 0, ',', '.') }}
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> Periode Bulan Ini</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> November 2025</small>
                     </div>
                 </div>
             </div>
-
-            {{-- Total Pembayaran --}}
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card summary-card card-pembayaran">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-money-bill"></i>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="card-label">Total Pembayaran</div>
-                        <div class="card-sublabel">Semua Metode</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_pembayaran'], 0, ',', '.') }}
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> Bulan Ini</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> November 2025</small>
                     </div>
                 </div>
             </div>
-
-            {{-- Total Pembayaran Non-Tunai --}}
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card summary-card card-nontunai">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-credit-card"></i>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 0</h3>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-credit-card text-warning" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="card-label">Pembayaran Non-Tunai</div>
-                        <div class="card-sublabel">Transfer, E-Wallet, dll</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_nontunai'], 0, ',', '.') }}
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-warning"></i> Non-Tunai</small>
                     </div>
                 </div>
             </div>
-
-            {{-- Total Pembayaran Tunai --}}
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card summary-card card-tunai">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-coins"></i>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-money text-info" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="card-label">Pembayaran Tunai</div>
-                        <div class="card-sublabel">Kas Langsung</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_tunai'], 0, ',', '.') }}
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-money text-info"></i> Tunai</small>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-12 mt-0 p-4">
-            <div class="card rounded-4 mb-0 border-0 p-4 shadow-sm">
-                <div class="row g-3 align-items-center">
+        <div class="col-md-12 mt-4 p-3">
+            <div class="card rounded-4 border-0 shadow-sm">
+                <div class="row g-3 p-4 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
                         <select id="filter_unit" class="form-select rounded-pill shadow-sm">
@@ -162,8 +106,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="row g-3 mt-2 mb-4">
-                    <div class="col-md-12" id="nama_tagihan_wrapper" style="display: none;">
+                <div class="row g-3 mb-4 px-3">
+                    <div class="col-md-12 px-4 mb-4" id="nama_tagihan_wrapper" style="display: none;">
                         <label for="nama_tagihan" class="form-label fw-semibold">Pilih Nama Tagihan </label>
                         <select id="nama_tagihan" class="form-select rounded-pill shadow-sm">
                             <option value="">-- Pilih Tagihan --</option>
@@ -178,8 +122,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-12">
+        <div class="col-md-12" id="profile-card-wrapper" style="display: none">
             <div class="card rounded-4 overflow-hidden border-0 pr-4 shadow-lg">
                 <div class="row align-items-center g-4">
 
@@ -187,7 +130,7 @@
                     <div class="col-md-3 profile-card text-center">
                         <div class="profile-photo-wrapper mx-auto mb-3">
                             <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa" id="foto_siswa"
-                                class="profile-photo">
+                                 class="profile-photo">
                         </div>
                         <h5 class="fw-bold mb-1 text-white fw-bold" style="font-size: 18px" id="detail_nama">-</h5>
                         <p class="mb-0 opacity-75" id="detail_nisn">-</p>
@@ -224,16 +167,30 @@
         {{-- Ringkasan Tagihan --}}
 
         {{-- Daftar Tagihan --}}
-        <div class="card rounded-4 mt-3 border-0 shadow-sm">
+        <div class="card rounded-4 mt-3 p-4 border-0 shadow-sm">
             <!-- Header tombol toggle -->
-            <div class="custom-toggle-header">
-                <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
-                    <i class="ri-money-dollar-circle-line"></i> Belum Lunas
-                </button>
-                <button id="btnSudahLunas" class="custom-btn-outline-primary">
-                    <i class="ri-file-list-3-line"></i> Sudah Lunas
-                </button>
+            <div>
+                <div class="custom-toggle-header">
+                    <button id="btnBelumLunas" class="custom-btn-outline-primary custom-active-btn">
+                        <i class="ri-money-dollar-circle-line"></i> Belum Lunas
+                    </button>
+                    <button id="btnSudahLunas" class="custom-btn-outline-primary">
+                        <i class="ri-file-list-3-line"></i> Sudah Lunas
+                    </button>
+                </div>
+                {{-- <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="mb-0">Tampilkan:</label>
+                    <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;"
+                        onchange="changePerPage(this.value)">
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                    </select>
+                    <span class="text-muted">data per halaman</span>
+                </div> --}}
             </div>
+
 
             <!-- Header kartu -->
             <div class="custom-card-header px-4 mb-0">
@@ -251,7 +208,7 @@
                                 <i class="ri-sticky-note-line"></i> Tambah Catatan
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+                                    aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
 
@@ -272,67 +229,81 @@
                 </div>
             </div>
 
-            <div id="tabelBelumLunas" class="card-body mt-0">
-                <div class="table-responsive mt-0">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle mt-0">
-                        <thead class="table-primary text-center text-nowrap align-middle">
-                            <tr>
-                                <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
-                                <th>No</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jumlah Potongan</th>
-                                <th>Jumlah Tagihan</th>
-                                <th>Nominal Pembayaran</th>
-                                <th>Total Tunggakan</th>
-                                <th>Catatan</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-body" id="tabelSudahLunas">
+            <div id="tabelBelumLunas" class="mb-3">
                 <div class="table-responsive">
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
-                            <tr>
-                                <th>No</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jml.Potongan</th>
-                                <th>Jml.Tagihan</th>
-                                <th>Jml.Bayar</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
+                            <th>No</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jumlah Potongan</th>
+                            <th>Jumlah Tagihan</th>
+                            <th>Nominal Pembayaran</th>
+                            <th>Total Tunggakan</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="11" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
+                {{-- <div class=" d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Menampilkan {{ $perbulan->firstItem() ?? 0 }} sampai {{ $perbulan->lastItem() ?? 0 }} dari {{ $perbulan->total() }} data
+                </div>
+                <div>
+                    {{ $perbulan->appends(request()->query())->links() }}
+                </div>
+            </div> --}}
+            </div>
+            <div class="mb-3" id="tabelSudahLunas">
+                <div class="table-responsive">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                        <thead class="table-primary text-center text-nowrap align-middle">
+                        <tr>
+                            <th>No</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jml.Potongan</th>
+                            <th>Jml.Tagihan</th>
+                            <th>Jml.Bayar</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody id="list_tagihan">
+                        <tr>
+                            <td colspan="11" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {{-- <div class=" d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted">
+                        Menampilkan {{ $perbulan->firstItem() ?? 0 }} sampai {{ $perbulan->lastItem() ?? 0 }} dari {{ $perbulan->total() }} data
+                    </div>
+                    <div>
+                        {{ $perbulan->appends(request()->query())->links() }}
+                    </div>
+                </div> --}}
             </div>
         </div>
 
         {{-- Detail Siswa dan Form Tabungan --}}
         <div class="col-12">
             <div class="row g-4">
-                {{-- Detail Siswa --}}
-                {{-- Form Transaksi --}}
                 <div class="col-md-8">
                     <form action="" method="POST" id="formTagihan">
                         @csrf
@@ -374,6 +345,13 @@
 @endpush
 @push('scripts')
     <script>
+        // function changePerPage(perPage) {
+        //     const url = new URL(window.location.href);
+        //     url.searchParams.set('per_page', perPage);
+        //     url.searchParams.delete('page'); // Reset ke halaman 1
+        //     window.location.href = url.toString();
+        // }
+
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
         const filterUnit = document.getElementById('filter_unit');
@@ -514,7 +492,7 @@
 
                     // Isi dropdown nama tagihan
                     const tagihanSelect = document.getElementById('nama_tagihan');
-        tagihanSelect.innerHTML = `
+                    tagihanSelect.innerHTML = `
             <option value="">-- Pilih Tagihan --</option>
             <option value="all">Semua Tagihan</option>
         `;
@@ -536,6 +514,14 @@
         document.getElementById('nama_tagihan').addEventListener('change', function() {
             const tagihanId = this.value;
             const siswaId = siswaSelect.value;
+
+            const card = document.getElementById("profile-card-wrapper");
+
+            if (this.value !== "") {
+                card.style.display = "block"; // tampil
+            } else {
+                card.style.display = "none"; // sembunyi
+            }
 
             if (!tagihanId) return;
 
@@ -716,21 +702,21 @@
 
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_siswa_id: tagihanId,
-                        bulan: bulan,
-                        tahun: tahun,
-                        nominal: nominal, // total tagihan
-                        jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
-                        kategori_id: kategoriId,
-                        metode: 'manual',
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal, // total tagihan
+                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
+                    kategori_id: kategoriId,
+                    metode: 'manual',
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {
@@ -809,16 +795,16 @@
             }
 
             fetch('/pembayaran/catatan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_id: tagihanId,
-                        catatan: isiCatatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_id: tagihanId,
+                    catatan: isiCatatan
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 1) {
@@ -960,21 +946,21 @@
                 const tagihanData = window.tagihanDataMap ? window.tagihanDataMap.get(tagihan.id) : null;
 
                 fetch('/pembayaran/store', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            tagihan_siswa_id: tagihan.id,
-                            bulan: tagihanData?.bulan || tagihan.periode,
-                            tahun: tagihanData?.tahun || new Date().getFullYear(),
-                            nominal: tagihan.nominal,
-                            jumlah_bayar: tagihan.nominal,
-                            kategori_id: tagihanData?.kategori_id || 1,
-                            metode: 'manual',
-                        })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        tagihan_siswa_id: tagihan.id,
+                        bulan: tagihanData?.bulan || tagihan.periode,
+                        tahun: tagihanData?.tahun || new Date().getFullYear(),
+                        nominal: tagihan.nominal,
+                        jumlah_bayar: tagihan.nominal,
+                        kategori_id: tagihanData?.kategori_id || 1,
+                        metode: 'manual',
                     })
+                })
                     .then(res => res.json())
                     .then(data => {
                         if (data.status == 1 || data.status == true) {
@@ -1000,4 +986,5 @@
             }
         }
     </script>
+
 @endpush

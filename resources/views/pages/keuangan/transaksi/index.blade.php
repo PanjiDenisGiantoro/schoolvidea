@@ -427,7 +427,7 @@
                         <tr>
                             <th>#</th>
                             <th>No Transaksi</th>
-                            <th>Nama & NISN</th>                  
+                            <th>Nama & NISN</th>
                             <th>Jenis Transaksi</th>
                             <th>Tot. Transaksi</th>
                             <th>Metode</th>
