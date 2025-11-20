@@ -530,6 +530,7 @@ class RiwayatApiController extends Controller
                 'tagihanSiswa.siswa',
                 'tagihanSiswa.tagihanItem.kategori',
                 'tagihanSiswa.potonganSiswa.potongan',
+                'tagihanSiswa.tagihan.rekening',
                 'keuanganTransaksi',
                 'user',
                 'approvedBy'
@@ -612,6 +613,20 @@ class RiwayatApiController extends Controller
                 // Calculate tunggakan
                 $sisaNominal = $p->tagihanSiswa ? (float)$p->tagihanSiswa->sisa_nominal : 0;
 
+                // Get data rekening dari tagihan
+                $dataRekenings = null;
+                if ($p->tagihanSiswa && $p->tagihanSiswa->tagihan && $p->tagihanSiswa->tagihan->rekening) {
+                    $rekening = $p->tagihanSiswa->tagihan->rekening;
+                    $dataRekenings = [
+                        'id' => $rekening->id,
+                        'nama_rekening' => $rekening->nama_rekening,
+                        'nomor_rekening' => $rekening->nomor_rekening,
+                        'nama_pemilik' => $rekening->nama_pemilik,
+                        'bank' => $rekening->bank,
+                        'kcp_name' => $rekening->kcp_name,
+                    ];
+                }
+
                 return [
                     'id' => $p->id,
                     'code_pembayaran' => $p->code_pembayaran,
@@ -638,10 +653,12 @@ class RiwayatApiController extends Controller
                     'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
                     'keterangan' => $p->keterangan,
                     'potongan' => $potonganList,
+                    'data_rekenings' => $dataRekenings,
                     'created_by' => $p->user ? $p->user->name : null,
                     'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
                     'approved_at' => $p->approved_at ? $p->approved_at : null,
                     'created_at' => $p->created_at,
+                    'updated_at' => $p->updated_at,
                 ];
             });
 
