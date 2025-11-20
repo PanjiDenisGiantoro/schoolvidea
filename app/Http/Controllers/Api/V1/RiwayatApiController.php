@@ -619,11 +619,11 @@ class RiwayatApiController extends Controller
                     $rekening = $p->tagihanSiswa->tagihan->rekening;
                     $dataRekenings = [
                         'id' => $rekening->id,
-                        'nama_rekening' => $rekening->nama_rekening,
-                        'nomor_rekening' => $rekening->nomor_rekening,
-                        'nama_pemilik' => $rekening->nama_pemilik,
-                        'bank' => $rekening->bank,
+                        'nama_rekening' => $rekening->account_name,
+                        'nomor_rekening' => $rekening->account_number,
+                        'nama_pemilik' => $rekening->owner_name,
                         'kcp_name' => $rekening->kcp_name,
+                        'allotment' => $rekening->allotment,
                     ];
                 }
 
