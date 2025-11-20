@@ -89,8 +89,6 @@
                     </div>
                 </div>
             </div>
-
-
             <!-- Info Tabungan -->
             <div class="col-lg-4">
                 <div class="card stat-card stat-card-green">
@@ -116,68 +114,71 @@
                     </div>
                 </div>
             </div>
-
         </div>
-
-        <!-- Table contoh daftar terbaru -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card stat-card stat-card-green">
-                    <div class="card-header">
-                        <h4 class="card-title">Daftar Pembayaran Tagihan Terbaru</h4>
-                    </div>
-                    <div class="card-body">
+    <!-- Table contoh daftar terbaru -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card stat-card-green stat-card">
+                <div class="card-header">
+                    <h4 class="card-title">Daftar Pembayaran Tagihan Terbaru</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
                         <div class="table-responsive">
-                            <div class="table-responsive">
-                                <table class="table table-striped mb-0">
-                                    <thead>
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Nomor Induk</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Tagihan Unit</th>
+                                    <th>Tagihan Kelas</th>
+                                    <th>Item Tagihan</th>
+                                    <th>Type Tagihan</th>
+                                    <th>Jml. Tagihan</th>
+                                    <th>Jml. Dibayar</th>
+                                    <th>Jml. Tunggakan</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($data as $row)
                                     <tr>
-                                        <th>Nomor Induk</th>
-                                        <th>Nama Lengkap</th>
-                                        <th>Tagihan Unit</th>
-                                        <th>Tagihan Kelas</th>
-                                        <th>Item Tagihan</th>
-                                        <th>Type Tagihan</th>
-                                        <th>Jml. Tagihan</th>
-                                        <th>Jml. Dibayar</th>
-                                        <th>Jml. Tunggakan</th>
-                                        <th>Status</th>
+                                        <td>{{ $row['nomor_induk'] }}</td>
+                                        <td>{{ $row['nama_lengkap'] }}</td>
+                                        <td>{{ $row['tagihan_unit'] }}</td>
+                                        <td>{{ $row['tagihan_kelas'] }}</td>
+                                        <td>{{ $row['item_tagihan'] }}</td>
+                                        <td>{{ $row['type_tagihan'] }}</td>
+                                        <td>Rp {{ number_format($row['jml_tagihan'], 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($row['jml_dibayar'], 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($row['jml_tunggakan'], 0, ',', '.') }}</td>
+                                        <td>
+                                            @if($row['status'] === 'Lunas')
+                                                <span class="badge bg-success">Lunas</span>
+                                            @else
+                                                <span class="badge bg-danger">Belum Lunas</span>
+                                            @endif
+                                        </td>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($data as $row)
-                                        <tr>
-                                            <td>{{ $row['nomor_induk'] }}</td>
-                                            <td>{{ $row['nama_lengkap'] }}</td>
-                                            <td>{{ $row['tagihan_unit'] }}</td>
-                                            <td>{{ $row['tagihan_kelas'] }}</td>
-                                            <td>{{ $row['item_tagihan'] }}</td>
-                                            <td>{{ $row['type_tagihan'] }}</td>
-                                            <td>Rp {{ number_format($row['jml_tagihan'], 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($row['jml_dibayar'], 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($row['jml_tunggakan'], 0, ',', '.') }}</td>
-                                            <td>
-                                                @if($row['status'] === 'Lunas')
-                                                    <span class="badge bg-success">Lunas</span>
-                                                @else
-                                                    <span class="badge bg-danger">Belum Lunas</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="10" class="text-center">Tidak ada data tagihan baru</td>
-                                        </tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
+                                @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center">Tidak ada data tagihan baru</td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+  
+
+
+
 
 @endsection
 @push('scripts')
@@ -249,4 +250,3 @@
     </script>
 
 @endpush
-

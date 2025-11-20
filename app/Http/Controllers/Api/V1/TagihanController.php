@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Tagihan;
 use App\Models\Tagihansiswa;
+use App\Models\Pembayarantagihan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -200,7 +201,7 @@ class TagihanController extends Controller
      */
     public function daftarTagihan($siswaId)
     {
-        $tagihanSiswa = Tagihansiswa::with('tagihan.items.kategori')
+        $tagihanSiswa = Tagihansiswa::with('tagihan.items.kategori', 'pembayaranTagihan')
             ->where('siswa_id', $siswaId)
             ->whereHas('tagihan', function ($query) {
                 $query->where('jenis_tagihan', 'bulanan');
@@ -218,6 +219,30 @@ class TagihanController extends Controller
         $data = $tagihanSiswa->map(function ($rows) {
             $first = $rows->first();
 
+            // Helper function to determine status
+            $statusMap = [
+                '0' => 'Belum Lunas',
+                '1' => 'Lunas',
+                '2' => 'Cicilan'
+            ];
+
+            // Count sudah_lunas dan belum_lunas berdasarkan pembayaran yang sudah diverifikasi/approve
+            $sudahLunas = 0;
+            $belumLunas = 0;
+
+            foreach ($rows as $ts) {
+                // Check jika ada pembayaran yang sudah approved (status_approval = approved)
+                $hasApprovedPayment = Pembayarantagihan::where('tagihan_siswa_id', $ts->id)
+                    ->where('status_approval', 'approved')
+                    ->exists();
+
+                if ($hasApprovedPayment) {
+                    $sudahLunas++;
+                } else {
+                    $belumLunas++;
+                }
+            }
+
             return [
                 'id'            => $first->tagihan->id,
                 'jenis_tagihan' => $first->tagihan->jenis_tagihan,
@@ -231,8 +256,11 @@ class TagihanController extends Controller
                     ];
                 }),
                 'jumlah_bulan'  => $rows->count(), // total bulan dari periode
-                'sudah_lunas'   => $rows->where('status', 'lunas')->count(),
-                'belum_lunas'   => $rows->where('status', 'belum')->count(),
+                'sudah_lunas'   => $sudahLunas,
+                'belum_lunas'   => $belumLunas,
+                'status'        => $sudahLunas === $rows->count() ? 'Lunas' : ($sudahLunas > 0 ? 'Cicilan' : 'Belum Lunas'),
+                'created_at'    => $first->created_at->format('Y-m-d H:i:s'),
+                'updated_at'    => $first->updated_at->format('Y-m-d H:i:s'),
             ];
         })->values(); // reset index biar array rapi
 
@@ -288,7 +316,13 @@ class TagihanController extends Controller
             $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
             $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
-            $jumlahDibayar = $ts->sisa_nominal;
+
+            // Hitung jumlah yang sudah dibayar
+            // Jika status = 1 (lunas), maka sudah dibayar = jumlahTagihan
+            // Jika status != 1 (belum lunas), maka sudah dibayar = 0
+            $jumlahDibayar = ($ts->status == 1) ? $jumlahTagihan : 0;
+
+            // Tunggakan = sisa nominal yang masih harus dibayar
             $jumlahTunggakan = $ts->sisa_nominal;
 
             $row = [

@@ -27,7 +27,7 @@
 <img
     src="{{ $siswa && $siswa->image
         ? asset($siswa->image)
-        : asset('images/default-user.png') }}"
+        : asset('assets/images/videa.png') }}"
     class="profile-photo"
     alt="Foto Siswa"
 >

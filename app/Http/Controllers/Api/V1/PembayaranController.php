@@ -81,7 +81,8 @@ class PembayaranController extends Controller
 
         $query = Pembayarantagihan::with([
             'tagihanSiswa.siswa',
-            'tagihanSiswa.tagihan',
+            'tagihanSiswa.tagihan.rekening',
+            'tagihanSiswa.tagihanItem.kategori',
             'user',
             'keuanganTransaksi'
         ]);
@@ -110,9 +111,96 @@ class PembayaranController extends Controller
 
         $pembayaran = $query->paginate($perPage);
 
+        // Format data with additional information
+        $data = $pembayaran->map(function ($p) {
+            // Calculate bulan and tahun info
+            $bulanArray = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
+            $tahunTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
+            $bulanText = $bulanKe && $tahunTagihan ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahunTagihan : 'N/A';
+
+            // Get kategori info
+            $kategoriCode = null;
+            $namaKategori = 'N/A';
+            if ($p->tagihanSiswa && $p->tagihanSiswa->tagihanItem && $p->tagihanSiswa->tagihanItem->kategori) {
+                $kategoriCode = $p->tagihanSiswa->tagihanItem->kategori->kode_kategori ?? null;
+                $namaKategori = $p->tagihanSiswa->tagihanItem->kategori->nama_kategori;
+            }
+
+            // Get potongan total
+            $totalPotongan = 0;
+            $potonganList = [];
+            if ($p->tagihanSiswa && $p->tagihanSiswa->potonganSiswa) {
+                $potonganList = $p->tagihanSiswa->potonganSiswa->map(function ($potongan) {
+                    return [
+                        'id' => $potongan->id,
+                        'nominal' => (float)$potongan->nominal,
+                        'keterangan' => $potongan->keterangan,
+                    ];
+                })->toArray();
+
+                foreach ($potonganList as $potongan) {
+                    $totalPotongan += $potongan['nominal'];
+                }
+            }
+
+            // Get kelas info
+            $kelasNama = 'N/A';
+            if ($p->tagihanSiswa && $p->tagihanSiswa->siswa && $p->tagihanSiswa->siswa->kelas) {
+                $kelasNama = $p->tagihanSiswa->siswa->kelas->nama_kelas;
+            }
+
+            // Get nominal tagihan
+            $nominalTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihanItem ? (float)$p->tagihanSiswa->tagihanItem->nominal : 0;
+
+            // Calculate tunggakan
+            $sisaNominal = $p->tagihanSiswa ? (float)$p->tagihanSiswa->sisa_nominal : 0;
+
+            return [
+                'id' => $p->id,
+                'code_pembayaran' => $p->code_pembayaran,
+                'tagihan_siswa_id' => $p->tagihan_siswa_id,
+                'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
+                'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
+                'kategori' => [
+                    'kode' => $kategoriCode,
+                    'nama' => $namaKategori,
+                ],
+                'periode' => $bulanText,
+                'tahun' => $tahunTagihan,
+                'tagihan_kelas' => $kelasNama,
+                'rincian_tagihan' => $nominalTagihan,
+                'jumlah_potongan' => $totalPotongan,
+                'jumlah_tagihan' => $nominalTagihan - $totalPotongan,
+                'jumlah_dibayar' => (float)$p->jumlah_bayar,
+                'jumlah_tunggakan' => $sisaNominal,
+                'nominal_pembayaran' => (float)$p->jumlah_bayar,
+                'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
+                'metode_bayar' => $p->metode_bayar,
+                'status_approval' => $p->status_approval,
+                'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
+                'keterangan' => $p->keterangan,
+                'created_by' => $p->user ? $p->user->name : null,
+                'approved_by' => isset($p->approvedBy) && $p->approvedBy ? $p->approvedBy->name : null,
+                'approved_at' => isset($p->approved_at) && $p->approved_at ? $p->approved_at->format('Y-m-d H:i:s') : null,
+                'created_at' => $p->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $pembayaran
+            'data' => $data,
+            'meta' => [
+                'total' => $pembayaran->total(),
+                'per_page' => $pembayaran->perPage(),
+                'current_page' => $pembayaran->currentPage(),
+                'last_page' => $pembayaran->lastPage(),
+            ]
         ]);
     }
 
@@ -121,7 +209,17 @@ class PembayaranController extends Controller
      *     path="/pembayaran",
      *     tags={"Pembayaran"},
      *     summary="Process payment",
-     *     description="Process student payment for a bill",
+     *     description="Process student payment for a bill.
+     *
+Status tagihan_siswa:
+- 0 = Belum Bayar - dapat lanjut bayar (jika tidak ada pembayaran pending)
+- 1 = Lunas - sudah bayar lunas, tidak dapat membayar lagi
+- 2 = Cicilan - masih cicilan, dapat lanjut bayar (jika tidak ada pembayaran pending)
+
+Pembayaran akan dicek:
+1. Jika status = 1 (Lunas): Reject pembayaran
+2. Jika ada pembayaran_tagihan dengan status_approval = pending: Reject pembayaran
+3. Jika status = 0 atau 2 dan tidak ada pending: Accept pembayaran",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -129,17 +227,21 @@ class PembayaranController extends Controller
      *             required={"tagihan_siswa_id","jumlah_bayar"},
      *             @OA\Property(property="tagihan_siswa_id", type="integer", example=1),
      *             @OA\Property(property="jumlah_bayar", type="integer", example=500000),
-     *             @OA\Property(property="metode", type="string", example="CASH", description="CASH, TRANSFER, QRIS, etc"),
+     *             @OA\Property(property="metode", type="string", example="CASH", description="CASH, TRANSFER, QRIS, VIRTUAL_ACCOUNT, MOBILE_BANKING, NONTUNAI, TUNAI"),
      *             @OA\Property(property="keterangan", type="string", example="Pembayaran SPP Januari 2024")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Payment successful"
+     *         response=201,
+     *         description="Payment submitted and waiting for approval (status_approval = pending)"
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Validation error or bill already paid"
+     *         description="Validation error, bill already paid (status=1), or have pending payment"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -173,12 +275,48 @@ class PembayaranController extends Controller
 
             $tagihanSiswa = Tagihansiswa::with(['siswa', 'tagihan'])->findOrFail($request->tagihan_siswa_id);
 
+            // ============= VALIDASI STATUS TAGIHAN =============
+            // Status: 0 = Belum Bayar, 1 = Lunas, 2 = Cicilan
+
             if ($tagihanSiswa->status == 1) {
                 Log::warning('⚠️ Tagihan sudah lunas untuk tagihan siswa ID: ' . $request->tagihan_siswa_id);
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tagihan ini sudah lunas'
+                    'message' => 'Tagihan ini sudah lunas dan tidak perlu dibayar lagi',
+                    'data' => [
+                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'status' => $tagihanSiswa->status,
+                        'status_text' => 'Lunas',
+                        'sisa_nominal' => 0
+                    ]
+                ], 400);
+            }
+
+            // ============= CEK PEMBAYARAN PENDING =============
+            // Cek apakah ada pembayaran yang masih pending (menunggu approval)
+            $existingPendingPayment = Pembayarantagihan::where('tagihan_siswa_id', $request->tagihan_siswa_id)
+                ->where('status_approval', 'pending')
+                ->first();
+
+            if ($existingPendingPayment) {
+                Log::warning('⚠️ Ada pembayaran yang masih menunggu approval');
+                Log::warning('Pembayaran sebelumnya dengan status: ' . $existingPendingPayment->status_approval . ' | ID: ' . $existingPendingPayment->id);
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tagihan ini sudah memiliki pembayaran yang sedang menunggu persetujuan admin. Silakan tunggu persetujuan atau tolakan dari admin sebelum submit pembayaran baru.',
+                    'data' => [
+                        'tagihan_siswa_id' => $tagihanSiswa->id,
+                        'existing_payment' => [
+                            'id' => $existingPendingPayment->id,
+                            'code_pembayaran' => $existingPendingPayment->code_pembayaran,
+                            'jumlah_bayar' => (float)$existingPendingPayment->jumlah_bayar,
+                            'status_approval' => $existingPendingPayment->status_approval,
+                            'tanggal_bayar' => $existingPendingPayment->tanggal_bayar->format('Y-m-d'),
+                            'metode' => $existingPendingPayment->metode_bayar
+                        ]
+                    ]
                 ], 400);
             }
 
@@ -259,8 +397,14 @@ class PembayaranController extends Controller
                 'success' => true,
                 'message' => 'Pembayaran berhasil dicatat dan menunggu persetujuan admin',
                 'data' => [
-                    'pembayaran' => $pembayaran->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan']),
+                    'pembayaran' => $pembayaran->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori']),
                     'transaksi' => $transaksi,
+                    'tagihan_info' => [
+                        'kode_tagihan' => $pembayaran->kode_tagihan,
+                        'nama_tagihan' => $pembayaran->nama_tagihan,
+                        'kategori_tagihan' => $pembayaran->kategori_tagihan,
+                        'data_rekening' => $pembayaran->data_rekening
+                    ],
                     'tagihan_siswa' => [
                         'id' => $tagihanSiswa->id,
                         'sisa_nominal' => $tagihanSiswa->sisa_nominal,
@@ -320,6 +464,8 @@ class PembayaranController extends Controller
             'tagihanSiswa.siswa.kelas',
             'tagihanSiswa.siswa.unit',
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
+            'tagihanSiswa.tagihanItem.kategori',
             'user',
             'keuanganTransaksi'
         ])->find($id);
@@ -369,6 +515,8 @@ class PembayaranController extends Controller
 
         $pembayaran = Pembayarantagihan::with([
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
+            'tagihanSiswa.tagihanItem.kategori',
             'keuanganTransaksi'
         ])
         ->whereHas('tagihanSiswa', function($q) use ($siswaId) {
@@ -432,7 +580,9 @@ class PembayaranController extends Controller
 
         $query = Pembayarantagihan::with([
             'tagihanSiswa.siswa',
-            'tagihanSiswa.tagihan.kategori'
+            'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
+            'tagihanSiswa.tagihanItem.kategori'
         ])
         ->whereHas('tagihanSiswa.siswa', function($q) use ($kelasId) {
             $q->where('kelas_id', $kelasId);
@@ -499,7 +649,7 @@ class PembayaranController extends Controller
         }
 
         $pembayaran = Pembayarantagihan::where('tagihan_siswa_id', $tagihanSiswaId)
-            ->with(['user', 'keuanganTransaksi'])
+            ->with(['user', 'keuanganTransaksi', 'tagihanSiswa.tagihanItem.kategori'])
             ->orderBy('tanggal_bayar', 'desc')
             ->get();
 
@@ -669,7 +819,15 @@ class PembayaranController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Bukti pembayaran berhasil diupload',
-                'data' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan'])
+                'data' => [
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori']),
+                    'tagihan_info' => [
+                        'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
+                        'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
+                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
+                        'data_rekening' => $pembayaran->fresh()->data_rekening
+                    ]
+                ]
             ]);
 
         } catch (\Throwable $th) {
@@ -728,7 +886,7 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan'])->find($id);
+        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori'])->find($id);
 
         if (!$pembayaran) {
             return response()->json([
@@ -885,7 +1043,13 @@ class PembayaranController extends Controller
                 'success' => true,
                 'message' => 'Pembayaran berhasil disetujui dan nominal tagihan telah dikurangi',
                 'data' => [
-                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy']),
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
+                    'tagihan_info' => [
+                        'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
+                        'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
+                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
+                        'data_rekening' => $pembayaran->fresh()->data_rekening
+                    ],
                     'transaksi' => $transaksi->fresh(),
                     'tagihan_siswa' => $tagihanSiswa->fresh(),
                     'sisa_nominal' => $sisaSetelahBayar,
@@ -964,7 +1128,7 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        $pembayaran = Pembayarantagihan::find($id);
+        $pembayaran = Pembayarantagihan::with(['tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori'])->find($id);
 
         if (!$pembayaran) {
             return response()->json([
@@ -1006,7 +1170,13 @@ class PembayaranController extends Controller
                 'success' => true,
                 'message' => 'Pembayaran berhasil ditolak',
                 'data' => [
-                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan', 'approvedBy']),
+                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori', 'approvedBy']),
+                    'tagihan_info' => [
+                        'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
+                        'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
+                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
+                        'data_rekening' => $pembayaran->fresh()->data_rekening
+                    ],
                     'catatan' => 'Pembayaran ditolak dan sisa nominal tidak berubah. Siswa dapat mengajukan pembayaran ulang.'
                 ]
             ]);
@@ -1052,6 +1222,8 @@ class PembayaranController extends Controller
         $pembayaran = Pembayarantagihan::with([
             'tagihanSiswa.siswa.kelas',
             'tagihanSiswa.tagihan.kategori',
+            'tagihanSiswa.tagihan.rekening',
+            'tagihanSiswa.tagihanItem.kategori',
             'user'
         ])
         ->where('status_approval', 'pending')

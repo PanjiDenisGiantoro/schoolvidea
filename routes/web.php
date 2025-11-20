@@ -221,9 +221,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
 
-        // Approve/Reject routes
+        // Approve/Reject/Cancel routes
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');
         Route::post('/reject/{id}', [KeuanganTransaksiController::class, 'reject'])->name('keuangan_transaksi.reject');
+        Route::post('/cancel/{id}', [KeuanganTransaksiController::class, 'cancel'])->name('keuangan_transaksi.cancel');
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {
@@ -259,6 +260,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('tagihan')->middleware('permission:view_tagihan')->group(function () {
         Route::get('/', [TagihanController::class, 'index'])->name('tagihan.index');
+        Route::get('/datatable', [TagihanController::class, 'datatable'])->name('tagihan.datatable');
         Route::get('/create', [TagihanController::class, 'create'])->middleware('permission:create_tagihan')->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');

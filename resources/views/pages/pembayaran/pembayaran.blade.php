@@ -14,72 +14,72 @@
     <div class="row g-4">
         {{-- Summary Cards --}}
         <div class="row mt-4">
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Tunggakan</p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">Rp 1.000.000.000</h3>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Tunggakan</p>
+                                <h3 class="fw-bold text-danger mb-0 text-absolute">Rp {{ number_format($summary['total_tunggakan'], 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-time text-danger" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-time text-danger" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> Periode Bulan Ini</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> November 2025</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> Periode Bulan Ini</small>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-danger"></i> November 2025</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-success mb-0 text-absolute">   Rp {{ number_format($summary['total_pembayaran'], 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> Bulan Ini</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> November 2025</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> Bulan Ini</small>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-wallet-alt text-success"></i> November 2025</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 0</h3>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-warning mb-0 text-absolute">  Rp {{ number_format($summary['total_nontunai'], 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-credit-card text-warning" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-credit-card text-warning" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-warning"></i> Non-Tunai</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-warning"></i> Non-Tunai</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
+                                <h3 class="fw-bold text-info mb-0 text-absolute"> Rp {{ number_format($summary['total_tunai'], 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-money text-info" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-money text-info" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-money text-info"></i> Tunai</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-info"></i> Tunai</small>
                 </div>
             </div>
-        </div>
         </div>
         <div class="col-md-12 mt-4 p-3">
             <div class="card rounded-4 border-0 shadow-sm">
@@ -130,7 +130,7 @@
                     <div class="col-md-3 profile-card text-center">
                         <div class="profile-photo-wrapper mx-auto mb-3">
                             <img src="{{ asset('images/default-user.png') }}" alt="Foto Siswa" id="foto_siswa"
-                                class="profile-photo">
+                                 class="profile-photo">
                         </div>
                         <h5 class="fw-bold mb-1 text-white fw-bold" style="font-size: 18px" id="detail_nama">-</h5>
                         <p class="mb-0 opacity-75" id="detail_nisn">-</p>
@@ -208,7 +208,7 @@
                                 <i class="ri-sticky-note-line"></i> Tambah Catatan
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+                                    aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
 
@@ -233,26 +233,26 @@
                 <div class="table-responsive">
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
-                            <tr>
-                                <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
-                                <th>No</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jumlah Potongan</th>
-                                <th>Jumlah Tagihan</th>
-                                <th>Nominal Pembayaran</th>
-                                <th>Total Tunggakan</th>
-                                <th>Catatan</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
+                            <th>No</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jumlah Potongan</th>
+                            <th>Jumlah Tagihan</th>
+                            <th>Nominal Pembayaran</th>
+                            <th>Total Tunggakan</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="11" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -269,24 +269,24 @@
                 <div class="table-responsive">
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
-                            <tr>
-                                <th>No</th>
-                                <th>Periode Tagihan</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Rincian Tagihan</th>
-                                <th>Jml.Potongan</th>
-                                <th>Jml.Tagihan</th>
-                                <th>Jml.Bayar</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th>No</th>
+                            <th>Periode Tagihan</th>
+                            <th>Tagihan Kelas</th>
+                            <th>Rincian Tagihan</th>
+                            <th>Jml.Potongan</th>
+                            <th>Jml.Tagihan</th>
+                            <th>Jml.Bayar</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody id="list_tagihan">
-                            <tr>
-                                <td colspan="11" class="text-muted py-4 text-center">
-                                    <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="11" class="text-muted py-4 text-center">
+                                <i class="fa fa-info-circle"></i> Silakan pilih siswa & nama tagihan
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -345,12 +345,12 @@
 @endpush
 @push('scripts')
     <script>
-    // function changePerPage(perPage) {
-    //     const url = new URL(window.location.href);
-    //     url.searchParams.set('per_page', perPage);
-    //     url.searchParams.delete('page'); // Reset ke halaman 1
-    //     window.location.href = url.toString();
-    // }
+        // function changePerPage(perPage) {
+        //     const url = new URL(window.location.href);
+        //     url.searchParams.set('per_page', perPage);
+        //     url.searchParams.delete('page'); // Reset ke halaman 1
+        //     window.location.href = url.toString();
+        // }
 
         const jumlahInput = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
@@ -492,7 +492,7 @@
 
                     // Isi dropdown nama tagihan
                     const tagihanSelect = document.getElementById('nama_tagihan');
-        tagihanSelect.innerHTML = `
+                    tagihanSelect.innerHTML = `
             <option value="">-- Pilih Tagihan --</option>
             <option value="all">Semua Tagihan</option>
         `;
@@ -702,21 +702,21 @@
 
         function kirimPembayaran(tagihanId, bulan, tahun, nominal, kategoriId, jumlahBayar) {
             fetch('/pembayaran/store', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_siswa_id: tagihanId,
-                        bulan: bulan,
-                        tahun: tahun,
-                        nominal: nominal, // total tagihan
-                        jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
-                        kategori_id: kategoriId,
-                        metode: 'manual',
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_siswa_id: tagihanId,
+                    bulan: bulan,
+                    tahun: tahun,
+                    nominal: nominal, // total tagihan
+                    jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
+                    kategori_id: kategoriId,
+                    metode: 'manual',
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status == 1) {
@@ -795,16 +795,16 @@
             }
 
             fetch('/pembayaran/catatan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_id: tagihanId,
-                        catatan: isiCatatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tagihan_id: tagihanId,
+                    catatan: isiCatatan
                 })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 1) {
@@ -946,21 +946,21 @@
                 const tagihanData = window.tagihanDataMap ? window.tagihanDataMap.get(tagihan.id) : null;
 
                 fetch('/pembayaran/store', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            tagihan_siswa_id: tagihan.id,
-                            bulan: tagihanData?.bulan || tagihan.periode,
-                            tahun: tagihanData?.tahun || new Date().getFullYear(),
-                            nominal: tagihan.nominal,
-                            jumlah_bayar: tagihan.nominal,
-                            kategori_id: tagihanData?.kategori_id || 1,
-                            metode: 'manual',
-                        })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        tagihan_siswa_id: tagihan.id,
+                        bulan: tagihanData?.bulan || tagihan.periode,
+                        tahun: tagihanData?.tahun || new Date().getFullYear(),
+                        nominal: tagihan.nominal,
+                        jumlah_bayar: tagihan.nominal,
+                        kategori_id: tagihanData?.kategori_id || 1,
+                        metode: 'manual',
                     })
+                })
                     .then(res => res.json())
                     .then(data => {
                         if (data.status == 1 || data.status == true) {

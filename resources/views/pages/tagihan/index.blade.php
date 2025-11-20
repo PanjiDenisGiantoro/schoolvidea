@@ -9,76 +9,83 @@
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
-        {{-- Action Buttons & Pagination Control --}}
+        {{-- Main Summary Cards --}}
+
 
 
         {{-- Summary Cards --}}
         <div class="row mb-4">
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Jumlah Data</p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">{{ $summary['jumlah_data'] ?? 0 }}</h3>
+            {{-- Total Data Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Jumlah Data</p>
+                                <h3 class="fw-bold text-info mb-0 text-absolute">{{ $summary['jumlah_data'] ?? 0 }}</h3>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-file-list-3-line text-info" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-list-check text-info" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="ri-list-check text-info"></i> Total tagihan</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-info"></i> Akumulasi Data Tagihan</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Nominal Tagihan</p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
+
+            {{-- Nominal Tagihan Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Nominal Tagihan</p>
+                                <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-money-dollar-circle-line text-success" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-money text-success" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="ri-arrow-up-line text-success"></i> Total masuk</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-success"></i> Akumulasi Nominal Tagihan</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Sudah Dibayar</p>
-                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Sudah Dibayar</p>
+                                <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-check-circle text-primary" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-check-circle text-primary" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-check-circle text-primary"></i> Nominal Tagihan Yang Sudah Dibayar</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-check-circle text-primary"></i> Nominal Tagihan Yang Sudah Dibayar</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
-                <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Belum Dibayar</p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Belum Dibayar</p>
+                                <h3 class="fw-bold text-warning mb-0 text-absolute">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-time text-warning" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-time text-warning" style="font-size: 24px;"></i>
-                        </div>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-warning"></i> Nominal Tagihan Yang Belum Dibayar</small>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-time text-warning"></i> Nominal Tagihan Yang Belum Dibayar</small>
                 </div>
             </div>
-        </div>
+            
         </div>
 
         {{-- Alert jika ada error --}}
@@ -204,19 +211,9 @@
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
-
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <label for="per_page" class="mb-0">Tampilkan:</label>
-                        <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
-                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                            <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
-                        </select>
-                        <span class="text-muted">data per halaman</span>
-                    </div>
+                    <h5 class="fw-bold text-dark">Daftar Tagihan</h5>
                     <div class="d-flex gap-2">
                         <a href="{{ url('tagihan/create') }}" class="btn btn-primary rounded-pill shadow-sm">
                             <i class="fa fa-plus"></i> Tambah
@@ -233,99 +230,89 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
-                        <thead class="table-primary text-center text-nowrap align-middle">
+                    <table id="tagihanTable" class="table table-striped table-hover table-bordered align-middle table-sm">
+                        <thead class="table-primary text-center align-middle">
                             <tr>
-                                <th>#</th>
-                                <th>NISN</th>
-                                <th>Nama Lengkap</th>
-                                <th>Tagihan Unit</th>
-                                <th>Tagihan Kelas</th>
-                                <th>Nama Tagihan</th>
-                                <th>Tipe Tagihan</th>
-                                <th>Periode</th>
-                                <th>Jml. Tagihan</th>
-                                <th>Jml. Dibayar</th>
-                                <th>Jml. Tunggakan</th>
-                                <th>Status</th>
-                                <th>Detail</th>
+                                <th class="text-center" style="width: 4%">#</th>
+                                <th style="width: 8%">NISN</th>
+                                <th style="width: 14%">Nama Siswa</th>
+                                <th style="width: 8%">Unit</th>
+                                <th style="width: 8%">Kelas</th>
+                                <th style="width: 14%">Nama Tagihan</th>
+                                <th class="text-center" style="width: 10%">Jml. Tagihan</th>
+                                <th class="text-center" style="width: 10%">Jml. Dibayar</th>
+                                <th class="text-end" style="width: 10%">Jml. Tunggakan</th>
+                                <th class="text-center" style="width: 8%">Tgl. Buat</th>
+                                <th class="text-center" style="width: 6%">Status</th>
+                                <th class="text-center" style="width: 6%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($tagihans as $tagihan)
-                                @php
-                                    $siswa = $tagihan->tagihanSiswa->first()?->siswa;
-
-                                    $total_tagihan = $tagihan->items->sum('nominal') * ($tagihan->periode ?? 1);
-
-                                    $jumlah_dibayar = $siswa
-                                        ? $tagihan->tagihanSiswa
-                                                ->where('siswa_id', $siswa->id)
-                                                ->where('status', 1)
-                                                ->count() * $tagihan->items->sum('nominal')
-                                        : 0;
-
-                                    $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
-                                @endphp
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $siswa?->nisn ?? '-' }}</td>
-                                    <td>{{ $siswa?->user->name ?? '-' }}</td>
-                                    <td>{{ $tagihan->unit->nama_unit ?? '-' }}</td>
-                                    <td>{{ $tagihan->kelas->nama_kelas ?? '-' }}</td>
-                                    <td>
-                                        @foreach ($tagihan->items as $item)
-                                            {{ $item->kategori->nama_kategori ?? '-' }}<br>
-                                        @endforeach
-                                    </td>
-                                    <td>{{ $tagihan->jenis_tagihan ?? '-' }}</td>
-                                    <td>{{ $tagihan->periode ?? '-' }} Bulan</td>
-
-                                    <td>Rp {{ number_format($total_tagihan , 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($jumlah_dibayar, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($tunggakan, 0, ',', '.') }}</td>
-                                    <td>
-                                        @if ($tunggakan <= 0)
-                                            <span class="badge bg-success rounded-pill">Lunas</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($siswa)
-                                            <a href="{{ route('tagihan.show', [$tagihan->id, $siswa->id]) }}"
-                                                class="btn btn-primary rounded-pill">
-                                                <i class="ri-eye-line"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
                         </tbody>
                     </table>
                 </div>
 
-                {{-- Pagination --}}
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Menampilkan {{ $tagihans->firstItem() ?? 0 }} sampai {{ $tagihans->lastItem() ?? 0 }} dari {{ $tagihans->total() }} data
-                    </div>
-                    <div>
-                        {{ $tagihans->links('vendor.pagination.custom') }}
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
 @endsection
 
+
+
 @push('scripts')
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
     <script>
-        function changePerPage(perPage) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('per_page', perPage);
-            url.searchParams.delete('page'); // Reset to page 1
-            window.location.href = url.toString();
-        }
+        let tagihanTable;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            tagihanTable = $('#tagihanTable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                },
+                ajax: {
+                    url: '{{ route("tagihan.datatable") }}',
+                    type: 'GET',
+                    data: function(d) {
+                        d.unit_id = document.getElementById('unit_id')?.value || '';
+                        d.kelas_id = document.getElementById('kelas_id')?.value || '';
+                        d.tagihan_status = document.getElementById('tagihan_status')?.value || '';
+                        d.jenis_tagihan = document.getElementById('jenis_tagihan')?.value || '';
+                        d.search = d.search.value;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('DataTable AJAX Error:', error, xhr.responseText);
+                    }
+                },
+                columns: [
+                    { data: 'no', name: 'no', className: 'text-center', render: function(data) { return data; } },
+                    { data: 'nisn', name: 'nisn', render: function(data) { return data || '-'; } },
+                    { data: 'nama_siswa', name: 'nama_siswa', render: function(data) { return data || '-'; } },
+                    { data: 'unit', name: 'unit', render: function(data) { return data || '-'; } },
+                    { data: 'kelas', name: 'kelas', render: function(data) { return data || '-'; } },
+                    { data: 'nama_tagihan', name: 'nama_tagihan', render: function(data) { return data || '-'; } },
+                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-center', render: function(data) { return data || '0x'; } },
+                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-center', render: function(data) { return data || '0 bulan'; } },
+                    { data: 'jml_tunggakan', name: 'jml_tunggakan', className: 'text-end', render: function(data) { return data || 'Rp 0'; } },
+                    { data: 'created_at', name: 'created_at', className: 'text-center', render: function(data) { return data || '-'; } },
+                    { data: 'status', name: 'status', className: 'text-center', orderable: false, render: function(data) { return data || '-'; } },
+                    { data: 'action', name: 'action', className: 'text-center', orderable: false, searchable: false, render: function(data) { return data || '-'; } }
+                ],
+                columnDefs: [
+                    { orderable: false, targets: [0, 10, 11] }
+                ],
+                order: [[0, 'desc']]
+            });
+        });
     </script>
 @endpush

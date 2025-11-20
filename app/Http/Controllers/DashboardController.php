@@ -123,6 +123,37 @@ class DashboardController extends Controller
             })
             ->values();
 
-        return view('dashboard', compact('totalPetugas', 'totalUnit', 'totalKelas', 'totalSiswa','totalSaldo','jumlahTransaksi','data','datas'));
+        // Hitung ringkasan tagihan untuk dashboard card
+        $allTagihans = Tagihansiswa::with([
+            'siswa.pembayaranTagihan',
+            'tagihan.items'
+        ])
+            ->when(Auth::user()->unit_id, function ($query, $unitId) {
+                $query->whereHas('tagihan', function ($q) use ($unitId) {
+                    $q->where('unit_id', $unitId);
+                });
+            })
+            ->get();
+
+        $tagihanData = [
+            'jumlah_data' => $allTagihans->count(),
+            'nominal_tagihan' => $allTagihans->sum(function ($ts) {
+                return $ts->tagihan->items->sum('nominal');
+            }),
+            'sudah_dibayar' => $allTagihans->sum(function ($ts) {
+                return $ts->siswa->pembayaranTagihan
+                    ->where('status_approval', 'approved')
+                    ->sum('jumlah_bayar');
+            }),
+            'belum_dibayar' => $allTagihans->sum(function ($ts) {
+                $nominal_tagihan = $ts->tagihan->items->sum('nominal');
+                $sudah_bayar = $ts->siswa->pembayaranTagihan
+                    ->where('status_approval', 'approved')
+                    ->sum('jumlah_bayar');
+                return max($nominal_tagihan - $sudah_bayar, 0);
+            }),
+        ];
+
+        return view('dashboard', compact('totalPetugas', 'totalUnit', 'totalKelas', 'totalSiswa','totalSaldo','jumlahTransaksi','data','datas','tagihanData'));
     }
 }
