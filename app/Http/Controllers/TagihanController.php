@@ -288,11 +288,46 @@ class TagihanController extends Controller
             $siswa = $tagihanSiswa->siswa;
             $tagihan = $tagihanSiswa->tagihan;
 
-            $total_tagihan = $tagihan->items->sum('nominal');
-            $jumlah_dibayar = $siswa->pembayaranTagihan
-                ->where('status_approval', 'approved')
-                ->sum('jumlah_bayar');
-            $tunggakan = max($total_tagihan - $jumlah_dibayar, 0);
+            // 1. JUMLAH TAGIHAN (berapa kali)
+            // Count total record tagihan_siswa untuk siswa dan tagihan ini
+            $jml_tagihan_kali = Tagihansiswa::where('tagihan_id', $tagihan->id)
+                ->where('siswa_id', $siswa->id)
+                ->count();
+
+            // 2. JUMLAH DIBAYAR (berapa bulan/record sudah lunas)
+            // Count jumlah record dengan status = 1 (lunas)
+            $jml_dibayar_bulan = Tagihansiswa::where('tagihan_id', $tagihan->id)
+                ->where('siswa_id', $siswa->id)
+                ->where('status', '1')
+                ->count();
+
+            // 3. JUMLAH TUNGGAKAN
+            // Sum sisa_nominal dari record dengan status = 0
+            $tunggakan_status_0 = Tagihansiswa::where('tagihan_id', $tagihan->id)
+                ->where('siswa_id', $siswa->id)
+                ->where('status', '0')
+                ->sum('sisa_nominal');
+
+            // Jika ada status = 2, ambil dari keuangan_transaksi
+            $tunggakan_status_2 = 0;
+            $tagihans_status_2 = Tagihansiswa::where('tagihan_id', $tagihan->id)
+                ->where('siswa_id', $siswa->id)
+                ->where('status', '2')
+                ->get();
+
+            foreach ($tagihans_status_2 as $ts2) {
+                // Cari di keuangan_transaksi berdasarkan referensi_tagihan_id
+                $keuangan = Keuangan_transaksi::where('penerima_id', $siswa->id)
+                    ->where('penerima_tipe', Siswa::class)
+                    ->where('jenis_transaksi', 'PEMBAYARAN')
+                    ->first();
+
+                if ($keuangan) {
+                    $tunggakan_status_2 += $keuangan->jumlah;
+                }
+            }
+
+            $total_tunggakan = $tunggakan_status_0 + $tunggakan_status_2;
 
             $nama_kategori = $tagihan->items->pluck('kategori.nama_kategori')->filter()->implode(', ') ?? '-';
 
@@ -315,9 +350,9 @@ class TagihanController extends Controller
                 'unit' => $tagihan->unit->nama_unit ?? '-',
                 'kelas' => $tagihan->kelas->nama_kelas ?? '-',
                 'nama_tagihan' => $nama_kategori,
-                'jml_tagihan' => 'Rp ' . number_format($total_tagihan, 0, ',', '.'),
-                'jml_dibayar' => 'Rp ' . number_format($jumlah_dibayar, 0, ',', '.'),
-                'jml_tunggakan' => 'Rp ' . number_format($tunggakan, 0, ',', '.'),
+                'jml_tagihan' => $jml_tagihan_kali . 'x',
+                'jml_dibayar' => $jml_dibayar_bulan . ' bulan',
+                'jml_tunggakan' => 'Rp ' . number_format($total_tunggakan, 0, ',', '.'),
                 'created_at' => $created_at,
                 'status' => $status_badge,
                 'action' => $detail_btn,

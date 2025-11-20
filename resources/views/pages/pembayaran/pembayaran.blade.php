@@ -20,7 +20,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Tunggakan</p>
-                                <h3 class="fw-bold text-danger mb-0 text-absolute">Rp 1.000.000.000</h3>
+                                <h3 class="fw-bold text-danger mb-0 text-absolute">Rp {{ number_format($summary['total_tunggakan'], 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
                                 <i class="bx bx-time text-danger" style="font-size: 24px;"></i>
@@ -37,7 +37,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                                <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+                                <h3 class="fw-bold text-success mb-0 text-absolute">   Rp {{ number_format($summary['total_pembayaran'], 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
                                 <i class="bx bx-wallet-alt text-success" style="font-size: 24px;"></i>
@@ -54,7 +54,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                                <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 0</h3>
+                                <h3 class="fw-bold text-warning mb-0 text-absolute">  Rp {{ number_format($summary['total_nontunai'], 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
                                 <i class="bx bx-credit-card text-warning" style="font-size: 24px;"></i>
@@ -70,7 +70,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pembayaran</p>
-                                <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+                                <h3 class="fw-bold text-info mb-0 text-absolute"> Rp {{ number_format($summary['total_tunai'], 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
                                 <i class="bx bx-money text-info" style="font-size: 24px;"></i>

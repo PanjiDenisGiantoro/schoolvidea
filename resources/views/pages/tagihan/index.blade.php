@@ -8,52 +8,76 @@ di @extends('layouts.app')
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
-        {{-- Summary Cards --}}
+        {{-- Main Summary Cards --}}
         <div class="row g-3 mb-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="card mini-stats">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-2 text-muted">Jumlah Data</p>
-                            <h4 class="fw-bold text-primary">{{ $summary['jumlah_data'] ?? 0 }}</h4>
+            {{-- Total Data Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Jumlah Data</p>
+                                <h3 class="fw-bold text-primary mb-0">{{ $summary['jumlah_data'] ?? 0 }}</h3>
+                            </div>
+                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-file-list-3-line text-primary" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <i class="ri-file-list-3-line fs-32 text-primary opacity-50"></i>
+                        <small class="text-muted d-block mt-2"><i class="ri-list-check text-primary"></i> Total tagihan</small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="card mini-stats">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-2 text-muted">Nominal Tagihan</p>
-                            <h4 class="fw-bold text-success">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
+            {{-- Nominal Tagihan Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Nominal Tagihan</p>
+                                <h3 class="fw-bold text-success mb-0">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-money-dollar-circle-line text-success" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <i class="ri-money-dollar-circle-line fs-32 text-success opacity-50"></i>
+                        <small class="text-muted d-block mt-2"><i class="ri-arrow-up-line text-success"></i> Total masuk</small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="card mini-stats">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-2 text-muted">Sudah Dibayar</p>
-                            <h4 class="fw-bold text-info">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+            {{-- Sudah Dibayar Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-cyan shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Sudah Dibayar</p>
+                                <h3 class="fw-bold text-info mb-0">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-checkbox-circle-line text-info" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <i class="ri-checkbox-circle-line fs-32 text-info opacity-50"></i>
+                        <small class="text-muted d-block mt-2"><i class="ri-check-double-line text-info"></i> Pembayaran</small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <div class="card mini-stats">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-2 text-muted">Belum Dibayar</p>
-                            <h4 class="fw-bold text-warning">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+            {{-- Belum Dibayar Card --}}
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-orange shadow-sm h-100 transition-all">
+                    <div class="card-body position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Belum Dibayar</p>
+                                <h3 class="fw-bold text-warning mb-0">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-alert-line text-warning" style="font-size: 24px;"></i>
+                            </div>
                         </div>
-                        <i class="ri-alert-line fs-32 text-warning opacity-50"></i>
+                        <small class="text-muted d-block mt-2"><i class="ri-time-line text-warning"></i> Tunggakan</small>
                     </div>
                 </div>
             </div>
@@ -96,8 +120,8 @@ di @extends('layouts.app')
                                 <th style="width: 8%">Unit</th>
                                 <th style="width: 8%">Kelas</th>
                                 <th style="width: 14%">Nama Tagihan</th>
-                                <th class="text-end" style="width: 10%">Jml. Tagihan</th>
-                                <th class="text-end" style="width: 10%">Jml. Dibayar</th>
+                                <th class="text-center" style="width: 10%">Jml. Tagihan</th>
+                                <th class="text-center" style="width: 10%">Jml. Dibayar</th>
                                 <th class="text-end" style="width: 10%">Jml. Tunggakan</th>
                                 <th class="text-center" style="width: 8%">Tgl. Buat</th>
                                 <th class="text-center" style="width: 6%">Status</th>
@@ -116,6 +140,95 @@ di @extends('layouts.app')
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <style>
+        /* Stat Cards Styling */
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.5;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .stat-card-green::before {
+            background: linear-gradient(90deg, transparent, #28a745, transparent);
+        }
+
+        .stat-card-blue::before {
+            background: linear-gradient(90deg, transparent, #0d6efd, transparent);
+        }
+
+        .stat-card-cyan::before {
+            background: linear-gradient(90deg, transparent, #0dcaf0, transparent);
+        }
+
+        .stat-card-orange::before {
+            background: linear-gradient(90deg, transparent, #fd7e14, transparent);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.15) rotate(-5deg);
+        }
+
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .stat-card {
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-card h3 {
+                font-size: 1.5rem !important;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .stat-icon i {
+                font-size: 20px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stat-card:hover {
+                transform: translateY(-4px) scale(1.01);
+            }
+
+            .stat-card h3 {
+                font-size: 1.25rem !important;
+            }
+        }
+    </style>
 @endpush
 
 @push('scripts')
@@ -159,8 +272,8 @@ di @extends('layouts.app')
                     { data: 'unit', name: 'unit', render: function(data) { return data || '-'; } },
                     { data: 'kelas', name: 'kelas', render: function(data) { return data || '-'; } },
                     { data: 'nama_tagihan', name: 'nama_tagihan', render: function(data) { return data || '-'; } },
-                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-end', render: function(data) { return data || 'Rp 0'; } },
-                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-end', render: function(data) { return data || 'Rp 0'; } },
+                    { data: 'jml_tagihan', name: 'jml_tagihan', className: 'text-center', render: function(data) { return data || '0x'; } },
+                    { data: 'jml_dibayar', name: 'jml_dibayar', className: 'text-center', render: function(data) { return data || '0 bulan'; } },
                     { data: 'jml_tunggakan', name: 'jml_tunggakan', className: 'text-end', render: function(data) { return data || 'Rp 0'; } },
                     { data: 'created_at', name: 'created_at', className: 'text-center', render: function(data) { return data || '-'; } },
                     { data: 'status', name: 'status', className: 'text-center', orderable: false, render: function(data) { return data || '-'; } },
