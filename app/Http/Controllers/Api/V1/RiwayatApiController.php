@@ -845,14 +845,41 @@ class RiwayatApiController extends Controller
             }
 
             // Monthly deposits and withdrawals
-            $totalSetorPerbulan = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
-                ->sum('jumlah');
-            $totalTarikPerbulan = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
-                ->sum('jumlah');
-            $countSetorPerbulan = $tabunganQuery->where('jenis_transaksi', 'setoran_tabungan')
-                ->count();
-            $countTarikPerbulan = $tabunganQuery->where('jenis_transaksi', 'penarikan_tabungan')
-                ->count();
+            $totalSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('jenis_transaksi', 'setoran_tabungan')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $totalSetorPerbulan->where('penerima_id', $siswaId);
+            }
+            $totalSetorPerbulan = $totalSetorPerbulan->sum('jumlah');
+
+            $totalTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('jenis_transaksi', 'penarikan_tabungan')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $totalTarikPerbulan->where('penerima_id', $siswaId);
+            }
+            $totalTarikPerbulan = $totalTarikPerbulan->sum('jumlah');
+
+            $countSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('jenis_transaksi', 'setoran_tabungan')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $countSetorPerbulan->where('penerima_id', $siswaId);
+            }
+            $countSetorPerbulan = $countSetorPerbulan->count();
+
+            $countTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('jenis_transaksi', 'penarikan_tabungan')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $countTarikPerbulan->where('penerima_id', $siswaId);
+            }
+            $countTarikPerbulan = $countTarikPerbulan->count();
 
             // ===== OVERALL STATISTICS (all time) =====
             // Total deposits all time
@@ -910,8 +937,23 @@ class RiwayatApiController extends Controller
             }
 
             $totalTagihan = $tagihanQuery->sum('sisa_nominal');
-            $totalLunas = $tagihanQuery->where('status', 'paid')->count();
-            $totalBelumLunas = $tagihanQuery->where('status', '!=', 'paid')->count();
+
+            // Status: 0 = Belum Bayar, 1 = Lunas, 2 = Cicilan
+            $totalLunas = Tagihansiswa::where('status', '1')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $totalLunas->where('siswa_id', $siswaId);
+            }
+            $totalLunas = $totalLunas->count();
+
+            $totalBelumLunas = Tagihansiswa::where('status', '!=', '1')
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($siswaId) {
+                $totalBelumLunas->where('siswa_id', $siswaId);
+            }
+            $totalBelumLunas = $totalBelumLunas->count();
 
             // Pembayaran Statistics
             $pembayaranQuery = Pembayarantagihan::whereBetween('created_at', [$startDate, $endDate]);
