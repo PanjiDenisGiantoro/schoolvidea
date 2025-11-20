@@ -142,18 +142,20 @@
             // Simpan preferensi user
             if (document.body.classList.contains("dark-theme")) {
                 localStorage.setItem("theme", "dark");
+                document.body.classList.add("dark-theme");
             } else {
                 localStorage.setItem("theme", "light");
+                document.body.classList.remove("dark-theme");
             }
         });
 
         // Saat reload halaman, terapkan tema sebelumnya
-        if (localStorage.getItem("theme") === "light") {
-            document.body.classList.remove("dark-theme");
-        }
-        else if (localStorage.getItem("theme") === "dark") {
-            document.body.classList.remove("dark-theme");
-        }
+       // if (localStorage.getItem("theme") === "light") {
+        //    document.body.classList.add("dark-theme");
+        //}
+        //else if (localStorage.getItem("theme") === "dark") {
+         //   document.body.classList.remove("dark-theme");
+        //}
         // else {
         //     document.body.classList.remove("dark-theme");
         // }

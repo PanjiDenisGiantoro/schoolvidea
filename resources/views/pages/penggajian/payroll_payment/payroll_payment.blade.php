@@ -27,14 +27,14 @@
                     <div class="col-md-6">
                         <label for="filter_officer" class="form-label fw-semibold">Pilih Guru & Staff</label>
                         <select id="filter_officer" class="form-select rounded-pill shadow-sm">
-                            <option value="all">Semua Guru & Staff</option>
+                            <option value="">Pilih Guru & Staff</option>
                         </select>
                     </div>
                     {{-- Pilih Pembayaran --}}
                     <div class="col-md-4">
-                        <label for="filter_setting" class="form-label fw-semibold">Pilih Pembayaran</label>
-                        <select id="filter_setting" class="form-select rounded-pill shadow-sm">
-                            <option value="all">Semua Pembayaran</option>
+                        <label for="filter_payment" class="form-label fw-semibold">Pilih Pembayaran</label>
+                        <select id="filter_payment" class="form-select rounded-pill shadow-sm">
+                            <option value="">Pilih Pembayaran</option>
                         </select>
                     </div>
 
@@ -265,301 +265,90 @@
 
 @endsection
 @push('scripts')
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const unitSelect = document.getElementById('filter_unit');
-        const officerSelect = document.getElementById('filter_officer');
-        const settingSelect = document.getElementById('filter_setting');
-        const periodeSelect = document.getElementById('filter_periode');
-        const yearSelect = document.getElementById('filter_year');
-        const tabelBelumLunas = document.getElementById('tabelBelumLunas');
-        const tabelSudahLunas = document.getElementById('tabelSudahLunas');
-        const tabelBelumLunasBody = document.querySelector('#tabelBelumLunas tbody');
+document.addEventListener('DOMContentLoaded', function() {
 
+    const unitSelect = document.getElementById('filter_unit');
+    const officerSelect = document.getElementById('filter_officer');
+    const paymentSelect = document.getElementById('filter_payment');
+    const tabelBelumLunasBody = document.querySelector('#tabelBelumLunas tbody');
 
-
-        unitSelect.addEventListener('change', function() {
-            const unitId = this.value;
-            officerSelect.innerHTML = `<option value="">Memuat...</option>`;
-            settingSelect.innerHTML = `<option value="">Pilih Setting</option>`;
-
-            if (!unitId) {
-                officerSelect.innerHTML = `<option value="">Pilih Guru & Staff</option>`;
-                clearTableData();
-                clearOfficerInfo();
-                return;
-            }
-
-            fetch(`/payroll-setting/officers/by-unit/${unitId}`)
-            .then(res => res.json())
-            .then(data => {
-                officerSelect.innerHTML = `<option value="">Pilih Guru & Staff</option>`;
-                if (data.length === 0) {
-                    officerSelect.innerHTML = `<option value="">Tidak Ada Data</option>`;
-                    return;
-                }
-                data.forEach(d => {
-                    officerSelect.innerHTML += `
-                        <option value="${d.id}">${d.user.name} - ${d.position?.name ?? '(Tanpa Jabatan)'}</option>
-                    `;
-                });
-            }).catch(err => {
-                console.error('Error loading officers:', err);
-                officerSelect.innerHTML = `<option value="">Error memuat data</option>`;
-            });
-        });
-
-        officerSelect.addEventListener('change', function() {
-            const officerId = this.value;
-
-            if (!officerId) {
-                clearOfficerInfo();
-                clearTableData();
-                settingSelect.innerHTML = `<option value="">Pilih Setting</option>`;
-                return;
-            }
-
-            // Load officer details
-            fetch(`/payroll-setting/officers/detail/${officerId}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('officer_name').innerText = data.officer_name ?? "-";
-                document.getElementById('officer_nip').innerText = data.officer_nip ?? "-";
-                document.getElementById('officer_jabatan').innerText = data.officer_jabatan ?? "-";
-                document.getElementById('officer_no_hp').innerText = data.officer_no_hp ?? "-";
-                document.getElementById('officer_unit').innerText = data.officer_unit ?? "-";
-                if (data.officer_foto) {
-                    document.querySelector('img[alt="Foto Guru & Staff"]').src = `${data.officer_foto}`;
-                }
-            })
-            .catch(err => {
-                console.error('Error loading officer details:', err);
-            });
-
-            // Load payment settings
-            fetch(`/payroll-payment/getPaymentList/${officerId}`)
-            .then(res => res.json())
-            .then(data => {
-                settingSelect.innerHTML = `<option value="">Pilih Setting</option>`;
-                if (data.components && data.components.length > 0) {
-                    data.components.forEach(c => {
-                        settingSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                    });
-                } else {
-                    settingSelect.innerHTML = `<option value="">Tidak Ada Setting</option>`;
-                }
-
-                // Isi filter periode dan tahun jika ada data
-                if (data.periodes && data.periodes.length > 0) {
-                    // Anda bisa mengisi periode select jika perlu
-                }
-                if (data.years && data.years.length > 0) {
-                    // Anda bisa mengisi tahun select jika perlu
-                }
-
-
-tabelBelumLunasBody.innerHTML = "";
-
-function loadPaymentTable(officerId, componentId, periode, year) {
-    tabelBelumLunasBody.innerHTML = `<tr><td colspan="11">Memuat...</td></tr>`;
-
-    fetch(`/payroll-payment/getPaymentData?officer_id=${officerId}&setting_id=${componentId}&periode=${periode}&year=${year}`)
-        .then(res => res.json())
-        .then(result => {
-
-            if (!result.success || result.data.length === 0) {
-                tabelBelumLunasBody.innerHTML = `
-                    <tr>
-                        <td colspan="11" class="text-center">Tidak ada data</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tabelBelumLunasBody.innerHTML = "";
-
-            let index = 1;
-
-            result.data.forEach(item => {
-
-                const officerName = item.officer?.user?.name ?? "-";
-                const componentName = item.component?.name ?? "-";
-                const componentValue = item.component?.value ?? 0;
-
-                const deductionsTotal = item.total_deductions ?? 0;
-                const netPayment = item.net_payment ?? 0;
-
-                // Perbaikan parse bulan
-                const [year, month] = item.payment_month.split("-");
-                const monthName = convertMonth(parseInt(month)) + " " + year;
-
-                const row = `
-                    <tr>
-                        <td><input type="checkbox" class="row-checkbox-belum"></td>
-                        <td>${index++}</td>
-                        <td>${officerName}</td>
-                        <td>${monthName}</td>
-                        <td>${componentName}</td>
-                        <td>
-                            <div class="custom-presensi-wrapper">
-                                <input type="text" class="custom-input-presensi" style="width:50px;">
-                                <input type="text" class="custom-input-presensi" style="width:50px;">
-                                <input type="text" class="custom-input-presensi" style="width:50px;">
-                            </div>
-                        </td>
-                        <td>Rp.${componentValue.toLocaleString('id-ID')}</td>
-                        <td>Rp.${deductionsTotal.toLocaleString('id-ID')}</td>
-                        <td>Rp.${netPayment.toLocaleString('id-ID')}</td>
-                        <td>
-                            <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#catatanModal">
-                                Catatan
-                            </button>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-warning rounded-pill">Detail</button>
-                                <button class="btn btn-success rounded-pill">Bayar</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-
-                tabelBelumLunasBody.innerHTML += row;
-            });
-        })
-        .catch(err => {
-            console.error("Error:", err);
-            tabelBelumLunasBody.innerHTML = `<tr><td colspan="11">Error memuat data</td></tr>`;
-        });
-}
-
-function convertMonth(num) {
-    const months = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
-    return months[num - 1] ?? "-";
-}
-
-settingSelect.addEventListener('change', () => {
-    loadPaymentTable(
-        officerSelect.value,
-        settingSelect.value,
-        periodeSelect.value || "all",
-        yearSelect.value || ""
-    );
-});
-
-
-
-// data.settings.forEach(setting => {
-
-//     const componentsTotal = setting.components.reduce((sum, c) => sum + (c.amount ?? 0), 0);
-//     const deductionsTotal = setting.deductions.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-//     const penerimaanBersih = componentsTotal - deductionsTotal;
-
-//     const billingPeriod = setting.billing_period ?? 1;
-//     const startYear = setting.start_year ?? new Date().getFullYear();
-
-//     // 👉 hasil: ["Januari 2025", "Februari 2025", "Maret 2025"]
-//     const listMonths = generateMonths(billingPeriod, startYear);
-
-
-// listMonths.forEach(period => {
-
-//     setting.components.forEach(comp => {
-
-//         const componentName = comp.component?.name ?? "-";
-//         const componentAmount = comp.amount ?? 0;
-
-//         const deductionTotal = deductionsTotal; // boleh beda, jika per-komponen ubah nanti
-
-//         const bersih = componentAmount - deductionTotal;
-
-//         const row = `
-//             <tr>
-//                 <td><input type="checkbox" class="row-checkbox-belum"></td>
-//                 <td>${index++}</td>
-//                 <td>${setting.officer.name ?? '-'}</td>
-
-//                 <!-- Periode -->
-//                 <td>${period}</td>
-
-//                 <!-- Nama Komponen -->
-//                 <td>${componentName}</td>
-
-//                 <!-- Presensi -->
-//                 <td>
-//                     <div class="custom-presensi-wrapper">
-//                         <input type="text" class="custom-input-presensi izin" style="width: 50px;"
-//                             value="${setting.teaching_hours}"
-//                             onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-//                         <input type="text" class="custom-input-presensi hadir" style="width: 50px;"
-//                             onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-//                         <input type="text" class="custom-input-presensi alpha" style="width: 50px;"
-//                             onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-//                     </div>
-//                 </td>
-
-//                 <!-- Nilai Komponen -->
-//                 <td>Rp.${componentAmount.toLocaleString('id-ID')}</td>
-
-//                 <!-- Total Potongan (global) -->
-//                 <td>Rp.${deductionsTotal.toLocaleString('id-ID')}</td>
-
-//                 <!-- Penerimaan Bersih -->
-//                 <td>Rp.${bersih.toLocaleString('id-ID')}</td>
-
-//                 <td>
-//                     <button type="button" class="btn btn-primary rounded-pill"
-//                             data-bs-toggle="modal" data-bs-target="#catatanModal">
-//                         Catatan
-//                     </button>
-//                 </td>
-
-//                 <td>
-//                     <div class="d-flex justify-content-center gap-2">
-//                         <button class="btn btn-warning rounded-pill">Detail</button>
-//                         <button class="btn btn-success rounded-pill">Bayar</button>
-//                     </div>
-//                 </td>
-//             </tr>
-//         `;
-
-//         tabelBelumLunasBody.innerHTML += row;
-
-//     });
-
-// });
-
-// });
-
-            })
-            .catch(err => {
-                console.error('Error loading payment settings:', err);
-                settingSelect.innerHTML = `<option value="">Error memuat setting</option>`;
-            });
-        });
-function generateMonths(billingPeriod, startYear) {
-    const months = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
-
-    let result = [];
-    let startMonth = 0; // mulai Januari (index 0)
-
-    for (let i = 0; i < billingPeriod; i++) {
-        const monthIndex = (startMonth + i) % 12;
-        const year = startYear + Math.floor((startMonth + i) / 12);
-        result.push(`${months[monthIndex]} ${year}`);
+    function resetSelect(selectElement, placeholder = "Pilih") {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
     }
 
-    return result;
-}
+    async function getData(url) {
+        try {
+            let res = await fetch(url);
+            return await res.json();
+        } catch (err) {
+            console.error("fetch error:", err);
+            return null;
+        }
+    }
+
+    unitSelect.addEventListener('change', async function() {
+        const unitId = this.value;
+
+        resetSelect(officerSelect, "Pilih Guru & Staff");
+        resetSelect(paymentSelect, "Pilih Pembayaran");
+
+        if (!unitId) return;
+
+        const data = await getData(`/payroll-payment/getByUnit/${unitId}`);
+
+        if (data && data.length) {
+            officerSelect.innerHTML =
+                `<option value="all">Semua Guru & Staff</option>` +
+                data.map(o =>
+                    `<option value="${o.id}">${o.user?.name ?? 'Tanpa Nama'}</option>`
+                ).join("");
+        }
+    });
+
+    officerSelect.addEventListener('change', async function() {
+        const officerId = this.value;
+
+        resetSelect(paymentSelect, "Pilih Pembayaran");
+
+        if (!officerId || officerId === "all") return;
+
+        const data = await getData(`/payroll-payment/getByOfficer/${officerId}`);
+        console.log(data);
+        console.log(data>.components);
+
+        if (data?.components && data?.components?.length) {
+            paymentSelect.innerHTML =
+                `<option value="all">Semua Pembayaran</option>` +
+                data.payment.map(p => `
+                    <option value="${p.id}">
+                        ${p.name ?? 'Komponen Tidak Ditemukan'}
+                    </option>`
+                ).join("");
+        } else {
+            paymentSelect.innerHTML  = `<option value="">Tidak Ada Pembayaran</option>`;
+        }
+
+        const detail = await getData(`/payroll-payment/getOfficerDetail/${officerId}`);
+
+        if (detail) {
+            document.getElementById('officer_name').innerText = detail.officer_name ?? "-";
+            document.getElementById('officer_nip').innerText = detail.officer_nip ?? "-";
+            document.getElementById('officer_jabatan').innerText = detail.officer_position ?? "-";
+            document.getElementById('officer_no_hp').innerText = detail.officer_no_hp ?? "-";
+            document.getElementById('officer_unit').innerText = detail.officer_unit ?? "-";
+
+            if (detail.officer_foto) {
+                document.querySelector('img[alt="Foto Guru & Staff"]').src = detail.officer_foto;
+            }
+        }
 
     });
+
+});
 </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const btnBelumLunas = document.getElementById('btnBelumLunas');

@@ -163,7 +163,7 @@ class PayrollSettingController extends Controller
                     }
 
                     // Format bulan
-                    $paymentMonth = sprintf("%02d-%04d", $month, $year);
+                    $paymentMonth = $month;
 
                     // Gaji pokok (per komponen dihitung sama)
                     $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);

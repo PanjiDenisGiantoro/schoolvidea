@@ -41,6 +41,56 @@ class PayrollPaymentController extends Controller
         return view('pages.penggajian.payroll_payment.payroll_payment', compact('units', 'tagihanList', 'officerList', 'akunList'));
     }
 
+    public function getByUnit($unit_id)
+    {
+        $officers = Officer::whereHas("unit", function ($query) use ($unit_id) {
+            $query->where("id", $unit_id);
+        })
+            // PERBAIKAN: Tambahkan 'position' untuk form
+            ->with(["user:id,name", "position"])
+            ->get(["id", "user_id"]);
+
+        return response()->json($officers);
+    }
+
+    public function getByOfficer($officerId)
+    {
+        $settings = PayrollSetting::where('officers_id', $officerId)
+            ->with(['components.component'])->get();
+        $components = $settings
+            ->flatMap(fn ($s) => $s->components)
+            ->pluck('component')
+            ->unique('id')
+        ->values()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+            ]);
+        $periodes = $settings->pluck('billing_period')->unique()->values();
+        $years = $settings->pluck('start_year')->unique()->values();
+
+        return response()->json([
+            'components' => $components,
+            'periodes' => $periodes,
+            'years' => $years,
+        ]);
+    }
+    public function getOfficerDetail($officerId)
+    {
+        $officer = Officer::with([
+            'position:id,positions_name',
+            'unit:id,nama_unit'
+        ])->find($officerId);
+
+        return response()->json([
+            'officer_name' => $officer->name ?? "-",
+            'officer_unit' => $officer->unit?->nama_unit ?? "-",
+            'officer_nip' => $officer->nip ?? "-",
+            'officer_no_hp' => $officer->no_hp ?? "-",
+            'officer_foto' => $officer-> image ?? "",
+            'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan"
+        ]);
+    }
     public function getPaymentList(Request $request, $officerId)
     {
         try {
@@ -89,44 +139,44 @@ class PayrollPaymentController extends Controller
         }
     }
 
-public function getPaymentData(Request $request)
-{
-    $officerId = $request->officer_id;
-    $componentId = $request->setting_id; // kamu pakai setting_id tetapi isinya component_id
-    $periode = $request->periode;
-    $year = $request->year;
+    public function getPaymentData(Request $request)
+    {
+        $officerId = $request->officer_id;
+        $componentId = $request->setting_id; // kamu pakai setting_id tetapi isinya component_id
+        $periode = $request->periode;
+        $year = $request->year;
 
-    try {
+        try {
 
-        $query = PayrollPayment::with([
-            'officer.user',
-            'component',                 // relasi ke komponen
-            'component.componentType',   // kalau nama komponen ada di tabel lain
-        ])
-        ->where('officer_id', $officerId)
-        ->where('component_id', $componentId);
+            $query = PayrollPayment::with([
+                'officer.user',
+                'component',                 // relasi ke komponen
+                'component.componentType',   // kalau nama komponen ada di tabel lain
+            ])
+            ->where('officer_id', $officerId)
+            ->where('component_id', $componentId);
 
-        // Filter bulan
-        if ($periode !== 'all' && !empty($periode)) {
-            $query->where('payment_month', 'like', sprintf('%02d-', $periode) . '%');
+            // Filter bulan
+            if ($periode !== 'all' && !empty($periode)) {
+                $query->where('payment_month', intval($periode));
+            }
+
+            // Filter tahun
+            if (!empty($year)) {
+                $query->where('payment_month', intval($year));
+            }
+
+            $data = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Payroll Table Error: " . $e->getMessage());
+            return response()->json(['success' => false, 'data' => []]);
         }
-
-        // Filter tahun
-        if (!empty($year)) {
-            $query->where('payment_month', 'like', '%-' . $year);
-        }
-
-        $data = $query->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $data
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error("Payroll Table Error: " . $e->getMessage());
-        return response()->json(['success' => false, 'data' => []]);
     }
-}
 
 }

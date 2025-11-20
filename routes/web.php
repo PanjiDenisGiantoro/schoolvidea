@@ -409,6 +409,9 @@ Route::middleware(['auth'])->group(function () {
     }); //->middleware('permission:view_data_rekening')
     Route::prefix('payroll-payment')->group(function () {
         Route::get('/', [PayrollPaymentController::class, 'index'])->name('payroll_payment.index');
+        Route::get('/getByOfficer/{officerId}', [PayrollPaymentController::class, 'getByOfficer'])->name('payroll-payment.getByOfficer');
+        Route::get('/getByUnit/{unitId}', [PayrollPaymentController::class, 'getByUnit'])->name('payroll-payment.getByUnit');
+        Route::get('/getOfficerDetail/{officerId}', [PayrollPaymentController::class, 'getOfficerDetail'])->name('payroll-payment.getOfficerDetail');
         Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
         Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
     });
