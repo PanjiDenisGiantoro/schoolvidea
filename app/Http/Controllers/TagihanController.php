@@ -331,8 +331,8 @@ class TagihanController extends Controller
 
             $nama_kategori = $tagihan->items->pluck('kategori.nama_kategori')->filter()->implode(', ') ?? '-';
 
-            // Status berdasarkan tagihan_siswa.status = 1 (lunas)
-            $status_badge = $tagihanSiswa->status == 1
+            // Status berdasarkan perbandingan jml_tagihan vs jml_dibayar
+            $status_badge = ($jml_tagihan_kali == $jml_dibayar_bulan)
                 ? '<span class="badge bg-success rounded-pill">Lunas</span>'
                 : '<span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>';
 
