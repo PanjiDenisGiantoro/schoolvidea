@@ -8,40 +8,52 @@ di @extends('layouts.app')
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
-        {{-- Action Buttons & Pagination Control --}}
-
-
         {{-- Summary Cards --}}
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-info shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Jumlah Data</h6>
-                        <h4 class="text-white">{{ $summary['jumlah_data'] ?? 0 }}</h4>
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card mini-stats">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-2 text-muted">Jumlah Data</p>
+                            <h4 class="fw-bold text-primary">{{ $summary['jumlah_data'] ?? 0 }}</h4>
+                        </div>
+                        <i class="ri-file-list-3-line fs-32 text-primary opacity-50"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center text-white bg-success shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Nominal Tagihan</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card mini-stats">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-2 text-muted">Nominal Tagihan</p>
+                            <h4 class="fw-bold text-success">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h4>
+                        </div>
+                        <i class="ri-money-dollar-circle-line fs-32 text-success opacity-50"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Sudah Dibayar</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card mini-stats">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-2 text-muted">Sudah Dibayar</p>
+                            <h4 class="fw-bold text-info">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+                        </div>
+                        <i class="ri-checkbox-circle-line fs-32 text-info opacity-50"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card rounded-3 border-0 text-center shadow-sm bg-danger">
-                    <div class="card-body text-primary">
-                        <h6 class="text-white fw-bold" style="font-size: 14px">Belum Dibayar</h6>
-                        <h4 class="text-white">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card mini-stats">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-2 text-muted">Belum Dibayar</p>
+                            <h4 class="fw-bold text-warning">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h4>
+                        </div>
+                        <i class="ri-alert-line fs-32 text-warning opacity-50"></i>
                     </div>
                 </div>
             </div>
