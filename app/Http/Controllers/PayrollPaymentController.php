@@ -62,7 +62,7 @@ class PayrollPaymentController extends Controller
             ->flatMap(fn ($s) => $s->components)
             ->pluck('component')
             ->unique('id')
-        ->values()
+            ->values()
             ->map(fn ($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
@@ -76,17 +76,6 @@ class PayrollPaymentController extends Controller
             'years' => $years,
         ]);
     }
-    public function getByOfficer1($officerId)
-    {
-        $payment = PayrollPayment::where('officer_id', $officerId)
-            ->with(['component'])
-            ->get();
-
-        return response()->json([
-            'payment' => $payment,
-        ]);
-    }
-
     public function getOfficerDetail($officerId)
     {
         $officer = Officer::with([
@@ -212,8 +201,8 @@ class PayrollPaymentController extends Controller
                 'component',                 // relasi ke komponen
                 'component.componentType',   // kalau nama komponen ada di tabel lain
             ])
-            ->where('officer_id', $officerId)
-            ->where('component_id', $componentId);
+                ->where('officer_id', $officerId)
+                ->where('component_id', $componentId);
 
             // Filter bulan
             if ($periode !== 'all' && !empty($periode)) {
