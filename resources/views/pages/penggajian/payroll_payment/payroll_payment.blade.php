@@ -51,6 +51,7 @@
                             @endfor
                         </select>
                     </div>
+                    {{-- Tahun Pembayaran --}}
                     <div class="col-md-4">
                         <label for="filter_year" class="form-label fw-semibold">Tahun Periode</label>
                         <select id="filter_year" class="form-select rounded-pill shadow-sm">
@@ -272,7 +273,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const unitSelect = document.getElementById('filter_unit');
     const officerSelect = document.getElementById('filter_officer');
     const paymentSelect = document.getElementById('filter_payment');
+    const periodSelect = document.getElementById('filter_period');
+    const yearSelect = document.getElementById('filter_year');
     const tabelBelumLunasBody = document.querySelector('#tabelBelumLunas tbody');
+    const tabelSudahLunasBody = document.querySelector('#tabelSudahLunas tbody');
 
     function resetSelect(selectElement, placeholder = "Pilih") {
         selectElement.innerHTML = `<option value="">${placeholder}</option>`;
@@ -316,12 +320,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const data = await getData(`/payroll-payment/getByOfficer/${officerId}`);
         console.log(data);
-        console.log(data>.components);
+        console.log(data.components);
 
         if (data?.components && data?.components?.length) {
             paymentSelect.innerHTML =
                 `<option value="all">Semua Pembayaran</option>` +
-                data.payment.map(p => `
+                data.components.map(p => `
                     <option value="${p.id}">
                         ${p.name ?? 'Komponen Tidak Ditemukan'}
                     </option>`
@@ -343,9 +347,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelector('img[alt="Foto Guru & Staff"]').src = detail.officer_foto;
             }
         }
+    });
+    paymentSelect.addEventListener('change', async function() {
+        const paymentId = this.value;
+        console.log("payment id: ", paymentId);
+
+        const data = await getData(`/payroll-payment/getPayment`);
+
 
     });
-
 });
 </script>
 
@@ -453,5 +463,15 @@ document.addEventListener('DOMContentLoaded', function() {
             setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
             setupSelectAll('checkAllSudahLunas', 'row-checkbox-sudah');
         });
+    </script>
+    <script>
+        function formatPaymentMonth(ym) {
+            const [year, month] = ym.split("-");
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString("id-ID", {
+                month: "long",
+                year: "numeric"
+            });
+        }
     </script>
 @endpush

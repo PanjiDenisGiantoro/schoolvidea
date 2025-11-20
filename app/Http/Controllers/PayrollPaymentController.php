@@ -75,6 +75,17 @@ class PayrollPaymentController extends Controller
             'years' => $years,
         ]);
     }
+    public function getByOfficer1($officerId)
+    {
+        $payment = PayrollPayment::where('officer_id', $officerId)
+            ->with(['component'])
+            ->get();
+
+        return response()->json([
+            'payment' => $payment,
+        ]);
+    }
+
     public function getOfficerDetail($officerId)
     {
         $officer = Officer::with([
@@ -91,6 +102,38 @@ class PayrollPaymentController extends Controller
             'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan"
         ]);
     }
+
+    public function getPayment(Request $request)
+    {
+        $officerId = $request->officer_id;
+        $paymentId = $request->component_id;
+        $periode = $request->periode;
+        $year = $request->year;
+        $status = $request-> status ?? 'draft';
+
+        $query = PayrollPayment::with('component', 'officer.user')
+        ->with('officer_id', $officerId)
+            ->with('status', $status);
+
+        if ($paymentId || $paymentId !== 'all') {
+            $query->where('component_id', $paymentId);
+        }
+        if ($periode || $periode !== 'all') {
+            $periode = str_pad($periode, 2, '0', STR_PAD_LEFT);
+            $query->where('payment_month', 'LIKE', "%-$periode");
+        }
+        if ($year) {
+            $query->where('payment_month', 'LIKE', "$year-%");
+        }
+
+        $payments = $query->orderBy('payment_month', 'ASC')->get();
+        $payments->transform(function ($p) {
+            $p->formatted_month = Carbon::createFromFormat('Y-m', $->payment_month)->locale('id')->isoFormat('MMMM YYYY');
+            return $p;
+        });
+        return response()->json($payments);
+    }
+
     public function getPaymentList(Request $request, $officerId)
     {
         try {
