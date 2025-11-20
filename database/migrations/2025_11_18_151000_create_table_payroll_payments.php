@@ -37,7 +37,8 @@ return new class () extends Migration {
             $table->decimal('total_deductions', 15, 2)->default(0)->comment('Total potongan');
             $table->decimal('net_payment', 15, 2)->default(0)->comment('Penerimaan bersih');
 
-            $table->string('payment_month', 7)->comment('Bulan pembayaran, cth: 2023-12');
+            $table->integer('payment_month')->comment('Bulan pembayaran, cth: 12');
+            $table->integer('payment_year')->comment('Tahun pembayaran, cth: 2025');
             $table->text('notes')->nullable()->comment('Catatan atau keterangan pembayaran');
             $table->timestamps();
             $table->index(['officer_id', 'payment_month']);

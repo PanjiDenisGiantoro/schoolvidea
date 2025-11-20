@@ -10,6 +10,7 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class PayrollPaymentController extends Controller
 {
@@ -103,36 +104,51 @@ class PayrollPaymentController extends Controller
         ]);
     }
 
+
+
+
     public function getPayment(Request $request)
     {
         $officerId = $request->officer_id;
         $paymentId = $request->component_id;
-        $periode = $request->periode;
-        $year = $request->year;
-        $status = $request-> status ?? 'draft';
+        $periode   = $request->period;
+        $year      = $request->year;
+        $status    = $request->status ?? 'draft';
 
-        $query = PayrollPayment::with('component', 'officer.user')
-        ->with('officer_id', $officerId)
-            ->with('status', $status);
+        $query = PayrollPayment::with('component', 'officer.user');
 
-        if ($paymentId || $paymentId !== 'all') {
+        if ($officerId && $officerId !== 'all') {
+            $query->where('officer_id', $officerId);
+        }
+
+        if ($paymentId && $paymentId !== 'all') {
             $query->where('component_id', $paymentId);
         }
-        if ($periode || $periode !== 'all') {
-            $periode = str_pad($periode, 2, '0', STR_PAD_LEFT);
-            $query->where('payment_month', 'LIKE', "%-$periode");
-        }
-        if ($year) {
-            $query->where('payment_month', 'LIKE', "$year-%");
+
+        if ($periode && $periode !== 'all') {
+            $query->where('payment_month', $periode);
         }
 
-        $payments = $query->orderBy('payment_month', 'ASC')->get();
-        $payments->transform(function ($p) {
-            $p->formatted_month = Carbon::createFromFormat('Y-m', $->payment_month)->locale('id')->isoFormat('MMMM YYYY');
-            return $p;
-        });
-        return response()->json($payments);
+        if ($year) {
+            $query->where('payment_year', $year);
+        }
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $payments = $query->get();
+
+        return response()->json([
+            "belum_lunas"  => $payments->whereIn('status', ['draft', 'pending'])->values(),
+            "sudah_lunas"  => $payments->where('status', 'paid')->values(),
+            "query_sql"    => $query->toSql(),
+            "bindings"     => $query->getBindings(),
+            "request_debug" => $request->all(),
+        ]);
     }
+
+
 
     public function getPaymentList(Request $request, $officerId)
     {
@@ -185,8 +201,8 @@ class PayrollPaymentController extends Controller
     public function getPaymentData(Request $request)
     {
         $officerId = $request->officer_id;
-        $componentId = $request->setting_id; // kamu pakai setting_id tetapi isinya component_id
-        $periode = $request->periode;
+        $componentId = $request->payment_id; // kamu pakai setting_id tetapi isinya component_id
+        $periode = $request->period;
         $year = $request->year;
 
         try {
@@ -201,12 +217,12 @@ class PayrollPaymentController extends Controller
 
             // Filter bulan
             if ($periode !== 'all' && !empty($periode)) {
-                $query->where('payment_month', intval($periode));
+                $query->where('payment_month', $periode);
             }
 
             // Filter tahun
             if (!empty($year)) {
-                $query->where('payment_month', intval($year));
+                $query->where('payment_year', $year);
             }
 
             $data = $query->get();

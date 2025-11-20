@@ -40,9 +40,9 @@
 
                     {{-- Periode Pembayaran --}}
                     <div class="col-md-4">
-                        <label for="filter_periode" class="form-label fw-semibold">Periode Pembayaran</label>
-                        <select id="filter_periode" class="form-select rounded-pill shadow-sm">
-                            <option value="all">Semua Periode</option>
+                        <label for="filter_period" class="form-label fw-semibold">Periode Pembayaran</label>
+                        <select id="filter_period" class="form-select rounded-pill shadow-sm">
+                            <option value="">Pilih Periode</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}"
                                     {{ isset($setting) && $setting->start_month == $i ? 'selected' : '' }}>
@@ -55,6 +55,7 @@
                     <div class="col-md-4">
                         <label for="filter_year" class="form-label fw-semibold">Tahun Periode</label>
                         <select id="filter_year" class="form-select rounded-pill shadow-sm">
+                            <option value="">Pilih Tahun</option>
                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                 <option value="{{ $y }}"
                                     {{ isset($setting) && $setting->start_year == $y ? 'selected' : '' }}>
@@ -152,12 +153,13 @@
                             <th>Nama Guru & Staff</th>
                             <th>Periode Pembayaran</th>
                             <th>Tipe Pembayaran</th>
-                            <th style="width: 180px; text-align: center;">
+                            <th style="width: 200px; text-align: center;">
                                 Presensi
                                 <div class="custom-presensi-header gap-4">
                                     <span class="text-white">JM</span>
                                     <span class="text-white">Hadir</span>
                                     <span class="text-white">T.Hadir</span>
+                                    <span class="text-white">H.Staff</span>
                                 </div>
                             </th>
                             <th>Penerimaan</th>
@@ -212,12 +214,13 @@
                             <th>Nama Guru&Staff</th>
                             <th>Periode Pembayaran</th>
                             <th>Tipe Pembayaran</th>
-                            <th style="width: 180px; text-align: center;">
+                            <th style="width: 200px; text-align: center;">
                                 Presensi
                                 <div class="custom-presensi-header gap-4">
                                     <span>JM</span>
                                     <span>Hadir</span>
                                     <span>T.Hadir</span>
+                                    <span>H. Staff</span>
                                 </div>
                             </th>
                             <th>Penerimaan</th>
@@ -266,98 +269,6 @@
 
 @endsection
 @push('scripts')
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    const unitSelect = document.getElementById('filter_unit');
-    const officerSelect = document.getElementById('filter_officer');
-    const paymentSelect = document.getElementById('filter_payment');
-    const periodSelect = document.getElementById('filter_period');
-    const yearSelect = document.getElementById('filter_year');
-    const tabelBelumLunasBody = document.querySelector('#tabelBelumLunas tbody');
-    const tabelSudahLunasBody = document.querySelector('#tabelSudahLunas tbody');
-
-    function resetSelect(selectElement, placeholder = "Pilih") {
-        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
-    }
-
-    async function getData(url) {
-        try {
-            let res = await fetch(url);
-            return await res.json();
-        } catch (err) {
-            console.error("fetch error:", err);
-            return null;
-        }
-    }
-
-    unitSelect.addEventListener('change', async function() {
-        const unitId = this.value;
-
-        resetSelect(officerSelect, "Pilih Guru & Staff");
-        resetSelect(paymentSelect, "Pilih Pembayaran");
-
-        if (!unitId) return;
-
-        const data = await getData(`/payroll-payment/getByUnit/${unitId}`);
-
-        if (data && data.length) {
-            officerSelect.innerHTML =
-                `<option value="all">Semua Guru & Staff</option>` +
-                data.map(o =>
-                    `<option value="${o.id}">${o.user?.name ?? 'Tanpa Nama'}</option>`
-                ).join("");
-        }
-    });
-
-    officerSelect.addEventListener('change', async function() {
-        const officerId = this.value;
-
-        resetSelect(paymentSelect, "Pilih Pembayaran");
-
-        if (!officerId || officerId === "all") return;
-
-        const data = await getData(`/payroll-payment/getByOfficer/${officerId}`);
-        console.log(data);
-        console.log(data.components);
-
-        if (data?.components && data?.components?.length) {
-            paymentSelect.innerHTML =
-                `<option value="all">Semua Pembayaran</option>` +
-                data.components.map(p => `
-                    <option value="${p.id}">
-                        ${p.name ?? 'Komponen Tidak Ditemukan'}
-                    </option>`
-                ).join("");
-        } else {
-            paymentSelect.innerHTML  = `<option value="">Tidak Ada Pembayaran</option>`;
-        }
-
-        const detail = await getData(`/payroll-payment/getOfficerDetail/${officerId}`);
-
-        if (detail) {
-            document.getElementById('officer_name').innerText = detail.officer_name ?? "-";
-            document.getElementById('officer_nip').innerText = detail.officer_nip ?? "-";
-            document.getElementById('officer_jabatan').innerText = detail.officer_position ?? "-";
-            document.getElementById('officer_no_hp').innerText = detail.officer_no_hp ?? "-";
-            document.getElementById('officer_unit').innerText = detail.officer_unit ?? "-";
-
-            if (detail.officer_foto) {
-                document.querySelector('img[alt="Foto Guru & Staff"]').src = detail.officer_foto;
-            }
-        }
-    });
-    paymentSelect.addEventListener('change', async function() {
-        const paymentId = this.value;
-        console.log("payment id: ", paymentId);
-
-        const data = await getData(`/payroll-payment/getPayment`);
-
-
-    });
-});
-</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -464,14 +375,260 @@ document.addEventListener('DOMContentLoaded', function() {
             setupSelectAll('checkAllSudahLunas', 'row-checkbox-sudah');
         });
     </script>
-    <script>
-        function formatPaymentMonth(ym) {
-            const [year, month] = ym.split("-");
-            const date = new Date(year, month - 1);
-            return date.toLocaleDateString("id-ID", {
-                month: "long",
-                year: "numeric"
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const unitSelect = document.getElementById('filter_unit');
+    const officerSelect = document.getElementById('filter_officer');
+    const paymentSelect = document.getElementById('filter_payment');
+    const periodSelect = document.getElementById('filter_period');
+    const yearSelect = document.getElementById('filter_year');
+    const tabelBelumLunas = document.querySelector('#tabelBelumLunas tbody');
+    const tabelSudahLunas = document.querySelector('#tabelSudahLunas tbody');
+
+    function resetSelect(selectElement, placeholder = "Pilih") {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+    }
+
+    async function getData(url) {
+        try {
+            let res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return await res.json();
+        } catch (err) {
+            console.error("Fetch error:", err);
+            return null;
         }
-    </script>
+    }
+
+    // Load data ketika unit dipilih
+    unitSelect.addEventListener('change', async function() {
+        const unitId = this.value;
+        resetSelect(officerSelect, "Pilih Guru & Staff");
+        resetSelect(paymentSelect, "Pilih Pembayaran");
+
+        if (!unitId) return;
+
+        const data = await getData(`/payroll-payment/getByUnit/${unitId}`);
+        console.log("Data Unit:", data);
+
+        if (data && data.length) {
+            officerSelect.innerHTML =
+                `<option value="all">Semua Guru & Staff</option>` +
+                data.map(o =>
+                    `<option value="${o.id}">${o.user?.name ?? 'Tanpa Nama'}</option>`
+                ).join("");
+        }
+    });
+
+    // Load data ketika officer dipilih
+    officerSelect.addEventListener('change', async function() {
+        const officerId = this.value;
+        resetSelect(paymentSelect, "Pilih Pembayaran");
+
+        if (!officerId || officerId === "all") return;
+
+        // Load detail officer
+        const detail = await getData(`/payroll-payment/getOfficerDetail/${officerId}`);
+        console.log("Detail Officer:", detail);
+
+        if (detail) {
+            document.getElementById('officer_name').innerText = detail.officer_name ?? "-";
+            document.getElementById('officer_nip').innerText = detail.officer_nip ?? "-";
+            document.getElementById('officer_jabatan').innerText = detail.officer_position ?? "-";
+            document.getElementById('officer_no_hp').innerText = detail.officer_no_hp ?? "-";
+            document.getElementById('officer_unit').innerText = detail.officer_unit ?? "-";
+        }
+
+        // Load komponen pembayaran
+        const data = await getData(`/payroll-payment/getByOfficer/${officerId}`);
+        console.log("Data Komponen:", data);
+
+        if (data?.components && data.components.length) {
+            paymentSelect.innerHTML =
+                `<option value="all">Semua Pembayaran</option>` +
+                data.components.map(p => `
+                    <option value="${p.id}">
+                        ${p.name ?? 'Komponen Tidak Ditemukan'}
+                    </option>`
+                ).join("");
+        } else {
+            paymentSelect.innerHTML = `<option value="">Tidak Ada Pembayaran</option>`;
+        }
+    });
+
+    // Fungsi untuk load data tabel
+    async function loadTableData() {
+        const officerId = officerSelect.value;
+        const componentId = paymentSelect.value;
+        const period = periodSelect.value;
+        const year = yearSelect.value;
+
+        if (!officerId || officerId === "all") {
+            clearTables();
+            return;
+        }
+
+        console.log("Loading data dengan parameter:", {
+            officerId, componentId, period, year
+        });
+
+        const urlBelumLunas = `/payroll-payment/getPayment?officer_id=${officerId}&component_id=${componentId}&period=${period}&year=${year}&status=pending`;
+        const urlSudahLunas = `/payroll-payment/getPayment?officer_id=${officerId}&component_id=${componentId}&period=${period}&year=${year}&status=paid`;
+
+        console.log("URL Belum Lunas:", urlBelumLunas);
+        console.log("URL Sudah Lunas:", urlSudahLunas);
+
+        try {
+            const [dataBelumLunas, dataSudahLunas] = await Promise.all([
+                getData(urlBelumLunas),
+                getData(urlSudahLunas)
+            ]);
+
+            console.log("Response Belum Lunas:", dataBelumLunas);
+            console.log("Response Sudah Lunas:", dataSudahLunas);
+
+            // PERBAIKAN: Gunakan struktur yang sesuai dengan response
+            renderBelumLunasTable(dataBelumLunas?.belum_lunas || []);
+            renderSudahLunasTable(dataSudahLunas?.sudah_lunas || []);
+        } catch (error) {
+            console.error("Error loading table data:", error);
+        }
+    }
+
+    // Event listeners untuk filter
+    paymentSelect.addEventListener('change', loadTableData);
+    periodSelect.addEventListener('change', loadTableData);
+    yearSelect.addEventListener('change', loadTableData);
+
+    function clearTables() {
+        tabelBelumLunas.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-center text-muted">Pilih Guru & Staff terlebih dahulu</td>
+            </tr>`;
+        tabelSudahLunas.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-center text-muted">Pilih Guru & Staff terlebih dahulu</td>
+            </tr>`;
+    }
+
+    function renderBelumLunasTable(data) {
+        console.log("Data untuk tabel belum lunas:", data);
+        
+        if (!data || !data.length) {
+            tabelBelumLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted">Tidak ada data belum lunas</td>
+                </tr>`;
+            return;
+        }
+
+        tabelBelumLunas.innerHTML = data.map((item, i) => {
+            console.log("Item data:", item); // Debug setiap item
+            
+            return `
+            <tr>
+                <td><input type="checkbox" class="row-checkbox-belum"></td>
+                <td>${i + 1}</td>
+                <td>${item.officer?.name || "-"}</td>
+                <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
+                <td>${item.component?.name || "-"}</td>
+                <td>
+                    <div class="custom-presensi-wrapper">
+                        <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi hadir" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                    </div>
+                </td>
+                <td>${formatRupiah(item.total_earnings || 0)}</td>
+                <td>${formatRupiah(item.total_deductions || 0)}</td>
+                <td>${formatRupiah(item.net_payment || 0)}</td>
+                <td>
+                    <button class="btn btn-primary rounded-pill" data-bs-toggle="modal"
+                        data-bs-target="#catatanModal">Catatan</button>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-warning rounded-pill">Detail</button>
+                        <button class="btn btn-success rounded-pill">Bayar</button>
+                    </div>
+                </td>
+            </tr>
+        `}).join("");
+        
+        console.log("HTML yang dihasilkan:", tabelBelumLunas.innerHTML);
+    }
+
+    function renderSudahLunasTable(data) {
+        console.log("Data untuk tabel sudah lunas:", data);
+        
+        if (!data || !data.length) {
+            tabelSudahLunas.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted">Tidak ada data sudah lunas</td>
+                </tr>`;
+            return;
+        }
+
+        tabelSudahLunas.innerHTML = data.map((item, i) => `
+            <tr>
+                <td><input type="checkbox" class="row-checkbox-sudah"></td>
+                <td>${i + 1}</td>
+                <td>${item.officer?.name || "-"}</td>
+                <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
+                <td>${item.component?.name || "-"}</td>
+                <td>
+                    <div class="custom-presensi-wrapper">
+                        <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                    </div>
+                </td>
+                <td>${formatRupiah(item.total_earnings || 0)}</td>
+                <td>${formatRupiah(item.total_deductions || 0)}</td>
+                <td>${formatRupiah(item.net_payment || 0)}</td>
+                <td>
+                    <button class="btn btn-primary rounded-pill" data-bs-toggle="modal"
+                        data-bs-target="#catatanModal">Catatan</button>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-warning rounded-pill">Detail</button>
+                        <button class="btn btn-success rounded-pill">Edit</button>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    function formatPaymentMonth(month, year) {
+        if (!month || !year) return "-";
+        const date = new Date(year, month - 1);
+        return date.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+    }
+
+    function formatRupiah(amount) {
+        if (!amount) return "Rp 0";
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(amount);
+    }
+
+    // Inisialisasi awal
+    clearTables();
+});
+</script>
 @endpush

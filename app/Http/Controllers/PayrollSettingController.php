@@ -169,7 +169,7 @@ class PayrollSettingController extends Controller
                     $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
 
                     // Total pendapatan per komponen
-                    $totalEarnings = $basicSalary + $allowanceTotal + $value;
+                    $totalEarnings = $basicSalary + $value;
 
                     // Total bersih
                     $netPayment = $totalEarnings - $deductionsTotal;
@@ -187,7 +187,8 @@ class PayrollSettingController extends Controller
                         "total_deductions"   => $deductionsTotal,
                         "net_payment"        => $netPayment,
 
-                        "payment_month"      => $paymentMonth,
+                        "payment_month"      => $month,
+                        "payment_year"       => $year,
                         "notes"              => null,
                         "status"             => "pending",
 
@@ -214,10 +215,54 @@ class PayrollSettingController extends Controller
     /**
      * Update payroll setting (gunakan logika store).
      */
-    public function update(Request $request, $id)
-    {
-        return $this->store($request);
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+        // ... validasi sama
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $payrollSetting = PayrollSetting::findOrFail($id);
+        $payrollSetting->update($validated);
+
+        // Sync komponen dan deductions (sama seperti sebelumnya)
+
+        $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+
+        // Update payroll payments yang sudah ada
+        $existingPayments = PayrollPayment::where('payroll_setting_id', $payrollSetting->id)->get();
+
+        foreach ($existingPayments as $payment) {
+            // Hitung ulang values
+            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+            $componentValue = // dapatkan value komponen yang sesuai
+            $totalEarnings = $basicSalary + $componentValue;
+            $netPayment = $totalEarnings - $deductionsTotal;
+
+            $payment->update([
+                'teaching_hour_week' => $request->teaching_hours ?? 0,
+                'teaching_hour_month' => $request->teaching_hours_total ?? 0,
+                'total_earnings' => $totalEarnings,
+                'total_deductions' => $deductionsTotal,
+                'net_payment' => $netPayment,
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route("payroll_payment.index")
+            ->with("success", "Data payroll berhasil diupdate.");
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
+        return back()->with("error", $e->getMessage());
     }
+}
 
     /**
      * Tampilkan detail satu payroll setting.

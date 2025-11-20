@@ -20,9 +20,10 @@ class PayrollSetting extends Model
         'communication_allowance',
         'other_allowance',
         'billing_period',
-        'start_month',
-        'start_year',
+        'payment_month',
+        'payment_year',
         'type',
+        'status',
     ];
 
     public function unit()
