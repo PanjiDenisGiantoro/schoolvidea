@@ -271,4 +271,235 @@ class PembayaranController extends Controller
         return $mpdf->Output('Struk-Pembayaran-' . date('YmdHis') . '.pdf', 'I');
     }
 
+    /**
+     * Approve pembayaran tagihan
+     */
+    public function approve(Request $request, $pembayaranId)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'nullable|string'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Load pembayaran dengan relasi yang diperlukan
+            $pembayaran = Pembayarantagihan::with([
+                'tagihanSiswa.tagihan.items.kategori',
+                'tagihanSiswa.siswa.user'
+            ])->findOrFail($pembayaranId);
+
+            // Cek apakah pembayaran sudah diapprove sebelumnya
+            if ($pembayaran->status_approval === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran sudah diapprove sebelumnya'
+                ], 400);
+            }
+
+            // Update status pembayaran menjadi approved
+            $pembayaran->update([
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now()
+            ]);
+
+            // Get data untuk update transaksi keuangan
+            $tagihanSiswa = $pembayaran->tagihanSiswa;
+            $siswa = $tagihanSiswa->siswa;
+            $tagihan = $tagihanSiswa->tagihan;
+            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+
+            // Update status tagihan siswa jika belum diupdate
+            $sisaNominalBaru = $tagihanSiswa->sisa_nominal - $jumlahBayar;
+            $statusBaru = '0'; // Default: Belum Bayar
+
+            if ($sisaNominalBaru <= 0) {
+                $statusBaru = '1'; // Lunas
+                $sisaNominalBaru = 0;
+            } elseif ($sisaNominalBaru > 0) {
+                $statusBaru = '2'; // Cicilan
+            }
+
+            $tagihanSiswa->update([
+                'status' => $statusBaru,
+                'sisa_nominal' => $sisaNominalBaru,
+                'tanggal_bayar' => now(),
+            ]);
+
+            // Update atau buat keuangan_transaksi
+            $transaksi = Keuangan_transaksi::where('referensi_tagihan_id', $pembayaran->id)->first();
+
+            if (!$transaksi) {
+                // Buat transaksi baru jika belum ada
+                $transaksi = Keuangan_transaksi::create([
+                    'code_pembayaran' => $pembayaran->code_pembayaran,
+                    'penerima_id' => $siswa->id,
+                    'penerima_tipe' => Siswa::class,
+                    'jenis_transaksi' => 'pembayaran',
+                    'jumlah' => $jumlahBayar,
+                    'metode' => $pembayaran->metode_bayar ?? 'CASH',
+                    'referensi_tagihan_id' => $pembayaran->id,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.'),
+                    'created_by' => Auth::id(),
+                    'status_approval' => 'approved',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                    'status_verifikasi' => 'approved',
+                    'verified_by' => Auth::id(),
+                    'verified_at' => now(),
+                    'catatan_verifikasi' => $request->catatan_verifikasi
+                ]);
+            } else {
+                // Update transaksi yang sudah ada
+                $transaksi->update([
+                    'status_verifikasi' => 'approved',
+                    'status_approval' => 'approved',
+                    'verified_by' => Auth::id(),
+                    'verified_at' => now(),
+                    'catatan_verifikasi' => $request->catatan_verifikasi
+                ]);
+            }
+
+            // Create journal entries untuk pembayaran tagihan
+            $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+            // Debit: Kas (uang masuk dari siswa)
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 1, // Kas
+                'debit' => $jumlahBayar,
+                'kredit' => 0,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal' => now(),
+            ]);
+
+            // Kredit: Tagihan (mengurangi hutang siswa)
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => 3, // Tagihan Masuk (receivable)
+                'kredit' => $jumlahBayar,
+                'debit' => 0,
+                'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                'tanggal' => now(),
+            ]);
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'approve',
+                'data_lama' => json_encode(['status_approval' => 'pending']),
+                'data_baru' => json_encode(['status_approval' => 'approved']),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil diapprove',
+                'data' => [
+                    'pembayaran' => $pembayaran->fresh(),
+                    'tagihanSiswa' => $tagihanSiswa->fresh()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal approve pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject pembayaran tagihan
+     */
+    public function reject(Request $request, $pembayaranId)
+    {
+        $request->validate([
+            'catatan_verifikasi' => 'required|string'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Load pembayaran dengan relasi yang diperlukan
+            $pembayaran = Pembayarantagihan::with([
+                'tagihanSiswa.tagihan.items.kategori',
+                'tagihanSiswa.siswa.user'
+            ])->findOrFail($pembayaranId);
+
+            // Cek apakah pembayaran sudah direject sebelumnya
+            if ($pembayaran->status_approval === 'rejected') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran sudah direject sebelumnya'
+                ], 400);
+            }
+
+            // Update status pembayaran menjadi rejected
+            $pembayaran->update([
+                'status_approval' => 'rejected'
+            ]);
+
+            // Rollback status tagihan siswa jika sudah diupdate
+            $tagihanSiswa = $pembayaran->tagihanSiswa;
+            $siswa = $tagihanSiswa->siswa;
+            $tagihan = $tagihanSiswa->tagihan;
+            $jumlahBayar = (int) $pembayaran->jumlah_bayar;
+
+            // Kembalikan nominal yang sudah berkurang
+            $sisaNominalBaru = $tagihanSiswa->sisa_nominal + $jumlahBayar;
+            $statusBaru = '0'; // Kembali ke Belum Bayar
+
+            $tagihanSiswa->update([
+                'status' => $statusBaru,
+                'sisa_nominal' => $sisaNominalBaru,
+            ]);
+
+            // Update keuangan_transaksi status
+            $transaksi = Keuangan_transaksi::where('referensi_tagihan_id', $pembayaran->id)->first();
+
+            if ($transaksi) {
+                $transaksi->update([
+                    'status_verifikasi' => 'rejected',
+                    'status_approval' => 'rejected',
+                    'catatan_verifikasi' => $request->catatan_verifikasi
+                ]);
+
+                // Log activity
+                Keuangan_transaksi_logs::create([
+                    'transaksi_id' => $transaksi->id,
+                    'aksi' => 'reject',
+                    'data_lama' => json_encode(['status_approval' => 'approved']),
+                    'data_baru' => json_encode(['status_approval' => 'rejected']),
+                    'dilakukan_oleh' => Auth::id(),
+                    'dilakukan_pada' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil direject',
+                'data' => [
+                    'pembayaran' => $pembayaran->fresh(),
+                    'tagihanSiswa' => $tagihanSiswa->fresh()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reject pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
