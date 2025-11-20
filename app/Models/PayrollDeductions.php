@@ -18,4 +18,18 @@ class PayrollDeductions extends Model
         'status',
         'description',
     ];
+
+        public function settings()
+    {
+        return $this->belongsToMany(
+            PayrollSetting::class,
+            'payroll_setting_deductions',
+            'deduction_id',
+            'payroll_setting_id'
+        );
+    }
+    public function deduction()
+    {
+        return $this->hasOne(PayrollDeductions::class, 'id', 'id');
+    }
 }

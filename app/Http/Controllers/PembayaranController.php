@@ -17,23 +17,22 @@ use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
-
     public function index()
     {
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan dari semua unit dalam yayasan
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
-            $siswaList = Siswa::whereHas('unit', function($q) {
+            $siswaList = Siswa::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $tagihanList = Tagihan::whereHas('unit', function($q) {
+            $tagihanList = Tagihan::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $akunList = setting_akun::whereHas('unit', function($q) {
+            $akunList = setting_akun::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
-            $kelas = Kelas::whereHas('unit', function($q) {
+            $kelas = Kelas::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             })->get();
 
@@ -139,7 +138,7 @@ class PembayaranController extends Controller
 
             // simpan pembayaran
             $pembayaran = PembayaranTagihan::create([
-                'code_pembayaran' => 'PS' . date('YmdHis').rand(1000,9999),
+                'code_pembayaran' => 'PS' . date('YmdHis').rand(1000, 9999),
                 'tagihan_siswa_id' => $tagihanSiswa->id,
                 'jumlah_bayar'     => $jumlahBayar,
                 'tanggal_bayar'    => now(),

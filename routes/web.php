@@ -27,6 +27,7 @@ use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\DataRekeningController;
+use App\Http\Controllers\PayrollPaymentController;
 
 Route::prefix('landing')->group(function () {
     Route::get('/registerpublic', [\App\Http\Controllers\TrialRegistrationController::class, 'showForm'])->name('landing.registerpublic');
@@ -371,6 +372,11 @@ Route::middleware(['auth'])->group(function () {
         // Ambil daftar guru/staff berdasarkan unit (AJAX)
         Route::get('/officers/by-unit/{unitId}', [PayrollSettingController::class, 'getByUnit'])
             ->name('officers.byUnit');
+        Route::get('/officers/detail/{officerId}', [PayrollSettingController::class, 'getOfficerDetail'])
+            ->name('officers.getOfficerDetail');
+        Route::get('/getByOfficers/{officerId}', [PayrollSettingController::class, 'getByOfficer'])
+            ->name('payroll.getByOfficer');
+
     });
     Route::get('/payroll-payment', function () {
         return view('pages.penggajian.payroll_payment.payroll_payment');
@@ -403,7 +409,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/delete/{id}', [DataRekeningController::class, 'destroy'])->name('data-rekening.destroy');
         Route::post('/upload', [DataRekeningController::class, 'upload'])->middleware('permission:upload_data_rekening')->name('data-rekening.upload');
     }); //->middleware('permission:view_data_rekening')
-
+    Route::prefix('payroll-payment')->group(function () {
+        Route::get('/', [PayrollPaymentController::class, 'index'])->name('payroll_payment.index');
+        Route::get('/getByOfficer/{officerId}', [PayrollPaymentController::class, 'getByOfficer'])->name('payroll-payment.getByOfficer');
+        Route::get('/getByUnit/{unitId}', [PayrollPaymentController::class, 'getByUnit'])->name('payroll-payment.getByUnit');
+        Route::get('/getOfficerDetail/{officerId}', [PayrollPaymentController::class, 'getOfficerDetail'])->name('payroll-payment.getOfficerDetail');
+        Route::get('/getPayment', [PayrollPaymentController::class, 'getPayment'])->name('payroll-payment.getPayment');
+        Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
+        Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
+    });
 
 
 

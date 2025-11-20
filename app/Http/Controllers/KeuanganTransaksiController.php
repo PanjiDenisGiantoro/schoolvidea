@@ -125,7 +125,7 @@ class KeuanganTransaksiController extends Controller
 
         $transaksis = $transaksis
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+            ->paginate($perPage)->onEachSide(1)
             ->appends($request->except('page'));
 
         // Total Pemasukan
@@ -246,7 +246,7 @@ class KeuanganTransaksiController extends Controller
             ])
             ->when(Auth::user()->yayasan_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                    $q->whereHas('unit', function($q2) {
+                    $q->whereHas('unit', function ($q2) {
                         $q2->where('yayasan_id', Auth::user()->yayasan_id);
                     });
                 });

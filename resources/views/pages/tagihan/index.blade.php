@@ -1,29 +1,35 @@
-di @extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Kelola Tagihan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-@endpush
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+    @endpush
 @section('content')
     <div class="container-fluid">
         <h3 class="mb-4">KELOLA TAGIHAN</h3>
 
         {{-- Main Summary Cards --}}
-        <div class="row g-3 mb-4">
+
+
+
+        {{-- Summary Cards --}}
+        <div class="row mb-4">
+
             {{-- Total Data Card --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
                     <div class="card-body position-relative">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Jumlah Data</p>
-                                <h3 class="fw-bold text-primary mb-0">{{ $summary['jumlah_data'] ?? 0 }}</h3>
+                                <h3 class="fw-bold text-info mb-0 text-absolute">{{ $summary['jumlah_data'] ?? 0 }}</h3>
                             </div>
-                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
-                                <i class="ri-file-list-3-line text-primary" style="font-size: 24px;"></i>
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="ri-file-list-3-line text-info" style="font-size: 24px;"></i>
                             </div>
                         </div>
-                        <small class="text-muted d-block mt-2"><i class="ri-list-check text-primary"></i> Total tagihan</small>
+                        <small class="text-muted d-block mt-2"><i class="ri-list-check text-info"></i> Total tagihan</small>
                     </div>
                 </div>
             </div>
@@ -35,7 +41,7 @@ di @extends('layouts.app')
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Nominal Tagihan</p>
-                                <h3 class="fw-bold text-success mb-0">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
+                                <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['nominal_tagihan'] ?? 0, 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
                                 <i class="ri-money-dollar-circle-line text-success" style="font-size: 24px;"></i>
@@ -46,41 +52,40 @@ di @extends('layouts.app')
                 </div>
             </div>
 
-            {{-- Sudah Dibayar Card --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-cyan shadow-sm h-100 transition-all">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
                     <div class="card-body position-relative">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Sudah Dibayar</p>
-                                <h3 class="fw-bold text-info mb-0">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                                <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($summary['sudah_dibayar'] ?? 0, 0, ',', '.') }}</h3>
                             </div>
-                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                                <i class="ri-checkbox-circle-line text-info" style="font-size: 24px;"></i>
+                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="bx bx-check-circle text-primary" style="font-size: 24px;"></i>
                             </div>
                         </div>
-                        <small class="text-muted d-block mt-2"><i class="ri-check-double-line text-info"></i> Pembayaran</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-check-circle text-primary"></i> Nominal Tagihan Yang Sudah Dibayar</small>
                     </div>
                 </div>
             </div>
 
-            {{-- Belum Dibayar Card --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-orange shadow-sm h-100 transition-all">
+                <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
                     <div class="card-body position-relative">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Belum Dibayar</p>
-                                <h3 class="fw-bold text-warning mb-0">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
+                                <h3 class="fw-bold text-warning mb-0 text-absolute">Rp {{ number_format($summary['belum_dibayar'] ?? 0, 0, ',', '.') }}</h3>
                             </div>
                             <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
-                                <i class="ri-alert-line text-warning" style="font-size: 24px;"></i>
+                                <i class="bx bx-time text-warning" style="font-size: 24px;"></i>
                             </div>
                         </div>
-                        <small class="text-muted d-block mt-2"><i class="ri-time-line text-warning"></i> Tunggakan</small>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-time text-warning"></i> Nominal Tagihan Yang Belum Dibayar</small>
                     </div>
                 </div>
             </div>
+            
         </div>
 
         {{-- Alert jika ada error --}}
@@ -88,6 +93,120 @@ di @extends('layouts.app')
             <div class="alert alert-danger rounded-3 shadow-sm">
                 {{ session('error') }}
             </div>
+        @endif
+
+        {{-- Filter --}}
+        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
+        <div class="card rounded-3 mb-3 border-0 shadow-sm">
+            <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#filterCollapse"
+                    style="cursor: pointer;">
+                <h5 class="fw-bold text-primary">
+                    <i class="bx bx-filter"></i> Filter Tabungan
+                </h5>
+                <i class="bx bx-chevron-down text-primary" style="font-size: 26px"></i>
+            </div>
+                <form method="GET" action="{{ route('tagihan.index') }}">
+                    <div class="row g-3 align-items-end collapse" id="filterCollapse">
+                        {{-- Filter Search --}}
+                        <div class="col-md-2">
+                            <label for="search" class="form-label">Cari Tagihan</label>
+                            <input type="text" name="search" id="search"
+                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
+                                   value="{{ request('search') }}">
+                        </div>
+                        {{-- Filter Unit --}}
+                        <div class="col-md-2">
+                            <label for="unit_id" class="form-label">Unit</label>
+                            <select name="unit_id" id="unit_id" class="form-select">
+                                <option value="">Semua Unit</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="kelas_id" class="form-label">Kelas</label>
+
+                            <select name="kelas_id" id="kelas_id" class="form-select"
+                                @if (isset($show) && $show) disabled @endif>
+                                <option value="">Semua Kelas</option>
+                            </select>
+                        </div>
+
+                        {{-- Filter Tanggal Dari --}}
+                        <div class="col-md-2">
+                            <label class="form-label">Bulan Periode</label>
+                            <select name="bulan_mulai" class="form-select" required>
+                                <option value="">Pilih Bulan</option>
+                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $bulan)
+                                    <option value="{{ $i + 1 }}">{{ $bulan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Filter Tanggal Sampai --}}
+                        <div class="col-md-2">
+                            <label class="form-label">Tahun Periode</label>
+                            <select name="tahun_mulai" class="form-select" required>
+                                <option value="">Pilih Tahun</option>
+                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Status Tagihan</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Pilih Status</option>
+                                <option value="Lunas">Lunas</option>
+                                <option value="Belum Lunas">Belum Lunas</option>
+                            </select>
+                        </div>
+
+                        {{-- Tombol Filter --}}
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-search"></i> Filter
+                            </button>
+                            <a href="{{ route('tagihan.index') }}" class="btn btn-secondary">
+                                <i class="bx bx-refresh"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @else
+
+        <div class="card rounded-3 mb-3 border-0 shadow-sm">
+            <div class="card-body">
+                <form method="GET">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Filter Data</label>
+                            <select name="filter" class="form-control rounded-pill">
+                                <option value="all">All</option>
+                                <option value="lunas">Lunas</option>
+                                <option value="belum">Belum Lunas</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Tanggal</label>
+                            <input type="date" name="tanggal" class="form-control rounded-pill"
+                                value="{{ request('tanggal') }}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">Filter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
         @endif
 
         {{-- Tabel --}}
@@ -132,104 +251,14 @@ di @extends('layouts.app')
                         </tbody>
                     </table>
                 </div>
+
+
             </div>
         </div>
     </div>
 @endsection
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
-    <style>
-        /* Stat Cards Styling */
-        .stat-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 1rem !important;
-            position: relative;
-            overflow: hidden;
-        }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, currentColor, transparent);
-            opacity: 0.5;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
-        }
-
-        .stat-card-green::before {
-            background: linear-gradient(90deg, transparent, #28a745, transparent);
-        }
-
-        .stat-card-blue::before {
-            background: linear-gradient(90deg, transparent, #0d6efd, transparent);
-        }
-
-        .stat-card-cyan::before {
-            background: linear-gradient(90deg, transparent, #0dcaf0, transparent);
-        }
-
-        .stat-card-orange::before {
-            background: linear-gradient(90deg, transparent, #fd7e14, transparent);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover .stat-icon {
-            transform: scale(1.15) rotate(-5deg);
-        }
-
-        .transition-all {
-            transition: all 0.3s ease;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .stat-card {
-                margin-bottom: 0.5rem;
-            }
-
-            .stat-card h3 {
-                font-size: 1.5rem !important;
-            }
-
-            .stat-icon {
-                width: 50px;
-                height: 50px;
-            }
-
-            .stat-icon i {
-                font-size: 20px !important;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stat-card:hover {
-                transform: translateY(-4px) scale(1.01);
-            }
-
-            .stat-card h3 {
-                font-size: 1.25rem !important;
-            }
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>

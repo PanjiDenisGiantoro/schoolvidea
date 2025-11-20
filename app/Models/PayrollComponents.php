@@ -17,4 +17,20 @@ class PayrollComponents extends Model
         'status',
         'description',
     ];
+
+    public function settings()
+    {
+        return $this->belongsToMany(
+            PayrollSetting::class,
+            'payroll_setting_components',
+            'component_id',
+            'payroll_setting_id'
+        );
+    }
+    public function component()
+    {
+        return $this->hasOne(PayrollComponents::class, 'id', 'id');
+    }
+
+
 }

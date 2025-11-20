@@ -382,51 +382,76 @@ class TagihanController extends Controller
 //            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-//        DB::beginTransaction();
+        //        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
         }
 
-//        try {
-            // 1. Kumpulkan data items & rekening kombinasi
-            $itemRekeningData = [];
-            if ($request->has('items') && $request->has('rekening')) {
-                $items = $request->items ?? [];
-                $rekeningen = $request->rekening ?? [];
+        //        try {
+        // 1. Kumpulkan data items & rekening kombinasi
+        $itemRekeningData = [];
+        if ($request->has('items') && $request->has('rekening')) {
+            $items = $request->items ?? [];
+            $rekeningen = $request->rekening ?? [];
 
-                // Combine items dengan rekening berdasarkan index
-                foreach ($items as $index => $item) {
-                    if (!empty($item['id']) && !empty($rekeningen[$index]['id'])) {
-                        $kategori = KategoriTagihan::find($item['id']);
-                        $rekeningObj = DataRekening::find($rekeningen[$index]['id']);
+            // Combine items dengan rekening berdasarkan index
+            foreach ($items as $index => $item) {
+                if (!empty($item['id']) && !empty($rekeningen[$index]['id'])) {
+                    $kategori = KategoriTagihan::find($item['id']);
+                    $rekeningObj = DataRekening::find($rekeningen[$index]['id']);
 
-                        // Validasi kategori ada
-                        if (!$kategori) {
-                            throw new \Exception("Kategori Tagihan dengan ID {$item['id']} tidak ditemukan.");
-                        }
-
-                        // Validasi rekening ada
-                        if (!$rekeningObj) {
-                            throw new \Exception("Rekening Pembayaran dengan ID {$rekeningen[$index]['id']} tidak ditemukan.");
-                        }
-
-                        $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
-                        $itemRekeningData[] = [
-                            'kategori_id' => $item['id'],
-                            'nominal' => $nominal_item,
-                            'kategori' => $kategori,
-                            'rekening_id' => $rekeningen[$index]['id'],
-                        ];
+                    // Validasi kategori ada
+                    if (!$kategori) {
+                        throw new \Exception("Kategori Tagihan dengan ID {$item['id']} tidak ditemukan.");
                     }
+
+                    // Validasi rekening ada
+                    if (!$rekeningObj) {
+                        throw new \Exception("Rekening Pembayaran dengan ID {$rekeningen[$index]['id']} tidak ditemukan.");
+                    }
+
+                    $nominal_item = $item['nominal'] ?? $kategori->biaya_tagihan;
+                    $itemRekeningData[] = [
+                        'kategori_id' => $item['id'],
+                        'nominal' => $nominal_item,
+                        'kategori' => $kategori,
+                        'rekening_id' => $rekeningen[$index]['id'],
+                    ];
                 }
             }
+        }
 
-            if (empty($itemRekeningData)) {
-                throw new \Exception("Tidak ada kombinasi item & rekening yang valid. Pastikan setiap item memiliki rekening pembayaran.");
+        if (empty($itemRekeningData)) {
+            throw new \Exception("Tidak ada kombinasi item & rekening yang valid. Pastikan setiap item memiliki rekening pembayaran.");
+        }
+
+        $kategoriIds = collect($itemRekeningData)->pluck('kategori_id')->filter()->all();
+
+        // Ambil siswa target
+        $siswaList = [];
+        if ($request->target === 'per' && $request->has('siswa')) {
+            $siswaList = Siswa::whereIn('id', $request->siswa)->get();
+        } elseif ($request->target === 'all' && $request->kelas) {
+            $siswaList = Siswa::where('kelas_id', $request->kelas)->get();
+        }
+
+        // Cek apakah siswa sudah punya tagihan aktif untuk kategori yang sama
+        foreach ($siswaList as $siswa) {
+            $sudahAda = Tagihansiswa::where('siswa_id', $siswa->id)
+                ->where('status', '!=', '1') // belum lunas
+                ->whereHas('tagihan.items', function ($q) use ($kategoriIds) {
+                    $q->whereIn('kategori_id', $kategoriIds);
+                })
+                ->exists();
+            if ($sudahAda) {
+                DB::rollBack();
+                return back()->withInput()->with('danger', "Siswa {$siswa->nama} masih punya tagihan aktif dengan kategori yang sama.");
             }
+        }
 
-            $kategoriIds = collect($itemRekeningData)->pluck('kategori_id')->filter()->all();
+        // 2. Ambil setting akun untuk jurnal
+        $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
             // Ambil siswa target
             $siswaList = [];
@@ -463,142 +488,114 @@ class TagihanController extends Controller
                 $siswaList = $query->get();
             }
 
-            // Cek apakah siswa sudah punya tagihan aktif untuk kategori yang sama
+        $settings = $settings->where('status', '1')->get();
+        $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
+        $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
+
+        if (!$akun_debit || !$akun_kredit) {
+            throw new \Exception("Setting akun untuk kategori tagihan-masuk belum lengkap.");
+        }
+
+        // 3. LOOP SETIAP ITEM & REKENING KOMBINASI - BUAT TAGIHAN TERPISAH
+        foreach ($itemRekeningData as $itemData) {
+            // Buat tagihan baru untuk SETIAP kombinasi item & rekening
+            $tagihan = Tagihan::create([
+                'unit_id' => $request->unit_id,
+                'kelas_id' => $request->kelas ?? null,
+                'target' => $request->target,
+                'jenis_tagihan' => $request->jenis_tagihan,
+                'periode' => $request->jenis_tagihan === 'bulanan' ? $request->periode : null,
+                'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
+                'bulan_mulai' => $request->bulan_mulai,
+                'tahun_mulai' => $request->tahun_mulai,
+                'rekening_id' => $itemData['rekening_id'], // Simpan rekening_id langsung
+            ]);
+
+            // Buat tagihan item untuk tagihan ini
+            $tagihanItem = Tagihanitem::create([
+                'tagihan_id' => $tagihan->id,
+                'kategori_id' => $itemData['kategori_id'],
+                'nominal' => $itemData['nominal'],
+            ]);
+
+            // Loop setiap siswa untuk item ini
             foreach ($siswaList as $siswa) {
-                $sudahAda = Tagihansiswa::where('siswa_id', $siswa->id)
-                    ->where('status', '!=', '1') // belum lunas
-                    ->whereHas('tagihan.items', function ($q) use ($kategoriIds) {
-                        $q->whereIn('kategori_id', $kategoriIds);
-                    })
-                    ->exists();
-                if ($sudahAda) {
-                    DB::rollBack();
-                    return back()->withInput()->with('danger', "Siswa {$siswa->nama} masih punya tagihan aktif dengan kategori yang sama.");
-                }
-            }
-
-            // 2. Ambil setting akun untuk jurnal
-            $settings = setting_akun::where('kategori', 'tagihan-masuk');
-
-            // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
-            if (Auth::user()->yayasan_id) {
-                $settings->whereHas('unit', function($q) {
-                    $q->where('yayasan_id', Auth::user()->yayasan_id);
-                });
-            } elseif (Auth::user()->unit_id) {
-                $settings->where('unit_id', Auth::user()->unit_id);
-            } elseif ($request->filled('unit_id')) {
-                $settings->where('unit_id', $request->unit_id);
-            }
-
-            $settings = $settings->where('status','1')->get();
-            $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
-            $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
-
-            if (!$akun_debit || !$akun_kredit) {
-                throw new \Exception("Setting akun untuk kategori tagihan-masuk belum lengkap.");
-            }
-
-            // 3. LOOP SETIAP ITEM & REKENING KOMBINASI - BUAT TAGIHAN TERPISAH
-            foreach ($itemRekeningData as $itemData) {
-                // Buat tagihan baru untuk SETIAP kombinasi item & rekening
-                $tagihan = Tagihan::create([
-                    'unit_id' => $request->unit_id,
-                    'kelas_id' => $request->kelas ?? null,
-                    'target' => $request->target,
-                    'jenis_tagihan' => $request->jenis_tagihan,
-                    'periode' => $request->jenis_tagihan === 'bulanan' ? $request->periode : null,
-                    'nominal_bebas' => $request->jenis_tagihan === 'bebas' ? $itemData['nominal'] : null,
-                    'bulan_mulai' => $request->bulan_mulai,
-                    'tahun_mulai' => $request->tahun_mulai,
-                    'rekening_id' => $itemData['rekening_id'], // Simpan rekening_id langsung
-                ]);
-
-                // Buat tagihan item untuk tagihan ini
-                $tagihanItem = Tagihanitem::create([
-                    'tagihan_id' => $tagihan->id,
-                    'kategori_id' => $itemData['kategori_id'],
-                    'nominal' => $itemData['nominal'],
-                ]);
-
-                // Loop setiap siswa untuk item ini
-                foreach ($siswaList as $siswa) {
-                    if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
-                        // generate sesuai jumlah bulan untuk item ini
-                        for ($i = 1; $i <= $tagihan->periode; $i++) {
-                            Tagihansiswa::create([
-                                'tagihan_id'     => $tagihan->id,
-                                'tagihanitem_id' => $tagihanItem->id,
-                                'siswa_id'       => $siswa->id,
-                                'bulan_ke'       => $i,
-                                'tanggal_bayar'  => null,
-                                'sisa_nominal'   => $itemData['nominal'],
-                                'status'         => '0'
-                            ]);
-                        }
-                    } else {
-                        // jenis bebas → 1 row per siswa per item
+                if ($tagihan->jenis_tagihan === 'bulanan' && $tagihan->periode) {
+                    // generate sesuai jumlah bulan untuk item ini
+                    for ($i = 1; $i <= $tagihan->periode; $i++) {
                         Tagihansiswa::create([
                             'tagihan_id'     => $tagihan->id,
                             'tagihanitem_id' => $tagihanItem->id,
                             'siswa_id'       => $siswa->id,
-                            'bulan_ke'       => null,
+                            'bulan_ke'       => $i,
                             'tanggal_bayar'  => null,
                             'sisa_nominal'   => $itemData['nominal'],
+                            'status'         => '0'
                         ]);
                     }
-
-                    // Transaksi per siswa per item
-                    $transaksi = Keuangan_transaksi::create([
-                        'penerima_id'      => $siswa->id,
-                        'penerima_tipe'    => Siswa::class,
-                        'jenis_transaksi'  => 'tagihan',
-                        'jumlah'           => $itemData['nominal'],
-                        'keterangan'       => "Tagihan {$itemData['kategori']->nama_kategori} - ID: {$tagihan->id}",
-                        'created_by'       => Auth::id(),
-                    ]);
-
-                    // Jurnal debit
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $akun_debit,
-                        'debit'        => $itemData['nominal'],
-                        'kredit'       => 0,
-                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                    ]);
-
-                    // Jurnal kredit
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $akun_kredit,
-                        'debit'        => 0,
-                        'kredit'       => $itemData['nominal'],
-                        'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                    ]);
-
-                    // Log transaksi
-                    Keuangan_transaksi_logs::create([
-                        'transaksi_id'   => $transaksi->id,
-                        'aksi'           => 'create_tagihan',
-                        'data_lama'      => null,
-                        'data_baru'      => json_encode([
-                            'tagihan_id' => $tagihan->id,
-                            'item_id'    => $tagihanItem->id,
-                            'kategori'   => $itemData['kategori']->nama_kategori,
-                            'jumlah'     => $itemData['nominal'],
-                        ]),
-                        'dilakukan_oleh' => Auth::id(),
-                        'dilakukan_pada' => now(),
+                } else {
+                    // jenis bebas → 1 row per siswa per item
+                    Tagihansiswa::create([
+                        'tagihan_id'     => $tagihan->id,
+                        'tagihanitem_id' => $tagihanItem->id,
+                        'siswa_id'       => $siswa->id,
+                        'bulan_ke'       => null,
+                        'tanggal_bayar'  => null,
+                        'sisa_nominal'   => $itemData['nominal'],
                     ]);
                 }
-            }
 
-//            DB::commit();
-            return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
-//        } catch (\Exception $e) {
-////            DB::rollBack();
-//            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
-//        }
+                // Transaksi per siswa per item
+                $transaksi = Keuangan_transaksi::create([
+                    'penerima_id'      => $siswa->id,
+                    'penerima_tipe'    => Siswa::class,
+                    'jenis_transaksi'  => 'tagihan',
+                    'jumlah'           => $itemData['nominal'],
+                    'keterangan'       => "Tagihan {$itemData['kategori']->nama_kategori} - ID: {$tagihan->id}",
+                    'created_by'       => Auth::id(),
+                ]);
+
+                // Jurnal debit
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_debit,
+                    'debit'        => $itemData['nominal'],
+                    'kredit'       => 0,
+                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
+                ]);
+
+                // Jurnal kredit
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_kredit,
+                    'debit'        => 0,
+                    'kredit'       => $itemData['nominal'],
+                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
+                ]);
+
+                // Log transaksi
+                Keuangan_transaksi_logs::create([
+                    'transaksi_id'   => $transaksi->id,
+                    'aksi'           => 'create_tagihan',
+                    'data_lama'      => null,
+                    'data_baru'      => json_encode([
+                        'tagihan_id' => $tagihan->id,
+                        'item_id'    => $tagihanItem->id,
+                        'kategori'   => $itemData['kategori']->nama_kategori,
+                        'jumlah'     => $itemData['nominal'],
+                    ]),
+                    'dilakukan_oleh' => Auth::id(),
+                    'dilakukan_pada' => now(),
+                ]);
+            }
+        }
+
+        //            DB::commit();
+        return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
+        //        } catch (\Exception $e) {
+        ////            DB::rollBack();
+        //            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
+        //        }
     }
 
 

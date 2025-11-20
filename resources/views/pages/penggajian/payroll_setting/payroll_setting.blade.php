@@ -59,14 +59,21 @@
                     <div class="col-md-4">
                         <x-input-field type="text" id="position_display" name="position_display" label="Jabatan" readonly
                             :disabled="true" value="" />
+                        <input type="text" name="type" value="perbulan">
                     </div>
                 </div>
 
                 {{-- GAJI DASAR --}}
                 <div class="row mb-3">
-                    <div class="col-md-2">
-                        <x-input-field type="number" name="teaching_hours" label="Jml Jam Ajar (jam)" placeholder="Jumlah"
+                    <div class="col-md-1">
+                        <x-input-field type="text" name="teaching_hours" label="JM/mgg" placeholder="Jumlah"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3"
                             :disabled="$readonly" :readonly="$readonly" value="{{ $setting->teaching_hours ?? '' }}" />
+                    </div>
+                    <div class="col-md-1">
+                        <x-input-field type="text" name="teaching_hours_total" label="JM Tot/bln" placeholder="Jumlah"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3"
+                            :disabled="$readonly" :readonly="$readonly" value="{{ $setting->teaching_hours_total ?? '' }}" />
                     </div>
                     <div class="col-md-2">
                         <x-input-field type="text" name="salary" label="Gaji / Honor" placeholder="Nominal"

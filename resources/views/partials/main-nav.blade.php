@@ -29,7 +29,7 @@
 
             @canViewMenu(['view_tahun_ajaran', 'view_role', 'view_lembagaunit', 'view_tipe_unit', 'view_unit',
             'view_positions', 'view_jurusan', 'view_officer', 'view_kelas', 'view_siswa', 'view_user',
-            ]) 
+            ])
             {{-- 'view_data_rekening' --}}
             <li class="menu-item">
                 <a class="menu-link menu-arrow" href="#sidebarMasterData" data-bs-toggle="collapse" role="button"
@@ -183,12 +183,13 @@
                             </a>
                             <div class="collapse" id="sidebarPembayaran">
                                 <ul class="sub-menu-nav">
+                                    <li class="sub-menu-item"><a class="sub-menu-link"
+                                            href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
                                     @hasPermission('view_report')
                                     <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('keuangan-transaksi') }}">Daftar
                                             Transaksi</a></li>
                                     @endhasPermission
-                                    <li class="sub-menu-item"><a class="sub-menu-link"
-                                            href="{{ url('pembayaran') }}">Proses Pembayaran</a></li>
+
                                 </ul>
                             </div>
                         </li>

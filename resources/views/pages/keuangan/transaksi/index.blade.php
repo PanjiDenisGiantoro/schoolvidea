@@ -2,481 +2,7 @@
 @section('title', 'Transaksi Keuangan')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <style>
-        /* Summary Cards Container */
-        .summary-cards-container {
-            margin-bottom: 2rem;
-        }
-
-        /* Base Card Styling */
-        .summary-card {
-            border: none;
-            border-radius: 1.25rem;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white;
-            position: relative;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Hover Effects */
-        .summary-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-        }
-
-        .summary-card:hover .card-icon {
-            transform: scale(1.12);
-        }
-
-        /* Card Body */
-        .summary-card .card-body {
-            padding: 2rem 1.5rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            flex: 1;
-        }
-
-        /* Card Icon */
-        .summary-card .card-icon {
-            font-size: 2.8rem;
-            margin-bottom: 1.2rem;
-            opacity: 0.95;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-block;
-        }
-
-        /* Card Label */
-        .summary-card .card-label {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-            opacity: 0.98;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            line-height: 1.3;
-        }
-
-        /* Card Sublabel */
-        .summary-card .card-sublabel {
-            font-size: 0.8rem;
-            opacity: 0.85;
-            margin-bottom: 1.2rem;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-
-        /* Card Value */
-        .summary-card .card-value {
-            font-size: 1.9rem;
-            font-weight: 800;
-            letter-spacing: -0.8px;
-            word-break: break-word;
-            line-height: 1.2;
-        }
-
-        /* Gradient Backgrounds - Modern Minimalist Design */
-        .card-pemasukan {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-pemasukan::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
-            background-size: 50px 50px;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .card-pemasukan:hover::before {
-            opacity: 0.2;
-        }
-
-        .card-pengeluaran {
-            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-        }
-
-        .card-transaksi {
-            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
-        }
-
-        .card-harian {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        }
-
-        .card-tunai {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        }
-
-        .card-nontunai {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        }
-
-        /* Responsive Typography */
-        @media (max-width: 1200px) {
-            .summary-card .card-label {
-                font-size: 0.95rem;
-            }
-
-            .summary-card .card-value {
-                font-size: 1.7rem;
-            }
-
-            .summary-card .card-icon {
-                font-size: 2.5rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .summary-card .card-body {
-                padding: 1.75rem 1.25rem;
-            }
-
-            .summary-card .card-label {
-                font-size: 0.85rem;
-            }
-
-            .summary-card .card-sublabel {
-                font-size: 0.75rem;
-            }
-
-            .summary-card .card-value {
-                font-size: 1.5rem;
-            }
-
-            .summary-card .card-icon {
-                font-size: 2.2rem;
-                margin-bottom: 0.8rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .summary-card .card-body {
-                padding: 1.5rem 1rem;
-            }
-
-            .summary-card .card-label {
-                font-size: 0.8rem;
-            }
-
-            .summary-card .card-sublabel {
-                font-size: 0.7rem;
-                margin-bottom: 0.8rem;
-            }
-
-            .summary-card .card-value {
-                font-size: 1.3rem;
-            }
-
-            .summary-card .card-icon {
-                font-size: 2rem;
-                margin-bottom: 0.6rem;
-            }
-
-            .summary-card:hover {
-                transform: translateY(-4px) scale(1.005);
-            }
-        }
-
-        /* Mobile Portrait - Extra Small */
-        @media (max-width: 360px) {
-            .summary-card .card-body {
-                padding: 1.25rem 0.75rem;
-            }
-
-            .summary-card .card-label {
-                font-size: 0.75rem;
-            }
-
-            .summary-card .card-value {
-                font-size: 1.15rem;
-            }
-        }
-
-        /* Stat Cards Styling (from tabungan) */
-        .stat-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 1rem !important;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, currentColor, transparent);
-            opacity: 0.5;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
-        }
-
-        .stat-card-green::before {
-            background: linear-gradient(90deg, transparent, #28a745, transparent);
-        }
-
-        .stat-card-red::before {
-            background: linear-gradient(90deg, transparent, #dc3545, transparent);
-        }
-
-        .stat-card-blue::before {
-            background: linear-gradient(90deg, transparent, #0d6efd, transparent);
-        }
-
-        .stat-card-purple::before {
-            background: linear-gradient(90deg, transparent, #0dcaf0, transparent);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover .stat-icon {
-            transform: scale(1.15) rotate(-5deg);
-        }
-
-        .transition-all {
-            transition: all 0.3s ease;
-        }
-
-        /* Status Cards Styling (from tabungan) */
-        .status-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 1rem !important;
-            position: relative;
-            background: #fff;
-        }
-
-        .status-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-        }
-
-        .status-card-header {
-            background: linear-gradient(135deg, #f0f4f9 0%, #e8eff7 100%);
-            padding: 1rem;
-            border-bottom: 2px solid #e8eff7;
-        }
-
-        .status-card-header-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
-            border-bottom: 0;
-        }
-
-        .status-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 0.75rem;
-            background: #e8eff7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #667eea;
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .status-card:hover .status-icon {
-            transform: scale(1.1);
-            background: #dde5f7;
-        }
-
-        .status-icon-summary {
-            width: 40px;
-            height: 40px;
-            border-radius: 0.75rem;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .status-card-summary:hover .status-icon-summary {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .status-item {
-            padding: 1.25rem;
-            border-bottom: 1px solid #f0f4f9;
-            transition: all 0.2s ease;
-        }
-
-        .status-item:last-child {
-            border-bottom: none;
-        }
-
-        .status-item:hover {
-            background: #f9fbfd;
-        }
-
-        .status-item-summary {
-            padding: 1.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-
-        .status-item-summary:last-child {
-            border-bottom: none;
-        }
-
-        .status-item-summary:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .status-dot-warning {
-            background: #ffc107;
-            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
-        }
-
-        .status-dot-success {
-            background: #28a745;
-            box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
-        }
-
-        .status-dot-danger {
-            background: #dc3545;
-            box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
-        }
-
-        .status-dot-info {
-            background: #0dcaf0;
-            box-shadow: 0 0 8px rgba(13, 202, 240, 0.4);
-        }
-
-        .status-dot-summary {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
-
-        .status-count {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        /* Responsive Status Cards */
-        @media (max-width: 768px) {
-            .stat-card {
-                margin-bottom: 0.5rem;
-            }
-
-            .stat-card h3 {
-                font-size: 1.5rem !important;
-            }
-
-            .stat-icon {
-                width: 50px;
-                height: 50px;
-            }
-
-            .stat-icon i {
-                font-size: 20px !important;
-            }
-
-            .status-card {
-                margin-bottom: 0.5rem;
-            }
-
-            .status-item,
-            .status-item-summary {
-                padding: 1rem;
-            }
-
-            .status-card-header {
-                padding: 0.875rem;
-            }
-
-            .status-card-header-summary {
-                padding: 0.875rem;
-            }
-
-            .status-icon,
-            .status-icon-summary {
-                width: 35px;
-                height: 35px;
-                font-size: 18px;
-            }
-
-            .status-count {
-                font-size: 1.25rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stat-card:hover {
-                transform: translateY(-4px) scale(1.01);
-            }
-
-            .stat-card h3 {
-                font-size: 1.25rem !important;
-            }
-
-            .status-card:hover {
-                transform: translateY(-4px);
-            }
-
-            .status-item,
-            .status-item-summary {
-                padding: 0.875rem;
-            }
-
-            .status-icon,
-            .status-icon-summary {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-            }
-
-            .status-count {
-                font-size: 1.1rem;
-            }
-
-            .status-card-header h6,
-            .status-card-header-summary h6 {
-                font-size: 0.95rem !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
 @endpush
 @section('content')
     @include('partials.page-title', [
@@ -485,114 +11,142 @@
     ])
 
     {{-- Summary Cards --}}
-    <div class="summary-cards-container">
-        <div class="row g-3 g-lg-4">
-            {{-- Total Pemasukan --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-pemasukan">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-arrow-up"></i>
+    <div class="row g-3 mb-3">
+
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pemasukan</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($total_pemasukan ?? 0, 0, ',', '.') }}</h3>
                         </div>
-                        <div class="card-label">Pemasukan</div>
-                        <div class="card-sublabel">Masuk</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_pemasukan'] ?? 0, 0, ',', '.') }}
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-trending-up text-success" style="font-size: 24px;"></i>
                         </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tabungan Masuk</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tagihan Masuk</small>
                 </div>
             </div>
-
-            {{-- Total Pengeluaran --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-pengeluaran">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-arrow-down"></i>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pengeluaran</p>
+                            <h3 class="fw-bold text-danger mb-0 text-absolute">Rp {{ number_format($total_pengeluaran ?? 0, 0, ',', '.') }}</h3>
                         </div>
-                        <div class="card-label">Pengeluaran</div>
-                        <div class="card-sublabel">Keluar</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_pengeluaran'] ?? 0, 0, ',', '.') }}
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-trending-down text-danger" style="font-size: 24px;"></i>
                         </div>
                     </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tabungan Keluar</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tagihan Keluar</small>
                 </div>
             </div>
-
-            {{-- Total Transaksi --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-transaksi">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-exchange"></i>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Data Transaksi</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">{{ number_format($count ?? 0, 0, ',', '.') }}</h3>
                         </div>
-                        <div class="card-label">Transaksi</div>
-                        <div class="card-sublabel">Jumlah</div>
-                        <div class="card-value">
-                            {{ number_format($summary['total_transaksi'] ?? 0, 0, ',', '.') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Total Harian --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-harian">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-calendar"></i>
-                        </div>
-                        <div class="card-label">Hari Ini</div>
-                        <div class="card-sublabel">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_harian'] ?? 0, 0, ',', '.') }}
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-transfer text-primary" style="font-size: 24px;"></i>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {{-- Total Tunai --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-tunai">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-money"></i>
-                        </div>
-                        <div class="card-label">Tunai</div>
-                        <div class="card-sublabel">Kas Langsung</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_tunai'] ?? 0, 0, ',', '.') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Total Non-Tunai --}}
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
-                <div class="card summary-card card-nontunai">
-                    <div class="card-body">
-                        <div class="card-icon">
-                            <i class="fa fa-credit-card"></i>
-                        </div>
-                        <div class="card-label">Non-Tunai</div>
-                        <div class="card-sublabel">Transfer, E-Wallet</div>
-                        <div class="card-value">
-                            Rp {{ number_format($summary['total_non_tunai'] ?? 0, 0, ',', '.') }}
-                        </div>
-                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-transfer text-primary"></i> Akumulasi Data Ttransaksi</small>
                 </div>
             </div>
         </div>
     </div>
+        <div class="row mt-0 mb-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi Keseluruhan</p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($sum ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-bar-chart text-primary" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-bar-chart text-primary"></i> Total Keseluruhan Transaksi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Hari Ini</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-calendar text-info" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-calendar text-primary"></i> {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Non-Tunai</p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp 0</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-credit-card text-success" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-success"></i> Transfer, E Wallet</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+                <div class="card-body position-relative">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Tunai</p>
+                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp 1.000.000.000</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="bx bx-money text-warning" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-warning"></i> Kas Langsung</small>
+                </div>
+            </div>
+        </div>
+        </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
         <div class="card-body">
-            <h5 class="fw-bold text-primary mb-3">
-                <i class="bx bx-filter"></i> Filter Transaksi
-            </h5>
+            <div class=" justify-content-between align-items-center d-flex gap-3"
+                data-bs-toggle="collapse"
+                data-bs-target="#filterCollapse"
+                style="cursor: pointer;">
+                <h5 class="fw-bold text-primary mt-3 ">
+                    <span> <i class="bx bx-filter"></i> Filter Transaksi</span>
+                </h5>
+                <h5 class="fw-bold text-primary"  style="font-size: 26px;"><i class="bx bx-chevron-down"></i></h5>
+
+            </div>
+
             <form action="{{ route('keuangan_transaksi.index') }}" method="GET">
-                <div class="row g-3">
+                <div class="row g-3 collapse" id="filterCollapse" >
                     {{-- Filter Unit --}}
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
@@ -685,10 +239,21 @@
                     </select>
                     <span class="text-muted">data per halaman</span>
                 </div>
+                <div class="d-flex justify-content-between gap-3">
+                    @if($total_pending > 0)
+                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
+                        <i class="bx bx-time-five"></i> Pending
+                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
+                        </span>
+                   </button>
+                    @endif
                 <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
                     class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                     <i class="bx bx-printer"></i> Cetak Laporan
                 </a>
+                </div>
+
             </div>
 
             {{-- Tabel --}}
@@ -881,6 +446,242 @@
             url.searchParams.delete('page'); // Reset to page 1
             window.location.href = url.toString();
         }
+
+    function showPendingTransactions() {
+        // Template modal
+        const modalHtml = `
+            <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title fw-bold" id="pendingModalLabel">
+                                <i class="bx bx-time-five me-2"></i>Transaksi Pending Approval
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                                <div class="spinner-border text-warning" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span class="ms-3">Memuat data transaksi pending...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const existingModal = document.getElementById('pendingModal');
+        if (existingModal) existingModal.remove();
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
+        modal.show();
+
+        fetch('/api/v1/tabungan/transaksi?status=pending', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const modalBody = document.querySelector('#pendingModal .modal-body');
+
+            if (data.success && data.data?.length > 0) {
+                let tableRows = '';
+
+                data.data.forEach((trx, index) => {
+                    const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
+                    const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
+                    const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+
+                    const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    let statusBadge = '';
+                    if (trx.jenis_transaksi === 'penarikan_tabungan') {
+                        statusBadge = trx.status_approval === 'pending'
+                            ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
+                            : '';
+                    } else {
+                        statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
+                    }
+
+                    tableRows += `
+                        <tr class="align-middle">
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center">
+                                <span class="badge bg-${jenisClass} px-3 py-2">
+                                    <i class="bx bx-${jenisIcon} me-1"></i>${jenisText}
+                                </span>
+                            </td>
+                            <td><strong>${trx.nomor_transaksi || trx.code_pembayaran}</strong></td>
+                            <td>${trx.siswa_nama || '-'}</td>
+                            <td class="text-end"><strong>Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</strong></td>
+                            <td class="text-center"><small>${tanggal}</small></td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-primary rounded-pill" onclick="viewDetailPending(${trx.transaksi_id})">
+                                    <i class="bx bx-show me-1"></i>Detail
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                modalBody.innerHTML = `
+                    <div class="alert alert-warning border-0 shadow-sm mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bx bx-info-circle fs-4 me-3"></i>
+                            <div>
+                                <strong>Perhatian:</strong> Terdapat <strong>${data.data.length}</strong> transaksi yang menunggu approval.
+                                <br><small>Untuk penarikan tabungan, verifikasi token terlebih dahulu sebelum approve.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th class="text-center" style="width:50px;">#</th>
+                                    <th class="text-center" style="width:120px;">Jenis</th>
+                                    <th style="width:150px;">Nomor Transaksi</th>
+                                    <th style="width:200px;">Nama Siswa</th>
+                                    <th class="text-end" style="width:130px;">Jumlah</th>
+                                    <th class="text-center" style="width:150px;">Tanggal</th>
+                                    <th class="text-center" style="width:150px;">Status</th>
+                                    <th class="text-center" style="width:100px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bx bx-check-circle text-success" style="font-size:80px;"></i>
+                        <h4 class="mt-3">Tidak Ada Transaksi Pending</h4>
+                        <p class="text-muted">Semua transaksi sudah diproses</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const modalBody = document.querySelector('#pendingModal .modal-body');
+            modalBody.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bx bx-error-circle text-danger" style="font-size:80px;"></i>
+                    <h4 class="mt-3">Gagal Memuat Data</h4>
+                    <p class="text-muted">Terjadi kesalahan saat memuat transaksi pending</p>
+                    <button class="btn btn-primary" onclick="showPendingTransactions()">
+                        <i class="bx bx-refresh me-1"></i>Coba Lagi
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+
+    function viewDetailPending(transaksiId) {
+        const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
+        if (pendingModal) pendingModal.hide();
+        window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
+    }
+
+
+    function showDetailTransaksi(transaksiId) {
+        Swal.fire({
+            title: 'Memuat...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const trx = data.data;
+                const statusBadge = getStatusBadge(trx.status_pembayaran);
+                const buktiHtml = trx.bukti_transfer
+                    ? `<div class="mb-3">
+                        <strong>Bukti Transfer:</strong><br>
+                        <a href="${trx.bukti_transfer}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="bx bx-image me-1"></i>Lihat Bukti Transfer
+                        </a>
+                    </div>`
+                    : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
+
+                const catatanHtml = trx.catatan_verifikasi
+                    ? `<div class="alert alert-info">
+                        <strong>Catatan Verifikasi:</strong><br>
+                        ${trx.catatan_verifikasi}<br>
+                        <small class="text-muted">Oleh: ${trx.verified_by || '-'} pada ${trx.verified_at || '-'}</small>
+                    </div>`
+                    : '';
+
+                const actionButtons = trx.status_pembayaran === 'pending'
+                    ? `<div class="mt-4 d-flex gap-2 justify-content-center">
+                        <button class="btn btn-success" onclick="approveTransaksi(${transaksiId})">
+                            <i class="bx bx-check-circle me-1"></i>Approve
+                        </button>
+                        <button class="btn btn-danger" onclick="rejectTransaksi(${transaksiId})">
+                            <i class="bx bx-x-circle me-1"></i>Reject
+                        </button>
+                    </div>`
+                    : '';
+
+                Swal.fire({
+                    title: 'Detail Transaksi',
+                    html: `
+                        <div class="text-start">
+                            <div class="mb-3">
+                                <strong>Nomor Transaksi:</strong><br>
+                                <span class="badge bg-secondary">${trx.nomor_transaksi}</span>
+                            </div>
+                            <div class="mb-3"><strong>Jenis Transaksi:</strong><br>${trx.jenis_transaksi}</div>
+                            <div class="mb-3"><strong>Jumlah:</strong><br>
+                                <h4 class="text-primary">Rp ${new Intl.NumberFormat('id-ID').format(trx.jumlah)}</h4>
+                            </div>
+                            <div class="mb-3"><strong>Tanggal Transaksi:</strong><br>${trx.tanggal_transaksi}</div>
+                            <div class="mb-3"><strong>Deskripsi:</strong><br>${trx.deskripsi || '-'}</div>
+                            <div class="mb-3"><strong>Status:</strong><br>${statusBadge}</div>
+                            ${buktiHtml}
+                            ${catatanHtml}
+                            ${actionButtons}
+                        </div>
+                    `,
+                    width: '600px',
+                    showCloseButton: true,
+                    showConfirmButton: false
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal memuat detail transaksi',
+                confirmButtonColor: '#f56565'
+            });
+        });
+    }
 
         // Handle detail button click
         document.addEventListener('DOMContentLoaded', function() {
