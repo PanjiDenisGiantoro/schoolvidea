@@ -522,7 +522,7 @@
         const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
         modal.show();
 
-        fetch('/api/v1/tabungan/transaksi?status=pending', {
+        fetch('/tabungan/transaksi?status=pending', {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',

@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-        <div class="row mt-0 mb-3">
+    <div class="row mt-0 mb-3">
         <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
                 <div class="card-body position-relative">
@@ -129,15 +129,15 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
         <div class="card-body">
             <div class=" justify-content-between align-items-center d-flex gap-3"
-                data-bs-toggle="collapse"
-                data-bs-target="#filterCollapse"
-                style="cursor: pointer;">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filterCollapse"
+                 style="cursor: pointer;">
                 <h5 class="fw-bold text-primary mt-3 ">
                     <span> <i class="bx bx-filter"></i> Filter Transaksi</span>
                 </h5>
@@ -183,30 +183,30 @@
                     <div class="col-md-3">
                         <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
                         <input type="text" name="kode_pembayaran" id="kode_pembayaran" class="form-control p-3"
-                            placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}">
+                               placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}">
                     </div>
 
                     {{-- Filter Nama Siswa --}}
                     <div class="col-md-3">
                         <label for="nama_siswa" class="form-label">Nama/NISN Siswa</label>
                         <input type="text" name="nama_siswa" id="nama_siswa" class="form-control p-3"
-                            placeholder="Cari nama atau NISN" value="{{ request('nama_siswa') }}">
+                               placeholder="Cari nama atau NISN" value="{{ request('nama_siswa') }}">
                     </div>
 
                     {{-- Filter Tanggal Dari --}}
                     <div class="col-md-3">
                         <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
                         <input type="text" name="dari_tanggal" id="dari_tanggal" class="form-control datepicker p-3"
-                            placeholder="DD/MM/YYYY"
-                            value="{{ request('dari_tanggal') }}">
+                               placeholder="DD/MM/YYYY"
+                               value="{{ request('dari_tanggal') }}">
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
                     <div class="col-md-3">
                         <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
                         <input type="text" name="sampai_tanggal" id="sampai_tanggal" class="form-control datepicker p-3"
-                            placeholder="DD/MM/YYYY"
-                            value="{{ request('sampai_tanggal') }}">
+                               placeholder="DD/MM/YYYY"
+                               value="{{ request('sampai_tanggal') }}">
                     </div>
 
                     {{-- Tombol Filter --}}
@@ -231,7 +231,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <label for="per_page" class="mb-0">Tampilkan:</label>
                     <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;"
-                        onchange="changePerPage(this.value)">
+                            onchange="changePerPage(this.value)">
                         <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                         <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
@@ -241,17 +241,17 @@
                 </div>
                 <div class="d-flex justify-content-between gap-3">
                     @if($total_pending > 0)
-                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
-                        <i class="bx bx-time-five"></i> Pending
-                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
+                            <i class="bx bx-time-five"></i> Pending
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
                         </span>
-                   </button>
+                        </button>
                     @endif
-                <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
-                    class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                    <i class="bx bx-printer"></i> Cetak Laporan
-                </a>
+                    <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
+                       class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
+                        <i class="bx bx-printer"></i> Cetak Laporan
+                    </a>
                 </div>
 
             </div>
@@ -260,151 +260,151 @@
             <div class="table-responsive">
                 <table class="table-bordered table-hover table overflow-hidden text-nowrap text-center align-middle">
                     <thead class="table-primary">
-                        <tr>
-                            <th>#</th>
-                            <th>No Transaksi</th>
-                            <th>Nama & NISN</th>
-                            <th>Jenis Transaksi</th>
-                            <th>Tot. Transaksi</th>
-                            <th>Metode</th>
-                            <th>Wkt. Transaksi</th>
-                            <th>Status</th>
-                            <th>Petugas</th>
-                            <th>Aksi</th>
-                        </tr>
+                    <tr>
+                        <th>#</th>
+                        <th>No Transaksi</th>
+                        <th>Nama & NISN</th>
+                        <th>Jenis Transaksi</th>
+                        <th>Tot. Transaksi</th>
+                        <th>Metode</th>
+                        <th>Wkt. Transaksi</th>
+                        <th>Status</th>
+                        <th>Petugas</th>
+                        <th>Aksi</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        @forelse($transaksis as $transaksi)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ $transaksi->code_pembayaran }}</span>
-                                </td>
-                                <td>
-                                    @if ($transaksi->penerima)
-                                        @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
-                                            {{ $transaksi->penerima->user->name ?? '-' }}
-                                            <br>
-                                            <small class="text-muted">NISN:
-                                                {{ $transaksi->penerima->nisn ?? '-' }}</small>
-                                        @else
-                                            {{ $transaksi->penerima->name ?? '-' }}
-                                        @endif
+                    @forelse($transaksis as $transaksi)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ $transaksi->code_pembayaran }}</span>
+                            </td>
+                            <td>
+                                @if ($transaksi->penerima)
+                                    @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
+                                        {{ $transaksi->penerima->user->name ?? '-' }}
+                                        <br>
+                                        <small class="text-muted">NISN:
+                                            {{ $transaksi->penerima->nisn ?? '-' }}</small>
                                     @else
-                                        <span class="text-muted">-</span>
+                                        {{ $transaksi->penerima->name ?? '-' }}
                                     @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $badgeColor = match ($transaksi->jenis_transaksi) {
-                                            'setoran_tabungan' => 'success',
-                                            'penarikan_tabungan' => 'warning',
-                                            'pembayaran' => 'info',
-                                            'tagihan' => 'info',
-                                            default => 'secondary',
-                                        };
-                                        $jenisText = match ($transaksi->jenis_transaksi) {
-                                            'setoran_tabungan' => 'Setoran Tabungan',
-                                            'penarikan_tabungan' => 'Penarikan Tabungan',
-                                            'pembayaran' => 'Pembayaran',
-                                            'tagihan' => 'Pembayaran Tagihan',
-                                            default => ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)),
-                                        };
-                                    @endphp
-                                    <span class="badge rounded-pill bg-{{ $badgeColor }}">
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $badgeColor = match ($transaksi->jenis_transaksi) {
+                                        'setoran_tabungan' => 'success',
+                                        'penarikan_tabungan' => 'warning',
+                                        'pembayaran' => 'info',
+                                        'tagihan' => 'info',
+                                        default => 'secondary',
+                                    };
+                                    $jenisText = match ($transaksi->jenis_transaksi) {
+                                        'setoran_tabungan' => 'Setoran Tabungan',
+                                        'penarikan_tabungan' => 'Penarikan Tabungan',
+                                        'pembayaran' => 'Pembayaran',
+                                        'tagihan' => 'Pembayaran Tagihan',
+                                        default => ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)),
+                                    };
+                                @endphp
+                                <span class="badge rounded-pill bg-{{ $badgeColor }}">
                                         {{ $jenisText }}
                                     </span>
-                                    @if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                                @if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                                    <br>
+                                    <small class="text-muted">
+                                        @if ($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
+                                            {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-' }}
+                                        @endif
+                                    </small>
+                                    @if (
+                                        $transaksi->pembayaranTagihan->tagihanSiswa &&
+                                            $transaksi->pembayaranTagihan->tagihanSiswa->tagihan &&
+                                            $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
                                         <br>
                                         <small class="text-muted">
-                                            @if ($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
-                                                {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-' }}
-                                            @endif
+                                            @foreach ($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
+                                                <span
+                                                    class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
+                                            @endforeach
                                         </small>
-                                        @if (
-                                            $transaksi->pembayaranTagihan->tagihanSiswa &&
-                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan &&
-                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
-                                            <br>
-                                            <small class="text-muted">
-                                                @foreach ($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
-                                                    <span
-                                                        class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
-                                                @endforeach
-                                            </small>
-                                        @endif
                                     @endif
-                                </td>
+                                @endif
+                            </td>
 
-                                <td>
-                                    @if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
-                                        <span class="text-success fw-bold">+ Rp
+                            <td>
+                                @if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
+                                    <span class="text-success fw-bold">+ Rp
                                             {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
-                                    @else
-                                        <span class="text-danger fw-bold">- Rp
+                                @else
+                                    <span class="text-danger fw-bold">- Rp
                                             {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $metodeBadge = match ($transaksi->metode) {
-                                            'TUNAI' => 'primary',
-                                            'CASH' => 'primary',
-                                            'TRANSFER' => 'info',
-                                            'NONTUNAI' => 'info',
-                                            'SALDO_TABUNGAN' => 'warning',
-                                            default => 'secondary',
-                                        };
-                                    @endphp
-                                    <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->metode }}</span>
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
-                                <td>
-                                    @if ($transaksi->status_verifikasi == 'approved')
-                                        <span class="badge bg-success rounded-pill">
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $metodeBadge = match ($transaksi->metode) {
+                                        'TUNAI' => 'primary',
+                                        'CASH' => 'primary',
+                                        'TRANSFER' => 'info',
+                                        'NONTUNAI' => 'info',
+                                        'SALDO_TABUNGAN' => 'warning',
+                                        default => 'secondary',
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->metode }}</span>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
+                            <td>
+                                @if ($transaksi->status_verifikasi == 'approved')
+                                    <span class="badge bg-success rounded-pill">
                                             <i class="bx bx-check-circle me-1"></i>Approved
                                         </span>
-                                    @elseif($transaksi->status_verifikasi == 'rejected')
-                                        <span class="badge bg-danger rounded-pill">
+                                @elseif($transaksi->status_verifikasi == 'rejected')
+                                    <span class="badge bg-danger rounded-pill">
                                             <i class="bx bx-x-circle me-1"></i>Rejected
                                         </span>
-                                    @else
-                                        <span class="badge bg-warning rounded-pill">
+                                @else
+                                    <span class="badge bg-warning rounded-pill">
                                             <i class="bx bx-time-five me-1"></i>Pending
                                         </span>
-                                    @endif
-                                </td>
-                                <td>{{ $transaksi->creator->name ?? '-' }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
+                                @endif
+                            </td>
+                            <td>{{ $transaksi->creator->name ?? '-' }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
                                             data-id="{{ $transaksi->id }}" title="Lihat Detail">
-                                            <i class="bx bx-show"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-warning rounded-pill btn-detail-trx"
+                                        <i class="bx bx-show"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-warning rounded-pill btn-detail-trx"
                                             data-id="{{ $transaksi->id }}" title="Cetak">
-                                            <i class="bx bx-printer"></i>
-                                        </button>
-                                        {{--                                        @if ($transaksi->status_verifikasi == 'pending') --}}
-                                        {{--                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}
-                                        {{--                                                    data-id="{{ $transaksi->id }}" --}}
-                                        {{--                                                    title="Approve"> --}}
-                                        {{--                                                <i class="bx bx-check"></i> --}}
-                                        {{--                                            </button> --}}
-                                        {{--                                            <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx" --}}
-                                        {{--                                                    data-id="{{ $transaksi->id }}" --}}
-                                        {{--                                                    title="Reject"> --}}
-                                        {{--                                                <i class="bx bx-x"></i> --}}
-                                        {{--                                            </button> --}}
-                                        {{--                                        @endif --}}
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="text-center">Belum ada data transaksi</td>
-                            </tr>
-                        @endforelse
+                                        <i class="bx bx-printer"></i>
+                                    </button>
+                                    {{--                                        @if ($transaksi->status_verifikasi == 'pending') --}}
+                                    {{--                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}
+                                    {{--                                                    data-id="{{ $transaksi->id }}" --}}
+                                    {{--                                                    title="Approve"> --}}
+                                    {{--                                                <i class="bx bx-check"></i> --}}
+                                    {{--                                            </button> --}}
+                                    {{--                                            <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx" --}}
+                                    {{--                                                    data-id="{{ $transaksi->id }}" --}}
+                                    {{--                                                    title="Reject"> --}}
+                                    {{--                                                <i class="bx bx-x"></i> --}}
+                                    {{--                                            </button> --}}
+                                    {{--                                        @endif --}}
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="text-center">Belum ada data transaksi</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
@@ -447,9 +447,9 @@
             window.location.href = url.toString();
         }
 
-    function showPendingTransactions() {
-        // Template modal
-        const modalHtml = `
+        function showPendingTransactions() {
+            // Template modal
+            const modalHtml = `
             <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-xl modal-dialog-scrollable">
                     <div class="modal-content">
@@ -472,51 +472,51 @@
             </div>
         `;
 
-        const existingModal = document.getElementById('pendingModal');
-        if (existingModal) existingModal.remove();
+            const existingModal = document.getElementById('pendingModal');
+            if (existingModal) existingModal.remove();
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-        const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
-        modal.show();
+            const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
+            modal.show();
 
-        fetch('/api/v1/tabungan/transaksi?status=pending', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const modalBody = document.querySelector('#pendingModal .modal-body');
+            fetch('/api/v1/tabungan/transaksi?status=pending', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const modalBody = document.querySelector('#pendingModal .modal-body');
 
-            if (data.success && data.data?.length > 0) {
-                let tableRows = '';
+                    if (data.success && data.data?.length > 0) {
+                        let tableRows = '';
 
-                data.data.forEach((trx, index) => {
-                    const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
-                    const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
-                    const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+                        data.data.forEach((trx, index) => {
+                            const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
+                            const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
+                            const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
 
-                    const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                            const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
 
-                    let statusBadge = '';
-                    if (trx.jenis_transaksi === 'penarikan_tabungan') {
-                        statusBadge = trx.status_approval === 'pending'
-                            ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
-                            : '';
-                    } else {
-                        statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
-                    }
+                            let statusBadge = '';
+                            if (trx.jenis_transaksi === 'penarikan_tabungan') {
+                                statusBadge = trx.status_approval === 'pending'
+                                    ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
+                                    : '';
+                            } else {
+                                statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
+                            }
 
-                    tableRows += `
+                            tableRows += `
                         <tr class="align-middle">
                             <td class="text-center">${index + 1}</td>
                             <td class="text-center">
@@ -536,9 +536,9 @@
                             </td>
                         </tr>
                     `;
-                });
+                        });
 
-                modalBody.innerHTML = `
+                        modalBody.innerHTML = `
                     <div class="alert alert-warning border-0 shadow-sm mb-3">
                         <div class="d-flex align-items-center">
                             <i class="bx bx-info-circle fs-4 me-3"></i>
@@ -566,20 +566,20 @@
                         </table>
                     </div>
                 `;
-            } else {
-                modalBody.innerHTML = `
+                    } else {
+                        modalBody.innerHTML = `
                     <div class="text-center py-5">
                         <i class="bx bx-check-circle text-success" style="font-size:80px;"></i>
                         <h4 class="mt-3">Tidak Ada Transaksi Pending</h4>
                         <p class="text-muted">Semua transaksi sudah diproses</p>
                     </div>
                 `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            const modalBody = document.querySelector('#pendingModal .modal-body');
-            modalBody.innerHTML = `
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const modalBody = document.querySelector('#pendingModal .modal-body');
+                    modalBody.innerHTML = `
                 <div class="text-center py-5">
                     <i class="bx bx-error-circle text-danger" style="font-size:80px;"></i>
                     <h4 class="mt-3">Gagal Memuat Data</h4>
@@ -589,55 +589,55 @@
                     </button>
                 </div>
             `;
-        });
-    }
+                });
+        }
 
 
-    function viewDetailPending(transaksiId) {
-        const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
-        if (pendingModal) pendingModal.hide();
-        window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
-    }
+        function viewDetailPending(transaksiId) {
+            const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
+            if (pendingModal) pendingModal.hide();
+            window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
+        }
 
 
-    function showDetailTransaksi(transaksiId) {
-        Swal.fire({
-            title: 'Memuat...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+        function showDetailTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Memuat...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
-        fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const trx = data.data;
-                const statusBadge = getStatusBadge(trx.status_pembayaran);
-                const buktiHtml = trx.bukti_transfer
-                    ? `<div class="mb-3">
+            fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const trx = data.data;
+                        const statusBadge = getStatusBadge(trx.status_pembayaran);
+                        const buktiHtml = trx.bukti_transfer
+                            ? `<div class="mb-3">
                         <strong>Bukti Transfer:</strong><br>
                         <a href="${trx.bukti_transfer}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="bx bx-image me-1"></i>Lihat Bukti Transfer
                         </a>
                     </div>`
-                    : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
+                            : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
 
-                const catatanHtml = trx.catatan_verifikasi
-                    ? `<div class="alert alert-info">
+                        const catatanHtml = trx.catatan_verifikasi
+                            ? `<div class="alert alert-info">
                         <strong>Catatan Verifikasi:</strong><br>
                         ${trx.catatan_verifikasi}<br>
                         <small class="text-muted">Oleh: ${trx.verified_by || '-'} pada ${trx.verified_at || '-'}</small>
                     </div>`
-                    : '';
+                            : '';
 
-                const actionButtons = trx.status_pembayaran === 'pending'
-                    ? `<div class="mt-4 d-flex gap-2 justify-content-center">
+                        const actionButtons = trx.status_pembayaran === 'pending'
+                            ? `<div class="mt-4 d-flex gap-2 justify-content-center">
                         <button class="btn btn-success" onclick="approveTransaksi(${transaksiId})">
                             <i class="bx bx-check-circle me-1"></i>Approve
                         </button>
@@ -645,11 +645,11 @@
                             <i class="bx bx-x-circle me-1"></i>Reject
                         </button>
                     </div>`
-                    : '';
+                            : '';
 
-                Swal.fire({
-                    title: 'Detail Transaksi',
-                    html: `
+                        Swal.fire({
+                            title: 'Detail Transaksi',
+                            html: `
                         <div class="text-start">
                             <div class="mb-3">
                                 <strong>Nomor Transaksi:</strong><br>
@@ -667,21 +667,21 @@
                             ${actionButtons}
                         </div>
                     `,
-                    width: '600px',
-                    showCloseButton: true,
-                    showConfirmButton: false
+                            width: '600px',
+                            showCloseButton: true,
+                            showConfirmButton: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Gagal memuat detail transaksi',
+                        confirmButtonColor: '#f56565'
+                    });
                 });
-            }
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Gagal memuat detail transaksi',
-                confirmButtonColor: '#f56565'
-            });
-        });
-    }
+        }
 
         // Handle detail button click
         document.addEventListener('DOMContentLoaded', function() {
@@ -772,16 +772,16 @@
             });
 
             fetch(`{{ url('keuangan-transaksi/approve') }}/${transaksiId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        catatan_verifikasi: catatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -823,16 +823,16 @@
             });
 
             fetch(`{{ url('keuangan-transaksi/reject') }}/${transaksiId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        catatan_verifikasi: catatan
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

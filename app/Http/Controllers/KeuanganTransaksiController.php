@@ -497,8 +497,15 @@ class KeuanganTransaksiController extends Controller
                     'status_approval' => 'approved'
                 ]);
 
-                // Create journal entries untuk pembayaran tagihan
+                // Update pembayaran tagihan status
                 $pembayaran = $transaksi->pembayaranTagihan;
+                $pembayaran->update([
+                    'status_approval' => 'approved',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now()
+                ]);
+
+                // Create journal entries untuk pembayaran tagihan
                 if ($pembayaran && $pembayaran->tagihanSiswa) {
                     $tagihanSiswa = $pembayaran->tagihanSiswa;
                     $tagihan = $tagihanSiswa->tagihan;
@@ -640,6 +647,12 @@ class KeuanganTransaksiController extends Controller
             if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
                 $transaksi->update([
                     'status_verifikasi' => 'rejected',
+                    'status_approval' => 'rejected'
+                ]);
+
+                // Update pembayaran tagihan status saat reject
+                $pembayaran = $transaksi->pembayaranTagihan;
+                $pembayaran->update([
                     'status_approval' => 'rejected'
                 ]);
             }

@@ -303,11 +303,6 @@ class TagihanController extends Controller
         $bulanMulai = (int) $firstTagihan->bulan_mulai;
         $tahunMulai = (int) $firstTagihan->tahun_mulai;
 
-        // Total potongan semua bulan
-        $totalPotonganSemuaBulan = $tagihanSiswa->flatMap(function ($ts) {
-            return $ts->potonganSiswa;
-        })->sum('nominal');
-
         // Bagi menjadi dua kelompok
         $belumLunas = [];
         $sudahLunas = [];
@@ -315,7 +310,11 @@ class TagihanController extends Controller
         foreach ($tagihanSiswa as $index => $ts) {
             $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
-            $jumlahTagihan = $nominal - $totalPotonganSemuaBulan;
+            // Hitung potongan untuk bulan tertentu
+            $potonganBulanIni = $ts->potonganSiswa->sum('nominal');
+
+            // Jumlah tagihan untuk bulan ini = rincian tagihan - potongan bulan ini
+            $jumlahTagihan = $nominal - $potonganBulanIni;
 
             // Hitung jumlah yang sudah dibayar
             // Jika status = 1 (lunas), maka sudah dibayar = jumlahTagihan
@@ -332,7 +331,7 @@ class TagihanController extends Controller
                 'tahun'             => $date->year,
                 'tagihan_kelas'     => $namaKategori,
                 'rincian_tagihan'   => (int) $nominal,
-                'jumlah_potongan'   => (int) $totalPotonganSemuaBulan,
+                'jumlah_potongan'   => (int) $potonganBulanIni,
                 'jumlah_tagihan'    => (int) $jumlahTagihan,
                 'jumlah_dibayar'    => (int) $jumlahDibayar,
                 'jumlah_tunggakan'  => (int) $jumlahTunggakan,
