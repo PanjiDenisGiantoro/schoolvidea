@@ -403,17 +403,43 @@ fetch("{{ route('siswa.checkUnique') }}", {
 .then(res => res.json())
 .then(data => {
     if (data.exists) {
-        const dup = data.duplicates || [];
-        const message = dup.length > 0
-            ? dup.map(d => `Kolom "${d.toUpperCase()}" sudah terdaftar.`).join('<br>')
-            : 'Beberapa data sudah terdaftar.';
+        const details = data.details || [];
+
+        // Build detailed message dengan field info dan existing user
+        let htmlContent = '<div style="text-align: left;">';
+        htmlContent += `<p style="color: #dc3545; font-weight: bold; margin-bottom: 15px;">
+                            Ditemukan ${data.count} data yang sudah terdaftar:
+                        </p>
+                        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px;">`;
+
+        details.forEach((detail, index) => {
+            htmlContent += `<div style="margin-bottom: ${index < details.length - 1 ? '10px' : '0'}; padding-bottom: 10px; border-bottom: ${index < details.length - 1 ? '1px solid #f5c6cb' : 'none'};">
+                                <strong style="color: #721c24;">${detail.label}</strong><br>
+                                <span style="color: #856404;">Nilai: <code style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px;">${detail.value}</code></span><br>
+                                <span style="color: #721c24; font-size: 0.9em;">→ Sudah terdaftar atas nama: <strong>${detail.existingName}</strong></span>
+                            </div>`;
+        });
+
+        htmlContent += '</div></div>';
 
         Swal.fire({
-            title: 'Data Duplikat!',
-            html: message,
+            title: 'Data Sudah Terdaftar!',
+            html: htmlContent,
             icon: 'warning',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#f0ad4e'
+            confirmButtonText: 'Kembali & Perbaiki',
+            confirmButtonColor: '#dc3545',
+            allowOutsideClick: false,
+            didOpen: () => {
+                // Highlight field yang duplikat
+                details.forEach(detail => {
+                    const field = form.querySelector(`[name="${detail.field}"]`);
+                    if (field) {
+                        field.classList.add('border-danger');
+                        field.style.borderColor = '#dc3545';
+                        field.parentElement.classList.add('has-error');
+                    }
+                });
+            }
         });
     } else {
         Swal.fire({
@@ -440,8 +466,22 @@ fetch("{{ route('siswa.checkUnique') }}", {
     }
 })
 .catch(err => {
-    console.error(err);
-    Swal.fire('Error', 'Terjadi kesalahan saat memeriksa data unik.', 'error');
+    console.error('Error saat memeriksa data unik:', err);
+
+    // Build error message yang lebih informatif
+    const errorMessage = err.message || 'Terjadi kesalahan saat memeriksa data unik.';
+    const detailMessage = err.response ? `Status: ${err.response.status}` : 'Silakan coba lagi atau hubungi administrator.';
+
+    Swal.fire({
+        title: 'Terjadi Kesalahan',
+        html: `<div style="text-align: left;">
+                    <p><strong>Error:</strong> ${errorMessage}</p>
+                    <p style="color: #6c757d; font-size: 0.9em;">${detailMessage}</p>
+                </div>`,
+        icon: 'error',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#dc3545'
+    });
 });
 
     });
