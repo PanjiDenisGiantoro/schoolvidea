@@ -3,7 +3,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
-    @endpush
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi Pembayaran',
@@ -229,9 +229,9 @@
                 </div>
             </div>
 
-            <div id="tabelBelumLunas" class="mb-3">
-                <div class="table-responsive">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+            <div id="tabelBelumLunas" class="mb-3 table-responsive">
+                <div class="">
+                    <table class="table-bordered table-hover overflow-hidden rounded-3 table ">
                         <thead class="table-primary text-center text-nowrap align-middle">
                         <tr>
                             <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>

@@ -10,6 +10,7 @@ use App\Models\PayrollPayment;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PayrollSettingController extends Controller
 {
@@ -101,33 +102,29 @@ class PayrollSettingController extends Controller
             );
 
             // === Sync Komponen ===
+            $componentsData = [];
             $totalComponentValue = 0;
-            if ($request->filled("components_id")) {
-                $syncComponents = [];
 
+            if ($request->filled("components_id")) {
                 foreach ($request->components_id as $i => $compId) {
                     $value = $request->component_value[$i] ?? 0;
                     $totalComponentValue += $value;
-
-                    $syncComponents[$compId] = ["value" => $value];
+                    $componentsData[$compId] = ["value" => $value];
                 }
-
-                $payrollSetting->components()->sync($syncComponents);
+                $payrollSetting->components()->sync($componentsData);
             }
 
             // === Sync Potongan ===
+            $deductionsData = [];
             $totalDeductions = 0;
-            if ($request->filled("deductions_id")) {
-                $syncDeductions = [];
 
+            if ($request->filled("deductions_id")) {
                 foreach ($request->deductions_id as $i => $deductId) {
                     $value = $request->deduction_value[$i] ?? 0;
                     $totalDeductions += $value;
-
-                    $syncDeductions[$deductId] = ["value" => $value];
+                    $deductionsData[$deductId] = ["value" => $value];
                 }
-
-                $payrollSetting->deductions()->sync($syncDeductions);
+                $payrollSetting->deductions()->sync($deductionsData);
             }
 
 
@@ -169,10 +166,10 @@ class PayrollSettingController extends Controller
                     $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
 
                     // Total pendapatan per komponen
-                    $totalEarnings = $basicSalary + $value;
+                    $totalEarnings = $basicSalary + $totalComponentValue;
 
                     // Total bersih
-                    $netPayment = $totalEarnings - $deductionsTotal;
+                    $netPayment = $totalEarnings - $totalDeductions;
 
                     $rows[] = [
                         "unit_id"            => $validated["units_id"],
@@ -215,54 +212,54 @@ class PayrollSettingController extends Controller
     /**
      * Update payroll setting (gunakan logika store).
      */
-public function update(Request $request, $id)
-{
-    $validated = $request->validate([
-        // ... validasi sama
-    ]);
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            // ... validasi sama
+        ]);
 
-    try {
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-        $payrollSetting = PayrollSetting::findOrFail($id);
-        $payrollSetting->update($validated);
+            $payrollSetting = PayrollSetting::findOrFail($id);
+            $payrollSetting->update($validated);
 
-        // Sync komponen dan deductions (sama seperti sebelumnya)
+            // Sync komponen dan deductions (sama seperti sebelumnya)
 
-        $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
 
-        // Update payroll payments yang sudah ada
-        $existingPayments = PayrollPayment::where('payroll_setting_id', $payrollSetting->id)->get();
+            // Update payroll payments yang sudah ada
+            $existingPayments = PayrollPayment::where('payroll_setting_id', $payrollSetting->id)->get();
 
-        foreach ($existingPayments as $payment) {
-            // Hitung ulang values
-            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
-            $componentValue = // dapatkan value komponen yang sesuai
-            $totalEarnings = $basicSalary + $componentValue;
-            $netPayment = $totalEarnings - $deductionsTotal;
+            foreach ($existingPayments as $payment) {
+                // Hitung ulang values
+                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+                $componentValue = // dapatkan value komponen yang sesuai
+                $totalEarnings = $basicSalary + $componentValue;
+                $netPayment = $totalEarnings - $deductionsTotal;
 
-            $payment->update([
-                'teaching_hour_week' => $request->teaching_hours ?? 0,
-                'teaching_hour_month' => $request->teaching_hours_total ?? 0,
-                'total_earnings' => $totalEarnings,
-                'total_deductions' => $deductionsTotal,
-                'net_payment' => $netPayment,
-                'updated_at' => now(),
-            ]);
+                $payment->update([
+                    'teaching_hour_week' => $request->teaching_hours ?? 0,
+                    'teaching_hour_month' => $request->teaching_hours_total ?? 0,
+                    'total_earnings' => $totalEarnings,
+                    'total_deductions' => $deductionsTotal,
+                    'net_payment' => $netPayment,
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route("payroll_payment.index")
+                ->with("success", "Data payroll berhasil diupdate.");
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
+            return back()->with("error", $e->getMessage());
         }
-
-        DB::commit();
-
-        return redirect()
-            ->route("payroll_payment.index")
-            ->with("success", "Data payroll berhasil diupdate.");
-
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
-        return back()->with("error", $e->getMessage());
     }
-}
 
     /**
      * Tampilkan detail satu payroll setting.

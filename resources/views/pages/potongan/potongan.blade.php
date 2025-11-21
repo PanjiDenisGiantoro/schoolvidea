@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('title', 'Daftar Potongan')
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Daftar Potongan',
@@ -11,14 +14,18 @@
     <div class="card rounded-3 border-0 shadow-sm">
         <div class="card-body">
             <!-- Button to create a new Potongan -->
-            <a href="{{ route('potongan.create') }}" class="btn btn-success mb-3 rounded-2">
-                <i class="fa fa-plus"></i> Tambah Potongan
-            </a>
+            <div class="col-lg-12 col-md-12 d-flex justify-content-between place-items-center">
+                <h5 class="card-title">List Potongan</h5>
+                <a href="{{ route('potongan.create') }}" class="btn btn-success mb-3 rounded-2">
+                    <i class="fa fa-plus"></i> Tambah Potongan
+                </a>
+            </div>
+
 
             <!-- Potongan Table -->
             <div class="table-responsive">
                 <table id="potongan_table" class="table-striped table-bordered table align-middle">
-                    <thead class="table-light">
+                    <thead class="table-primary">
                         <tr>
                             <th width="5%">#</th>
                             <th>Unit</th>
@@ -92,7 +99,7 @@
                 paging: true,
                 searching: true,
                 ordering: true,
-                responsive: true
+                responsive: true,
             });
         });
 

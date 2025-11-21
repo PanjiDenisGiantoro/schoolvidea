@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
-
+@push('styles')
+    <link rel="stylesheet" type="" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
 
     @include('partials.page-title', [
@@ -34,8 +36,8 @@
                     </form>
                 </div>
 
-                <table class="table-bordered table-striped table">
-                    <thead>
+                <table id="datatable" class="table-bordered table-striped table">
+                    <thead class="table-primary">
                         @if (!empty($headers) && is_array($headers))
                             @foreach ($headers as $header)
                                 <th>{{ $header }}</th>
@@ -86,19 +88,6 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div class="col-lg-12">
-                    <div class="pagination-wrapper">
-                        <div class="pagination-info">
-
-                            Menampilkan {{ $tipe_unit->firstItem() ?? 0 }} sampai {{ $tipe_unit->lastItem() ?? 0 }} dari
-                            {{ $tipe_unit->total() }} data
-                        </div>
-                        <div>
-                            {{ $tipe_unit->links('vendor.pagination.custom') }}
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -143,4 +132,39 @@
             });
         </script>
     @endif
+@if($tipe_unit->isNotEmpty())
+        <script>
+            $(document).ready(function() {
+                $('#datatable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    searching: false,
+                    language: {
+                        url: '{{ asset('assets/datatables/id.json') }}'
+                    }
+                });
+
+                // ✅ Konfirmasi hapus data
+                $('.btn-delete').on('click', function(e) {
+                    e.preventDefault();
+                    const form = $(this).closest('form');
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Data penggajian ini akan dihapus permanen!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        </script>
+
+@endif
 @endpush

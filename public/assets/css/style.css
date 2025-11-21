@@ -310,13 +310,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 20px;
     margin-top: 4px;
 }
 
 .custom-presensi-header span {
     display: inline-block;
-    width: 30px;
+    width: 40px;
     text-align: center;
     font-size: 0.85rem;
     font-weight: 600;

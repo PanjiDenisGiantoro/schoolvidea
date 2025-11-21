@@ -43,6 +43,7 @@
                         <label for="filter_period" class="form-label fw-semibold">Periode Pembayaran</label>
                         <select id="filter_period" class="form-select rounded-pill shadow-sm">
                             <option value="">Pilih Periode</option>
+                            <option value="">Semua Periode</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}"
                                     {{ isset($setting) && $setting->start_month == $i ? 'selected' : '' }}>
@@ -56,6 +57,7 @@
                         <label for="filter_year" class="form-label fw-semibold">Tahun Periode</label>
                         <select id="filter_year" class="form-select rounded-pill shadow-sm">
                             <option value="">Pilih Tahun</option>
+                            <option value="">Semua Tahun</option>
                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                 <option value="{{ $y }}"
                                     {{ isset($setting) && $setting->start_year == $y ? 'selected' : '' }}>
@@ -155,7 +157,7 @@
                             <th>Tipe Pembayaran</th>
                             <th style="width: 200px; text-align: center;">
                                 Presensi
-                                <div class="custom-presensi-header gap-4">
+                                <div class="custom-presensi-header">
                                     <span class="text-white">JM</span>
                                     <span class="text-white">Hadir</span>
                                     <span class="text-white">T.Hadir</span>
@@ -170,36 +172,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><input type="checkbox" class="row-checkbox-belum "></td>
-                            <td>1</td>
-                            <td>Ibal Kemed</td>
-                            <td>Oktober 2025</td>
-                            <td>Gaji</td>
-                            <td>
-                                <div class="custom-presensi-wrapper">
-                                    <input type="text" class="custom-input-presensi izin" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3" >
-                                    <input type="text" class="custom-input-presensi hadir" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3" >
-                                    <input type="text" class="custom-input-presensi alpha" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3" >
-                                </div>
-                            </td>
-                            <td>Rp.10.000.000</td>
-                            <td>Rp.2.000.000</td>
-                            <td>Rp.8.000.000</td>
-                            <td class="">
-                                <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal"
-                                    data-bs-target="#catatanModal">Catatan</button>
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-2">
-                                    <button class="btn btn-warning rounded-pill">Detail</button>
-                                    <button class="btn btn-success rounded-pill">Bayar</button>
-                                </div>
-                            </td>
-                        </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -216,7 +189,7 @@
                             <th>Tipe Pembayaran</th>
                             <th style="width: 200px; text-align: center;">
                                 Presensi
-                                <div class="custom-presensi-header gap-4">
+                                <div class="custom-presensi-header">
                                     <span>JM</span>
                                     <span>Hadir</span>
                                     <span>T.Hadir</span>
@@ -231,36 +204,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><input type="checkbox" class="row-checkbox-sudah "></td>
-                            <td>1</td>
-                            <td>Ibal Kemed</td>
-                            <td>Oktober 2025</td>
-                            <td>Gaji</td>
-                            <td>
-                                <div class="custom-presensi-wrapper">
-                                    <input type="text" class="custom-input-presensi izin" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" >
-                                    <input type="text" class="custom-input-presensi hadir" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" >
-                                    <input type="text" class="custom-input-presensi alpha" style="width: 50px;"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="20" >
-                                </div>
-                            </td>
-                            <td>Rp.10.000.000</td>
-                            <td>Rp.2.000.000</td>
-                            <td>Rp.8.000.000</td>
-                            <td class="justify-content-center">
-                                <button type="button" class="btn custom-btn-purple" data-bs-toggle="modal"
-                                    data-bs-target="#catatanModal"> + </button>
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-2">
-                                    <button class="btn btn-warning">Detail</button>
-                                    <button class="btn btn-success">Edit</button>
-                                </div>
-                            </td>
-                        </tr>
+
                     </tbody>
                     </table>
                 </div>
@@ -385,6 +329,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabelBelumLunas = document.querySelector('#tabelBelumLunas tbody');
     const tabelSudahLunas = document.querySelector('#tabelSudahLunas tbody');
 
+
+
     function resetSelect(selectElement, placeholder = "Pilih") {
         selectElement.innerHTML = `<option value="">${placeholder}</option>`;
     }
@@ -447,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (data?.components && data.components.length) {
             paymentSelect.innerHTML =
+                `<option value="">Pilih Pembayaran</option>` +
                 `<option value="all">Semua Pembayaran</option>` +
                 data.components.map(p => `
                     <option value="${p.id}">
@@ -457,7 +404,10 @@ document.addEventListener('DOMContentLoaded', function() {
             paymentSelect.innerHTML = `<option value="">Tidak Ada Pembayaran</option>`;
         }
     });
-
+    let globalAllowance = {
+        total_allowance: 0,
+        allowances: {}
+    };
     // Fungsi untuk load data tabel
     async function loadTableData() {
         const officerId = officerSelect.value;
@@ -486,12 +436,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 getData(urlSudahLunas)
             ]);
 
+            globalAllowance = {
+                total_allowance: dataBelumLunas?.total_allowance ||0,
+            allowances: dataBelumLunas?.allowances || {}
+            }
+            console.log('global allowance: ', globalAllowance);
+
             console.log("Response Belum Lunas:", dataBelumLunas);
             console.log("Response Sudah Lunas:", dataSudahLunas);
 
             // PERBAIKAN: Gunakan struktur yang sesuai dengan response
             renderBelumLunasTable(dataBelumLunas?.belum_lunas || []);
             renderSudahLunasTable(dataSudahLunas?.sudah_lunas || []);
+
         } catch (error) {
             console.error("Error loading table data:", error);
         }
@@ -515,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderBelumLunasTable(data) {
         console.log("Data untuk tabel belum lunas:", data);
-        
+
         if (!data || !data.length) {
             tabelBelumLunas.innerHTML = `
                 <tr>
@@ -526,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tabelBelumLunas.innerHTML = data.map((item, i) => {
             console.log("Item data:", item); // Debug setiap item
-            
+
             return `
             <tr>
                 <td><input type="checkbox" class="row-checkbox-belum"></td>
@@ -536,13 +493,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${item.component?.name || "-"}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
-                        <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}" 
+                        <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi hadir" value="0" 
+                        <input type="text" class="custom-input-presensi hadir" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                        <input type="text" class="custom-input-presensi alpha" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                        <input type="text" class="custom-input-presensi staff" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                     </div>
                 </td>
@@ -561,13 +518,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
             </tr>
         `}).join("");
-        
+
+        document.querySelectorAll(".custom-input-presensi").forEach(input => {
+            input.addEventListener("input", onPresensiChange);
+        });
+
+
         console.log("HTML yang dihasilkan:", tabelBelumLunas.innerHTML);
     }
 
     function renderSudahLunasTable(data) {
         console.log("Data untuk tabel sudah lunas:", data);
-        
+
         if (!data || !data.length) {
             tabelSudahLunas.innerHTML = `
                 <tr>
@@ -585,13 +547,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${item.component?.name || "-"}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
-                        <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}" 
+                        <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="0" 
+                        <input type="text" class="custom-input-presensi" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="0" 
+                        <input type="text" class="custom-input-presensi" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="0" 
+                        <input type="text" class="custom-input-presensi alpha" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                     </div>
                 </td>
@@ -626,7 +588,16 @@ document.addEventListener('DOMContentLoaded', function() {
             minimumFractionDigits: 0
         }).format(amount);
     }
+    function onPresensiChange() {
+        const row = this.closest("tr");
 
+        const izin = parseInt(row.querySelector(".izin")?.value) || 0;
+        const hadir = parseInt(row.querySelector(".hadir")?.value) || 0;
+        const alpha = parseInt(row.querySelector(".alpha")?.value) || 0;
+        const staff = parseInt(row.querySelector(".staff")?.value) || 0;
+
+
+    }
     // Inisialisasi awal
     clearTables();
 });

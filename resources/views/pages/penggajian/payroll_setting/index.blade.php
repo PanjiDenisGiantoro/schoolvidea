@@ -1,5 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Daftar Setting Penggajian')
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Setting Penggajian',
@@ -18,7 +22,7 @@
 
                 <div class="table-responsive">
                     <table id="datatable" class="table-bordered table-striped table align-middle">
-                        <thead class="table-light text-center">
+                        <thead class="table-primary text-center">
                             <tr>
                                 <th>No</th>
                                 <th>Unit</th>

@@ -87,9 +87,9 @@
 
     {{-- Status Statistics Cards --}}
     <div class="mb-4">
-        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
             <i class="bx bx-filter-alt text-primary"></i> Status Transaksi
-        </h6>
+        </h5>
         <div class="row g-3">
             {{-- Setoran Stats Card --}}
             <div class="col-lg-4 col-md-6 col-sm-12">

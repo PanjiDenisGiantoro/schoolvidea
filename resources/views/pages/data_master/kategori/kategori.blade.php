@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
-
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+@endpush
 @section('content')
 
     @include('partials.page-title', [
@@ -48,8 +50,8 @@
                     </form>
                 </div>
 
-                <table class="table-bordered table-striped table">
-                    <thead>
+                <table id="datatable" class="table-bordered table-striped table">
+                    <thead class="table-primary">
                         <tr>
                             <th>No</th>
                             <th>Nama Unit</th>
@@ -101,19 +103,7 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div class="row">
-                    <div class="pagination-wrapper d-flex justify-content-between align-items-center">
-                        <div class="pagination-info">
 
-                            Menampilkan {{ $kategoritagihans->firstItem() ?? 0 }} sampai
-                            {{ $kategoritagihans->lastItem() ?? 0 }} dari {{ $kategoritagihans->total() }} data
-                        </div>
-                        <div>
-                            {{ $kategoritagihans->links('vendor.pagination.custom') }}
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -155,6 +145,40 @@
                 text: "{{ session('success') }}",
                 timer: 2000,
                 showConfirmButton: false
+            });
+        </script>
+    @endif
+    @if ($kategoritagihans->isNotEmpty())
+        <script>
+            $(document).ready(function() {
+                $('#datatable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    searching: false,
+                    language: {
+                        url: '{{ asset('assets/datatables/id.json') }}'
+                    }
+                });
+
+                // ✅ Konfirmasi hapus data
+                $('.btn-delete').on('click', function(e) {
+                    e.preventDefault();
+                    const form = $(this).closest('form');
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Data penggajian ini akan dihapus permanen!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
             });
         </script>
     @endif

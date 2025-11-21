@@ -127,6 +127,15 @@ class PayrollPaymentController extends Controller
         }
 
         $payments = $query->get();
+        $settings = PayrollSetting::where('officers_id', $officerId)->first();
+        $allowances = [
+            'salary' => $settings->salary ?? 0,
+            'transport_allowance' => $settings->transport_allowance ?? 0,
+            'meal_allowance' => $settings->meal_allowance ?? 0,
+            'communication_allowance' => $settings->communication_allowance ?? 0,
+            'other_allowance' => $settings->other_allowance ?? 0,
+        ];
+        $totalAllowance = array_sum($allowances);
 
         return response()->json([
             "belum_lunas"  => $payments->whereIn('status', ['draft', 'pending'])->values(),
@@ -134,6 +143,8 @@ class PayrollPaymentController extends Controller
             "query_sql"    => $query->toSql(),
             "bindings"     => $query->getBindings(),
             "request_debug" => $request->all(),
+            "allowances" => $allowances,
+            "total_allowance" => $totalAllowance
         ]);
     }
 
@@ -150,39 +161,14 @@ class PayrollPaymentController extends Controller
                 ])
                 ->get();
 
-            $components = $settings
-                ->flatMap->components
-                ->pluck('component')
-                ->whereNotNull()
-                ->unique('id')
-                ->values();
-
-            $deductions = $settings
-                ->flatMap->deductions
-                ->pluck('deduction')
-                ->whereNotNull()
-                ->unique('id')
-                ->values();
-
-            $periodes = $settings->pluck('billing_period')->filter()->unique()->values();
-            $years = $settings->pluck('start_year')->filter()->unique()->values();
-
             return response()->json([
                 'settings' => $settings,
-                'components' => $components,
-                'deductions' => $deductions,
-                'periodes' => $periodes,
-                'years' => $years,
             ]);
 
         } catch (\Exception $e) {
             Log::error("GetPaymentList Error: " . $e->getMessage());
             return response()->json([
                 'settings' => [],
-                'components' => [],
-                'deductions' => [],
-                'periodes' => [],
-                'years' => [],
             ], 500);
         }
     }

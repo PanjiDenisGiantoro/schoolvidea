@@ -128,12 +128,12 @@
                             <table class="table table-striped mb-0">
                                 <thead>
                                 <tr>
-                                    <th>Nomor Induk</th>
+                                    <th>NISN</th>
                                     <th>Nama Lengkap</th>
                                     <th>Tagihan Unit</th>
                                     <th>Tagihan Kelas</th>
                                     <th>Item Tagihan</th>
-                                    <th>Type Tagihan</th>
+                                    <th>Tipe Tagihan</th>
                                     <th>Jml. Tagihan</th>
                                     <th>Jml. Dibayar</th>
                                     <th>Jml. Tunggakan</th>
@@ -175,7 +175,7 @@
         </div>
     </div>
 
-  
+
 
 
 

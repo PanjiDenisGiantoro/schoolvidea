@@ -220,6 +220,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
+        Route::get('/datatable', [KeuanganTransaksiController::class, 'datatable'])->name('keuangan-transaksi.datatable');
 
         // Approve/Reject/Cancel routes
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');

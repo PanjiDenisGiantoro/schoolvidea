@@ -30,7 +30,7 @@ class KeuanganTransaksiController extends Controller
         } elseif (Auth::user()->yayasan_id) {
             // User has yayasan_id, filter by yayasan
             $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
-                $q->whereHas('unit', function($q2) {
+                $q->whereHas('unit', function ($q2) {
                     $q2->where('yayasan_id', Auth::user()->yayasan_id);
                 });
             });
@@ -89,7 +89,7 @@ class KeuanganTransaksiController extends Controller
         }
         if ($request->nama_siswa) {
             $query->whereHasMorph('penerima', [Siswa::class], function ($q) use ($request) {
-                $q->whereHas('user', function($q2) use ($request) {
+                $q->whereHas('user', function ($q2) use ($request) {
                     $q2->where('name', 'like', '%' . $request->nama_siswa . '%');
                 })->orWhere('nisn', 'like', '%' . $request->nama_siswa . '%');
             });
@@ -144,7 +144,8 @@ class KeuanganTransaksiController extends Controller
         $totalTransaksiQuery = Keuangan_transaksi::query();
         $totalTransaksiQuery = $this->applyBaseFilters($totalTransaksiQuery, $request);
         $totalTransaksiQuery = $this->applyCommonFilters($totalTransaksiQuery, $request);
-        $total_transaksi = $totalTransaksiQuery->count();
+        $total_transaksi = $totalTransaksiQuery->sum('jumlah');
+        $total_data_transaksi = $totalTransaksiQuery->count();
 
         // Summary calculations with proper filtering
         $summaryQuery = Keuangan_transaksi::query();
@@ -156,7 +157,7 @@ class KeuanganTransaksiController extends Controller
         $total_tunai = $summaryTransaksis->where('metode', 'CASH')->sum('jumlah');
         $total_non_tunai = $summaryTransaksis->where('metode', '!=', 'CASH')->sum('jumlah');
         $today = \Carbon\Carbon::today()->toDateString();
-        $total_harian = $summaryTransaksis->filter(function($item) use ($today) {
+        $total_harian = $summaryTransaksis->filter(function ($item) use ($today) {
             if (!$item->tanggal_transaksi) {
                 return false;
             }
@@ -201,10 +202,12 @@ class KeuanganTransaksiController extends Controller
             'total_pemasukan' => $total_pemasukan,
             'total_pengeluaran' => $total_pengeluaran,
             'total_transaksi' => $total_transaksi,
+            'total_data_transaksi' => $total_data_transaksi,
             'total_tunai' => $total_tunai,
             'total_non_tunai' => $total_non_tunai,
             'total_harian' => $total_harian,
         ];
+        //return response()->json($summary);
 
         return view('pages.keuangan.transaksi.index', compact(
             'transaksis',
@@ -753,4 +756,204 @@ class KeuanganTransaksiController extends Controller
             ], 500);
         }
     }
+    public function datatable(Request $request)
+    {
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $draw = $request->input('draw', 1);
+        $searchValue = $request->input('search.value');
+
+        $query = Keuangan_transaksi::with([
+            'penerima.user',
+            'creator',
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+        ]);
+
+        // Filter Unit
+        if ($request->unit_id) {
+            $query->whereHas('pembayaranTagihan.tagihanSiswa.tagihan', function ($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        }
+
+        // Filter Jenis Transaksi
+        if ($request->jenis_transaksi) {
+            $query->where('jenis_transaksi', $request->jenis_transaksi);
+        }
+
+        // Filter Kode Pembayaran
+        if ($request->kode_pembayaran) {
+            $query->where('code_pembayaran', 'LIKE', '%'.$request->kode_pembayaran.'%');
+        }
+
+        // Filter Nama Siswa
+        if ($request->nama_siswa) {
+            $query->whereHas('penerima.user', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%'.$request->nama_siswa.'%');
+            });
+        }
+
+        // Filter Tanggal
+        if ($request->dari_tanggal) {
+            $query->whereDate('tanggal_transaksi', '>=', $request->dari_tanggal);
+        }
+
+        if ($request->sampai_tanggal) {
+            $query->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
+        }
+
+        // Search global dari DataTables
+        if (!empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('code_pembayaran', 'LIKE', "%{$searchValue}%")
+                  ->orWhereHas('penerima.user', function ($q2) use ($searchValue) {
+                      $q2->where('name', 'LIKE', "%{$searchValue}%");
+                  })
+                  ->orWhere('metode', 'LIKE', "%{$searchValue}%")
+                  ->orWhere('jenis_transaksi', 'LIKE', "%{$searchValue}%")
+                  ->orWhere('status_verifikasi', 'LIKE', "%{$searchValue}%");
+            });
+        }
+
+        // Hitung total records sebelum pagination
+        $totalRecords = $query->count();
+
+        // Apply ordering dan pagination
+        $results = $query->orderBy('tanggal_transaksi', 'desc')
+                        ->orderBy('id', 'desc')
+                        ->skip($start)
+                        ->take($length)
+                        ->get();
+
+        // Format data - PASTIKAN ACTION ADA
+        $data = [];
+        foreach ($results as $index => $trx) {
+            // Format nama siswa - beri "-" jika tidak lengkap
+            $namaSiswa = '-';
+            if ($trx->penerima) {
+                if ($trx->penerima_tipe === 'App\Models\Siswa') {
+                    $userName = $trx->penerima->user->name ?? '-';
+                    $nisn = $trx->penerima->nisn ?? '-';
+                    $namaSiswa = $userName . '<br><small class="text-muted">NISN: ' . $nisn . '</small>';
+                } else {
+                    $namaSiswa = $trx->penerima->name ?? '-';
+                }
+            }
+
+            // Format jenis transaksi - beri "-" jika tidak lengkap
+            $jenisTransaksiHtml = '-';
+            if ($trx->jenis_transaksi) {
+                $badgeColor = match ($trx->jenis_transaksi) {
+                    'setoran_tabungan' => 'success',
+                    'penarikan_tabungan' => 'warning',
+                    'pembayaran', 'tagihan' => 'info',
+                    default => 'secondary',
+                };
+
+                $jenisText = match ($trx->jenis_transaksi) {
+                    'setoran_tabungan' => 'Setoran Tabungan',
+                    'penarikan_tabungan' => 'Penarikan Tabungan',
+                    'pembayaran' => 'Pembayaran',
+                    'tagihan' => 'Pembayaran Tagihan',
+                    default => ucfirst(str_replace('_', ' ', $trx->jenis_transaksi)),
+                };
+
+                $jenisTransaksiHtml = '<span class="badge bg-'.$badgeColor.' rounded-pill">'.$jenisText.'</span>';
+
+                // Tambahkan info tagihan jika ada
+                if (in_array($trx->jenis_transaksi, ['tagihan', 'pembayaran']) && $trx->pembayaranTagihan) {
+                    $tagihanNama = $trx->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-';
+                    $jenisTransaksiHtml .= '<br><small class="text-muted">'.$tagihanNama.'</small>';
+                }
+            }
+
+            // Format jumlah - beri "-" jika tidak lengkap
+            $jumlahHtml = '-';
+            if ($trx->jumlah) {
+                $jumlahHtml = in_array($trx->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan'])
+                    ? '<span class="text-success fw-bold">+ Rp '.number_format($trx->jumlah, 0, ',', '.').'</span>'
+                    : '<span class="text-danger fw-bold">- Rp '.number_format($trx->jumlah, 0, ',', '.').'</span>';
+            }
+
+            // Format metode - beri "-" jika tidak lengkap
+            $metodeHtml = '-';
+            if ($trx->metode) {
+                $metodeBadge = match ($trx->metode) {
+                    'TUNAI', 'CASH' => 'primary',
+                    'TRANSFER', 'NONTUNAI' => 'info',
+                    'SALDO_TABUNGAN' => 'warning',
+                    default => 'secondary',
+                };
+                $metodeHtml = '<span class="badge bg-'.$metodeBadge.'">'.$trx->metode.'</span>';
+            }
+
+            // Format tanggal - beri "-" jika tidak lengkap
+            $tanggal = '-';
+            if ($trx->tanggal_transaksi) {
+                $tanggal = \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d/m/Y');
+            }
+
+            // Format status - beri "-" jika tidak lengkap
+            $statusHtml = '-';
+            if ($trx->status_verifikasi) {
+                $statusHtml = match ($trx->status_verifikasi) {
+                    'approved' => '<span class="badge bg-success rounded-pill"><i class="bx bx-check-circle me-1"></i>Approved</span>',
+                    'rejected' => '<span class="badge bg-danger rounded-pill"><i class="bx bx-x-circle me-1"></i>Rejected</span>',
+                    default => '<span class="badge bg-warning rounded-pill"><i class="bx bx-time-five me-1"></i>Pending</span>',
+                };
+            }
+
+            // Format petugas - beri "-" jika tidak lengkap
+            $petugas = '-';
+            if ($trx->creator) {
+                $petugas = $trx->creator->name ?? '-';
+            }
+
+            // Format kode pembayaran - beri "-" jika tidak lengkap
+            $kodePembayaran = '-';
+            if ($trx->code_pembayaran) {
+                $kodePembayaran = '<span class="badge bg-secondary">'.$trx->code_pembayaran.'</span>';
+            }
+
+            // TOMBOL AKSI - selalu tampilkan meski data tidak lengkap
+            $actionHtml = '
+            <div class="d-flex justify-content-center gap-1">
+                <button type="button" class="btn btn-sm btn-danger rounded-pill btn-detail-trx" data-id="'.($trx->id ?? '').'" title="Lihat Detail">
+                    <i class="bx bx-show"></i> Detail
+                </button>
+                <button type="button" class="btn btn-sm btn-warning rounded-pill btn-cetak-trx" data-id="'.($trx->id ?? '').'" title="Cetak">
+                    <i class="bx bx-printer"></i> Cetak
+                </button>
+            </div>';
+
+            $data[] = [
+                'no' => $start + $index + 1,
+                'kode_pembayaran' => $kodePembayaran,
+                'nama_siswa' => $namaSiswa,
+                'jenis_transaksi' => $jenisTransaksiHtml,
+                'jumlah' => $jumlahHtml,
+                'metode' => $metodeHtml,
+                'tanggal' => $tanggal,
+                'status' => $statusHtml,
+                'petugas' => $petugas,
+                'action' => $actionHtml
+            ];
+        }
+
+        // DEBUG: Log untuk memastikan data action ada
+        \Log::info('DataTable Response - Debug', [
+            'total_records' => $totalRecords,
+            'data_count' => count($data),
+            'has_action' => !empty($data[0]['action'] ?? ''),
+            'sample_action' => $data[0]['action'] ?? 'No action'
+        ]);
+
+        return response()->json([
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
+
 }

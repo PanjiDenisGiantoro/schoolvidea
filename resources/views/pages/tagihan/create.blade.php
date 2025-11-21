@@ -5,7 +5,7 @@
 @push('styles')
     <style>
         .form-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
             color: white;
             padding: 2rem;
             border-radius: 0.5rem;
@@ -39,7 +39,7 @@
             color: #2c3e50;
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #0c8f84;
             display: inline-block;
         }
 
@@ -64,7 +64,7 @@
         }
 
         .btn-add-row {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
             color: white;
             border: none;
             border-radius: 0.5rem;
@@ -76,6 +76,7 @@
         .btn-add-row:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            color: white;
         }
 
         .row-item {
@@ -83,7 +84,7 @@
             padding: 1.25rem;
             border-radius: 0.5rem;
             margin-bottom: 1rem;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #0c8f84;
             transition: all 0.3s ease;
         }
 
@@ -100,7 +101,7 @@
         }
 
         .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0c8f84 0%, #14b1a0 100%);
             color: white;
             border: none;
             padding: 0.75rem 2rem;
@@ -155,7 +156,7 @@
     <div class="container-fluid px-4 py-4">
         <div class="form-header d-flex justify-content-between align-items-center text-white">
             <div>
-                <h3><i class="fa fa-file-invoice-dollar me-2 text-white"></i> Tambah Tagihan Baru</h3>
+                <h3 class="text-white"><i class="fa fa-file-invoice-dollar me-2 text-white"></i> Tambah Tagihan Baru</h3>
                 <p>Form untuk membuat tagihan siswa dengan item dan rekening pembayaran</p>
             </div>
             <a href="{{ route('tagihan.index') }}" class="btn btn-light">
@@ -197,7 +198,8 @@
                 <div id="pilihanSiswa" class="d-none">
                     <div class="mb-3">
                         <label class="form-label">Pilih Target <span class="text-danger">*</span></label>
-                        <div class="form-check">
+                        <div class="d-flex gap-4 justify-content-start align-items-center">
+                         <div class="form-check">
                             <input type="radio" class="form-check-input" name="target" id="target_all" value="all" checked>
                             <label class="form-check-label" for="target_all">Semua Siswa dalam Kelas</label>
                         </div>
@@ -205,6 +207,8 @@
                             <input type="radio" class="form-check-input" name="target" id="target_per" value="per">
                             <label class="form-check-label" for="target_per">Pilih Siswa Per Individu</label>
                         </div>
+                        </div>
+
                     </div>
 
                     {{-- Tabel Siswa --}}

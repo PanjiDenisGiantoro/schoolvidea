@@ -85,7 +85,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
 
         {{-- Alert jika ada error --}}
@@ -230,7 +230,8 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table id="tagihanTable" class="table table-striped table-hover table-bordered align-middle table-sm">
+                    <table id="tagihanTable" class="table table-striped table-hover table-bordered align-middle table-sm
+                            text-nowrap">
                         <thead class="table-primary text-center align-middle">
                             <tr>
                                 <th class="text-center" style="width: 4%">#</th>
@@ -275,6 +276,7 @@
                 processing: true,
                 serverSide: true,
                 responsive: true,
+                "scrollX": true,
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
                 pageLength: 25,
                 language: {

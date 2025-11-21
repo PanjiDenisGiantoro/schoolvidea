@@ -128,11 +128,11 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <input type="date" name="dari_tanggal" class="form-control form-control-sm"
+                                <input type="date" name="dari_tanggal" class="form-control "
                                        placeholder="Dari Tanggal" value="{{ request('dari_tanggal') }}">
                             </div>
                             <div class="col-md-2">
-                                <input type="date" name="sampai_tanggal" class="form-control form-control-sm"
+                                <input type="date" name="sampai_tanggal" class="form-control"
                                        placeholder="Sampai Tanggal" value="{{ request('sampai_tanggal') }}">
                             </div>
                             <div class="col-md-3">
