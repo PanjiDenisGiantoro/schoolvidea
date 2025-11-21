@@ -287,6 +287,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pembayaran')->middleware('permission:view_pembayaran')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
+        Route::post('/proses-multiple', [PembayaranController::class, 'prosesMultiplePembayaran'])->name('pembayaran.proses-multiple');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
         Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
