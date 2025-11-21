@@ -64,4 +64,12 @@ class Officer extends Model
                 });
             });
     }
+
+    /**
+     * Relasi dengan AttendanceSync
+     */
+    public function attendanceSync()
+    {
+        return $this->hasMany(AttendanceSync::class, 'officer_id');
+    }
 }

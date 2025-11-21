@@ -418,6 +418,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/getPayment', [PayrollPaymentController::class, 'getPayment'])->name('payroll-payment.getPayment');
         Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
         Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
+        Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
+        Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
     });
 
 

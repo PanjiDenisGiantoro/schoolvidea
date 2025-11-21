@@ -7,6 +7,8 @@ use App\Models\PayrollSetting;
 use App\Models\PayrollComponents;
 use App\Models\Officer;
 use App\Models\Unit;
+use App\Models\AttendanceSync;
+use App\Helpers\VideaclassApiHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -224,6 +226,157 @@ class PayrollPaymentController extends Controller
         } catch (\Exception $e) {
             Log::error("Payroll Table Error: " . $e->getMessage());
             return response()->json(['success' => false, 'data' => []]);
+        }
+    }
+
+    /**
+     * Ambil data presensi yang sudah disinkronisasi
+     */
+    public function getAttendanceData(Request $request)
+    {
+        try {
+            $officerId = $request->officer_id;
+            $unitId = $request->unit_id;
+
+            if (!$officerId || !$unitId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Officer ID dan Unit ID diperlukan'
+                ], 400);
+            }
+
+            $attendance = AttendanceSync::where('officer_id', $officerId)
+                ->where('unit_id', $unitId)
+                ->first();
+
+            if (!$attendance) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data presensi belum disinkronisasi',
+                    'data' => null
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $attendance->id,
+                    'presence_count' => $attendance->presence_count,
+                    'absence_count' => $attendance->absence_count,
+                    'is_active' => $attendance->is_active,
+                    'synced_at' => $attendance->synced_at,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Get Attendance Data Error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sinkronisasi data presensi dari Videaclass API
+     */
+    public function syncAttendance(Request $request)
+    {
+        try {
+            $unitId = $request->unit_id;
+            $officerId = $request->officer_id;
+            $search = $request->search ?? null;
+
+            if (!$unitId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unit ID diperlukan'
+                ], 400);
+            }
+
+            $videaclassApi = new VideaclassApiHelper();
+            $apiResponse = $videaclassApi->syncAttendanceData($unitId, $search);
+
+            if (!$apiResponse) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengambil data dari API Videaclass'
+                ], 500);
+            }
+
+            // Process dan simpan data presensi ke database
+            $rows = $apiResponse['rows'] ?? [];
+            $syncedCount = 0;
+            $errorCount = 0;
+            $syncedRecords = [];
+
+            foreach ($rows as $attendanceRecord) {
+                try {
+                    // Cari officer berdasarkan registered_number dari Videaclass
+                    $officer = Officer::where('registered_number', $attendanceRecord['registered_number'])
+                        ->where('unit_id', $unitId)
+                        ->first();
+
+                    if (!$officer) {
+                        $errorCount++;
+                        continue;
+                    }
+
+                    // Update atau buat record AttendanceSync
+                    $sync = AttendanceSync::updateOrCreate(
+                        [
+                            'unit_id' => $unitId,
+                            'officer_id' => $officer->id,
+                            'videaclass_id' => $attendanceRecord['id'],
+                        ],
+                        [
+                            'registered_number' => $attendanceRecord['registered_number'],
+                            'fullname' => $attendanceRecord['fullname'],
+                            'presence_count' => $attendanceRecord['presence_count'],
+                            'absence_count' => $attendanceRecord['absence_count'],
+                            'is_active' => $attendanceRecord['is_active'],
+                            'synced_at' => now(),
+                        ]
+                    );
+
+                    // Jika ada officer_id filter, hanya kembalikan data untuk officer itu
+                    if (!$officerId || $officerId == $officer->id) {
+                        $syncedRecords[] = [
+                            'id' => $sync->id,
+                            'officer_id' => $officer->id,
+                            'officer_name' => $officer->user->name ?? $officer->name,
+                            'registered_number' => $sync->registered_number,
+                            'fullname' => $sync->fullname,
+                            'presence_count' => $sync->presence_count,
+                            'absence_count' => $sync->absence_count,
+                            'is_active' => $sync->is_active,
+                        ];
+                    }
+
+                    $syncedCount++;
+                } catch (\Exception $e) {
+                    Log::error("Error processing attendance record: " . $e->getMessage(), [
+                        'record' => $attendanceRecord,
+                        'unit_id' => $unitId,
+                    ]);
+                    $errorCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data presensi berhasil disinkronisasi. Synced: $syncedCount, Error: $errorCount",
+                'synced_count' => $syncedCount,
+                'error_count' => $errorCount,
+                'data' => $syncedRecords
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Attendance Sync Error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 

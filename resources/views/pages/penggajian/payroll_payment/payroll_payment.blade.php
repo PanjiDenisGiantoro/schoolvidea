@@ -271,6 +271,63 @@
 @push('scripts')
 
     <script>
+        // Event listener untuk button "Sinkronkan Presensi"
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnSinkron = document.getElementById('btnSinkron');
+            const unitSelect = document.getElementById('filter_unit');
+            const officerSelect = document.getElementById('filter_officer');
+
+            if (btnSinkron) {
+                btnSinkron.addEventListener('click', async function() {
+                    const unitId = unitSelect.value;
+                    const officerId = officerSelect.value;
+
+                    if (!unitId) {
+                        alert('Mohon pilih Unit terlebih dahulu');
+                        return;
+                    }
+
+                    // Show loading state
+                    const originalText = btnSinkron.innerHTML;
+                    btnSinkron.disabled = true;
+                    btnSinkron.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Sedang Sinkronisasi...';
+
+                    try {
+                        const response = await fetch('/payroll-payment/sync-attendance', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                            },
+                            body: JSON.stringify({
+                                unit_id: unitId,
+                                officer_id: officerId || null,
+                                search: officerId ? null : 'han'
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert('Data presensi berhasil disinkronisasi!\n\n' + JSON.stringify(data.data, null, 2));
+                            console.log('Sync Success:', data);
+                        } else {
+                            alert('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
+                            console.error('Sync Error:', data);
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                        console.error('Sync Exception:', error);
+                    } finally {
+                        btnSinkron.disabled = false;
+                        btnSinkron.innerHTML = originalText;
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const btnBelumLunas = document.getElementById('btnBelumLunas');
             const btnSudahLunas = document.getElementById('btnSudahLunas');
