@@ -63,6 +63,8 @@ class DataRekeningController extends Controller
             // Jika user punya yayasan_id, tampilkan yayasan tersebut dan semua unit di yayasan tersebut
             $yayasan = Yayasan::where('status', '1')->where('id', Auth::user()->yayasan_id)->get();
             $units = Unit::where('status', '1')->where('yayasan_id', Auth::user()->yayasan_id)->get();
+            $akuns = Akun::where('unit_id',Auth::user()->unit_id)->get();
+
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan yayasan yang terkait dan unit tersebut saja
             $yayasan = Yayasan::with('units')
@@ -74,14 +76,17 @@ class DataRekeningController extends Controller
             $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
                 $query->where('id', $unitId);
             })->where('status', '1')->get();
+            $akuns = Akun::where('unit_id',Auth::user()->unit_id)->get();
+
         } else {
             // Admin bisa melihat semua
             $yayasan = Yayasan::where('status', '1')->get();
             $units = Unit::where('status', '1')->get();
+            $akuns = Akun::all();
+
         }
 
         // Load semua akun untuk dropdown
-        $akuns = Akun::all();
 
         return view('pages.data_master.data_rekening.create', compact('yayasan', 'units', 'akuns'));
     }
