@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DataRekening;
 use App\Models\Jurnals;
 use App\Models\Kelas;
 use App\Models\Keuangan_transaksi;
@@ -247,12 +248,6 @@ class TabunganController extends Controller
             $akun_id = $settings->akun_id;
 
 
-            if (!$akun_id) {
-                throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
-            }
-
-
-
             // Jurnal Kredit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
@@ -260,6 +255,7 @@ class TabunganController extends Controller
                 'debit'        => 0,
                 'kredit'       => $request->jumlah,
                 'keterangan'   => $request->keterangan,
+                'unit_id' => Auth::user()->unit_id
             ]);
 
             $saldoSiswa = Saldo_keuangan::with('user')

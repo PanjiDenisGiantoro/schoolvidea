@@ -29,7 +29,9 @@ class JurnalController extends Controller
 
     public function jurnal()
     {
-        $jurnals = Jurnals::with('akun')->orderBy('tanggal', 'asc')->get();
+        $jurnals = Jurnals::with('akun')
+            ->where('unit_id', auth()->user()->unit_id)
+            ->orderBy('tanggal', 'asc')->get();
     $headers = [
         "Tanggal",
         "Akun",

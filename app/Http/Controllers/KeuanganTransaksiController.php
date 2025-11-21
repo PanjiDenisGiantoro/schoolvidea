@@ -553,6 +553,7 @@ class KeuanganTransaksiController extends Controller
                             'kredit' => 0,
                             'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
                             'tanggal' => now(),
+                            'unit_id' => Auth::user()->unit_id
                         ]);
                     }
 
@@ -565,6 +566,7 @@ class KeuanganTransaksiController extends Controller
                             'debit' => 0,
                             'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
                             'tanggal' => now(),
+                            'unit_id' => Auth::user()->unit_id
                         ]);
                     }
                 }
