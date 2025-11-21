@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\Siswa;
+use App\Models\Jurnals;
+use App\Models\setting_akun;
+use App\Models\DataRekening;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
 
 class KeuanganTransaksiController extends Controller
@@ -513,30 +517,55 @@ class KeuanganTransaksiController extends Controller
                     $tagihanSiswa = $pembayaran->tagihanSiswa;
                     $tagihan = $tagihanSiswa->tagihan;
                     $siswa = $tagihanSiswa->siswa;
+                    $unitId = $siswa->unit_id;
                     $jumlahBayar = (int) $pembayaran->jumlah_bayar;
 
                     $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
 
-                    // Debit: Kas (uang masuk dari siswa)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 1, // Kas
-                        'debit' => $jumlahBayar,
-                        'kredit' => 0,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
+                    // Get akun dari setting_akun untuk unit ini
+                    $settingAkunDebit = setting_akun::where('unit_id', $unitId)
+                        ->where('kategori', 'Pembayaran Tagihan')
+                        ->where('debit', 1)
+                        ->where('status', '1')
+                        ->first();
 
-                    ]);
+                    // Get data rekening dari allotment pembayaran tagihan
+                    $dataRekeningKredit = DataRekening::where('unit_id', $unitId)
+                        ->where('allotment', 'Pembayaran Tagihan')
+                        ->where('status', '1')
+                        ->first();
 
-                    // Kredit: Tagihan (mengurangi hutang siswa)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 3, // Tagihan Masuk (receivable)
-                        'kredit' => $jumlahBayar,
-                        'debit' => 0,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
-                    ]);
+                    if(!$dataRekeningKredit){
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Data rekening sekolah tidak ditemukan, mohon cek kembali di bagian data rekening',
+                        ]);
+                    }
+
+                    // Debit: Akun dari setting_akun (uang masuk dari siswa)
+                    if ($settingAkunDebit) {
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $settingAkunDebit->akun_id,
+                            'debit' => $jumlahBayar,
+                            'kredit' => 0,
+                            'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                            'tanggal' => now(),
+                        ]);
+                    }
+
+                    // Kredit: Akun dari data_rekenings (lawannya pembayaran)
+                    if ($dataRekeningKredit) {
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $dataRekeningKredit->akun_id,
+                            'kredit' => $jumlahBayar,
+                            'debit' => 0,
+                            'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                            'tanggal' => now(),
+                        ]);
+                    }
                 }
             }
             // Log activity

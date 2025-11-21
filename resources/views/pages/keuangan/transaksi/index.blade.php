@@ -240,14 +240,14 @@
                     <span class="text-muted">data per halaman</span>
                 </div>
                 <div class="d-flex justify-content-between gap-3">
-                    @if($total_pending > 0)
-                        <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
-                            <i class="bx bx-time-five"></i> Pending
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
-                        </span>
-                        </button>
-                    @endif
+{{--                    @if($total_pending > 0)--}}
+{{--                        <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">--}}
+{{--                            <i class="bx bx-time-five"></i> Pending--}}
+{{--                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">--}}
+{{--                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}--}}
+{{--                        </span>--}}
+{{--                        </button>--}}
+{{--                    @endif--}}
                     <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
                        class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                         <i class="bx bx-printer"></i> Cetak Laporan
@@ -258,7 +258,7 @@
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <table class="table-bordered table-hover table overflow-hidden text-nowrap text-center align-middle">
+                <table class="table-bordered table-hover table text-nowrap text-center align-middle">
                     <thead class="table-primary">
                     <tr>
                         <th>#</th>
@@ -432,6 +432,36 @@
         .animate-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Horizontal scroll untuk tabel */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Firefox scrollbar styling */
+        .table-responsive {
+            scrollbar-color: #888 #f1f1f1;
+            scrollbar-width: thin;
         }
     </style>
 @endpush

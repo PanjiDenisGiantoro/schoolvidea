@@ -118,14 +118,10 @@
                                         {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
                                     </td>
                                     <td>
-                                        @if ($row['status'] === 'Lunas')
-                                            <button type="button" class="btn btn-sm btn-success rounded-2"
-                                                onclick="cetakStruklanas('{{ $row['kode_tagihan'] }}', '{{ $row['bulan'] }}', '{{ $row['tahun'] }}', {{ $row['nominal_akhir'] }})">
-                                                <i class="bx bx-printer"></i> Cetak
-                                            </button>
-                                        @else
-                                            <span class="text-muted small">-</span>
-                                        @endif
+                                        <button type="button" class="btn btn-sm btn-primary rounded-2"
+                                            onclick="cetakStrukPDF({{ $row['id'] }})">
+                                            <i class="bx bx-printer"></i> Cetak
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -189,10 +185,14 @@
                                     </td>
                                     <td>{{ $pembayaran['create_by'] ?? '-' }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="printStruk({{ $pembayaran['id'] }}, '{{ $pembayaran['kode_tagihan'] }}', {{ $pembayaran['jumlah_bayar'] }})">
-                                            <i class="bx bx-printer"></i> Struk
-                                        </button>
+                                        @if($pembayaran['tagihan_siswa_id'])
+                                            <button type="button" class="btn btn-sm btn-primary"
+                                                onclick="cetakStrukPDF({{ $pembayaran['tagihan_siswa_id'] }})">
+                                                <i class="bx bx-printer"></i> Struk
+                                            </button>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -249,62 +249,101 @@
             window.open(`/pembayaran/${pembayaranId}/print-struk`, '_blank');
         }
 
-        function cetakStruklanas(kodeTagihan, bulan, tahun, nominal) {
-            // Generate struk untuk tagihan yang sudah lunas
-            let striped = `
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <style>
-                        body {
-                            width: 80mm;
-                            margin: 0;
-                            padding: 5mm;
-                            font-family: 'Courier New', monospace;
-                            font-size: 11px;
-                        }
-                        .center { text-align: center; }
-                        .bold { font-weight: bold; }
-                        .divider { border-top: 1px dashed #000; margin: 5px 0; }
-                        .text-right { text-align: right; }
-                        .row { display: flex; justify-content: space-between; }
-                    </style>
-                </head>
-                <body>
-                    <div class="center bold">STRUK PEMBAYARAN</div>
-                    <div class="divider"></div>
+        function cetakStrukPDF(tagihanSiswaId) {
+            // Validasi parameter
+            if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
+                alert('Error: ID Tagihan Siswa tidak valid');
+                console.error('Invalid tagihanSiswaId:', tagihanSiswaId);
+                return;
+            }
 
-                    <div class="bold">Kode Tagihan: ${kodeTagihan}</div>
-                    <div>Bulan: ${bulan}/${tahun}</div>
-                    <div>Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
-                    <div>Waktu: ${new Date().toLocaleTimeString('id-ID')}</div>
+            const url = `/tagihan/${tagihanSiswaId}/cetak-struk`;
+            console.log('Membuka URL:', url);
 
-                    <div class="divider"></div>
+            // Buka halaman cetak struk PDF dalam tab baru
+            const pdfWindow = window.open(url, '_blank');
 
-                    <div class="row">
-                        <div>Total Pembayaran:</div>
-                        <div class="bold">Rp ${parseInt(nominal).toLocaleString('id-ID')}</div>
-                    </div>
-
-                    <div class="divider"></div>
-
-                    <div class="center">
-                        <div>Terima Kasih</div>
-                        <div>Atas Pembayaran Anda</div>
-                    </div>
-
-                    <script>
-                        window.print();
-                        window.onafterprint = function() { window.close(); };
-                    </script>
-                </body>
-                </html>
-            `;
-
-            let printWindow = window.open('', '', 'width=300,height=400');
-            printWindow.document.write(striped);
-            printWindow.document.close();
+            if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
+                alert('Popup browser mungkin diblokir. Silakan izinkan popup untuk domain ini.');
+                console.error('Gagal membuka popup');
+            }
         }
+
+        {{--function cetakStruklanas(kodeTagihan, bulan, tahun, nominal, namaKategori = '') {--}}
+        {{--    // Generate struk untuk tagihan--}}
+        {{--    let striped = `--}}
+        {{--        <html>--}}
+        {{--        <head>--}}
+        {{--            <meta charset="utf-8">--}}
+        {{--            <style>--}}
+        {{--                body {--}}
+        {{--                    width: 80mm;--}}
+        {{--                    margin: 0;--}}
+        {{--                    padding: 5mm;--}}
+        {{--                    font-family: 'Courier New', monospace;--}}
+        {{--                    font-size: 11px;--}}
+        {{--                    line-height: 1.4;--}}
+        {{--                }--}}
+        {{--                .center { text-align: center; }--}}
+        {{--                .bold { font-weight: bold; }--}}
+        {{--                .divider { border-top: 1px dashed #000; margin: 5px 0; }--}}
+        {{--                .text-right { text-align: right; }--}}
+        {{--                .row { display: flex; justify-content: space-between; margin: 3px 0; }--}}
+        {{--                .label { width: 50%; }--}}
+        {{--                .value { width: 50%; text-align: right; }--}}
+        {{--            </style>--}}
+        {{--        </head>--}}
+        {{--        <body>--}}
+        {{--            <div class="center bold" style="font-size: 13px; margin-bottom: 3px;">STRUK TAGIHAN</div>--}}
+        {{--            <div class="divider"></div>--}}
+
+        {{--            <div class="row">--}}
+        {{--                <div class="label bold">Kode Tagihan:</div>--}}
+        {{--                <div class="value">${kodeTagihan}</div>--}}
+        {{--            </div>--}}
+        {{--            <div class="row">--}}
+        {{--                <div class="label">Jenis:</div>--}}
+        {{--                <div class="value">${namaKategori}</div>--}}
+        {{--            </div>--}}
+        {{--            <div class="row">--}}
+        {{--                <div class="label">Periode:</div>--}}
+        {{--                <div class="value">${bulan}/${tahun}</div>--}}
+        {{--            </div>--}}
+        {{--            <div class="row">--}}
+        {{--                <div class="label">Tanggal:</div>--}}
+        {{--                <div class="value">${new Date().toLocaleDateString('id-ID')}</div>--}}
+        {{--            </div>--}}
+        {{--            <div class="row">--}}
+        {{--                <div class="label">Waktu:</div>--}}
+        {{--                <div class="value">${new Date().toLocaleTimeString('id-ID')}</div>--}}
+        {{--            </div>--}}
+
+        {{--            <div class="divider"></div>--}}
+
+        {{--            <div class="row" style="margin: 8px 0;">--}}
+        {{--                <div class="label bold">Total Tagihan:</div>--}}
+        {{--                <div class="value bold">Rp ${parseInt(nominal).toLocaleString('id-ID')}</div>--}}
+        {{--            </div>--}}
+
+        {{--            <div class="divider"></div>--}}
+
+        {{--            <div class="center">--}}
+        {{--                <div style="margin-top: 5px;">Terima Kasih</div>--}}
+        {{--                <div>Atas Perhatian Anda</div>--}}
+        {{--            </div>--}}
+
+        {{--            <script>--}}
+        {{--                window.print();--}}
+        {{--                window.onafterprint = function() { window.close(); };--}}
+        {{--            </script>--}}
+        {{--        </body>--}}
+        {{--        </html>--}}
+        {{--    `;--}}
+
+        {{--    let printWindow = window.open('', '', 'width=300,height=500');--}}
+        {{--    printWindow.document.write(striped);--}}
+        {{--    printWindow.document.close();--}}
+        {{--}--}}
     </script>
 
 @endsection

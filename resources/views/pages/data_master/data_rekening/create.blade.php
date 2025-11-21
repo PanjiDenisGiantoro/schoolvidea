@@ -34,6 +34,22 @@
                         </div>
                     </div>
 
+                    {{-- Akun --}}
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="akun_id" class="form-label">Akun <span class="text-danger">*</span></label>
+                            <select name="akun_id" id="akun_id" class="form-select" required>
+                                <option value="">-- Pilih Akun --</option>
+                                @foreach ($akuns as $akun)
+                                    <option value="{{ $akun->id }}"
+                                        {{ old('akun_id', $datarekening->akun_id ?? '') == $akun->id ? 'selected' : '' }}>
+                                        {{$akun->kode_akun . ' - ' . $akun->nama_akun }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     @php
                         $options = [
                         'Semua Pembayaran',

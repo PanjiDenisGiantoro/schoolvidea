@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Unit;
 use App\Models\DataRekening;
 use App\Models\Yayasan;
+use App\Models\Akun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class DataRekeningController extends Controller
         $units = Unit::all();
         $query = DataRekening::with(['unit' => function ($q) {
             $q->isactive();
-        }]);
+        }, 'akun']);
 
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
@@ -47,7 +48,7 @@ class DataRekeningController extends Controller
         }
         $datarekening = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
         $headers = [
-            'No', 'Unit', 'Kode Rekening', 'Nama Bank', 'Nama Pemilik', 'Status', 'Peruntukan Rekening', 'Aksi'
+            'No', 'Unit', 'Kode Rekening', 'Nama Bank', 'Nama Pemilik', 'Akun', 'Status', 'Peruntukan Rekening', 'Aksi'
         ];
         return view('pages.data_master.data_rekening.index', compact('datarekening', 'headers', 'units'));
     }
@@ -79,7 +80,10 @@ class DataRekeningController extends Controller
             $units = Unit::where('status', '1')->get();
         }
 
-        return view('pages.data_master.data_rekening.create', compact('yayasan', 'units'));
+        // Load semua akun untuk dropdown
+        $akuns = Akun::all();
+
+        return view('pages.data_master.data_rekening.create', compact('yayasan', 'units', 'akuns'));
     }
 
     /**
@@ -95,6 +99,7 @@ class DataRekeningController extends Controller
             'allotment'     => 'required|string|max:50',
             'kcp_name'      => 'string|max:50',
             'unit_id'       => 'required|exists:units,id',
+            'akun_id'       => 'required|exists:akuns,id',
             'status'        => 'required|in:1,0',
             'image'         => 'nullable|string',
         ]);
@@ -107,6 +112,7 @@ class DataRekeningController extends Controller
             'allotment'      => $request->allotment,
             'kcp_name'       => $request->kcp_name,
             'unit_id'        => $request->unit_id,
+            'akun_id'        => $request->akun_id,
             'status'         => $request->status,
             'account_pict'   => $request->image ?? null,
         ]);
@@ -133,10 +139,12 @@ class DataRekeningController extends Controller
             // Admin bisa melihat semua
             $units = Unit::isactive()->get();
         }
+
+        // Load semua akun untuk dropdown
+        $akuns = Akun::all();
         $show = true;
 
-
-        return view('pages.data_master.data_rekening.create', compact('datarekening', 'units', 'show'));
+        return view('pages.data_master.data_rekening.create', compact('datarekening', 'units', 'akuns', 'show'));
 
     }
 
@@ -161,9 +169,13 @@ class DataRekeningController extends Controller
             $units = Unit::where('status', '1')->get();
         }
 
+        // Load semua akun untuk dropdown
+        $akuns = Akun::all();
+
         return view('pages.data_master.data_rekening.create', compact(
             'datarekening',
             'units',
+            'akuns',
         ));
     }
 
@@ -182,6 +194,7 @@ class DataRekeningController extends Controller
             'allotment'      => 'required|string|max:50',
             'kcp_name'       => 'string|max:50',
             'unit_id'        => 'required|exists:units,id',
+            'akun_id'        => 'required|exists:akuns,id',
             'status'         => 'required|in:1,0',
             'image'          => 'nullable|string'
         ]);
@@ -197,6 +210,7 @@ class DataRekeningController extends Controller
             'allotment'      => $request->allotment,
             'kcp_name'       => $request->kcp_name,
             'unit_id'        => $request->unit_id,
+            'akun_id'        => $request->akun_id,
             'status'         => $request->status,
             'account_pict'   => $request->image ?? $oldImage,
         ]);

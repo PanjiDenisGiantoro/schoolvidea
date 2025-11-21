@@ -271,6 +271,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
         Route::get('/print-laporan', [TagihanController::class, 'printLaporan'])->name('tagihan.print_laporan');
+        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
     });
 
     Route::prefix('potongan')->middleware('permission:view_potongan')->group(function () {

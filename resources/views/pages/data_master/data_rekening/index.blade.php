@@ -66,6 +66,7 @@
                                 <td>{{ $item->account_code }}</td>
                                 <td>{{ $item->account_name }}</td>
                                 <td>{{ $item->owner_name }}</td>
+                                <td>{{ $item->akun ? ($item->akun->name ?? $item->akun->kode_akun) : '-' }}</td>
                                 <td>
                                     @if ($item->status == 1)
                                         <span class="badge bg-success">Aktif</span>
@@ -97,7 +98,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">Tidak ada data ditemukan</td>
+                                <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
                             </tr>
                         @endforelse
                     </tbody>
