@@ -3,7 +3,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
-    @endpush
+@endpush
 @section('content')
     @include('partials.page-title', [
         'title' => 'Tambah Transaksi Pembayaran',

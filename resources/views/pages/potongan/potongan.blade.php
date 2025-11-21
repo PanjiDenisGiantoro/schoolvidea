@@ -85,14 +85,16 @@
 
 @push('scripts')
     <script>
-        // Initialize DataTable
+        // Initialize DataTable hanya jika ada data
         $(document).ready(function() {
-            $('#potongan_table').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                responsive: true
-            });
+            @if ($potongans->count() > 0)
+                $('#potongan_table').DataTable({
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    responsive: true
+                });
+            @endif
         });
 
         function deletePotongan(id) {

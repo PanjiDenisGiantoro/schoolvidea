@@ -355,6 +355,7 @@ class KeuanganTransaksiController extends Controller
     /**
      * Approve transaksi keuangan
      */
+
     public function approve(Request $request, $id)
     {
         $request->validate([
@@ -466,7 +467,7 @@ class KeuanganTransaksiController extends Controller
             }
 
             // === PEMBAYARAN TAGIHAN: Update status tagihan siswa ===
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
                 $pembayaran = $transaksi->pembayaranTagihan;
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
@@ -492,50 +493,10 @@ class KeuanganTransaksiController extends Controller
                         'tanggal_bayar' => now(),
                     ]);
                 }
-
-                // === UNTUK TAGIHAN-MULTIPLE: Update semua pembayaran detail ===
-                if ($transaksi->jenis_transaksi === 'tagihan-multiple') {
-                    // Load semua pembayaran dengan code_pembayaran yang sama (master payment)
-                    $masterCode = $pembayaran->code_pembayaran;
-                    $allPembayaran = \App\Models\Pembayarantagihan::where('code_pembayaran', $masterCode)->get();
-
-                    foreach ($allPembayaran as $pay) {
-                        $tgSiswa = $pay->tagihanSiswa;
-                        if ($tgSiswa) {
-                            $jmlBayar = (int) $pay->jumlah_bayar;
-                            $sisa = $tgSiswa->sisa_nominal - $jmlBayar;
-                            $dibayar = ($tgSiswa->jumlah_dibayar ?? 0) + $jmlBayar;
-
-                            $status = '0';
-                            if ($sisa <= 0) {
-                                $status = '1';
-                                $sisa = 0;
-                            } elseif ($dibayar > 0 && $sisa > 0) {
-                                $status = '2';
-                            }
-
-                            $tgSiswa->update([
-                                'status' => $status,
-                                'sisa_nominal' => $sisa,
-                                'tanggal_bayar' => now(),
-                            ]);
-
-                            // Check jika semua tagihan utama sudah lunas
-                            $hasUnpaid = \App\Models\Tagihansiswa::where('tagihan_id', $tgSiswa->tagihan_id)
-                                ->where('status', '0')
-                                ->exists();
-
-                            if (!$hasUnpaid) {
-                                \App\Models\Tagihan::where('id', $tgSiswa->tagihan_id)
-                                    ->update(['status_tagihan' => 1]);
-                            }
-                        }
-                    }
-                }
             }
 
             // Update keuangan_transaksi status untuk pembayaran tagihan
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
                 $transaksi->update([
                     'status_verifikasi' => 'approved',
                     'status_approval' => 'approved',
@@ -690,7 +651,7 @@ class KeuanganTransaksiController extends Controller
             // Saldo tetap utuh karena belum pernah dikurangi
 
             // === PEMBAYARAN TAGIHAN: Rollback pembayaran ===
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
                 $pembayaran = $transaksi->pembayaranTagihan;
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
@@ -713,37 +674,10 @@ class KeuanganTransaksiController extends Controller
                         'jumlah_dibayar' => max(0, $jumlahDibayarBaru)
                     ]);
                 }
-
-                // === UNTUK TAGIHAN-MULTIPLE: Rollback semua pembayaran detail ===
-                if ($transaksi->jenis_transaksi === 'tagihan-multiple') {
-                    // Load semua pembayaran dengan code_pembayaran yang sama (master payment)
-                    $masterCode = $pembayaran->code_pembayaran;
-                    $allPembayaran = \App\Models\Pembayarantagihan::where('code_pembayaran', $masterCode)->get();
-
-                    foreach ($allPembayaran as $pay) {
-                        $tgSiswa = $pay->tagihanSiswa;
-                        if ($tgSiswa) {
-                            $jmlBayar = (int) $pay->jumlah_bayar;
-                            $sisa = $tgSiswa->sisa_nominal + $jmlBayar;
-                            $dibayar = ($tgSiswa->jumlah_dibayar ?? 0) - $jmlBayar;
-
-                            $status = '0';
-                            if ($dibayar > 0 && $sisa > 0) {
-                                $status = '2';
-                            }
-
-                            $tgSiswa->update([
-                                'status' => $status,
-                                'sisa_nominal' => $sisa,
-                                'jumlah_dibayar' => max(0, $dibayar)
-                            ]);
-                        }
-                    }
-                }
             }
 
             // Update keuangan_transaksi status untuk pembayaran tagihan saat reject
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
                 $transaksi->update([
                     'status_verifikasi' => 'rejected',
                     'status_approval' => 'rejected',
