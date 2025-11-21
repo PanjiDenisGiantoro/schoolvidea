@@ -128,7 +128,7 @@ class KategoritagihanController extends Controller
 
         $request->validate([
             'nama_kategori'    => 'required|string|max:255',
-            'kode_kategori'    => 'required|string|max:100|unique:kategoritagihans,kode_kategori,' . $kategoritagihan->id,
+            'kode_kategori'    => 'required|string|max:100',
             'keterangan'       => 'nullable|string',
             'unit_id'          => 'required|exists:units,id',
             'biaya_tagihan'    => 'required|integer|min:0',

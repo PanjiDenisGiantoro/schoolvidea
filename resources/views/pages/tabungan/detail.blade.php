@@ -75,12 +75,9 @@
                     </div>
 
                     <div class="saldo-info">
-                        <div class="alert alert-warning border-0 shadow-sm mb-2">
-                            <small class="text-muted d-block mb-1">Saldo Awal</small>
-                            <div class="fs-5 fw-bold">Rp {{ number_format($saldo_awal, 0, ',', '.') }}</div>
-                        </div>
+
                         <div class="alert alert-success border-0 shadow-sm mb-0">
-                            <small class="text-muted d-block mb-1">Saldo Akhir</small>
+                            <small class="text-muted d-block mb-1">Saldo Saat Ini</small>
                             <div class="fs-5 fw-bold">Rp {{ number_format($saldo_akhir, 0, ',', '.') }}</div>
                         </div>
                     </div>
