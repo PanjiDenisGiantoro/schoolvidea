@@ -230,8 +230,8 @@
             </div>
 
             <div id="tabelBelumLunas" class="mb-3">
-                <div class="table-responsive">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-height: 600px; overflow-y: auto;">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle" style="min-width: 1200px;">
                         <thead class="table-primary text-center text-nowrap align-middle">
                         <tr>
                             <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
@@ -266,8 +266,8 @@
             </div> --}}
             </div>
             <div class="mb-3" id="tabelSudahLunas">
-                <div class="table-responsive">
-                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
+                <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-height: 600px; overflow-y: auto;">
+                    <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle" style="min-width: 1100px;">
                         <thead class="table-primary text-center text-nowrap align-middle">
                         <tr>
                             <th>No</th>
@@ -341,10 +341,169 @@
             border-color: #2596be;
             box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
         }
+
+        /* Horizontal Scroll Styling */
+        .table-responsive {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Vertical Scroll Styling */
+        .table-responsive {
+            position: relative;
+        }
+
+        /* Fix Header untuk Horizontal Scroll */
+        .table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa;
+        }
+
+        /* Smooth scroll behavior */
+        .table-responsive {
+            scroll-behavior: smooth;
+        }
+
+        /* Optional: Add shadow indicator for horizontal scroll */
+        .table-responsive::after {
+            content: '';
+            position: sticky;
+            right: 0;
+            top: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+            pointer-events: none;
+            display: none;
+        }
+
+        /* Mobile responsive - adjust heights */
+        @media (max-width: 768px) {
+            .table-responsive {
+                max-height: 500px;
+            }
+
+            table {
+                min-width: 900px;
+            }
+        }
+
+        /* Scroll indicator styling */
+        .table-responsive.is-scrollable {
+            position: relative;
+        }
+
+        /* Left scroll shadow indicator */
+        .table-responsive.scrolling-left::before {
+            content: '';
+            position: sticky;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Right scroll shadow indicator */
+        .table-responsive.scrolling-right::after {
+            content: '';
+            position: sticky;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.15), transparent);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Hint untuk pengguna bahwa table bisa di-scroll */
+        .table-responsive.is-scrollable {
+            border-bottom: 3px solid #e9ecef;
+        }
+
+        .table-responsive.is-scrollable::after {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #6c757d;
+            content: '← Scroll untuk melihat lebih banyak kolom →';
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .table-responsive.is-scrollable:hover::after {
+            opacity: 1;
+        }
     </style>
 @endpush
 @push('scripts')
     <script>
+        /**
+         * Initialize horizontal scroll listeners for tables
+         * Menambahkan scroll indicator ketika table bisa di-scroll ke kanan
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableContainers = document.querySelectorAll('.table-responsive');
+
+            tableContainers.forEach(container => {
+                // Check scrollability dan add class jika bisa di-scroll
+                function updateScrollIndicator() {
+                    if (container.scrollWidth > container.clientWidth) {
+                        container.classList.add('is-scrollable');
+                    } else {
+                        container.classList.remove('is-scrollable');
+                    }
+                }
+
+                // Initial check
+                updateScrollIndicator();
+
+                // Check setiap kali scroll
+                container.addEventListener('scroll', function() {
+                    if (this.scrollLeft > 0) {
+                        this.classList.add('scrolling-left');
+                    } else {
+                        this.classList.remove('scrolling-left');
+                    }
+
+                    if (this.scrollLeft + this.clientWidth < this.scrollWidth) {
+                        this.classList.add('scrolling-right');
+                    } else {
+                        this.classList.remove('scrolling-right');
+                    }
+                });
+
+                // Re-check ketika window di-resize
+                window.addEventListener('resize', updateScrollIndicator);
+            });
+        });
+
         // function changePerPage(perPage) {
         //     const url = new URL(window.location.href);
         //     url.searchParams.set('per_page', perPage);
