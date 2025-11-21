@@ -8,8 +8,14 @@ class DataRekening extends Model
 {
     protected $table = 'data_rekenings';
     protected $guarded = [];
+
     public function unit()
     {
         return $this->belongsTo(\App\Models\Unit::class, 'unit_id');
+    }
+
+    public function akun()
+    {
+        return $this->belongsTo(Akun::class, 'akun_id');
     }
 }

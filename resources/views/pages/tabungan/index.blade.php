@@ -371,14 +371,14 @@
                         <i class="bx bx-money-withdraw"></i> Tarik
                     </a>
 
-                    @if($total_pending > 0)
-                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">
-                        <i class="bx bx-time-five"></i> Pending
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}
-                        </span>
-                    </button>
-                    @endif
+{{--                    @if($total_pending > 0)--}}
+{{--                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">--}}
+{{--                        <i class="bx bx-time-five"></i> Pending--}}
+{{--                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">--}}
+{{--                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}--}}
+{{--                        </span>--}}
+{{--                    </button>--}}
+{{--                    @endif--}}
 
                     <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">

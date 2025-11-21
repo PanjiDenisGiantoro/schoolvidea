@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\Siswa;
+use App\Models\Jurnals;
+use App\Models\setting_akun;
+use App\Models\DataRekening;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
 
 class KeuanganTransaksiController extends Controller
@@ -465,7 +469,7 @@ class KeuanganTransaksiController extends Controller
             }
 
             // === PEMBAYARAN TAGIHAN: Update status tagihan siswa ===
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
                 $pembayaran = $transaksi->pembayaranTagihan;
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
@@ -491,10 +495,50 @@ class KeuanganTransaksiController extends Controller
                         'tanggal_bayar' => now(),
                     ]);
                 }
+
+                // === UNTUK TAGIHAN-MULTIPLE: Update semua pembayaran detail ===
+                if ($transaksi->jenis_transaksi === 'tagihan-multiple') {
+                    // Load semua pembayaran dengan code_pembayaran yang sama (master payment)
+                    $masterCode = $pembayaran->code_pembayaran;
+                    $allPembayaran = \App\Models\Pembayarantagihan::where('code_pembayaran', $masterCode)->get();
+
+                    foreach ($allPembayaran as $pay) {
+                        $tgSiswa = $pay->tagihanSiswa;
+                        if ($tgSiswa) {
+                            $jmlBayar = (int) $pay->jumlah_bayar;
+                            $sisa = $tgSiswa->sisa_nominal - $jmlBayar;
+                            $dibayar = ($tgSiswa->jumlah_dibayar ?? 0) + $jmlBayar;
+
+                            $status = '0';
+                            if ($sisa <= 0) {
+                                $status = '1';
+                                $sisa = 0;
+                            } elseif ($dibayar > 0 && $sisa > 0) {
+                                $status = '2';
+                            }
+
+                            $tgSiswa->update([
+                                'status' => $status,
+                                'sisa_nominal' => $sisa,
+                                'tanggal_bayar' => now(),
+                            ]);
+
+                            // Check jika semua tagihan utama sudah lunas
+                            $hasUnpaid = \App\Models\Tagihansiswa::where('tagihan_id', $tgSiswa->tagihan_id)
+                                ->where('status', '0')
+                                ->exists();
+
+                            if (!$hasUnpaid) {
+                                \App\Models\Tagihan::where('id', $tgSiswa->tagihan_id)
+                                    ->update(['status_tagihan' => 1]);
+                            }
+                        }
+                    }
+                }
             }
 
             // Update keuangan_transaksi status untuk pembayaran tagihan
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
                 $transaksi->update([
                     'status_verifikasi' => 'approved',
                     'status_approval' => 'approved',
@@ -516,30 +560,55 @@ class KeuanganTransaksiController extends Controller
                     $tagihanSiswa = $pembayaran->tagihanSiswa;
                     $tagihan = $tagihanSiswa->tagihan;
                     $siswa = $tagihanSiswa->siswa;
+                    $unitId = $siswa->unit_id;
                     $jumlahBayar = (int) $pembayaran->jumlah_bayar;
 
                     $keterangan = "Pembayaran {$tagihan->nama_tagihan} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.');
 
-                    // Debit: Kas (uang masuk dari siswa)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 1, // Kas
-                        'debit' => $jumlahBayar,
-                        'kredit' => 0,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
+                    // Get akun dari setting_akun untuk unit ini
+                    $settingAkunDebit = setting_akun::where('unit_id', $unitId)
+                        ->where('kategori', 'Pembayaran Tagihan')
+                        ->where('debit', 1)
+                        ->where('status', '1')
+                        ->first();
 
-                    ]);
+                    // Get data rekening dari allotment pembayaran tagihan
+                    $dataRekeningKredit = DataRekening::where('unit_id', $unitId)
+                        ->where('allotment', 'Pembayaran Tagihan')
+                        ->where('status', '1')
+                        ->first();
 
-                    // Kredit: Tagihan (mengurangi hutang siswa)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 3, // Tagihan Masuk (receivable)
-                        'kredit' => $jumlahBayar,
-                        'debit' => 0,
-                        'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
-                    ]);
+                    if(!$dataRekeningKredit){
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Data rekening sekolah tidak ditemukan, mohon cek kembali di bagian data rekening',
+                        ]);
+                    }
+
+                    // Debit: Akun dari setting_akun (uang masuk dari siswa)
+                    if ($settingAkunDebit) {
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $settingAkunDebit->akun_id,
+                            'debit' => $jumlahBayar,
+                            'kredit' => 0,
+                            'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                            'tanggal' => now(),
+                        ]);
+                    }
+
+                    // Kredit: Akun dari data_rekenings (lawannya pembayaran)
+                    if ($dataRekeningKredit) {
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $dataRekeningKredit->akun_id,
+                            'kredit' => $jumlahBayar,
+                            'debit' => 0,
+                            'keterangan' => $keterangan . ' - ' . ($siswa->user->name ?? 'Siswa'),
+                            'tanggal' => now(),
+                        ]);
+                    }
                 }
             }
             // Log activity
@@ -624,7 +693,7 @@ class KeuanganTransaksiController extends Controller
             // Saldo tetap utuh karena belum pernah dikurangi
 
             // === PEMBAYARAN TAGIHAN: Rollback pembayaran ===
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
                 $pembayaran = $transaksi->pembayaranTagihan;
                 $tagihanSiswa = $pembayaran->tagihanSiswa;
 
@@ -647,10 +716,37 @@ class KeuanganTransaksiController extends Controller
                         'jumlah_dibayar' => max(0, $jumlahDibayarBaru)
                     ]);
                 }
+
+                // === UNTUK TAGIHAN-MULTIPLE: Rollback semua pembayaran detail ===
+                if ($transaksi->jenis_transaksi === 'tagihan-multiple') {
+                    // Load semua pembayaran dengan code_pembayaran yang sama (master payment)
+                    $masterCode = $pembayaran->code_pembayaran;
+                    $allPembayaran = \App\Models\Pembayarantagihan::where('code_pembayaran', $masterCode)->get();
+
+                    foreach ($allPembayaran as $pay) {
+                        $tgSiswa = $pay->tagihanSiswa;
+                        if ($tgSiswa) {
+                            $jmlBayar = (int) $pay->jumlah_bayar;
+                            $sisa = $tgSiswa->sisa_nominal + $jmlBayar;
+                            $dibayar = ($tgSiswa->jumlah_dibayar ?? 0) - $jmlBayar;
+
+                            $status = '0';
+                            if ($dibayar > 0 && $sisa > 0) {
+                                $status = '2';
+                            }
+
+                            $tgSiswa->update([
+                                'status' => $status,
+                                'sisa_nominal' => $sisa,
+                                'jumlah_dibayar' => max(0, $dibayar)
+                            ]);
+                        }
+                    }
+                }
             }
 
             // Update keuangan_transaksi status untuk pembayaran tagihan saat reject
-            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan', 'tagihan-multiple']) && $transaksi->pembayaranTagihan) {
                 $transaksi->update([
                     'status_verifikasi' => 'rejected',
                     'status_approval' => 'rejected',

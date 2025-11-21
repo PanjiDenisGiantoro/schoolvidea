@@ -272,6 +272,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
         Route::get('/print-laporan', [TagihanController::class, 'printLaporan'])->name('tagihan.print_laporan');
+        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
     });
 
     Route::prefix('potongan')->middleware('permission:view_potongan')->group(function () {
@@ -287,6 +288,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pembayaran')->middleware('permission:view_pembayaran')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
+        Route::post('/proses-multiple', [PembayaranController::class, 'prosesMultiplePembayaran'])->name('pembayaran.proses-multiple');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
         Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
@@ -418,6 +420,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/getPayment', [PayrollPaymentController::class, 'getPayment'])->name('payroll-payment.getPayment');
         Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
         Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
+        Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
+        Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
     });
 
 

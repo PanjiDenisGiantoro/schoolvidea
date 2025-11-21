@@ -60,21 +60,20 @@
                                 </td>
                                 <td>{{ $potongan->keterangan ?? '-' }}</td>
                                 <td>
-                                    <div class="d-flex gap-2">
-                                        <!-- View Button -->
+                                    <div class="d-flex gap-3">
                                         <a href="{{ route('potongan.show', $potongan->id) }}"
-                                            class="btn btn-sm btn-info rounded-2" title="Lihat Detail">
-                                            <i class="fa fa-eye"></i> Lihat
+                                           class="link-primary text-muted">
+                                            <i class="ri-eye-line fs-20 align-middle"></i>
+                                            Show
                                         </a>
-
-
-                                        <!-- Delete Button -->
-                                        <button type="button" class="btn btn-sm btn-danger rounded-2"
-                                            onclick="deletePotongan({{ $potongan->id }})">
-                                            <i class="fa fa-trash"></i> Hapus
+                                        <button type="button" class="link-danger text-muted"
+                                                onclick="deletePotongan({{ $potongan->id }})">
+                                            <i class="ri-delete-bin-5-line fs-20 align-middle"></i>Hapus
                                         </button>
+
                                     </div>
                                 </td>
+
                             </tr>
                         @empty
                             <tr>

@@ -572,40 +572,147 @@ class SiswaController extends Controller
         $no_hp = $request->no_hp;
 
         $duplicates = [];
+        $fieldLabels = [
+            'nisn' => 'NISN',
+            'nis' => 'NIS',
+            'nik' => 'NIK',
+            'rfid_no' => 'Nomor RFID',
+            'va_siswa' => 'Virtual Account Siswa',
+            'no_rekening' => 'Nomor Rekening',
+            'no_hp' => 'Nomor HP',
+            'email' => 'Email'
+        ];
 
-        if ($nisn && \App\Models\Siswa::where('nisn', $nisn)->exists()) {
-            $duplicates[] = 'nisn';
-        }
-        if ($nis && \App\Models\Siswa::where('nis', $nis)->exists()) {
-            $duplicates[] = 'nis';
-        }
-        if ($nik && \App\Models\Siswa::where('nik', $nik)->exists()) {
-            $duplicates[] = 'nik';
-        }
-        if ($rfid_no && \App\Models\Siswa::where('rfid_no', $rfid_no)->exists()) {
-            $duplicates[] = 'rfid_no';
-        }
-        if ($va_siswa && \App\Models\Siswa::where('va_siswa', $va_siswa)->exists()) {
-            $duplicates[] = 'va_siswa';
-        }
-        if ($no_rekening && \App\Models\Siswa::where('no_rekening', $nisn)->exists()) {
-            $duplicates[] = 'no_rekening';
-        }
-        if ($no_hp && \App\Models\Siswa::where('no_hp', $no_hp)->exists()) {
-            $duplicates[] = 'no_hp';
-        }
-        if ($email && \App\Models\User::where('email', $email)->exists()) {
-            $duplicates[] = 'email';
+        $duplicateDetails = [];
+
+        // Check NISN
+        if ($nisn) {
+            $existing = \App\Models\Siswa::where('nisn', $nisn)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'nisn',
+                    'label' => $fieldLabels['nisn'],
+                    'value' => $nisn,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "NISN '{$nisn}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'nisn';
+            }
         }
 
-        // bisa kamu tambahkan lagi field lain kalau perlu
-        // if ($request->no_hp && User::where('no_hp', $request->no_hp)->exists()) {
-        //     $duplicates[] = 'no_hp';
-        // }
+        // Check NIS
+        if ($nis) {
+            $existing = \App\Models\Siswa::where('nis', $nis)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'nis',
+                    'label' => $fieldLabels['nis'],
+                    'value' => $nis,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "NIS '{$nis}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'nis';
+            }
+        }
+
+        // Check NIK
+        if ($nik) {
+            $existing = \App\Models\Siswa::where('nik', $nik)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'nik',
+                    'label' => $fieldLabels['nik'],
+                    'value' => $nik,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "NIK '{$nik}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'nik';
+            }
+        }
+
+        // Check RFID
+        if ($rfid_no) {
+            $existing = \App\Models\Siswa::where('rfid_no', $rfid_no)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'rfid_no',
+                    'label' => $fieldLabels['rfid_no'],
+                    'value' => $rfid_no,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "Nomor RFID '{$rfid_no}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'rfid_no';
+            }
+        }
+
+        // Check VA Siswa
+        if ($va_siswa) {
+            $existing = \App\Models\Siswa::where('va_siswa', $va_siswa)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'va_siswa',
+                    'label' => $fieldLabels['va_siswa'],
+                    'value' => $va_siswa,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "Virtual Account '{$va_siswa}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'va_siswa';
+            }
+        }
+
+        // Check Nomor Rekening
+        if ($no_rekening) {
+            $existing = \App\Models\Siswa::where('no_rekening', $no_rekening)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'no_rekening',
+                    'label' => $fieldLabels['no_rekening'],
+                    'value' => $no_rekening,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "Nomor Rekening '{$no_rekening}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'no_rekening';
+            }
+        }
+
+        // Check Nomor HP
+        if ($no_hp) {
+            $existing = \App\Models\Siswa::where('no_hp', $no_hp)->first();
+            if ($existing) {
+                $duplicateDetails[] = [
+                    'field' => 'no_hp',
+                    'label' => $fieldLabels['no_hp'],
+                    'value' => $no_hp,
+                    'existingName' => $existing->user->name ?? 'Siswa',
+                    'message' => "Nomor HP '{$no_hp}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                ];
+                $duplicates[] = 'no_hp';
+            }
+        }
+
+        // Check Email
+        if ($email) {
+            $existing = \App\Models\User::where('email', $email)->first();
+            if ($existing) {
+                $siswaUser = \App\Models\Siswa::where('user_id', $existing->id)->first();
+                $siswaName = $siswaUser->user->name ?? $existing->name ?? 'User';
+
+                $duplicateDetails[] = [
+                    'field' => 'email',
+                    'label' => $fieldLabels['email'],
+                    'value' => $email,
+                    'existingName' => $siswaName,
+                    'message' => "Email '{$email}' sudah terdaftar atas nama " . $siswaName
+                ];
+                $duplicates[] = 'email';
+            }
+        }
 
         return response()->json([
             'exists' => count($duplicates) > 0,
-            'duplicates' => $duplicates
+            'duplicates' => $duplicates,
+            'details' => $duplicateDetails,
+            'count' => count($duplicates)
         ]);
     }
 }

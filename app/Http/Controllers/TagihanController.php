@@ -676,6 +676,7 @@ class TagihanController extends Controller
 
                 return [
                     'id'                => $p->id,
+                    'tagihan_siswa_id'  => $ts?->id,
                     'kode_kategori'     => $kodeKategori,
                     'kode_tagihan'      => 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT),
                     'potongan'          => $ts ? $ts->potonganSiswa->sum('nominal') : 0,
@@ -1068,5 +1069,139 @@ class TagihanController extends Controller
 
         // Output PDF ke browser
         return $mpdf->Output('Laporan-Tagihan-' . date('Ymd') . '.pdf', 'I');
+    }
+
+    /**
+     * Cetak Struk Tagihan (PDF)
+     * Digunakan untuk cetak struk dari tabel "Tagihan Seluruh Periode" maupun "Riwayat Pembayaran"
+     */
+    public function cetakStruk($tagihanSiswaId, $type = 'tagihan')
+    {
+        // Load data tagihan siswa
+        $tagihanSiswa = Tagihansiswa::with([
+            'siswa.user',
+            'tagihan.unit',
+            'tagihan.kelas',
+            'tagihan.items.kategori',
+            'potonganSiswa.potongan'
+        ])->findOrFail($tagihanSiswaId);
+
+        $tagihan = $tagihanSiswa->tagihan;
+        $siswa = $tagihanSiswa->siswa;
+        $nominal = $tagihan->items->sum('nominal');
+        $totalPotongan = $tagihanSiswa->potonganSiswa->sum('nominal');
+        $nominalAkhir = $nominal - $totalPotongan;
+
+        // Hitung bulan dan tahun
+        $bulanMulai = (int)$tagihan->bulan_mulai;
+        $tahunMulai = (int)$tagihan->tahun_mulai;
+        $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($tagihanSiswa->bulan_ke - 1);
+
+        $bulan = $date->translatedFormat('F');
+        $tahun = $date->year;
+        $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+        $kodeTagihan = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT);
+
+        // Status pembayaran
+        $status = $tagihanSiswa->status == 1 ? 'LUNAS' : 'BELUM LUNAS';
+        $statusBadge = $tagihanSiswa->status == 1
+            ? '<span style="color: green; font-weight: bold;">LUNAS</span>'
+            : '<span style="color: red; font-weight: bold;">BELUM LUNAS</span>';
+
+        // Build HTML untuk PDF
+        $html = '
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; padding: 10px; border-bottom: 2px solid #000;">STRUK TAGIHAN</h2>
+        </div>
+
+        <div style="margin-bottom: 15px; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 30%;"><strong>Nama Siswa:</strong></td>
+                    <td style="width: 70%;">' . ($siswa->user->name ?? '-') . '</td>
+                </tr>
+                <tr>
+                    <td><strong>NISN:</strong></td>
+                    <td>' . ($siswa->nisn ?? '-') . '</td>
+                </tr>
+                <tr>
+                    <td><strong>Kelas:</strong></td>
+                    <td>' . ($tagihan->kelas->nama_kelas ?? '-') . '</td>
+                </tr>
+                <tr>
+                    <td><strong>Unit:</strong></td>
+                    <td>' . ($tagihan->unit->nama_unit ?? '-') . '</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 10px 0; margin-bottom: 15px; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 30%;"><strong>Kode Tagihan:</strong></td>
+                    <td style="width: 70%;">' . $kodeTagihan . '</td>
+                </tr>
+                <tr>
+                    <td><strong>Jenis Tagihan:</strong></td>
+                    <td>' . $namaKategori . '</td>
+                </tr>
+                <tr>
+                    <td><strong>Periode:</strong></td>
+                    <td>' . $bulan . ' ' . $tahun . '</td>
+                </tr>
+                <tr>
+                    <td><strong>Tanggal Cetak:</strong></td>
+                    <td>' . now()->format('d/m/Y H:i:s') . '</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 15px; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background-color: #f0f0f0;">
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd;"><strong>Rincian Tagihan</strong></td>
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Rp ' . number_format($nominal, 0, ',', '.') . '</strong></td>
+                </tr>
+                <tr>
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd;"><strong>Potongan</strong></td>
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Rp ' . number_format($totalPotongan, 0, ',', '.') . '</strong></td>
+                </tr>
+                <tr style="background-color: #fff3cd;">
+                    <td style="width: 50%; padding: 8px; border: 2px solid #000;"><strong>TOTAL TAGIHAN</strong></td>
+                    <td style="width: 50%; padding: 8px; border: 2px solid #000; text-align: right;"><strong style="font-size: 14px;">Rp ' . number_format($nominalAkhir, 0, ',', '.') . '</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="text-align: center; padding: 15px; background-color: #f9f9f9; margin-bottom: 15px; border: 2px solid ' . ($tagihanSiswa->status == 1 ? '#28a745' : '#dc3545') . ';">
+            <h3 style="margin: 0; color: ' . ($tagihanSiswa->status == 1 ? '#28a745' : '#dc3545') . ';">STATUS: ' . $status . '</h3>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #666;">
+            <p>Terima kasih telah melakukan pembayaran.</p>
+            <p>Simpan struk ini sebagai bukti pembayaran Anda.</p>
+            <hr style="border: none; border-top: 1px dashed #999; margin: 10px 0;">
+            <p style="font-size: 10px;">Dicetak oleh: ' . Auth::user()->name . ' | ' . now()->format('d-m-Y H:i') . '</p>
+        </div>
+        ';
+
+        // Generate PDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Struk Tagihan - ' . $kodeTagihan);
+        $mpdf->SetAuthor(Auth::user()->name);
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-' . $kodeTagihan . '-' . date('Ymd') . '.pdf', 'I');
     }
 }
