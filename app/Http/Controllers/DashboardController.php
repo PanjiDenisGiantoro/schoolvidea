@@ -67,7 +67,7 @@ class DashboardController extends Controller
                 });
             })
             ->latest() // ambil yang terbaru
-            ->limit(10)
+            ->limit(15)
             ->get();
 
         $data = $pembayaranTagihans->map(function ($pembayaran) {
