@@ -88,6 +88,9 @@ class KeuanganTransaksiController extends Controller
         if ($request->jenis_transaksi) {
             $query->where('jenis_transaksi', $request->jenis_transaksi);
         }
+        if ($request->status_verifikasi) {
+            $query->where('status_verifikasi', $request->status_verifikasi);
+        }
         if ($request->kode_pembayaran) {
             $query->where('code_pembayaran', 'like', '%' . $request->kode_pembayaran . '%');
         }
@@ -424,6 +427,81 @@ class KeuanganTransaksiController extends Controller
                 if ($saldoSiswa) {
                     $saldoSiswa->increment('saldo_akhir', $transaksi->jumlah);
                 }
+                $settings = setting_akun::where('kategori', 'tabungan');
+
+                // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+                if (Auth::user()->yayasan_id) {
+                    // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+                    $settings->whereHas('unit', function ($q) {
+                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                    });
+                } elseif (Auth::user()->unit_id) {
+                    // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
+                    $settings->where('unit_id', Auth::user()->unit_id);
+                } elseif ($request->filled('unit_id')) {
+                    // Admin user filtering by unit
+                    $settings->where('unit_id', $request->unit_id);
+                }
+
+                $settings = $settings->where('status', '1')->first();
+
+                if(!$settings){
+                    return back()->with('danger', 'Setting akun tabungan belum diatur.');
+                }
+                $akun_id = $settings->akun_id;
+                $position = $settings->debit;
+
+
+                $keterangan = 'Setoran Tabungan ' . $siswa->user->name . ' Rp ' . number_format($transaksi->jumlah, 0, ',', '.');
+
+                $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
+                    $q->where('unit_id', Auth::user()->unit_id);
+                })
+                    ->where('allotment','Pembayaran Tabungan')
+                    ->orWhere('allotment','Semua Pembayaran')
+                    ->first();
+
+                if(!$datarekening){
+                    return back()->with('danger', 'Rekening tabungan belum Aktif.');
+                }
+
+                if($position == 1){
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $akun_id,
+                        'debit'        => 0,
+                        'kredit'       => $request->jumlah,
+                        'keterangan'   => $keterangan,
+                        'unit_id' => Auth::user()->unit_id
+                    ]);
+
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $datarekening->akun_id,
+                        'kredit'        => 0,
+                        'debit'       => $request->jumlah,
+                        'keterangan'   => $keterangan,
+                        'unit_id' => Auth::user()->unit_id
+                    ]);
+                }else{
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $akun_id,
+                        'debit'       => $request->jumlah,
+                        'kredit'        => 0,
+                        'keterangan'   => $keterangan,
+                        'unit_id' => Auth::user()->unit_id
+                    ]);
+
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $datarekening->akun_id,
+                        'kredit'       => $request->jumlah,
+                        'debit'        => 0,
+                        'keterangan'   => $keterangan,
+                        'unit_id' => Auth::user()->unit_id
+                    ]);
+                }
             }
 
             // === TABUNGAN TARIK: Kurangi saldo saat approve (setelah token diverifikasi) ===
@@ -446,26 +524,82 @@ class KeuanganTransaksiController extends Controller
                         'last_updated' => now()
                     ]);
 
-                    // Create journal entries untuk penarikan tabungan
-                    // Debit: Tabungan Keluar (mengurangi kas)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 2, // Tabungan Keluar
-                        'debit' => $transaksi->jumlah,
-                        'kredit' => 0,
-                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
-                    ]);
+                    $keterangan = 'Penarikan Tabungan ' . $siswa->user->name . ' Rp ' . number_format($transaksi->jumlah, 0, ',', '.');
+                    $settings = setting_akun::where('kategori', 'tabungan');
 
-                    // Kredit: Kas (mengurangi kas sekolah)
-                    \App\Models\Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id' => 1, // Kas
-                        'debit' => 0,
-                        'kredit' => $transaksi->jumlah,
-                        'keterangan' => 'Penarikan tabungan - ' . ($siswa->user->name ?? 'Siswa'),
-                        'tanggal' => now(),
-                    ]);
+                    // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
+                    if (Auth::user()->yayasan_id) {
+                        // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
+                        $settings->whereHas('unit', function ($q) {
+                            $q->where('yayasan_id', Auth::user()->yayasan_id);
+                        });
+                    } elseif (Auth::user()->unit_id) {
+                        // Jika user punya unit_id, tampilkan akun dari unit tersebut saja
+                        $settings->where('unit_id', Auth::user()->unit_id);
+                    } elseif ($request->filled('unit_id')) {
+                        // Admin user filtering by unit
+                        $settings->where('unit_id', $request->unit_id);
+                    }
+
+                    $settings = $settings->where('status', '1')->first();
+
+                    if(!$settings){
+                        return back()->with('danger', 'Setting akun tabungan belum diatur.');
+                    }
+                    $akun_id = $settings->akun_id;
+                    $position = $settings->debit;
+
+
+
+                    $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
+                        $q->where('unit_id', Auth::user()->unit_id);
+                    })
+                        ->where('allotment','Pembayaran Tabungan')
+                        ->orWhere('allotment','Semua Pembayaran')
+                        ->first();
+
+                    if(!$datarekening){
+                        return back()->with('danger', 'Rekening tabungan belum Aktif.');
+                    }
+
+                    if($position == 1){
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id'      => $akun_id,
+                            'debit'        => 0,
+                            'kredit'       => $request->jumlah,
+                            'keterangan'   => $keterangan,
+                            'unit_id' => Auth::user()->unit_id
+                        ]);
+
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id'      => $datarekening->akun_id,
+                            'kredit'        => 0,
+                            'debit'       => $request->jumlah,
+                            'keterangan'   => $keterangan,
+                            'unit_id' => Auth::user()->unit_id
+                        ]);
+                    }else{
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id'      => $akun_id,
+                            'debit'       => $request->jumlah,
+                            'kredit'        => 0,
+                            'keterangan'   => $keterangan,
+                            'unit_id' => Auth::user()->unit_id
+                        ]);
+
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id'      => $datarekening->akun_id,
+                            'kredit'       => $request->jumlah,
+                            'debit'        => 0,
+                            'keterangan'   => $keterangan,
+                            'unit_id' => Auth::user()->unit_id
+                        ]);
+                    }
+
                 }
             }
 

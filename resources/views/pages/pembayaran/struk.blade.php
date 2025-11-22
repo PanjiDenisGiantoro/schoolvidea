@@ -163,10 +163,7 @@
         {{-- Informasi Tagihan --}}
         <div class="section">
             <div class="section-title">DETAIL PEMBAYARAN</div>
-            <div class="row">
-                <div class="row-left">Kode Tagihan:</div>
-                <div class="row-right">{{ $kodeTagihan }}</div>
-            </div>
+
             <div class="row">
                 <div class="row-left">Kategori:</div>
                 <div class="row-right">{{ optional($tagihan->items->first()->kategori)->nama_kategori ?? '-' }}</div>

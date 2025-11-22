@@ -86,10 +86,11 @@
                                 <th>#</th>
                                 <th>Kode Kategori</th>
                                 <th>Kode Tagihan</th>
+                                <th>No Invoice</th>
+                                <th>Kode Pembayaran</th>
                                 <th>Nama Tagihan</th>
                                 <th>Bulan</th>
                                 <th>Biaya Tagihan</th>
-                                <th>Potongan</th>
                                 <th>Nominal Akhir</th>
                                 <th>Status</th>
                                 <th>Tgl. Bayar</th>
@@ -101,11 +102,28 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $row['kode_kategori'] ?? '-' }}</td>
-                                    <td>{{ $row['kode_tagihan'] }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary" title="{{ $row['kode_tagihan'] }}">
+                                            {{ substr($row['kode_tagihan'], 0, 50) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                            <span class="badge bg-info" title="{{ $row['no_invoice'] }}">
+                                                {{ $row['no_invoice'] }}
+                                            </span>
+                                    </td>
+                                    <td>
+                                        @if ($row['status'] === 'Lunas' && $row['kode_pembayaran'])
+                                            <span class="badge bg-success">
+                                                {{ $row['kode_pembayaran'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $row['nama_kategori'] }}</td>
                                     <td>{{ $row['bulan'] }} {{ $row['tahun'] }}</td>
                                     <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($row['potongan'], 0, ',', '.') }}</td>
                                     <td><strong>Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong></td>
                                     <td>
                                         @if ($row['status'] === 'Lunas')
@@ -118,15 +136,22 @@
                                         {{ $row['tanggal_bayar'] ? \Carbon\Carbon::parse($row['tanggal_bayar'])->format('d/m/Y') : '-' }}
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-primary rounded-2"
-                                            onclick="cetakStrukPDF({{ $row['id'] }})">
-                                            <i class="bx bx-printer"></i> Cetak
-                                        </button>
+                                        @if ($row['status'] === 'Lunas')
+                                            <button type="button" class="btn btn-sm btn-success rounded-2"
+                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}')">
+                                                <i class="bx bx-printer"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-primary rounded-2"
+                                                onclick="cetakStrukPDF({{ $row['id'] }})">
+                                                <i class="bx bx-printer"></i>
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="11">Tidak ada data tagihan.</td>
+                                    <td colspan="13">Tidak ada data tagihan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -144,8 +169,8 @@
                             <tr>
                                 <th>#</th>
                                 <th>Kode Kategori</th>
-                                <th>Kode Tagihan</th>
-                                <th>Potongan</th>
+                                <th>Bulan</th>
+                                <th>Kode Pembayaran</th>
                                 <th>Jumlah Bayar</th>
                                 <th>Wkt. Transaksi</th>
                                 <th>Metode Bayar</th>
@@ -159,8 +184,17 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $pembayaran['kode_kategori'] ?? '-' }}</td>
-                                    <td>{{ $pembayaran['kode_tagihan'] }}</td>
-                                    <td>Rp {{ number_format($pembayaran['potongan'], 0, ',', '.') }}</td>
+
+                                    <td>{{ $pembayaran['bulan'] ?? '-' }} {{ $pembayaran['tahun'] ?? '' }}</td>
+                                    <td>
+                                        @if($pembayaran['status_approval'] === 'approved' && $pembayaran['kode_pembayaran'] !== '-')
+                                            <span class="badge bg-success">
+                                                {{ $pembayaran['kode_pembayaran'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td><strong>Rp {{ number_format($pembayaran['jumlah_bayar'], 0, ',', '.') }}</strong></td>
                                     <td>{{ \Carbon\Carbon::parse($pembayaran['waktu_transaksi'])->format('d/m/Y H:i') }}</td>
                                     <td>
@@ -188,7 +222,7 @@
                                         @if($pembayaran['tagihan_siswa_id'])
                                             <button type="button" class="btn btn-sm btn-primary"
                                                 onclick="cetakStrukPDF({{ $pembayaran['tagihan_siswa_id'] }})">
-                                                <i class="bx bx-printer"></i> Struk
+                                                <i class="bx bx-printer"></i>
                                             </button>
                                         @else
                                             <span class="text-muted small">-</span>
@@ -197,7 +231,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="text-center py-3">Belum ada pembayaran.</td>
+                                    <td colspan="12" class="text-center py-3">Belum ada pembayaran.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -261,6 +295,26 @@
             console.log('Membuka URL:', url);
 
             // Buka halaman cetak struk PDF dalam tab baru
+            const pdfWindow = window.open(url, '_blank');
+
+            if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
+                alert('Popup browser mungkin diblokir. Silakan izinkan popup untuk domain ini.');
+                console.error('Gagal membuka popup');
+            }
+        }
+
+        function cetakInvoice(tagihanSiswaId, kodePembayaran) {
+            // Validasi parameter
+            if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
+                alert('Error: ID Tagihan Siswa tidak valid');
+                console.error('Invalid tagihanSiswaId:', tagihanSiswaId);
+                return;
+            }
+
+            const url = `/tagihan/${tagihanSiswaId}/cetak-invoice`;
+            console.log('Membuka URL Invoice:', url);
+
+            // Buka halaman cetak invoice PDF dalam tab baru
             const pdfWindow = window.open(url, '_blank');
 
             if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {

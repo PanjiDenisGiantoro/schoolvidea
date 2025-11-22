@@ -54,43 +54,37 @@ class DashboardController extends Controller
             $query->where('unit_id', $unitId);
         })->count();
 
-        $tagihans = Tagihan::with([
-            'unit',
-            'kelas',
-            'items.kategori',
+        // Ambil data pembayaran tagihan terbaru dengan status approval
+        $pembayaranTagihans = \App\Models\Pembayarantagihan::with([
             'tagihanSiswa.siswa.user',
-            'tagihanSiswa.pembayaranTagihan'
+            'tagihanSiswa.tagihan.unit',
+            'tagihanSiswa.tagihan.kelas',
+            'tagihanSiswa.tagihan.items.kategori'
         ])
             ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->where('unit_id', $unitId);
+                $query->whereHas('tagihanSiswa.tagihan', function ($q) use ($unitId) {
+                    $q->where('unit_id', $unitId);
+                });
             })
             ->latest() // ambil yang terbaru
             ->limit(10)
             ->get();
 
-        $data = $tagihans->map(function ($tagihan) {
-            $itemTagihan   = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
-            $nominalTagihan = $tagihan->items->sum('nominal');
+        $data = $pembayaranTagihans->map(function ($pembayaran) {
+            $ts = $pembayaran->tagihanSiswa;
+            $tagihan = $ts->tagihan;
+            $itemTagihan = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
 
-            return $tagihan->tagihanSiswa->map(function ($ts) use ($tagihan, $itemTagihan, $nominalTagihan) {
-                $jumlahDibayar = $ts->pembayaranTagihan->sum('jumlah_bayar');
-                $tunggakan     = $nominalTagihan - $jumlahDibayar;
-
-                return [
-                    'nomor_induk'   => $ts->siswa->nisn ?? '-',
-                    'nama_lengkap'  => $ts->siswa->user->name ?? '-',
-                    'tagihan_unit'  => $tagihan->unit->nama_unit ?? '-',
-                    'tagihan_kelas' => $tagihan->kelas->nama_kelas ?? '-',
-                    'item_tagihan'  => $itemTagihan,
-                    'type_tagihan'  => $tagihan->jenis_tagihan ?? '-',
-                    'jml_tagihan'   => $nominalTagihan,
-                    'jml_dibayar'   => $jumlahDibayar,
-                    'jml_tunggakan' => $tunggakan,
-                    'status'        => $tunggakan <= 0 ? 'Lunas' : 'Belum Lunas',
-                ];
-            });
-        })->flatten(1)
-            ->take(10); // ambil hanya 10 data pertama
+            return [
+                'nomor_induk'   => $ts->siswa->nisn ?? '-',
+                'nama_lengkap'  => $ts->siswa->user->name ?? '-',
+                'tagihan_unit'  => $tagihan->unit->nama_unit ?? '-',
+                'tagihan_kelas' => $tagihan->kelas->nama_kelas ?? '-',
+                'item_tagihan'  => $itemTagihan,
+                'jml_dibayar'   => $pembayaran->jumlah_bayar,
+                'status_approval' => $pembayaran->status_approval ?? 'pending',
+            ];
+        });
 
 
         $tahun = now()->year;

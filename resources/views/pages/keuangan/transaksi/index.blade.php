@@ -179,6 +179,26 @@
                         </select>
                     </div>
 
+                    {{-- Filter Status --}}
+                    <div class="col-md-3">
+                        <label for="status_verifikasi" class="form-label">Status Verifikasi</label>
+                        <select name="status_verifikasi" id="status_verifikasi" class="form-select">
+                            <option value="">Semua Status</option>
+                            <option value="pending"
+                                {{ request('status_verifikasi') == 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+                            <option value="approved"
+                                {{ request('status_verifikasi') == 'approved' ? 'selected' : '' }}>
+                                Approved
+                            </option>
+                            <option value="rejected"
+                                {{ request('status_verifikasi') == 'rejected' ? 'selected' : '' }}>
+                                Rejected
+                            </option>
+                        </select>
+                    </div>
+
                     {{-- Filter Kode Pembayaran --}}
                     <div class="col-md-3">
                         <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>

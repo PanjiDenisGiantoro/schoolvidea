@@ -69,6 +69,7 @@ class TabunganApiController extends Controller
             ]);
 
             $settings = setting_akun::where('kategori', 'tabungan')
+                ->where('unit_id', $siswa->unit_id)
                 ->where('status', '1')
                 ->first();
 
@@ -194,6 +195,7 @@ class TabunganApiController extends Controller
             }
 
             $settings = setting_akun::where('kategori', 'tabungan-tarik')
+                ->where('unit_id', $siswa->unit_id)
                 ->where('status', '1')
                 ->first();
 
@@ -238,13 +240,13 @@ class TabunganApiController extends Controller
             ]);
 
             // Jurnal Debit
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id' => $akun_id,
-                'debit' => $request->jumlah,
-                'kredit' => 0,
-                'keterangan' => $request->keterangan,
-            ]);
+//            Jurnals::create([
+//                'transaksi_id' => $transaksi->id,
+//                'akun_id' => $akun_id,
+//                'debit' => $request->jumlah,
+//                'kredit' => 0,
+//                'keterangan' => $request->keterangan,
+//            ]);
 
             // Update saldo siswa (kurangi saldo)
 //            $saldoSiswa->decrement('saldo_akhir', $request->jumlah);

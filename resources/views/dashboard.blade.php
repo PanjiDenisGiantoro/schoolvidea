@@ -28,7 +28,7 @@
                 <div class="card-body position-relative">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Petugas</p>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Unit</p>
                             <h3 class="fw-bold text-info mb-0 text-absolute" >{{ $totalUnit }}</h3>
                         </div>
                         <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
@@ -107,10 +107,11 @@
                         <h4 class="card-title">Tagihan</h4>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted mb-2">Saldo Total</p>
-                        <h3 class="fw-bold text-success">{{ number_format($totalSaldo, 0, ',', '.') }}</h3>
-                        <p class="mt-3">Jumlah transaksi tabungan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
-                        <a href="{{ url('tabungan') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+                        <p class="text-muted mb-2">Total Nominal Tagihan</p>
+                        <h3 class="fw-bold text-warning">Rp {{ number_format($tagihanData['nominal_tagihan'], 0, ',', '.') }}</h3>
+                        <div class="mt-3">
+                        </div>
+                        <a href="{{ url('keuangan_transaksi') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
             </div>
@@ -124,51 +125,50 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <div class="table-responsive">
-                            <table class="table table-striped mb-0">
-                                <thead>
+                        <table class="table table-striped mb-0">
+                            <thead>
+                            <tr>
+                                <th>NISN</th>
+                                <th>Nama Lengkap</th>
+                                <th>Tagihan Unit</th>
+                                <th>Tagihan Kelas</th>
+                                <th>Item Tagihan</th>
+                                <th>Jumlah Dibayar</th>
+                                <th>Status Approval</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @forelse($data as $row)
                                 <tr>
-                                    <th>NISN</th>
-                                    <th>Nama Lengkap</th>
-                                    <th>Tagihan Unit</th>
-                                    <th>Tagihan Kelas</th>
-                                    <th>Item Tagihan</th>
-                                    <th>Tipe Tagihan</th>
-                                    <th>Jml. Tagihan</th>
-                                    <th>Jml. Dibayar</th>
-                                    <th>Jml. Tunggakan</th>
-                                    <th>Status</th>
+                                    <td>{{ $row['nomor_induk'] }}</td>
+                                    <td>{{ $row['nama_lengkap'] }}</td>
+                                    <td>{{ $row['tagihan_unit'] }}</td>
+                                    <td>{{ $row['tagihan_kelas'] }}</td>
+                                    <td>{{ $row['item_tagihan'] }}</td>
+                                    <td><strong>Rp {{ number_format($row['jml_dibayar'], 0, ',', '.') }}</strong></td>
+                                    <td>
+                                        @php
+                                            $statusColor = match($row['status_approval']) {
+                                                'approved' => 'success',
+                                                'rejected' => 'danger',
+                                                default => 'warning'
+                                            };
+                                            $statusText = match($row['status_approval']) {
+                                                'approved' => 'Approved',
+                                                'rejected' => 'Rejected',
+                                                default => 'Pending'
+                                            };
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}">{{ $statusText }}</span>
+                                    </td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                @forelse($data as $row)
-                                    <tr>
-                                        <td>{{ $row['nomor_induk'] }}</td>
-                                        <td>{{ $row['nama_lengkap'] }}</td>
-                                        <td>{{ $row['tagihan_unit'] }}</td>
-                                        <td>{{ $row['tagihan_kelas'] }}</td>
-                                        <td>{{ $row['item_tagihan'] }}</td>
-                                        <td>{{ $row['type_tagihan'] }}</td>
-                                        <td>Rp {{ number_format($row['jml_tagihan'], 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($row['jml_dibayar'], 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($row['jml_tunggakan'], 0, ',', '.') }}</td>
-                                        <td>
-                                            @if($row['status'] === 'Lunas')
-                                                <span class="badge bg-success">Lunas</span>
-                                            @else
-                                                <span class="badge bg-danger">Belum Lunas</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="10" class="text-center">Tidak ada data tagihan baru</td>
-                                    </tr>
-                                @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">Tidak ada data pembayaran terbaru</td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

@@ -240,18 +240,42 @@
                     @endif
                 </ul>
 
+                {{-- Token Verification Button (untuk penarikan tabungan yang pending) --}}
+
+
                 {{-- Approve/Reject Buttons --}}
                 @if($transaksi->status_verifikasi == 'pending')
-                <div class="mt-3">
-                    <button type="button" class="btn btn-success w-100 rounded-pill shadow-sm mb-2 btn-approve-detail"
-                            data-id="{{ $transaksi->id }}">
-                        <i class="bx bx-check-circle me-1"></i> Approve Transaksi
-                    </button>
-                    <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
-                            data-id="{{ $transaksi->id }}">
-                        <i class="bx bx-x-circle me-1"></i> Reject Transaksi
-                    </button>
-                </div>
+                    @if($transaksi->jenis_transaksi == 'penarikan_tabungan' && $transaksi->status_approval == 'pending')
+                        <div class="mt-3">
+
+                        <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap btn-verify w-100 shadow-sm mb-2"
+                                    data-id="{{ $transaksi->id }}"
+                                    data-token="{{ $transaksi->token }}"
+                                    data-jumlah="{{ $transaksi->jumlah }}"
+                                    title="Verifikasi dengan Token">
+                                <i class="bx bx-key"></i> Verifikasi Token
+                            </button>
+                            <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
+                                    data-id="{{ $transaksi->id }}">
+                                <i class="bx bx-x-circle me-1"></i> Reject Transaksi
+                            </button>
+                        </div>
+
+
+                    @else
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success w-100 rounded-pill shadow-sm mb-2 btn-approve-detail"
+                                    data-id="{{ $transaksi->id }}">
+                                <i class="bx bx-check-circle me-1"></i> Approve Transaksi
+                            </button>
+                            <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
+                                    data-id="{{ $transaksi->id }}">
+                                <i class="bx bx-x-circle me-1"></i> Reject Transaksi
+                            </button>
+                        </div>
+
+                    @endif
+
                 @endif
 
                 <div class="mt-4 d-flex justify-content-between">
@@ -394,6 +418,17 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle verify token button click (untuk penarikan tabungan)
+            const verifyBtn = document.querySelector('.btn-verify');
+            if (verifyBtn) {
+                verifyBtn.addEventListener('click', function() {
+                    const transaksiId = this.dataset.id;
+                    const expectedToken = this.dataset.token;
+                    const jumlah = this.dataset.jumlah;
+                    showVerifyModal(transaksiId, expectedToken, jumlah);
+                });
+            }
+
             // Handle approve button click
             const approveBtn = document.querySelector('.btn-approve-detail');
             if (approveBtn) {
@@ -575,7 +610,7 @@
             // Ambil data transaksi yang dibutuhkan untuk ditampilkan
             const codePembayaran = "{{ $transaksi->code_pembayaran }}";
             const jumlahFormat = "Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}";
-            
+
             Swal.fire({
                 title: 'Verifikasi Pembatalan Transaksi',
                 html: `
@@ -627,5 +662,127 @@
                 document.getElementById('token-input-batal').focus();
             }, 500);
         });
+
+        // Show Verify Modal untuk Token Verification
+        function showVerifyModal(transaksiId, expectedToken, jumlah) {
+            Swal.fire({
+                title: 'Verifikasi Token Penarikan',
+                html: `
+                    <div class="text-start">
+                        <div class="alert alert-info mb-3">
+                            <strong><i class="bx bx-info-circle me-1"></i>Informasi:</strong><br>
+                            <small class="d-block">Masukkan 6 digit token untuk memverifikasi penarikan sebesar : </small>
+                            <small class="d-block"><strong>Rp ${new Intl.NumberFormat('id-ID').format(jumlah)}</strong></small>
+                        </div>
+                        <label for="token-input" class="form-label">Token (6 Digit) <span class="text-danger">*</span></label>
+                        <input type="text" id="token-input" class="form-control form-control-lg text-center"
+                               placeholder="000000" maxlength="6"
+                               style="letter-spacing: 8px; font-family: monospace; font-size: 1.5rem;">
+                        <small class="text-muted mt-2 d-block">Token diberikan saat transaksi penarikan dibuat</small>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#48bb78',
+                denyButtonColor: '#f56565',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check-circle me-1"></i> Approve',
+                denyButtonText: '<i class="bx bx-x-circle me-1"></i> Reject',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                preConfirm: () => {
+                    const token = document.getElementById('token-input').value;
+                    if (!token || token.length !== 6) {
+                        Swal.showValidationMessage('Token harus 6 digit');
+                        return false;
+                    }
+                    return { token: token, action: 'approve' };
+                },
+                preDeny: () => {
+                    const token = document.getElementById('token-input').value;
+                    if (!token || token.length !== 6) {
+                        Swal.showValidationMessage('Token harus 6 digit');
+                        return false;
+                    }
+                    return { token: token, action: 'reject' };
+                }
+            }).then((result) => {
+                if (result.isConfirmed || result.isDenied) {
+                    processTokenVerification(transaksiId, result.value.token, result.value.action);
+                }
+            });
+
+            // Auto focus on token input
+            setTimeout(() => {
+                document.getElementById('token-input').focus();
+            }, 500);
+        }
+
+        // Process Token Verification
+        function processTokenVerification(transaksiId, token, action) {
+            Swal.fire({
+                title: 'Memverifikasi...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('/tabungan/verify-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    transaksi_id: transaksiId,
+                    token: token,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        html: `
+                            <div class="text-start">
+                                <p>${data.message}</p>
+                                <div class="alert alert-info mt-3">
+                                    <strong>Detail:</strong><br>
+                                    <small>Transaksi ID: ${data.data.transaksi_id}</small><br>
+                                    <small>Code: ${data.data.code_pembayaran}</small><br>
+                                    <small>Status: <span class="badge bg-${action === 'approve' ? 'success' : 'danger'}">${data.data.status_approval}</span></small><br>
+                                    <small>Saldo Akhir: Rp ${new Intl.NumberFormat('id-ID').format(data.data.saldo_akhir)}</small>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonColor: '#48bb78'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message,
+                        confirmButtonColor: '#f56565'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat verifikasi token',
+                    confirmButtonColor: '#f56565'
+                });
+                console.error('Error:', error);
+            });
+        }
     </script>
 @endpush

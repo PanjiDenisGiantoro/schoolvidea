@@ -67,7 +67,7 @@
                                 <td>{{ $item->account_code }}</td>
                                 <td>{{ $item->account_name }}</td>
                                 <td>{{ $item->owner_name }}</td>
-                                <td>{{ $item->akun ? ($item->akun->name ?? $item->akun->kode_akun) : '-' }}</td>
+                                <td>{{ $item->akun ? ( $item->akun->kode_akun.' - '.$item->akun->name) : '-' }}</td>
                                 <td>
                                     @if ($item->status == 1)
                                         <span class="badge bg-success">Aktif</span>

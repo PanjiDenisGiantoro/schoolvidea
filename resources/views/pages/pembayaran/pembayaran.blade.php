@@ -782,7 +782,7 @@
             }
 
             Swal.fire({
-                title: `Bayar Tagihan ${displayBulan} ${displayTahun}`,
+                title: `Bayar Tagihan ${displayBulan} `,
                 text: `Total: Rp ${validNominal.toLocaleString('id-ID')}`,
                 icon: "question",
                 showCancelButton: true,
@@ -806,7 +806,6 @@
                                 <label class="form-label">Maksimal: Rp ${validNominal.toLocaleString('id-ID')}</label>
                                 <input type="text" id="swal-input-nominal" class="form-control"
                                     placeholder="Contoh: 500.000" style="font-size: 1.1rem;">
-                                <small class="text-muted">Gunakan titik sebagai pemisah ribuan</small>
                             </div>
                         `,
                         showCancelButton: true,
@@ -873,7 +872,7 @@
                     nominal: nominal, // total tagihan
                     jumlah_bayar: jumlahBayar, // jumlah yang dibayar (bisa full / sebagian)
                     kategori_id: kategoriId,
-                    metode: 'manual',
+                    metode: 'TUNAI',
                 })
             })
                 .then(res => res.json())
@@ -1117,7 +1116,7 @@
                         nominal: tagihan.nominal,
                         jumlah_bayar: tagihan.nominal,
                         kategori_id: tagihanData?.kategori_id || 1,
-                        metode: 'manual',
+                        metode: 'TUNAI',
                     })
                 })
                     .then(res => res.json())

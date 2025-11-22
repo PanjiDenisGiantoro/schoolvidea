@@ -636,7 +636,7 @@ class TagihanController extends Controller
         $bulanMulai     = (int) $firstTagihan->bulan_mulai;
         $tahunMulai     = (int) $firstTagihan->tahun_mulai;
 
-        $dataPerbulan = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori, $kodeKategori, $id) {
+        $dataPerbulan = $tagihanSiswa->map(function ($ts) use ($bulanMulai, $tahunMulai, $nominal, $namaKategori, $kodeKategori, $id, $siswa) {
             $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($ts->bulan_ke - 1);
 
             // Total potongan untuk tagihan ini
@@ -645,12 +645,33 @@ class TagihanController extends Controller
             // Nominal setelah potongan
             $nominalSetelahPotongan = $nominal - $totalPotongan;
 
+            // Generate kode tagihan yang unique per transaksi dengan bulan_ke
+            $kodeTagihanUnique = 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($ts->bulan_ke, 2, '0', STR_PAD_LEFT) . '-' . now()->format('Ymd');
+
+            // Generate no invoice (unique untuk belum bayar)
+            $noInvoice = 'INV-' . str_pad($siswa->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($ts->bulan_ke, 2, '0', STR_PAD_LEFT);
+
+            // Cek pembayaran untuk mendapatkan kode pembayaran jika sudah lunas
+            $kodePembayaran = '';
+            if ($ts->status == 1) {
+                // Ambil kode pembayaran dari tabel pembayaran_tagihan
+                $pembayaranTagihan = \App\Models\Pembayarantagihan::where('tagihan_siswa_id', $ts->id)
+                    ->where('status_approval', 'approved')
+                    ->first();
+
+                if ($pembayaranTagihan && $pembayaranTagihan->code_pembayaran) {
+                    $kodePembayaran = $pembayaranTagihan->code_pembayaran;
+                }
+            }
+
             return [
                 'id'            => $ts->id,
                 'tagihan_id'    => $ts->tagihan_id,
                 'kode_kategori' => $kodeKategori,
                 'nama_kategori' => $namaKategori,
-                'kode_tagihan'  => 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT),
+                'kode_tagihan'  => $kodeTagihanUnique,
+                'no_invoice'    => $noInvoice,
+                'kode_pembayaran' => $kodePembayaran,
                 'bulan'         => $date->translatedFormat('F'),
                 'tahun'         => $date->year,
                 'nominal'       => $nominal,
@@ -674,11 +695,15 @@ class TagihanController extends Controller
                     ? Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKe - 1)
                     : null;
 
+                // Generate kode tagihan yang sama dengan dataPerbulan (unik per bulan_ke)
+                $kodeTagihanUnique = 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($bulanKe, 2, '0', STR_PAD_LEFT);
+
                 return [
                     'id'                => $p->id,
                     'tagihan_siswa_id'  => $ts?->id,
                     'kode_kategori'     => $kodeKategori,
-                    'kode_tagihan'      => 'TAG-' . str_pad($id, 5, '0', STR_PAD_LEFT),
+                    'kode_tagihan'      => $kodeTagihanUnique,
+                    'kode_pembayaran'   => $p->code_pembayaran ?? '-',
                     'potongan'          => $ts ? $ts->potonganSiswa->sum('nominal') : 0,
                     'tanggal_bayar'     => $p->tanggal_bayar,
                     'waktu_transaksi'   => $p->created_at,
@@ -1088,6 +1113,7 @@ class TagihanController extends Controller
 
         $tagihan = $tagihanSiswa->tagihan;
         $siswa = $tagihanSiswa->siswa;
+        $unit = $tagihan->unit;
         $nominal = $tagihan->items->sum('nominal');
         $totalPotongan = $tagihanSiswa->potonganSiswa->sum('nominal');
         $nominalAkhir = $nominal - $totalPotongan;
@@ -1100,7 +1126,22 @@ class TagihanController extends Controller
         $bulan = $date->translatedFormat('F');
         $tahun = $date->year;
         $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
-        $kodeTagihan = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT);
+
+        // Generate kode tagihan unique per bulan_ke
+        $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT);
+
+        // Ambil kode surat dari unit
+        $kodeSurat = $unit->code ?? 'UNIT-' . str_pad($unit->id, 3, '0', STR_PAD_LEFT);
+
+        // Ambil kode pembayaran jika sudah approved
+        $kodePembayaran = '';
+        $pembayaranTagihan = \App\Models\Pembayarantagihan::where('tagihan_siswa_id', $tagihanSiswaId)
+            ->where('status_approval', 'approved')
+            ->first();
+
+        if ($pembayaranTagihan && $pembayaranTagihan->code_pembayaran) {
+            $kodePembayaran = $pembayaranTagihan->code_pembayaran;
+        }
 
         // Status pembayaran
         $status = $tagihanSiswa->status == 1 ? 'LUNAS' : 'BELUM LUNAS';
@@ -1111,7 +1152,10 @@ class TagihanController extends Controller
         // Build HTML untuk PDF
         $html = '
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; padding: 10px; border-bottom: 2px solid #000;">STRUK TAGIHAN</h2>
+            <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px;">
+                <h2 style="margin: 0; padding: 5px;">STRUK PEMBAYARAN</h2>
+                <p style="margin: 5px 0; font-size: 11px; color: #666;">Kode Surat: <strong>' . $kodeSurat . '</strong></p>
+            </div>
         </div>
 
         <div style="margin-bottom: 15px; font-size: 12px;">
@@ -1139,8 +1183,12 @@ class TagihanController extends Controller
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="width: 30%;"><strong>Kode Tagihan:</strong></td>
-                    <td style="width: 70%;">' . $kodeTagihan . '</td>
+                    <td style="width: 70%;">' . $kodeTagihanUnique . '</td>
                 </tr>
+                ' . ($kodePembayaran ? '<tr>
+                    <td><strong>Kode Pembayaran:</strong></td>
+                    <td style="color: green; font-weight: bold;">' . $kodePembayaran . '</td>
+                </tr>' : '') . '
                 <tr>
                     <td><strong>Jenis Tagihan:</strong></td>
                     <td>' . $namaKategori . '</td>
@@ -1182,6 +1230,7 @@ class TagihanController extends Controller
             <p>Simpan struk ini sebagai bukti pembayaran Anda.</p>
             <hr style="border: none; border-top: 1px dashed #999; margin: 10px 0;">
             <p style="font-size: 10px;">Dicetak oleh: ' . Auth::user()->name . ' | ' . now()->format('d-m-Y H:i') . '</p>
+            <p style="font-size: 9px; margin: 5px 0;">Kode Surat: ' . $kodeSurat . ' | Ref: ' . $kodeTagihanUnique . '</p>
         </div>
         ';
 
@@ -1197,11 +1246,185 @@ class TagihanController extends Controller
             'margin_footer' => 5,
         ]);
 
-        $mpdf->SetTitle('Struk Tagihan - ' . $kodeTagihan);
+        $mpdf->SetTitle('Struk Tagihan - ' . $kodeTagihanUnique);
         $mpdf->SetAuthor(Auth::user()->name);
         $mpdf->WriteHTML($html);
 
         // Output PDF ke browser
-        return $mpdf->Output('Struk-' . $kodeTagihan . '-' . date('Ymd') . '.pdf', 'I');
+        return $mpdf->Output('Struk-' . $kodeTagihanUnique . '-' . date('Ymd') . '.pdf', 'I');
+    }
+
+    /**
+     * Cetak Invoice untuk tagihan yang sudah lunas
+     */
+    public function cetakInvoice($tagihanSiswaId)
+    {
+        // Load data tagihan siswa dengan relasi pembayaran
+        $tagihanSiswa = Tagihansiswa::with([
+            'siswa.user',
+            'tagihan.unit',
+            'tagihan.kelas',
+            'tagihan.items.kategori',
+            'potonganSiswa.potongan'
+        ])->findOrFail($tagihanSiswaId);
+
+        // Ambil pembayaran tagihan untuk mendapat kode pembayaran
+        $pembayaranTagihan = \App\Models\Pembayarantagihan::where('tagihan_siswa_id', $tagihanSiswaId)
+            ->where('status_approval', 'approved')
+            ->first();
+
+        if (!$pembayaranTagihan) {
+            return response()->json(['error' => 'Pembayaran tidak ditemukan'], 404);
+        }
+
+        $tagihan = $tagihanSiswa->tagihan;
+        $siswa = $tagihanSiswa->siswa;
+        $unit = $tagihan->unit;
+        $nominal = $tagihan->items->sum('nominal');
+        $totalPotongan = $tagihanSiswa->potonganSiswa->sum('nominal');
+        $nominalAkhir = $nominal - $totalPotongan;
+
+        // Hitung bulan dan tahun
+        $bulanMulai = (int)$tagihan->bulan_mulai;
+        $tahunMulai = (int)$tagihan->tahun_mulai;
+        $date = Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($tagihanSiswa->bulan_ke - 1);
+
+        $bulan = $date->translatedFormat('F');
+        $tahun = $date->year;
+        $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+
+        // Generate kode tagihan unique
+        $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT);
+
+        // Ambil kode surat dari unit
+        $kodeSurat = $unit->code ?? 'UNIT-' . str_pad($unit->id, 3, '0', STR_PAD_LEFT);
+
+        // Kode pembayaran dari pembayaran_tagihan
+        $kodePembayaran = $pembayaranTagihan->code_pembayaran ?? '-';
+
+        // Build HTML untuk Invoice PDF
+        $html = '
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+                <h1 style="margin: 5px 0; font-size: 24px;">INVOICE</h1>
+                <p style="margin: 5px 0; font-size: 14px; color: #666;">Kode Surat: ' . $kodeSurat . '</p>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px; font-size: 11px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 50%; vertical-align: top;">
+                        <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #999; padding-bottom: 5px;">DARI:</h4>
+                        <p style="margin: 5px 0;"><strong>' . ($unit->nama_unit ?? '-') . '</strong></p>
+                        <p style="margin: 5px 0;">' . ($unit->alamat ?? '') . '</p>
+                        <p style="margin: 5px 0;">Email: ' . ($unit->email ?? '-') . '</p>
+                        <p style="margin: 5px 0;">Telp: ' . ($unit->no_hp ?? '-') . '</p>
+                    </td>
+                    <td style="width: 50%; vertical-align: top; padding-left: 20px;">
+                        <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #999; padding-bottom: 5px;">UNTUK:</h4>
+                        <p style="margin: 5px 0;"><strong>' . ($siswa->user->name ?? '-') . '</strong></p>
+                        <p style="margin: 5px 0;">NISN: ' . ($siswa->nisn ?? '-') . '</p>
+                        <p style="margin: 5px 0;">Kelas: ' . ($tagihan->kelas->nama_kelas ?? '-') . '</p>
+                        <p style="margin: 5px 0;">Unit: ' . ($unit->nama_unit ?? '-') . '</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="border: 2px solid #000; padding: 10px; margin-bottom: 20px; font-size: 11px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background-color: #f0f0f0;">
+                    <td style="width: 30%; padding: 8px; border-bottom: 1px solid #ddd;"><strong>No. Invoice</strong></td>
+                    <td style="width: 70%; padding: 8px; border-bottom: 1px solid #ddd;"><strong>' . $kodePembayaran . '</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Kode Tagihan</strong></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $kodeTagihanUnique . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Tanggal Invoice</strong></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">' . now()->format('d/m/Y') . '</td>
+                </tr>
+                <tr style="background-color: #fff3cd;">
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Tanggal Pembayaran</strong></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>' . ($tagihanSiswa->tanggal_bayar ? \Carbon\Carbon::parse($tagihanSiswa->tanggal_bayar)->format('d/m/Y') : '-') . '</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 20px; font-size: 11px;">
+            <h4 style="margin: 0 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 5px;">DETAIL PEMBAYARAN</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background-color: #f0f0f0;">
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd;"><strong>Deskripsi</strong></td>
+                    <td style="width: 50%; padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Jumlah</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Jenis Tagihan: ' . $namaKategori . '</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">Rp ' . number_format($nominal, 0, ',', '.') . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Periode: ' . $bulan . ' ' . $tahun . '</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">-</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Potongan/Diskon</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">- Rp ' . number_format($totalPotongan, 0, ',', '.') . '</td>
+                </tr>
+                <tr style="background-color: #28a745; color: white;">
+                    <td style="padding: 10px; border: 2px solid #000; font-weight: bold;">TOTAL YANG DIBAYARKAN</td>
+                    <td style="padding: 10px; border: 2px solid #000; text-align: right; font-weight: bold; font-size: 13px;">Rp ' . number_format($nominalAkhir, 0, ',', '.') . '</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="text-align: center; padding: 15px; background-color: #d4edda; border: 2px solid #28a745; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #28a745;">✓ PEMBAYARAN LUNAS</h3>
+            <p style="margin: 5px 0; font-size: 11px;">Terima kasih atas pembayaran Anda</p>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 10px;">
+            <table style="width: 100%; text-align: center;">
+                <tr>
+                    <td style="width: 50%;">
+                        <p style="margin-bottom: 40px;">Diketahui,</p>
+                        <p>________________________</p>
+                        <p style="margin: 5px 0; font-size: 9px;">Kepala Unit</p>
+                    </td>
+                    <td style="width: 50%;">
+                        <p style="margin-bottom: 40px;">Penerima,</p>
+                        <p>________________________</p>
+                        <p style="margin: 5px 0; font-size: 9px;">' . ($siswa->user->name ?? 'Siswa') . '</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 9px; color: #666; border-top: 1px dashed #999; padding-top: 10px;">
+            <p>Dokumen ini dicetak oleh sistem pada ' . now()->format('d/m/Y H:i:s') . '</p>
+            <p>Invoice ID: ' . $kodePembayaran . ' | Kode Surat: ' . $kodeSurat . '</p>
+        </div>
+        ';
+
+        // Generate PDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+        ]);
+
+        $mpdf->SetTitle('Invoice - ' . $kodePembayaran);
+        $mpdf->SetAuthor($unit->nama_unit ?? 'Sistem');
+        $mpdf->SetSubject('Invoice Pembayaran Tagihan');
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Invoice-' . $kodePembayaran . '-' . date('Ymd') . '.pdf', 'I');
     }
 }

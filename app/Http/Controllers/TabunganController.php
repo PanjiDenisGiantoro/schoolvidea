@@ -245,18 +245,68 @@ class TabunganController extends Controller
             }
 
             $settings = $settings->where('status', '1')->first();
+
+            if(!$settings){
+                return back()->with('danger', 'Setting akun tabungan belum diatur.');
+            }
+
             $akun_id = $settings->akun_id;
+            $position = $settings->debit;
 
 
+
+            $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
+                $q->where('unit_id', Auth::user()->unit_id);
+            })
+                ->where('allotment','Pembayaran Tabungan')
+                ->orWhere('allotment','Semua Pembayaran')
+                ->first();
+
+            if(!$datarekening){
+                return back()->with('danger', 'Rekening tabungan belum Aktif.');
+            }
+
+            if($position == 1){
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => 0,
+                    'kredit'       => $request->jumlah,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'        => 0,
+                    'debit'       => $request->jumlah,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+            }else{
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'       => $request->jumlah,
+                    'kredit'        => 0,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'       => $request->jumlah,
+                    'debit'        => 0,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+            }
             // Jurnal Kredit
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => $akun_id,
-                'debit'        => 0,
-                'kredit'       => $request->jumlah,
-                'keterangan'   => $request->keterangan,
-                'unit_id' => Auth::user()->unit_id
-            ]);
+
+
+
 
             $saldoSiswa = Saldo_keuangan::with('user')
                 ->firstOrCreate(
@@ -311,18 +361,43 @@ class TabunganController extends Controller
             if (!$rekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
-            $settings = setting_akun::where('kategori', 'tabungan-tarik')->get();
+
+            // Ambil setting akun tabungan-tarik dengan filter unit
+            $settings = setting_akun::where('kategori', 'tabungan-tarik');
+
+            if (Auth::user()->yayasan_id) {
+                $settings->whereHas('unit', function ($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            } elseif (Auth::user()->unit_id) {
+                $settings->where('unit_id', Auth::user()->unit_id);
+            } elseif ($request->filled('unit_id')) {
+                $settings->where('unit_id', $request->unit_id);
+            }
+
             $settings = $settings->where('status', '1')->first();
+
+            if (!$settings || !$settings->akun_id) {
+                throw new \Exception("Setting akun untuk kategori tabungan-tarik belum lengkap.");
+            }
+
             $akun_id = $settings->akun_id;
 
-            if (!$akun_id) {
-                throw new \Exception("Setting akun untuk kategori tabungan-tarik belum lengkap.");
+            // Ambil data rekening bank untuk kredit
+            $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
+                $q->where('unit_id', Auth::user()->unit_id);
+            })
+                ->where('allotment','Pembayaran Tabungan')
+                ->orWhere('allotment','Semua Pembayaran')
+                ->first();
+
+            if (!$datarekening) {
+                throw new \Exception("Rekening untuk penarikan tabungan belum diatur.");
             }
 
             // Ambil saldo siswa
             $saldoSiswa = Saldo_keuangan::firstOrCreate(
                 [
-//                    'akun_id' => $akun_debit,
                     'user_id' => $siswa->user->id,
                 ],
                 ['saldo_akhir' => 0]
@@ -351,8 +426,26 @@ class TabunganController extends Controller
                 'status_verifikasi' => 'pending'
             ]);
 
-            // TIDAK BUAT JURNAL DISINI - Jurnal akan dibuat setelah approve
-            // TIDAK UPDATE SALDO DISINI - Saldo akan dikurangi setelah approve
+            // Buat jurnal untuk penarikan (Debit akun penarikan, Kredit kas/bank)
+            // Jurnal Debit: Akun penarikan tabungan
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id'      => $akun_id,
+                'debit'        => $request->jumlah,
+                'kredit'       => 0,
+                'keterangan'   => $request->keterangan,
+                'unit_id'      => Auth::user()->unit_id
+            ]);
+
+            // Jurnal Kredit: Akun kas/bank
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id'      => $datarekening->akun_id,
+                'debit'        => 0,
+                'kredit'       => $request->jumlah,
+                'keterangan'   => $request->keterangan,
+                'unit_id'      => Auth::user()->unit_id
+            ]);
 
             // Catat log transaksi
             Keuangan_transaksi_logs::create([
@@ -366,13 +459,12 @@ class TabunganController extends Controller
 
             DB::commit();
 
-            return redirect()->route('tabungan.show', $siswa->id)
+            return redirect()->route('keuangan_transaksi.show', $transaksi->id)
                 ->with('success', 'Permintaan penarikan berhasil dibuat! Gunakan token untuk memverifikasi dan menyetujui penarikan.')
                 ->with('token', $token)
                 ->with('transaksi_id', $transaksi->id)
                 ->with('info', 'Saldo belum dikurangi. Penarikan akan diproses setelah token diverifikasi.');
         } catch (\Exception $e) {
-            //            dd($e->getMessage());
             DB::rollBack();
             return back()->with('danger', $e->getMessage());
         }
@@ -629,13 +721,13 @@ class TabunganController extends Controller
                     }
 
                     // Buat jurnal Debit
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $settings->akun_id,
-                        'debit'        => $transaksi->jumlah,
-                        'kredit'       => 0,
-                        'keterangan'   => $transaksi->keterangan,
-                    ]);
+//                    Jurnals::create([
+//                        'transaksi_id' => $transaksi->id,
+//                        'akun_id'      => $settings->akun_id,
+//                        'debit'        => $transaksi->jumlah,
+//                        'kredit'       => 0,
+//                        'keterangan'   => $transaksi->keterangan,
+//                    ]);
 
                     // Kurangi saldo siswa
                     $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
