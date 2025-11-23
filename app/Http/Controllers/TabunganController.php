@@ -377,8 +377,8 @@ class TabunganController extends Controller
 
             $settings = $settings->where('status', '1')->first();
 
-            if (!$settings || !$settings->akun_id) {
-                throw new \Exception("Setting akun untuk kategori tabungan-tarik belum lengkap.");
+            if ($settings == null) {
+                return back()->with('danger', "Setting akun untuk kategori tabungan-tarik belum lengkap.");
             }
 
             $akun_id = $settings->akun_id;
@@ -427,25 +427,31 @@ class TabunganController extends Controller
             ]);
 
             // Buat jurnal untuk penarikan (Debit akun penarikan, Kredit kas/bank)
-            // Jurnal Debit: Akun penarikan tabungan
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => $akun_id,
-                'debit'        => $request->jumlah,
-                'kredit'       => 0,
-                'keterangan'   => $request->keterangan,
-                'unit_id'      => Auth::user()->unit_id
-            ]);
+            try {
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => $request->jumlah,
+                    'kredit'       => 0,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
 
-            // Jurnal Kredit: Akun kas/bank
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => $datarekening->akun_id,
-                'debit'        => 0,
-                'kredit'       => $request->jumlah,
-                'keterangan'   => $request->keterangan,
-                'unit_id'      => Auth::user()->unit_id
-            ]);
+                // Jurnal Kredit: Akun kas/bank
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'debit'        => 0,
+                    'kredit'       => $request->jumlah,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+
+            }catch (\Exception $e){
+                return back()->with('danger', $e->getMessage());
+
+            }
+            // Jurnal Debit: Akun penarikan tabungan
 
             // Catat log transaksi
             Keuangan_transaksi_logs::create([
