@@ -475,6 +475,7 @@ class TabunganController extends Controller
 
         // Query untuk search
         $query = Keuangan_transaksi::where('penerima_id', $siswa_id)
+            ->where('jenis_transaksi', 'like', '%tabungan%')
             ->orderBy('created_at', 'asc');
 
         // Filter berdasarkan jenis transaksi jika ada
