@@ -210,13 +210,12 @@ class PembayaranController extends Controller
                     ->first();
             }else{
                 $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                    ->where('allotment','Pembayaran Tabungan')
+                    ->where('allotment','Pembayaran Tagihan')
                     ->first();
             }
 
 
-            // Ambil setting akun tabungan-tarik dengan filter unit
-            $settings = setting_akun::where('kategori', 'tabungan-tarik');
+            $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
             if (Auth::user()->yayasan_id) {
                 $settings->whereHas('unit', function ($q) {
