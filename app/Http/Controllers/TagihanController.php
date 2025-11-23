@@ -53,12 +53,150 @@ class TagihanController extends Controller
 
         return view('pages.tagihan.create', compact('units', 'kelas', 'kategoriTagihan', 'datarekening'));
     }
+    /**
+     * Helper function to parse date from DD/MM/YYYY format to YYYY-MM-DD
+     */
+    private function parseDateFormat($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        try {
+            if (strpos($date, '/') !== false) {
+                $parts = explode('/', $date);
+                if (count($parts) === 3 && is_numeric($parts[0]) && is_numeric($parts[1]) && is_numeric($parts[2])) {
+                    $day = (int)$parts[0];
+                    $month = (int)$parts[1];
+                    $year = (int)$parts[2];
+                    if ($day > 0 && $day <= 31 && $month > 0 && $month <= 12 && $year > 1900) {
+                        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+                    }
+                }
+            } else {
+                return $date;
+            }
+            return null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Helper function to apply base filters (unit_id, yayasan_id)
+     */
+    private function applyBaseFilters($query, $request)
+    {
+        // Priority: request unit_id > user unit_id > yayasan_id > super admin (all)
+        if ($request->filled('unit_id') && $request->unit_id != '' && $request->unit_id != 'all') {
+            $query->whereHas('tagihan', function ($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        } elseif (Auth::user()->unit_id) {
+            $query->whereHas('tagihan', function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        } elseif (Auth::user()->yayasan_id) {
+            $query->whereHas('tagihan.unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        }
+        // Else: super admin - show all
+
+        return $query;
+    }
+
+    /**
+     * Helper function to apply common filters
+     */
+    private function applyCommonFilters($query, $request)
+    {
+        // Filter Search - Nama siswa atau NISN
+        if ($request->filled('nama_siswa')) {
+            $search = $request->nama_siswa;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('siswa.user', function ($sq) use ($search) {
+                    $sq->where('name', 'like', "%{$search}%");
+                })->orWhereHas('siswa', function ($sq) use ($search) {
+                    $sq->where('nisn', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // Filter Search - Nama tagihan
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('tagihan', function ($sq) use ($search) {
+                    $sq->where('nama_tagihan', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('siswa.user', function ($sq) use ($search) {
+                        $sq->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('siswa', function ($sq) use ($search) {
+                        $sq->where('nisn', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
+                        $sq->where('nama_kelas', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter Kelas
+        if ($request->filled('kelas_id')) {
+            $query->whereHas('tagihan', function ($q) use ($request) {
+                $q->where('kelas_id', $request->kelas_id);
+            });
+        }
+
+        // Filter Jenis Tagihan
+        if ($request->filled('jenis_tagihan')) {
+            $query->whereHas('tagihan', function ($q) use ($request) {
+                $q->where('jenis_tagihan', $request->jenis_tagihan);
+            });
+        }
+
+        // Filter Status Tagihan
+        if ($request->filled('status_tagihan')) {
+            $status = $request->status_tagihan;
+            if ($status === 'lunas' || $status === '1') {
+                $query->where('status', '1');
+            } elseif ($status === 'belum_lunas' || $status === '0') {
+                $query->where('status', '0');
+            } elseif ($status === 'cicilan' || $status === '2') {
+                $query->where('status', '2');
+            }
+        }
+
+        // Filter Dari Tanggal
+        if ($request->filled('dari_tanggal')) {
+            $parsedDate = $this->parseDateFormat($request->dari_tanggal);
+            if ($parsedDate) {
+                $query->whereHas('tagihan', function ($q) use ($parsedDate) {
+                    $q->whereDate('created_at', '>=', $parsedDate);
+                });
+            }
+        }
+
+        // Filter Sampai Tanggal
+        if ($request->filled('sampai_tanggal')) {
+            $parsedDate = $this->parseDateFormat($request->sampai_tanggal);
+            if ($parsedDate) {
+                $query->whereHas('tagihan', function ($q) use ($parsedDate) {
+                    $q->whereDate('created_at', '<=', $parsedDate);
+                });
+            }
+        }
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);
 
         // Query distinct per siswa-tagihan (tidak per bulan_ke)
-        // Gunakan subquery untuk mengambil ID pertama per siswa-tagihan
         $subquery = DB::table('tagihan_siswa')
             ->selectRaw('MIN(id) as id')
             ->groupBy('tagihan_id', 'siswa_id');
@@ -73,136 +211,37 @@ class TagihanController extends Controller
         ])
             ->joinSub($subquery, 'grouped', function ($join) {
                 $join->on('tagihan_siswa.id', '=', 'grouped.id');
-            })
-            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('unit_id', $request->unit_id);
-                });
-            })
-            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
-                // Jika user punya unit_id, filter tagihan dari unit tersebut
-                $query->whereHas('tagihan', function ($q) {
-                    $q->where('unit_id', Auth::user()->unit_id);
-                });
-            })
-            ->when($request->filled('dari_tanggal'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->whereDate('created_at', '>=', $request->dari_tanggal);
-                });
-            })
-            ->when($request->filled('sampai_tanggal'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->whereDate('created_at', '<=', $request->sampai_tanggal);
-                });
-            })
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->whereHas('tagihan', function ($sq) use ($search) {
-                        $sq->where('nama_tagihan', 'like', "%{$search}%")
-                            ->orWhere('keterangan', 'like', "%{$search}%");
-                    })
-                        ->orWhereHas('siswa', function ($sq) use ($search) {
-                            $sq->where('nama', 'like', "%{$search}%")
-                                ->orWhere('nisn', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
-                            $sq->where('nama_kelas', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($request->filled('kelas_id'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('kelas_id', $request->kelas_id);
-                });
-            })
-            ->when($request->filled('tagihan_status'), function ($query) use ($request) {
-                $status = $request->tagihan_status;
-                $query->whereHas('siswa', function ($q) use ($status) {
-                    if ($status === 'lunas') {
-                        // Siswa dengan semua pembayaran lunas
-                        $q->whereDoesntHave('pembayaranTagihan', function ($sq) {
-                            $sq->where('status_approval', '!=', 'approved');
-                        });
-                    } elseif ($status === 'belum_lunas') {
-                        // Siswa dengan tagihan belum lunas
-                        $q->whereHas('pembayaranTagihan', function ($sq) {
-                            $sq->where('status_approval', '!=', 'approved');
-                        });
-                    }
-                });
-            })
-            ->when($request->filled('jenis_tagihan'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('jenis_tagihan', $request->jenis_tagihan);
-                });
-            })
+            });
+
+        // Apply base filters (unit_id, yayasan_id)
+        $tagihans = $this->applyBaseFilters($tagihans, $request);
+
+        // Apply common filters
+        $tagihans = $this->applyCommonFilters($tagihans, $request);
+
+        $tagihans = $tagihans
+            ->orderBy('tagihan_siswa.created_at', 'desc')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
-        // Hitung summary dari Tagihansiswa yang sudah di-group
+        // Hitung summary dari Tagihansiswa yang sudah di-group (dengan filter yang sama)
         $subqueryAll = DB::table('tagihan_siswa')
             ->selectRaw('MIN(id) as id')
             ->groupBy('tagihan_id', 'siswa_id');
 
-        $allTagihans = Tagihansiswa::with([
+        $allTagihansQuery = Tagihansiswa::with([
             'siswa.pembayaranTagihan',
             'tagihan.items'
         ])
             ->joinSub($subqueryAll, 'grouped', function ($join) {
                 $join->on('tagihan_siswa.id', '=', 'grouped.id');
-            })
-            ->when($request->filled('unit_id') && $request->unit_id != '', function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('unit_id', $request->unit_id);
-                });
-            })
-            ->when(!$request->filled('unit_id') && Auth::user()->unit_id, function ($query) {
-                $query->whereHas('tagihan', function ($q) {
-                    $q->where('unit_id', Auth::user()->unit_id);
-                });
-            })
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->whereHas('tagihan', function ($sq) use ($search) {
-                        $sq->where('nama_tagihan', 'like', "%{$search}%")
-                            ->orWhere('keterangan', 'like', "%{$search}%");
-                    })
-                        ->orWhereHas('siswa', function ($sq) use ($search) {
-                            $sq->where('nama', 'like', "%{$search}%")
-                                ->orWhere('nisn', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('tagihan.kelas', function ($sq) use ($search) {
-                            $sq->where('nama_kelas', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($request->filled('kelas_id'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('kelas_id', $request->kelas_id);
-                });
-            })
-            ->when($request->filled('tagihan_status'), function ($query) use ($request) {
-                $status = $request->tagihan_status;
-                $query->whereHas('siswa', function ($q) use ($status) {
-                    if ($status === 'lunas') {
-                        $q->whereDoesntHave('pembayaranTagihan', function ($sq) {
-                            $sq->where('status_approval', '!=', 'approved');
-                        });
-                    } elseif ($status === 'belum_lunas') {
-                        $q->whereHas('pembayaranTagihan', function ($sq) {
-                            $sq->where('status_approval', '!=', 'approved');
-                        });
-                    }
-                });
-            })
-            ->when($request->filled('jenis_tagihan'), function ($query) use ($request) {
-                $query->whereHas('tagihan', function ($q) use ($request) {
-                    $q->where('jenis_tagihan', $request->jenis_tagihan);
-                });
-            })
-            ->get();
+            });
+
+        // Apply same base filters for summary
+        $allTagihansQuery = $this->applyBaseFilters($allTagihansQuery, $request);
+        $allTagihansQuery = $this->applyCommonFilters($allTagihansQuery, $request);
+
+        $allTagihans = $allTagihansQuery->get();
 
         $summary = [
             'jumlah_data' => $allTagihans->count(),
@@ -212,12 +251,14 @@ class TagihanController extends Controller
             'sudah_dibayar' => $allTagihans->sum(function ($ts) {
                 return $ts->siswa->pembayaranTagihan
                     ->where('status_approval', 'approved')
+                    ->where('status_verifikasi', 'approved')
                     ->sum('jumlah_bayar');
             }),
             'belum_dibayar' => $allTagihans->sum(function ($ts) {
                 $nominal_tagihan = $ts->tagihan->items->sum('nominal');
                 $sudah_bayar = $ts->siswa->pembayaranTagihan
                     ->where('status_approval', 'approved')
+                    ->where('status_verifikasi', 'approved')
                     ->sum('jumlah_bayar');
                 return max($nominal_tagihan - $sudah_bayar, 0);
             }),
@@ -226,13 +267,16 @@ class TagihanController extends Controller
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->orderBy('nama_kelas')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
+            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->orderBy('nama_kelas')->get();
         } else {
             $units = Unit::where('status', '1')->orderBy('nama_unit')->get();
+            $kelas = Kelas::where('status', '1')->orderBy('nama_kelas')->get();
         }
 
-        return view('pages.tagihan.index', compact('tagihans', 'summary', 'units'));
+        return view('pages.tagihan.index', compact('tagihans', 'summary', 'units', 'kelas'));
     }
 
     /**

@@ -95,119 +95,108 @@
             </div>
         @endif
 
-        {{-- Filter --}}
-        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
-        <div class="card rounded-3 mb-3 border-0 shadow-sm">
+        {{-- Filter Card --}}
+        <div class="card rounded-3 mb-4 border-0 shadow-sm">
             <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center gap-3 mb-3"
+                <div class="justify-content-between align-items-center d-flex gap-3"
                     data-bs-toggle="collapse"
                     data-bs-target="#filterCollapse"
                     style="cursor: pointer;">
-                <h5 class="fw-bold text-primary">
-                    <i class="bx bx-filter"></i> Filter Tabungan
-                </h5>
-                <i class="bx bx-chevron-down text-primary" style="font-size: 26px"></i>
-            </div>
-                <form method="GET" action="{{ route('tagihan.index') }}">
-                    <div class="row g-3 align-items-end collapse" id="filterCollapse">
-                        {{-- Filter Search --}}
-                        <div class="col-md-2">
-                            <label for="search" class="form-label">Cari Tagihan</label>
-                            <input type="text" name="search" id="search"
-                                   class="form-control p-3" placeholder="Nama tagihan, kelas..."
-                                   value="{{ request('search') }}">
-                        </div>
+                    <h5 class="fw-bold text-primary mt-3">
+                        <span><i class="bx bx-filter"></i> Filter Tagihan</span>
+                    </h5>
+                    <h5 class="fw-bold text-primary" style="font-size: 26px;"><i class="bx bx-chevron-down"></i></h5>
+                </div>
+
+                <form action="{{ route('tagihan.index') }}" method="GET">
+                    <div class="row g-3 collapse" id="filterCollapse">
                         {{-- Filter Unit --}}
-                        <div class="col-md-2">
+                        @if(auth()->user()->yayasan_id && !auth()->user()->unit_id || !auth()->user()->yayasan_id && !auth()->user()->unit_id)
+                        <div class="col-md-3">
                             <label for="unit_id" class="form-label">Unit</label>
                             <select name="unit_id" id="unit_id" class="form-select">
-                                <option value="">Semua Unit</option>
-                                @foreach($units as $unit)
+                                <option value="">Pilih Unit</option>
+                                @foreach ($units as $unit)
                                     <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
                                         {{ $unit->nama_unit }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <label for="kelas_id" class="form-label">Kelas</label>
+                        @endif
 
-                            <select name="kelas_id" id="kelas_id" class="form-select"
-                                @if (isset($show) && $show) disabled @endif>
-                                <option value="">Semua Kelas</option>
+                        {{-- Filter Jenis Tagihan --}}
+                        <div class="col-md-3">
+                            <label for="jenis_tagihan" class="form-label">Jenis Tagihan</label>
+                            <select name="jenis_tagihan" id="jenis_tagihan" class="form-select">
+                                <option value="">Semua Jenis</option>
+                                <option value="bulanan" {{ request('jenis_tagihan') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                                <option value="sekali_bayar" {{ request('jenis_tagihan') == 'sekali_bayar' ? 'selected' : '' }}>Sekali Bayar</option>
                             </select>
+                        </div>
+
+                        {{-- Filter Status --}}
+                        <div class="col-md-3">
+                            <label for="status_tagihan" class="form-label">Status Tagihan</label>
+                            <select name="status_tagihan" id="status_tagihan" class="form-select">
+                                <option value="">Semua Status</option>
+                                <option value="lunas" {{ request('status_tagihan') == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                                <option value="belum_lunas" {{ request('status_tagihan') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
+                                <option value="cicilan" {{ request('status_tagihan') == 'cicilan' ? 'selected' : '' }}>Cicilan</option>
+                            </select>
+                        </div>
+
+                        {{-- Filter Kelas --}}
+                        <div class="col-md-3">
+                            <label for="kelas_id" class="form-label">Kelas</label>
+                            <select name="kelas_id" id="kelas_id" class="form-select">
+                                <option value="">Semua Kelas</option>
+                                @if(isset($kelas))
+                                    @foreach ($kelas as $k)
+                                        <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>
+                                            {{ $k->nama_kelas }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+
+                        {{-- Filter Nama Siswa --}}
+                        <div class="col-md-3">
+                            <label for="nama_siswa" class="form-label">Nama/NISN Siswa</label>
+                            <input type="text" name="nama_siswa" id="nama_siswa" class="form-control p-3"
+                                placeholder="Cari nama atau NISN" value="{{ request('nama_siswa') }}">
                         </div>
 
                         {{-- Filter Tanggal Dari --}}
-                        <div class="col-md-2">
-                            <label class="form-label">Bulan Periode</label>
-                            <select name="bulan_mulai" class="form-select" required>
-                                <option value="">Pilih Bulan</option>
-                                @foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $bulan)
-                                    <option value="{{ $i + 1 }}">{{ $bulan }}</option>
-                                @endforeach
-                            </select>
+                        <div class="col-md-3">
+                            <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
+                            <input type="text" name="dari_tanggal" id="dari_tanggal" class="form-control datepicker p-3"
+                                placeholder="DD/MM/YYYY"
+                                value="{{ request('dari_tanggal') }}">
                         </div>
 
                         {{-- Filter Tanggal Sampai --}}
-                        <div class="col-md-2">
-                            <label class="form-label">Tahun Periode</label>
-                            <select name="tahun_mulai" class="form-select" required>
-                                <option value="">Pilih Tahun</option>
-                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
-                                    <option value="{{ $y }}">{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="status" class="form-label">Status Tagihan</label>
-                            <select name="status" id="status" class="form-select">
-                                <option value="">Pilih Status</option>
-                                <option value="Lunas">Lunas</option>
-                                <option value="Belum Lunas">Belum Lunas</option>
-                            </select>
+                        <div class="col-md-3">
+                            <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
+                            <input type="text" name="sampai_tanggal" id="sampai_tanggal" class="form-control datepicker p-3"
+                                placeholder="DD/MM/YYYY"
+                                value="{{ request('sampai_tanggal') }}">
                         </div>
 
                         {{-- Tombol Filter --}}
-                        <div class="col-md-2 d-flex align-items-end gap-2">
+                        <div class="col-md-3 d-flex align-items-end gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-search"></i> Filter
                             </button>
                             <a href="{{ route('tagihan.index') }}" class="btn btn-secondary">
-                                <i class="bx bx-refresh"></i>
+                                <i class="bx bx-refresh"></i> Reset
                             </a>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-        @else
-
-        <div class="card rounded-3 mb-3 border-0 shadow-sm">
-            <div class="card-body">
-                <form method="GET">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>Filter Data</label>
-                            <select name="filter" class="form-control rounded-pill">
-                                <option value="all">All</option>
-                                <option value="lunas">Lunas</option>
-                                <option value="belum">Belum Lunas</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Tanggal</label>
-                            <input type="date" name="tanggal" class="form-control rounded-pill"
-                                value="{{ request('tanggal') }}">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">Filter</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
@@ -300,6 +289,8 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
         let tagihanTable;
@@ -322,8 +313,11 @@
                     data: function(d) {
                         d.unit_id = document.getElementById('unit_id')?.value || '';
                         d.kelas_id = document.getElementById('kelas_id')?.value || '';
-                        d.tagihan_status = document.getElementById('tagihan_status')?.value || '';
+                        d.status_tagihan = document.getElementById('status_tagihan')?.value || '';
                         d.jenis_tagihan = document.getElementById('jenis_tagihan')?.value || '';
+                        d.nama_siswa = document.getElementById('nama_siswa')?.value || '';
+                        d.dari_tanggal = document.getElementById('dari_tanggal')?.value || '';
+                        d.sampai_tanggal = document.getElementById('sampai_tanggal')?.value || '';
                         d.search = d.search.value;
                     },
                     error: function(xhr, status, error) {
@@ -349,6 +343,37 @@
                 ],
                 order: [[0, 'desc']]
             });
+
+            // Initialize datepicker dengan format DD/MM/YYYY
+            flatpickr('.datepicker', {
+                dateFormat: 'd/m/Y',
+                allowInput: true
+            });
+
+            // Dynamic kelas loading based on unit selection
+            const unitSelect = document.getElementById('unit_id');
+            const kelasSelect = document.getElementById('kelas_id');
+
+            if (unitSelect) {
+                unitSelect.addEventListener('change', function() {
+                    const unitId = this.value;
+                    if (unitId) {
+                        fetch(`/api/kelas-by-unit/${unitId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                                data.forEach(kelas => {
+                                    kelasSelect.innerHTML += `<option value="${kelas.id}">${kelas.nama_kelas}</option>`;
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error loading kelas:', error);
+                            });
+                    } else {
+                        kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                    }
+                });
+            }
         });
     </script>
 @endpush

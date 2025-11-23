@@ -111,7 +111,7 @@
                         <h3 class="fw-bold text-warning">Rp {{ number_format($tagihanData['nominal_tagihan'], 0, ',', '.') }}</h3>
                         <div class="mt-3">
                         </div>
-                        <a href="{{ url('keuangan_transaksi') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+                        <a href="{{ url('keuangan-transaksi') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
             </div>
