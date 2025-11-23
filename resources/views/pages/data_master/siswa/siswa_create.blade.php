@@ -426,6 +426,10 @@
                 // ✅ Cek unik via AJAX ke backend sebelum konfirmasi
                 const formData = new FormData(form);
 
+                // Tambahkan exclude_id jika sedang mode edit
+                @if(isset($siswa))
+                formData.append('exclude_id', '{{ $siswa->id }}');
+                @endif
 
                 fetch("{{ route('siswa.checkUnique') }}", {
                     method: "POST",

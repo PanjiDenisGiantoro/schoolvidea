@@ -570,6 +570,7 @@ class SiswaController extends Controller
         $va_siswa = $request->va_siswa;
         $no_rekening = $request->no_rekening;
         $no_hp = $request->no_hp;
+        $excludeId = $request->exclude_id; // ID siswa yang sedang diedit (untuk exclude)
 
         $duplicates = [];
         $fieldLabels = [
@@ -587,7 +588,11 @@ class SiswaController extends Controller
 
         // Check NISN
         if ($nisn) {
-            $existing = \App\Models\Siswa::where('nisn', $nisn)->first();
+            $query = \App\Models\Siswa::where('nisn', $nisn);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'nisn',
@@ -602,7 +607,11 @@ class SiswaController extends Controller
 
         // Check NIS
         if ($nis) {
-            $existing = \App\Models\Siswa::where('nis', $nis)->first();
+            $query = \App\Models\Siswa::where('nis', $nis);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'nis',
@@ -617,7 +626,11 @@ class SiswaController extends Controller
 
         // Check NIK
         if ($nik) {
-            $existing = \App\Models\Siswa::where('nik', $nik)->first();
+            $query = \App\Models\Siswa::where('nik', $nik);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'nik',
@@ -632,7 +645,11 @@ class SiswaController extends Controller
 
         // Check RFID
         if ($rfid_no) {
-            $existing = \App\Models\Siswa::where('rfid_no', $rfid_no)->first();
+            $query = \App\Models\Siswa::where('rfid_no', $rfid_no);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'rfid_no',
@@ -647,7 +664,11 @@ class SiswaController extends Controller
 
         // Check VA Siswa
         if ($va_siswa) {
-            $existing = \App\Models\Siswa::where('va_siswa', $va_siswa)->first();
+            $query = \App\Models\Siswa::where('va_siswa', $va_siswa);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'va_siswa',
@@ -662,7 +683,11 @@ class SiswaController extends Controller
 
         // Check Nomor Rekening
         if ($no_rekening) {
-            $existing = \App\Models\Siswa::where('no_rekening', $no_rekening)->first();
+            $query = \App\Models\Siswa::where('no_rekening', $no_rekening);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'no_rekening',
@@ -677,7 +702,11 @@ class SiswaController extends Controller
 
         // Check Nomor HP
         if ($no_hp) {
-            $existing = \App\Models\Siswa::where('no_hp', $no_hp)->first();
+            $query = \App\Models\Siswa::where('no_hp', $no_hp);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $existing = $query->first();
             if ($existing) {
                 $duplicateDetails[] = [
                     'field' => 'no_hp',
@@ -692,7 +721,15 @@ class SiswaController extends Controller
 
         // Check Email
         if ($email) {
-            $existing = \App\Models\User::where('email', $email)->first();
+            $query = \App\Models\User::where('email', $email);
+            // Untuk email, exclude berdasarkan user_id dari siswa
+            if ($excludeId) {
+                $siswaToExclude = \App\Models\Siswa::find($excludeId);
+                if ($siswaToExclude) {
+                    $query->where('id', '!=', $siswaToExclude->user_id);
+                }
+            }
+            $existing = $query->first();
             if ($existing) {
                 $siswaUser = \App\Models\Siswa::where('user_id', $existing->id)->first();
                 $siswaName = $siswaUser->user->name ?? $existing->name ?? 'User';
