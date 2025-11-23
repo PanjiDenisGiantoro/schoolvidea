@@ -392,7 +392,7 @@ class TabunganController extends Controller
                 ->first();
 
             if (!$datarekening) {
-                throw new \Exception("Rekening untuk penarikan tabungan belum diatur.");
+                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
 
             // Ambil saldo siswa
