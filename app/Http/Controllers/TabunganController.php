@@ -383,6 +383,10 @@ class TabunganController extends Controller
 
             $akun_id = $settings->akun_id;
 
+            if (!$akun_id) {
+                return back()->with('danger', "Akun untuk kategori tabungan-tarik belum dikonfigurasi. Silakan hubungi administrator.");
+            }
+
             // Ambil data rekening bank untuk kredit
             $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
                 $q->where('unit_id', Auth::user()->unit_id);
@@ -393,6 +397,10 @@ class TabunganController extends Controller
 
             if (!$datarekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+            }
+
+            if (!$datarekening->akun_id) {
+                return back()->with('danger', 'Akun untuk rekening tabungan belum dikonfigurasi. Silakan hubungi administrator.');
             }
 
             // Ambil saldo siswa
