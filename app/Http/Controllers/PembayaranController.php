@@ -189,7 +189,7 @@ class PembayaranController extends Controller
             // jurnal debit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
-                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->first()?->akun_id,
+                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
                 'debit'        => $jumlahBayar,
                 'kredit'       => 0,
                 'keterangan'   => $keterangan,
@@ -198,7 +198,7 @@ class PembayaranController extends Controller
             // jurnal kredit
             Jurnals::create([
                 'transaksi_id' => $transaksi->id,
-                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->first()?->akun_id,
+                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
                 'debit'        => 0,
                 'kredit'       => $jumlahBayar,
                 'keterangan'   => $keterangan,
