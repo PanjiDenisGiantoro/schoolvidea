@@ -438,24 +438,30 @@
                     },
                     body: formData
                 })
-                    .then(res => res.json())
+                    .then(res => {
+                        // Cek jika response tidak OK (error 4xx/5xx)
+                        if (!res.ok) {
+                            // Skip validasi unik, langsung lanjut ke konfirmasi simpan
+                            return { exists: false, skipValidation: true };
+                        }
+                        return res.json();
+                    })
                     .then(data => {
                         if (data.exists) {
                             const details = data.details || [];
 
-                            // Build detailed message dengan field info dan existing user
                             let htmlContent = '<div style="text-align: left;">';
                             htmlContent += `<p style="color: #dc3545; font-weight: bold; margin-bottom: 15px;">
-                            Ditemukan ${data.count} data yang sudah terdaftar:
-                        </p>
-                        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px;">`;
+                                Ditemukan ${data.count} data yang sudah terdaftar:
+                            </p>
+                            <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px;">`;
 
                             details.forEach((detail, index) => {
                                 htmlContent += `<div style="margin-bottom: ${index < details.length - 1 ? '10px' : '0'}; padding-bottom: 10px; border-bottom: ${index < details.length - 1 ? '1px solid #f5c6cb' : 'none'};">
-                                <strong style="color: #721c24;">${detail.label}</strong><br>
-                                <span style="color: #856404;">Nilai: <code style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px;">${detail.value}</code></span><br>
-                                <span style="color: #721c24; font-size: 0.9em;">→ Sudah terdaftar atas nama: <strong>${detail.existingName}</strong></span>
-                            </div>`;
+                                    <strong style="color: #721c24;">${detail.label}</strong><br>
+                                    <span style="color: #856404;">Nilai: <code style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px;">${detail.value}</code></span><br>
+                                    <span style="color: #721c24; font-size: 0.9em;">→ Sudah terdaftar atas nama: <strong>${detail.existingName}</strong></span>
+                                </div>`;
                             });
 
                             htmlContent += '</div></div>';
@@ -468,18 +474,17 @@
                                 confirmButtonColor: '#dc3545',
                                 allowOutsideClick: false,
                                 didOpen: () => {
-                                    // Highlight field yang duplikat
                                     details.forEach(detail => {
                                         const field = form.querySelector(`[name="${detail.field}"]`);
                                         if (field) {
                                             field.classList.add('border-danger');
                                             field.style.borderColor = '#dc3545';
-                                            field.parentElement.classList.add('has-error');
                                         }
                                     });
                                 }
                             });
                         } else {
+                            // Tidak ada duplikat atau skip validasi, lanjut konfirmasi simpan
                             Swal.fire({
                                 title: 'Apakah data sudah benar?',
                                 text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
@@ -504,21 +509,28 @@
                         }
                     })
                     .catch(err => {
-                        console.error('Error saat memeriksa data unik:', err);
-
-                        // Build error message yang lebih informatif
-                        const errorMessage = err.message || 'Terjadi kesalahan saat memeriksa data unik.';
-                        const detailMessage = err.response ? `Status: ${err.response.status}` : 'Silakan coba lagi atau hubungi administrator.';
-
+                        console.error('checkUnique error:', err);
+                        // Jika ada error, tetap lanjutkan ke konfirmasi simpan (validasi di backend)
                         Swal.fire({
-                            title: 'Terjadi Kesalahan',
-                            html: `<div style="text-align: left;">
-                    <p><strong>Error:</strong> ${errorMessage}</p>
-                    <p style="color: #6c757d; font-size: 0.9em;">${detailMessage}</p>
-                </div>`,
-                            icon: 'error',
-                            confirmButtonText: 'Tutup',
-                            confirmButtonColor: '#dc3545'
+                            title: 'Apakah data sudah benar?',
+                            text: "Pastikan semua data sudah diisi dengan benar sebelum menyimpan.",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Simpan!',
+                            cancelButtonText: 'Batal',
+                            confirmButtonColor: '#28a745',
+                            cancelButtonColor: '#6c757d'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: 'Menyimpan...',
+                                    text: 'Harap tunggu sebentar.',
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+                                form.querySelector('button[type="submit"]').disabled = true;
+                                form.submit();
+                            }
                         });
                     });
 
