@@ -64,8 +64,10 @@ class PembayaranController extends Controller
             $pembayaranQuery = PembayaranTagihan::query();
         }
 
-        // Calculate summary data
-        $allPembayaran = $pembayaranQuery->get();
+        // Calculate summary data - hanya pembayaran yang sudah approved dan verified
+        $allPembayaran = $pembayaranQuery
+            ->where('status_approval', 'approved')
+            ->get();
 
         // Total tunggakan (belum dibayar) - dari tagihan_siswa dengan status != 1
         $totalTunggakan = 0;
@@ -76,14 +78,18 @@ class PembayaranController extends Controller
             $totalTunggakan += $belumBayar;
         }
 
-        // Total pembayaran all (semua pembayaran)
+        // Total pembayaran all (hanya yang approved)
         $totalPembayaran = $allPembayaran->sum('jumlah_bayar');
 
-        // Total pembayaran tunai
-        $totalTunai = $allPembayaran->where('metode_bayar', 'tunai')->sum('jumlah_bayar');
+        // Total pembayaran tunai (case insensitive)
+        $totalTunai = $allPembayaran->filter(function($p) {
+            return strtolower($p->metode_bayar) === 'tunai' || strtolower($p->metode_bayar) === 'cash';
+        })->sum('jumlah_bayar');
 
         // Total pembayaran non-tunai
-        $totalNonTunai = $allPembayaran->where('metode_bayar', '!=', 'tunai')->sum('jumlah_bayar');
+        $totalNonTunai = $allPembayaran->filter(function($p) {
+            return strtolower($p->metode_bayar) !== 'tunai' && strtolower($p->metode_bayar) !== 'cash';
+        })->sum('jumlah_bayar');
 
         $summary = [
             'total_tunggakan' => $totalTunggakan,

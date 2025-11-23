@@ -267,7 +267,9 @@ class TagihanController extends Controller
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
-            $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->orderBy('nama_kelas')->get();
+            $kelas = Kelas::whereHas('unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            })->where('status', '1')->orderBy('nama_kelas')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
             $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->where('status', '1')->orderBy('nama_kelas')->get();

@@ -18,18 +18,40 @@ class DashboardController extends Controller
     public function index()
     {
 
-        // hitung total saldo dari saldo_keuangan
-        $totalSaldo = Saldo_keuangan::where('status', 1) // kalau hanya saldo aktif
-             ->when(Auth::user()->unit_id, function ($query, $unitId) {
-            $query->whereHas('user', function ($q) use ($unitId) {
-                $q->where('unit_id', $unitId);
-            });
-        })->sum('saldo_akhir');
+        // hitung total saldo dari saldo_keuangan - filter berdasarkan unit_id atau yayasan_id
+        $saldoQuery = Saldo_keuangan::where('status', 1); // kalau hanya saldo aktif
 
-        $jumlahTransaksi = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+        if (Auth::user()->unit_id) {
+            $saldoQuery->whereHas('user', function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        } elseif (Auth::user()->yayasan_id) {
+            $saldoQuery->whereHas('user.unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        }
+
+        $totalSaldo = $saldoQuery->sum('saldo_akhir');
+
+        // Hitung jumlah transaksi - hanya yang sudah approved/verified
+        $transaksiQuery = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+            ->where('status_verifikasi', 'approved')
             ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count();
+            ->whereYear('created_at', now()->year);
+
+        if (Auth::user()->unit_id) {
+            $transaksiQuery->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        } elseif (Auth::user()->yayasan_id) {
+            $transaksiQuery->whereHasMorph('penerima', [Siswa::class], function ($q) {
+                $q->whereHas('unit', function ($q2) {
+                    $q2->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            });
+        }
+
+        $jumlahTransaksi = $transaksiQuery->count();
 
         $totalPetugas = User::with('roles')
             ->whereHas('roles', function ($query) {
@@ -55,18 +77,25 @@ class DashboardController extends Controller
         })->count();
 
         // Ambil data pembayaran tagihan terbaru dengan status approval
-        $pembayaranTagihans = \App\Models\Pembayarantagihan::with([
+        $pembayaranTagihansQuery = \App\Models\Pembayarantagihan::with([
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.tagihan.unit',
             'tagihanSiswa.tagihan.kelas',
             'tagihanSiswa.tagihan.items.kategori'
-        ])
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('tagihanSiswa.tagihan', function ($q) use ($unitId) {
-                    $q->where('unit_id', $unitId);
-                });
-            })
-            ->latest() // ambil yang terbaru
+        ]);
+
+        if (Auth::user()->unit_id) {
+            $pembayaranTagihansQuery->whereHas('tagihanSiswa.tagihan', function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        } elseif (Auth::user()->yayasan_id) {
+            $pembayaranTagihansQuery->whereHas('tagihanSiswa.tagihan.unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        }
+
+        $pembayaranTagihans = $pembayaranTagihansQuery
+            ->orderBy('id', 'desc')
             ->limit(15)
             ->get();
 
@@ -118,16 +147,23 @@ class DashboardController extends Controller
             ->values();
 
         // Hitung ringkasan tagihan untuk dashboard card
-        $allTagihans = Tagihansiswa::with([
+        // Filter berdasarkan yayasan_id atau unit_id
+        $allTagihansQuery = Tagihansiswa::with([
             'siswa.pembayaranTagihan',
             'tagihan.items'
-        ])
-            ->when(Auth::user()->unit_id, function ($query, $unitId) {
-                $query->whereHas('tagihan', function ($q) use ($unitId) {
-                    $q->where('unit_id', $unitId);
-                });
-            })
-            ->get();
+        ]);
+
+        if (Auth::user()->unit_id) {
+            $allTagihansQuery->whereHas('tagihan', function ($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            });
+        } elseif (Auth::user()->yayasan_id) {
+            $allTagihansQuery->whereHas('tagihan.unit', function ($q) {
+                $q->where('yayasan_id', Auth::user()->yayasan_id);
+            });
+        }
+
+        $allTagihans = $allTagihansQuery->get();
 
         $tagihanData = [
             'jumlah_data' => $allTagihans->count(),
@@ -137,12 +173,14 @@ class DashboardController extends Controller
             'sudah_dibayar' => $allTagihans->sum(function ($ts) {
                 return $ts->siswa->pembayaranTagihan
                     ->where('status_approval', 'approved')
+                    ->where('status_verifikasi', 'approved')
                     ->sum('jumlah_bayar');
             }),
             'belum_dibayar' => $allTagihans->sum(function ($ts) {
                 $nominal_tagihan = $ts->tagihan->items->sum('nominal');
                 $sudah_bayar = $ts->siswa->pembayaranTagihan
                     ->where('status_approval', 'approved')
+                    ->where('status_verifikasi', 'approved')
                     ->sum('jumlah_bayar');
                 return max($nominal_tagihan - $sudah_bayar, 0);
             }),

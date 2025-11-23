@@ -135,34 +135,40 @@ class KeuanganTransaksiController extends Controller
             ->paginate($perPage)->onEachSide(1)
             ->appends($request->except('page'));
 
-        // Total Pemasukan
-        $totalPemasukanQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan']);
+        // Total Pemasukan - hanya yang sudah verified/approved
+        $totalPemasukanQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
+            ->where('status_verifikasi', 'approved');
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
         $total_pemasukan = $totalPemasukanQuery->sum('jumlah');
 
-        // Total Pengeluaran
-        $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan']);
+        // Total Pengeluaran - hanya yang sudah verified/approved
+        $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan'])
+            ->where('status_verifikasi', 'approved');
         $totalPengeluaranQuery = $this->applyBaseFilters($totalPengeluaranQuery, $request);
         $totalPengeluaranQuery = $this->applyCommonFilters($totalPengeluaranQuery, $request);
         $total_pengeluaran = $totalPengeluaranQuery->sum('jumlah');
 
-        // Total Transaksi
-        $totalTransaksiQuery = Keuangan_transaksi::query();
+        // Total Transaksi - hanya yang sudah verified/approved
+        $totalTransaksiQuery = Keuangan_transaksi::where('status_verifikasi', 'approved');
         $totalTransaksiQuery = $this->applyBaseFilters($totalTransaksiQuery, $request);
         $totalTransaksiQuery = $this->applyCommonFilters($totalTransaksiQuery, $request);
         $total_transaksi = $totalTransaksiQuery->sum('jumlah');
         $total_data_transaksi = $totalTransaksiQuery->count();
 
-        // Summary calculations with proper filtering
-        $summaryQuery = Keuangan_transaksi::query();
+        // Summary calculations with proper filtering - hanya yang sudah verified/approved
+        $summaryQuery = Keuangan_transaksi::where('status_verifikasi', 'approved');
         $summaryQuery = $this->applyBaseFilters($summaryQuery, $request);
         $summaryQuery = $this->applyCommonFilters($summaryQuery, $request);
         $summaryTransaksis = $summaryQuery->get();
 
-        // Calculate various metrics for summary cards
-        $total_tunai = $summaryTransaksis->where('metode', 'CASH')->sum('jumlah');
-        $total_non_tunai = $summaryTransaksis->where('metode', '!=', 'CASH')->sum('jumlah');
+        // Calculate various metrics for summary cards (case insensitive check)
+        $total_tunai = $summaryTransaksis->filter(function($t) {
+            return strtoupper($t->metode) === 'CASH' || strtolower($t->metode) === 'tunai';
+        })->sum('jumlah');
+        $total_non_tunai = $summaryTransaksis->filter(function($t) {
+            return strtoupper($t->metode) !== 'CASH' && strtolower($t->metode) !== 'tunai';
+        })->sum('jumlah');
         $today = \Carbon\Carbon::today()->toDateString();
         $total_harian = $summaryTransaksis->filter(function ($item) use ($today) {
             if (!$item->tanggal_transaksi) {
