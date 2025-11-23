@@ -9,6 +9,7 @@ use App\Models\PayrollDeductions;
 use App\Models\PayrollPayment;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -23,18 +24,22 @@ class PayrollSettingController extends Controller
             "No",
             "Unit",
             "Nama Guru & Staff",
-            "Jabatan", // Tambahkan kolom Jabatan di headers
+            "Jabatan",
             "Aksi",
         ];
 
-        // PERBAIKAN: Tambahkan 'officer.position'
-        $settings = PayrollSetting::with([
+        // Filter settings berdasarkan user access
+        $query = PayrollSetting::with([
             "unit",
             "officer.user",
             "officer.position",
-        ])
-            ->orderBy("created_at", "desc")
-            ->get();
+        ]);
+
+        if (Auth::user()->unit_id) {
+            $query->where('units_id', Auth::user()->unit_id);
+        }
+
+        $settings = $query->orderBy("created_at", "desc")->get();
 
         return view(
             "pages.penggajian.payroll_setting.index",
@@ -47,12 +52,19 @@ class PayrollSettingController extends Controller
      */
     public function create()
     {
-        $units = Unit::all();
+        // Filter units berdasarkan user access
+        if (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->get();
+            $officers = Officer::with(["user:id,name", "position"])
+                ->where('unit_id', Auth::user()->unit_id)
+                ->get();
+        } else {
+            $units = Unit::all();
+            $officers = Officer::with(["user:id,name", "position"])->get();
+        }
+
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
-
-        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
-        $officers = Officer::with(["user:id,name", "position"])->get();
 
         return view(
             "pages.penggajian.payroll_setting.payroll_setting",
@@ -266,8 +278,17 @@ class PayrollSettingController extends Controller
      */
     public function show($id)
     {
-        $units = Unit::all();
-        // PERBAIKAN: Tambahkan 'officer.position'
+        // Filter units berdasarkan user access
+        if (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->get();
+            $officers = Officer::with(["user:id,name", "position"])
+                ->where('unit_id', Auth::user()->unit_id)
+                ->get();
+        } else {
+            $units = Unit::all();
+            $officers = Officer::with(["user:id,name", "position"])->get();
+        }
+
         $setting = PayrollSetting::with([
             "unit",
             "officer.user",
@@ -276,8 +297,6 @@ class PayrollSettingController extends Controller
             "deductions",
         ])->findOrFail($id);
 
-        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
-        $officers = Officer::with(["user:id,name", "position"])->get();
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
 
@@ -292,18 +311,25 @@ class PayrollSettingController extends Controller
      */
     public function edit($id)
     {
-        // PERBAIKAN: Tambahkan 'officer.position'
         $setting = PayrollSetting::with([
             "officer.position",
             "components",
             "deductions",
         ])->findOrFail($id);
-        $units = Unit::all();
+
+        // Filter units berdasarkan user access
+        if (Auth::user()->unit_id) {
+            $units = Unit::where('id', Auth::user()->unit_id)->get();
+            $officers = Officer::with(["user:id,name", "position"])
+                ->where('unit_id', Auth::user()->unit_id)
+                ->get();
+        } else {
+            $units = Unit::all();
+            $officers = Officer::with(["user:id,name", "position"])->get();
+        }
+
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
-
-        // PERBAIKAN: Tambahkan 'position' pada eager load Officer
-        $officers = Officer::with(["user:id,name", "position"])->get();
 
         return view(
             "pages.penggajian.payroll_setting.payroll_setting",
