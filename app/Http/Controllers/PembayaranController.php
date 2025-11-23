@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DataRekening;
 use App\Models\Jurnals;
 use App\Models\Kelas;
 use App\Models\Keuangan_transaksi;
@@ -192,23 +193,112 @@ class PembayaranController extends Controller
                 'verified_by'          => Auth::id(),
             ]);
 
-            // jurnal debit
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
-                'debit'        => $jumlahBayar,
-                'kredit'       => 0,
-                'keterangan'   => $keterangan,
-            ]);
 
-            // jurnal kredit
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
-                'debit'        => 0,
-                'kredit'       => $jumlahBayar,
-                'keterangan'   => $keterangan,
-            ]);
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                ->first();
+
+
+
+            if (!$datarekening) {
+                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+            }
+
+
+            if($datarekening->allotment == 'Semua Pembayaran'){
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment','Semua Pembayaran')
+                    ->first();
+            }else{
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment','Pembayaran Tabungan')
+                    ->first();
+            }
+
+
+            // Ambil setting akun tabungan-tarik dengan filter unit
+            $settings = setting_akun::where('kategori', 'tabungan-tarik');
+
+            if (Auth::user()->yayasan_id) {
+                $settings->whereHas('unit', function ($q) {
+                    $q->where('yayasan_id', Auth::user()->yayasan_id);
+                });
+            } elseif (Auth::user()->unit_id) {
+                $settings->where('unit_id', Auth::user()->unit_id);
+            } elseif ($request->filled('unit_id')) {
+                $settings->where('unit_id', $request->unit_id);
+            }
+
+            $settings = $settings->where('status', '1')->first();
+
+            if ($settings == null) {
+                return back()->with('danger', "Setting akun untuk kategori tabungan-tarik belum lengkap.");
+            }
+
+            $akun_id = $settings->akun_id;
+            $position = $settings->debit;
+
+            if (!$akun_id) {
+                return back()->with('danger', "Akun untuk kategori tabungan-tarik belum dikonfigurasi. Silakan hubungi administrator.");
+            }
+
+
+            if($position == 1){
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => 0,
+                    'kredit'       => $request->jumlah,
+                    'keterangan'   => $keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'        => 0,
+                    'debit'       => $request->jumlah,
+                    'keterangan'   => $keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+            }else{
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'       => $request->jumlah,
+                    'kredit'        => 0,
+                    'keterangan'   => $keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'       => $request->jumlah,
+                    'debit'        => 0,
+                    'keterangan'   => $keterangan,
+                    'unit_id' => Auth::user()->unit_id
+                ]);
+            }
+//
+//
+//
+//            // jurnal debit
+//            Jurnals::create([
+//                'transaksi_id' => $transaksi->id,
+//                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
+//                'debit'        => $jumlahBayar,
+//                'kredit'       => 0,
+//                'keterangan'   => $keterangan,
+//            ]);
+//
+//            // jurnal kredit
+//            Jurnals::create([
+//                'transaksi_id' => $transaksi->id,
+//                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
+//                'debit'        => 0,
+//                'kredit'       => $jumlahBayar,
+//                'keterangan'   => $keterangan,
+//            ]);
 
             DB::commit();
 
