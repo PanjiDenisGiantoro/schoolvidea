@@ -1,48 +1,145 @@
-version: '3.8'
+version: '3.9'
 
 services:
-    app:
-        image: php:8.2-fpm
-        container_name: laravel-app
-        volumes:
-            - .:/var/www/html
-        working_dir: /var/www/html
-        networks:
-            - laravel-network
-        depends_on:
-            - db
-        restart: always
-
-    db:
-        image: postgres:14
-        container_name: postgres-db
+    # PostgreSQL Master
+    postgres-master:
+        image: postgres:16-alpine
+        container_name: postgres_master
         environment:
-            POSTGRES_DB: school
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: W@rung01
+            POSTGRES_DB: ${DB_NAME:-laravel}
+            POSTGRES_USER: ${DB_USER:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+            POSTGRES_REPLICATION_MODE: master
+            POSTGRES_REPLICATION_USER: ${REPLICATION_USER:-replicator}
+            POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-replication_password}
+        ports:
+            - "5432:5432"
         volumes:
-            - db_data:/var/lib/postgresql/data
+            - postgres_master_data:/var/lib/postgresql/data
+            - ./docker/postgres/master/postgresql.conf:/etc/postgresql/postgresql.conf
+            - ./docker/postgres/master/pg_hba.conf:/etc/postgresql/pg_hba.conf
+            - ./docker/postgres/init-master.sh:/docker-entrypoint-initdb.d/init-master.sh
         networks:
-            - laravel-network
-        restart: always
+            - laravel_network
+        command: >
+            -c config_file=/etc/postgresql/postgresql.conf
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
+    # PostgreSQL Slave (Replica)
+    postgres-slave:
+        image: postgres:16-alpine
+        container_name: postgres_slave
+        environment:
+            POSTGRES_DB: ${DB_NAME:-laravel}
+            POSTGRES_USER: ${DB_USER:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+            POSTGRES_MASTER_SERVICE: postgres-master
+            POSTGRES_REPLICATION_MODE: slave
+            POSTGRES_REPLICATION_USER: ${REPLICATION_USER:-replicator}
+            POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-replication_password}
+        ports:
+            - "5433:5432"
+        volumes:
+            - postgres_slave_data:/var/lib/postgresql/data
+            - ./docker/postgres/slave/postgresql.conf:/etc/postgresql/postgresql.conf
+            - ./docker/postgres/slave/pg_hba.conf:/etc/postgresql/pg_hba.conf
+            - ./docker/postgres/init-slave.sh:/docker-entrypoint-initdb.d/init-slave.sh
+        networks:
+            - laravel_network
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+        command: >
+            -c config_file=/etc/postgresql/postgresql.conf
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # FrankenPHP dengan Laravel
+    frankephp:
+        image: dunglas/frankenphp:latest-php8.4
+        container_name: frankephp_app
+        working_dir: /app
+        environment:
+            APP_NAME: ${APP_NAME:-Laravel}
+            APP_ENV: ${APP_ENV:-local}
+            APP_DEBUG: ${APP_DEBUG:-true}
+            APP_URL: ${APP_URL:-http://localhost}
+            DB_CONNECTION: pgsql
+            DB_HOST: postgres-master
+            DB_PORT: 5432
+            DB_DATABASE: ${DB_NAME:-laravel}
+            DB_USERNAME: ${DB_USER:-postgres}
+            DB_PASSWORD: ${DB_PASSWORD:-password}
+            DB_SLAVE_HOST: postgres-slave
+            DB_SLAVE_PORT: 5432
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./app:/app
+            - ./docker/frankephp/Caddyfile:/etc/caddy/Caddyfile
+        networks:
+            - laravel_network
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+            postgres-slave:
+                condition: service_healthy
+        command: >
+            sh -c "
+              composer install &&
+              php artisan migrate &&
+              php artisan config:cache &&
+              frankenphp run --config /etc/caddy/Caddyfile
+            "
+
+    # Nginx (Optional, untuk load balancing atau reverse proxy)
     nginx:
         image: nginx:alpine
-        container_name: nginx
+        container_name: nginx_server
         ports:
-            - "8080:80"
+            - "80:80"
+            - "443:443"
         volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-            - .:/var/www/html
+            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./app/public:/app/public:ro
+            - ./docker/nginx/ssl:/etc/nginx/ssl:ro
         networks:
-            - laravel-network
+            - laravel_network
         depends_on:
-            - app
-        restart: always
+            - frankephp
+        healthcheck:
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    # Redis (Optional, untuk caching)
+    redis:
+        image: redis:7-alpine
+        container_name: redis_cache
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - laravel_network
+        command: redis-server --appendonly yes
 
 networks:
-    laravel-network:
+    laravel_network:
         driver: bridge
 
 volumes:
-    db_data:
+    postgres_master_data:
+    postgres_slave_data:
+    redis_data:
