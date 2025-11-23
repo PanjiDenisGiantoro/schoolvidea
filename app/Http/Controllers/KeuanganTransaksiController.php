@@ -454,17 +454,23 @@ class KeuanganTransaksiController extends Controller
 
                 $keterangan = 'Setoran Tabungan ' . $siswa->user->name . ' Rp ' . number_format($transaksi->jumlah, 0, ',', '.');
 
-                $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
-                    $q->where('unit_id', Auth::user()->unit_id);
-                })
-                    ->where('allotment','Pembayaran Tabungan')
-                    ->orWhere('allotment','Semua Pembayaran')
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
                     ->first();
 
-                if(!$datarekening){
-                    return back()->with('danger', 'Rekening tabungan belum Aktif.');
+                if (!$datarekening) {
+                    return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
                 }
 
+
+                if($datarekening->allotment == 'Semua Pembayaran'){
+                    $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                        ->where('allotment','Semua Pembayaran')
+                        ->first();
+                }else{
+                    $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                        ->where('allotment','Pembayaran Tagihan')
+                        ->first();
+                }
                 if($position == 1){
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
@@ -551,15 +557,24 @@ class KeuanganTransaksiController extends Controller
 
 
 
-                    $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
-                        $q->where('unit_id', Auth::user()->unit_id);
-                    })
-                        ->where('allotment','Pembayaran Tabungan')
-                        ->orWhere('allotment','Semua Pembayaran')
+                    $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
                         ->first();
 
-                    if(!$datarekening){
-                        return back()->with('danger', 'Rekening tabungan belum Aktif.');
+
+
+                    if (!$datarekening) {
+                        return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+                    }
+
+
+                    if($datarekening->allotment == 'Semua Pembayaran'){
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Semua Pembayaran')
+                            ->first();
+                    }else{
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Pembayaran Tabungan')
+                            ->first();
                     }
 
                     if($position == 1){

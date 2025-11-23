@@ -387,22 +387,25 @@ class TabunganController extends Controller
                 return back()->with('danger', "Akun untuk kategori tabungan-tarik belum dikonfigurasi. Silakan hubungi administrator.");
             }
 
-            // Ambil data rekening bank untuk kredit
-            $datarekening = DataRekening::when(Auth::user()->unit_id, function($q) use ($siswa){
-                $q->where('unit_id', Auth::user()->unit_id);
-            })
-                ->where('allotment','Pembayaran Tabungan')
-                ->orWhere('allotment','Semua Pembayaran')
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
                 ->first();
+
+
 
             if (!$datarekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
 
-            if (!$datarekening->akun_id) {
-                return back()->with('danger', 'Akun untuk rekening tabungan belum dikonfigurasi. Silakan hubungi administrator.');
-            }
 
+            if($datarekening->allotment == 'Semua Pembayaran'){
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment','Semua Pembayaran')
+                    ->first();
+            }else{
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment','Pembayaran Tabungan')
+                    ->first();
+            }
             // Ambil saldo siswa
             $saldoSiswa = Saldo_keuangan::firstOrCreate(
                 [
