@@ -218,9 +218,7 @@ class PembayaranController extends Controller
             $settings = setting_akun::where('kategori', 'tagihan-masuk');
 
             if (Auth::user()->yayasan_id) {
-                $settings->whereHas('unit', function ($q) {
-                    $q->where('yayasan_id', Auth::user()->yayasan_id);
-                });
+                $settings->where('unit_id', Auth::user()->unit_id);
             } elseif (Auth::user()->unit_id) {
                 $settings->where('unit_id', Auth::user()->unit_id);
             } elseif ($request->filled('unit_id')) {
@@ -230,8 +228,10 @@ class PembayaranController extends Controller
             $settings = $settings->where('status', '1')->first();
 
             if ($settings == null) {
-                return back()->with('danger', "Setting akun untuk kategori tabungan-tarik belum lengkap.");
+                return back()->with('danger', "Setting akun untuk kategori tagihan-masuk belum lengkap.");
             }
+
+
 
             $akun_id = $settings->akun_id;
             $position = $settings->debit;
@@ -246,7 +246,7 @@ class PembayaranController extends Controller
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
                     'debit'        => 0,
-                    'kredit'       => $request->jumlah,
+                    'kredit'       => $jumlahBayar,
                     'keterangan'   => $keterangan,
                     'unit_id' => Auth::user()->unit_id
                 ]);
@@ -255,7 +255,7 @@ class PembayaranController extends Controller
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $datarekening->akun_id,
                     'kredit'        => 0,
-                    'debit'       => $request->jumlah,
+                    'debit'       =>$jumlahBayar,
                     'keterangan'   => $keterangan,
                     'unit_id' => Auth::user()->unit_id
                 ]);
