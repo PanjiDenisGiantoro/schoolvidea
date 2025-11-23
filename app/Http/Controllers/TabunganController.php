@@ -426,8 +426,6 @@ class TabunganController extends Controller
                 'status_verifikasi' => 'pending'
             ]);
 
-            // Buat jurnal untuk penarikan (Debit akun penarikan, Kredit kas/bank)
-            try {
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
@@ -447,10 +445,7 @@ class TabunganController extends Controller
                     'unit_id'      => Auth::user()->unit_id
                 ]);
 
-            }catch (\Exception $e){
-                return back()->with('danger', $e->getMessage());
 
-            }
             // Jurnal Debit: Akun penarikan tabungan
 
             // Catat log transaksi
