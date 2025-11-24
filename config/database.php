@@ -82,7 +82,29 @@ return [
             ]) : [],
         ],
 
-        'pgsql' => [
+        'pgsql' => env('APP_ENV') === 'production' ? [
+            // Production: Master-Slave Replication
+            'read' => [
+                'host' => env('DB_SLAVE_HOST', 'postgres-slave'),
+                'port' => env('DB_SLAVE_PORT', 5432),
+            ],
+            'write' => [
+                'host' => env('DB_HOST', 'postgres-master'),
+                'port' => env('DB_PORT', 5432),
+            ],
+            'sticky' => true,
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'postgres'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ] : [
+            // Development: Single Database
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
