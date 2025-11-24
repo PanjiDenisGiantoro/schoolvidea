@@ -56,7 +56,7 @@
                                                placeholder="Masukkan kode sekolah" required>
                                     </div>
                                     <div class="mb-1 text-center d-grid">
-                                        <button class="btn btn-primary" type="submit">Lanjutkan</button>
+                                        <button class="btn btn-primary" type="submit">Lanjutkans</button>
                                     </div>
                                 </form>
                             </div>
