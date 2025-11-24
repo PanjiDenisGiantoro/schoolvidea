@@ -93,9 +93,11 @@ services:
             - redis
         command: >
             sh -c "
-              composer install &&
-              php artisan migrate &&
+              curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&
+              composer install --no-dev --optimize-autoloader &&
               php artisan config:cache &&
+              php artisan route:cache &&
+              php artisan view:cache &&
               frankenphp run --config /etc/caddy/Caddyfile
             "
 
