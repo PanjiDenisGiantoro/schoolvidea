@@ -92,35 +92,37 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script_stop: true
           script: |
-            cd /home/videa_payment/schoolvidea
-
-            # Fix git safe directory
-            git config --global --add safe.directory /home/videa_payment/schoolvidea
+            APP_DIR="/home/videa_payment/schoolvidea"
+            BACKUP_DIR="/home/videa_payment/schoolvidea_backup"
+            REPO_URL="https://github.com/PanjiDenisGiantoro/schoolvidea.git"
 
             # Add GitHub to known_hosts
             mkdir -p ~/.ssh
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
-            ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Stop containers before pull
+            # Stop containers
+            cd $APP_DIR
             sudo docker-compose down || true
 
-            # Remove git lock files
-            sudo rm -f .git/index.lock
-            sudo rm -f .git/FETCH_HEAD
-            sudo rm -f .git/HEAD.lock
-            sudo rm -f .git/*.lock
+            # Backup important files
+            sudo mkdir -p $BACKUP_DIR
+            sudo cp -f $APP_DIR/.env $BACKUP_DIR/.env 2>/dev/null || true
+            sudo cp -rf $APP_DIR/storage $BACKUP_DIR/storage 2>/dev/null || true
+
+            # Remove old directory and clone fresh
+            cd /home/videa_payment
+            sudo rm -rf $APP_DIR
+            git clone $REPO_URL schoolvidea
+
+            # Restore important files
+            sudo cp -f $BACKUP_DIR/.env $APP_DIR/.env 2>/dev/null || true
+            sudo cp -rf $BACKUP_DIR/storage/* $APP_DIR/storage/ 2>/dev/null || true
 
             # Fix permissions
-            sudo chown -R root:root .git
-            sudo chmod -R 755 .git
-
-            # Pull latest changes
-            git reset --hard HEAD
-            git pull origin master
-
-            # Fix script permission
-            chmod +x deploy.sh
+            cd $APP_DIR
+            sudo chown -R root:root .
+            sudo chmod -R 755 .
+            sudo chmod +x deploy.sh
 
             # Run deployment script
             sudo ./deploy.sh

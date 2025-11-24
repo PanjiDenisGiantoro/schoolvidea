@@ -5,7 +5,7 @@
 server {
     listen 80;
     listen [::]:80;
-    server_name spsdev.videaclass.com;
+    server_name sps.videaclass.com;
 
     # Certbot challenge
     location /.well-known/acme-challenge/ {
