@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.3'
 
 services:
     # PostgreSQL Master
@@ -51,8 +51,7 @@ services:
         networks:
             - laravel_network
         depends_on:
-            postgres-master:
-                condition: service_healthy
+            - postgres-master
         command: >
             -c config_file=/etc/postgresql/postgresql.conf
         healthcheck:
@@ -62,9 +61,9 @@ services:
             retries: 5
 
     # FrankenPHP dengan Laravel
-    frankephp:
+    frankenphp:
         image: dunglas/frankenphp:latest-php8.4
-        container_name: frankephp_app
+        container_name: frankenphp_app
         working_dir: /app
         environment:
             APP_NAME: ${APP_NAME:-Laravel}
@@ -89,10 +88,9 @@ services:
         networks:
             - laravel_network
         depends_on:
-            postgres-master:
-                condition: service_healthy
-            postgres-slave:
-                condition: service_healthy
+            - postgres-master
+            - postgres-slave
+            - redis
         command: >
             sh -c "
               composer install &&
@@ -116,7 +114,7 @@ services:
         networks:
             - laravel_network
         depends_on:
-            - frankephp
+            - frankenphp
         healthcheck:
             test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
             interval: 10s
