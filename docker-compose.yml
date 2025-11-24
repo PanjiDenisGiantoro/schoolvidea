@@ -96,7 +96,7 @@ services:
             - redis
         command: >
             sh -c "
-              composer install --optimize-autoloader &&
+              composer install --no-dev --optimize-autoloader &&
               php artisan config:cache &&
               php artisan view:cache &&
               frankenphp run --config /etc/caddy/Caddyfile
