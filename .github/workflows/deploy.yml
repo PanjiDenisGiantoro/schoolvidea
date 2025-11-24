@@ -106,13 +106,14 @@ jobs:
             sudo docker-compose down || true
 
             # Remove git lock files
-            rm -f .git/index.lock
-            rm -f .git/FETCH_HEAD
-            rm -f .git/HEAD.lock
+            sudo rm -f .git/index.lock
+            sudo rm -f .git/FETCH_HEAD
+            sudo rm -f .git/HEAD.lock
+            sudo rm -f .git/*.lock
 
-            # Fix permissions (ignore errors for docker-created files)
-            chown -R root:root .git 2>/dev/null || true
-            chmod -R 755 .git 2>/dev/null || true
+            # Fix permissions
+            sudo chown -R root:root .git
+            sudo chmod -R 755 .git
 
             # Pull latest changes
             git reset --hard HEAD
