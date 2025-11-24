@@ -61,7 +61,7 @@
                                             <button
                                                 class="btn btn-primary d-flex align-items-center justify-content-center fw-medium gap-1"
                                                 type="submit">
-                                                <i class='bx bx-log-in fs-18'></i> Masuks
+                                                <i class='bx bx-log-in fs-18'></i> Masuk
                                             </button>
                                         </div>
                                     </form>
