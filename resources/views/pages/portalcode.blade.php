@@ -53,7 +53,7 @@
                                         <label class="form-label" for="kode-sekolah">Kode Sekolah</label>
                                         <input type="text" id="kode-sekolah" name="kode_sekolah"
                                                class="form-control"
-                                               placeholder="Masukkan kode sekolah Anda" required>
+                                               placeholder="Masukkan kode sekolah" required>
                                     </div>
                                     <div class="mb-1 text-center d-grid">
                                         <button class="btn btn-primary" type="submit">Lanjutkan</button>
