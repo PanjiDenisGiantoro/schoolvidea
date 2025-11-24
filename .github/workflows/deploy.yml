@@ -102,12 +102,12 @@ jobs:
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
             ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Fix permissions before pull
-            chown -R root:root .
-            chmod -R 755 .
-
             # Stop containers before pull
             sudo docker-compose down || true
+
+            # Fix permissions (ignore errors for docker-created files)
+            chown -R root:root . 2>/dev/null || true
+            chmod -R 755 . 2>/dev/null || true
 
             # Pull latest changes
             git reset --hard HEAD
