@@ -69,7 +69,8 @@
 
                                 {{-- Footer text --}}
                                 <p class="text-muted mb-0 mt-4 text-center">
-                                    &copy; {{ date('Y') }} VideaClass by PT. Inovasi Dalam Negeri - All Rights Reserved
+                                    &copy; {{ date('Y') }} VideaClass by PT. Inovasi Dalam Negeri - All Rights Reserveds
+
                                 </p>
                             </div>
                         </div>
