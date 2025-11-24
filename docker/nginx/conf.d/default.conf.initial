@@ -1,0 +1,24 @@
+# Initial Configuration (Before SSL)
+# Use this config first to get SSL certificate
+# After getting certificate, replace with default.conf
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name spsdev.videaclass.com;
+
+    # Certbot challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # Proxy to FrankenPHP (temporary, before SSL)
+    location / {
+        proxy_pass http://frankenphp_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
