@@ -105,9 +105,14 @@ jobs:
             # Stop containers before pull
             sudo docker-compose down || true
 
+            # Remove git lock files
+            rm -f .git/index.lock
+            rm -f .git/FETCH_HEAD
+            rm -f .git/HEAD.lock
+
             # Fix permissions (ignore errors for docker-created files)
-            chown -R root:root . 2>/dev/null || true
-            chmod -R 755 . 2>/dev/null || true
+            chown -R root:root .git 2>/dev/null || true
+            chmod -R 755 .git 2>/dev/null || true
 
             # Pull latest changes
             git reset --hard HEAD
