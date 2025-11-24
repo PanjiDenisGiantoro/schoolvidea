@@ -70,6 +70,7 @@
                                 {{-- Footer text --}}
                                 <p class="text-muted mb-0 mt-4 text-center">
                                     &copy; {{ date('Y') }} VideaClass by PT. Inovasi Dalam Negeri - All Rights Reserved
+
                                 </p>
                             </div>
                         </div>

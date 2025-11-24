@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.3'
 
 services:
     # PostgreSQL Master
@@ -51,8 +51,7 @@ services:
         networks:
             - laravel_network
         depends_on:
-            postgres-master:
-                condition: service_healthy
+            - postgres-master
         command: >
             -c config_file=/etc/postgresql/postgresql.conf
         healthcheck:
@@ -62,9 +61,12 @@ services:
             retries: 5
 
     # FrankenPHP dengan Laravel
-    frankephp:
-        image: dunglas/frankenphp:latest-php8.4
-        container_name: frankephp_app
+    frankenphp:
+        build:
+            context: .
+            dockerfile: docker/frankenphp/Dockerfile
+        image: schoolvidea/frankenphp:latest
+        container_name: frankenphp_app
         working_dir: /app
         environment:
             APP_NAME: ${APP_NAME:-Laravel}
@@ -84,24 +86,23 @@ services:
         ports:
             - "8000:8000"
         volumes:
-            - ./app:/app
-            - ./docker/frankephp/Caddyfile:/etc/caddy/Caddyfile
+            - .:/app
+            - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
         networks:
             - laravel_network
         depends_on:
-            postgres-master:
-                condition: service_healthy
-            postgres-slave:
-                condition: service_healthy
+            - postgres-master
+            - postgres-slave
+            - redis
         command: >
             sh -c "
-              composer install &&
-              php artisan migrate &&
+              composer install --no-dev --optimize-autoloader &&
               php artisan config:cache &&
+              php artisan view:cache &&
               frankenphp run --config /etc/caddy/Caddyfile
             "
 
-    # Nginx (Optional, untuk load balancing atau reverse proxy)
+    # Nginx (untuk reverse proxy + SSL)
     nginx:
         image: nginx:alpine
         container_name: nginx_server
@@ -111,17 +112,28 @@ services:
         volumes:
             - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
             - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-            - ./app/public:/app/public:ro
+            - ./public:/app/public:ro
             - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+            - ./certbot/conf:/etc/letsencrypt:ro
+            - ./certbot/www:/var/www/certbot:ro
         networks:
             - laravel_network
         depends_on:
-            - frankephp
+            - frankenphp
         healthcheck:
             test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
             interval: 10s
             timeout: 5s
             retries: 3
+
+    # Certbot untuk SSL
+    certbot:
+        image: certbot/certbot
+        container_name: certbot
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
     # Redis (Optional, untuk caching)
     redis:

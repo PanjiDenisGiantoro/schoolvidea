@@ -1,0 +1,52 @@
+# FrankenPHP Caddyfile for Laravel
+# =================================
+
+{
+    # Global options
+    admin off
+
+    # FrankenPHP configuration
+    frankenphp {
+        # Number of PHP threads
+        num_threads 4
+    }
+
+    # Order of directives
+    order php_server before file_server
+}
+
+:8000 {
+    # Set root directory
+    root * /app/public
+
+    # Encode responses
+    encode zstd gzip
+
+    # PHP handling with FrankenPHP
+    php_server
+
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Handle static files
+    @static {
+        file
+        path *.ico *.css *.js *.gif *.jpg *.jpeg *.png *.svg *.woff *.woff2 *.webp
+    }
+    handle @static {
+        file_server
+    }
+
+    # Logging
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+}
