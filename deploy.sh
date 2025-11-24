@@ -14,43 +14,35 @@ echo "=========================================="
 APP_DIR="/home/videa_payment/schoolvidea"
 CONTAINER_NAME="frankenphp_app"
 
-# Fix git safe directory
-git config --global --add safe.directory $APP_DIR
-
 cd $APP_DIR
 
-# 1. Enable maintenance mode
-echo "[1/8] Enabling maintenance mode..."
-docker exec $CONTAINER_NAME php artisan down --retry=60 || true
+# 1. Start containers
+echo "[1/6] Starting containers..."
+docker-compose up -d
 
-# 2. Pull latest code (already done by CI/CD, but just in case)
-echo "[2/8] Pulling latest code..."
-git pull origin master
+# Wait for container to be ready
+echo "Waiting for container to be ready..."
+sleep 10
 
-# 3. Install/update composer dependencies
-echo "[3/8] Installing composer dependencies..."
+# 2. Install/update composer dependencies
+echo "[2/6] Installing composer dependencies..."
 docker exec $CONTAINER_NAME composer install --no-dev --optimize-autoloader --no-interaction
 
-# 4. Run database migrations
-echo "[4/8] Running database migrations..."
+# 3. Run database migrations
+echo "[3/6] Running database migrations..."
 docker exec $CONTAINER_NAME php artisan migrate --force
 
-# 5. Clear and rebuild cache
-echo "[5/8] Clearing cache..."
+# 4. Clear and rebuild cache
+echo "[4/6] Clearing cache..."
 docker exec $CONTAINER_NAME php artisan optimize:clear
 
-echo "[6/8] Rebuilding cache..."
+echo "[5/6] Rebuilding cache..."
 docker exec $CONTAINER_NAME php artisan config:cache
 docker exec $CONTAINER_NAME php artisan view:cache
-# docker exec $CONTAINER_NAME php artisan route:cache  # Skip jika ada duplicate route
 
-# 7. Restart queue workers (if using)
-echo "[7/8] Restarting queue workers..."
+# 6. Restart queue workers (if using)
+echo "[6/6] Restarting queue workers..."
 docker exec $CONTAINER_NAME php artisan queue:restart || true
-
-# 8. Disable maintenance mode
-echo "[8/8] Disabling maintenance mode..."
-docker exec $CONTAINER_NAME php artisan up
 
 echo "=========================================="
 echo "Deployment completed successfully!"

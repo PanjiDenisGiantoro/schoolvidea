@@ -102,6 +102,9 @@ jobs:
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
             ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
+            # Stop containers before pull (to release file locks)
+            docker-compose down || true
+
             # Pull latest changes
             git pull origin master
 
