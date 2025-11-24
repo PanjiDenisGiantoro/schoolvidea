@@ -92,21 +92,29 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script_stop: true
           script: |
+            cd /home/videa_payment/schoolvidea
+
             # Fix git safe directory
             git config --global --add safe.directory /home/videa_payment/schoolvidea
-
-            cd /home/videa_payment/schoolvidea
 
             # Add GitHub to known_hosts
             mkdir -p ~/.ssh
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
             ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Stop containers before pull (to release file locks)
-            docker-compose down || true
+            # Fix permissions before pull
+            chown -R root:root .
+            chmod -R 755 .
+
+            # Stop containers before pull
+            sudo docker-compose down || true
 
             # Pull latest changes
+            git reset --hard HEAD
             git pull origin master
 
+            # Fix script permission
+            chmod +x deploy.sh
+
             # Run deployment script
-            ./deploy.sh
+            sudo ./deploy.sh
