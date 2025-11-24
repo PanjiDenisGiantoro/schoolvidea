@@ -14,6 +14,9 @@ echo "=========================================="
 APP_DIR="/home/videa_payment/schoolvidea"
 CONTAINER_NAME="frankenphp_app"
 
+# Fix git safe directory
+git config --global --add safe.directory $APP_DIR
+
 cd $APP_DIR
 
 # 1. Enable maintenance mode

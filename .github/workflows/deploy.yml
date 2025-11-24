@@ -92,6 +92,9 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script_stop: true
           script: |
+            # Fix git safe directory
+            git config --global --add safe.directory /home/videa_payment/schoolvidea
+
             cd /home/videa_payment/schoolvidea
 
             # Pull latest changes
