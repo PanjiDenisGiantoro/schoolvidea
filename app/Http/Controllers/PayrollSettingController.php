@@ -178,7 +178,7 @@ class PayrollSettingController extends Controller
                     $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
 
                     // Total pendapatan per komponen
-                    $totalEarnings = $basicSalary + $totalComponentValue;
+                    $totalEarnings = $basicSalary + $value;
 
                     // Total bersih
                     $netPayment = $totalEarnings - $totalDeductions;
@@ -211,7 +211,7 @@ class PayrollSettingController extends Controller
             PayrollPayment::insert($rows);
 
             return redirect()
-                ->route("payroll_payment.index")
+                ->route("payroll_setting.index")
                 ->with("success", "Data payroll berhasil disimpan.");
 
         } catch (\Throwable $e) {
@@ -224,54 +224,116 @@ class PayrollSettingController extends Controller
     /**
      * Update payroll setting (gunakan logika store).
      */
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            // ... validasi sama
-        ]);
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+        "units_id" => "required|exists:units,id",
+        "officers_id" => "required|exists:officers,id",
+        "teaching_hours" => "nullable|numeric",
+        "teaching_hours_total" => "nullable|numeric",
+        "salary" => "nullable|numeric",
 
-        try {
-            DB::beginTransaction();
+        "transport_allowance" => "nullable|numeric",
+        "meal_allowance" => "nullable|numeric",
+        "communication_allowance" => "nullable|numeric",
+        "other_allowance" => "nullable|numeric",
 
-            $payrollSetting = PayrollSetting::findOrFail($id);
-            $payrollSetting->update($validated);
+        "billing_period" => "required|integer",
+        "start_month" => "required|integer",
+        "start_year" => "required|integer",
 
-            // Sync komponen dan deductions (sama seperti sebelumnya)
+        "components_id" => "array",
+        "component_value" => "array",
+        "deductions_id" => "array",
+        "deduction_value" => "array",
+    ]);
 
-            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+    try {
+        DB::beginTransaction();
 
-            // Update payroll payments yang sudah ada
-            $existingPayments = PayrollPayment::where('payroll_setting_id', $payrollSetting->id)->get();
+        // === 1️⃣ Update payroll setting master ===
+        $payrollSetting = PayrollSetting::findOrFail($id);
+        $payrollSetting->update($validated);
 
-            foreach ($existingPayments as $payment) {
-                // Hitung ulang values
-                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
-                $componentValue = // dapatkan value komponen yang sesuai
-                $totalEarnings = $basicSalary + $componentValue;
-                $netPayment = $totalEarnings - $deductionsTotal;
-
-                $payment->update([
-                    'teaching_hour_week' => $request->teaching_hours ?? 0,
-                    'teaching_hour_month' => $request->teaching_hours_total ?? 0,
-                    'total_earnings' => $totalEarnings,
-                    'total_deductions' => $deductionsTotal,
-                    'net_payment' => $netPayment,
-                    'updated_at' => now(),
-                ]);
+        // === 2️⃣ Sync komponen & deductions ===
+        // Komponen:
+        $componentsSync = [];
+        if (!empty($request->components_id)) {
+            foreach ($request->components_id as $index => $compId) {
+                $componentsSync[$compId] = [
+                    "value" => $request->component_value[$index] ?? 0,
+                ];
             }
-
-            DB::commit();
-
-            return redirect()
-                ->route("payroll_payment.index")
-                ->with("success", "Data payroll berhasil diupdate.");
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
-            return back()->with("error", $e->getMessage());
         }
+        $payrollSetting->components()->sync($componentsSync);
+
+        // Deductions:
+        $deductionsSync = [];
+        if (!empty($request->deductions_id)) {
+            foreach ($request->deductions_id as $index => $dedId) {
+                $deductionsSync[$dedId] = [
+                    "value" => $request->deduction_value[$index] ?? 0,
+                ];
+            }
+        }
+        $payrollSetting->deductions()->sync($deductionsSync);
+
+        // Total potongan
+        $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+
+        // === 3️⃣ Ambil semua PAYMENT yang masih pending ===
+        $pendingPayments = PayrollPayment::where('payroll_setting_id', $payrollSetting->id)
+            ->where('status', 'pending')       // ⬅ hanya pending yang terupdate
+            ->get();
+
+        // === 4️⃣ Update tiap payment pending ===
+        foreach ($pendingPayments as $payment) {
+
+            // Salary Calculation
+            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+
+            // Component Value (per komponen)
+            $componentValue = $payrollSetting
+                ->components
+                ->where("id", $payment->component_id)
+                ->first()
+                ->pivot
+                ->value ?? 0;
+
+            // Total earnings
+            $totalEarnings = $basicSalary + $componentValue;
+
+            // Net payment
+            $netPayment = $totalEarnings - $deductionsTotal;
+
+            // === Update row ===
+            $payment->update([
+                "unit_id" => $request->units_id,
+                "officer_id" => $request->officers_id,
+                "teaching_hour_week" => $request->teaching_hours ?? 0,
+                "teaching_hour_month" => $request->teaching_hours_total ?? 0,
+
+                "total_earnings" => $totalEarnings,
+                "total_deductions" => $deductionsTotal,
+                "net_payment" => $netPayment,
+
+                "updated_at" => now(),
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route("payroll_setting.index")
+            ->with("success", "Data payroll berhasil diupdate. Row paid tidak diubah.");
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
+        return back()->with("error", $e->getMessage());
     }
+}
+
 
     /**
      * Tampilkan detail satu payroll setting.

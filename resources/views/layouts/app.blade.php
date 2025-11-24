@@ -5,6 +5,7 @@
     @include('partials.head-css')
     @stack('styles')
     @stack('script')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>

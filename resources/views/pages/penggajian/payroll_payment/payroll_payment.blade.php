@@ -77,11 +77,11 @@
                         width="120">
                 </div>--}}
                 <ul class="list-unstyled small">
-                    <li><strong>Nama Lengkap:</strong> <span id="officer_name">-</span></li>
-                    <li><strong>NIP:</strong> <span id="officer_nip">-</span></li>
-                    <li><strong>Unit Pendidikan:</strong> <span id="officer_unit">-</span></li>
-                    <li><strong>Jabatan:</strong> <span id="officer_jabatan">-</span></li>
-                    <li><strong>Nomor Telepon:</strong> <span id="officer_no_hp">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Nama Lengkap:</strong> <span id="officer_name">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>NIP:</strong> <span id="officer_nip">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Unit Pendidikan:</strong> <span id="officer_unit">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Jabatan:</strong> <span id="officer_jabatan">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Nomor Telepon:</strong> <span id="officer_no_hp">-</span></li>
                 </ul>
             </div>
         </div>
@@ -190,10 +190,10 @@
                             <th style="width: 200px; text-align: center;">
                                 Presensi
                                 <div class="custom-presensi-header">
-                                    <span>JM</span>
-                                    <span>Hadir</span>
-                                    <span>T.Hadir</span>
-                                    <span>H. Staff</span>
+                                    <span class="text-white">JM</span>
+                                    <span class="text-white">Hadir</span>
+                                    <span class="text-white">T.Hadir</span>
+                                    <span class="text-white">H. Staff</span>
                                 </div>
                             </th>
                             <th>Penerimaan</th>
@@ -250,15 +250,19 @@
                             })
                         });
 
-                        const data = await response.json();
 
-                        if (data.success) {
-                            alert('Data presensi berhasil disinkronisasi!\n\n' + JSON.stringify(data.data, null, 2));
-                            console.log('Sync Success:', data);
-                        } else {
-                            alert('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
-                            console.error('Sync Error:', data);
-                        }
+const raw = await response.text();
+console.log('raw data: ', raw);
+
+let data = {};
+try {
+    data = JSON.parse(raw);
+} catch (e) {
+    console.error("Parse error:", e);
+    alert("Response bukan JSON, cek console");
+    return;
+}
+
                     } catch (error) {
                         alert('Error: ' + error.message);
                         console.error('Sync Exception:', error);
@@ -278,7 +282,9 @@
             const tabelBelumLunas = document.getElementById('tabelBelumLunas');
             const tabelSudahLunas = document.getElementById('tabelSudahLunas');
             const cardHeader = document.querySelector('#button-info');
-            const btnProsesPembayaran = document.getElementById('btnProsesPembayaran');
+            const btnProsesPembayaran = document.getElementById('btnProses');
+            const btnProsesSinkron = document.getElementById('btnSinkron')
+
 
             // --- Default tampilan: Belum Lunas aktif ---
             btnBelumLunas.classList.add('custom-active-btn');
@@ -287,6 +293,7 @@
             tabelSudahLunas.style.display = 'none';
             if (cardHeader) cardHeader.style.display = 'flex';
             if (btnProsesPembayaran) btnProsesPembayaran.style.display = 'inline-flex';
+             if (btnProsesSinkron) btnProsesSinkron.style.display = 'inline-flex';
 
             // --- Klik Belum Lunas ---
             btnBelumLunas.addEventListener('click', function() {
@@ -297,6 +304,7 @@
 
                 if (cardHeader) cardHeader.style.display = 'flex';
                 if (btnProsesPembayaran) btnProsesPembayaran.style.display = 'inline-flex';
+                 if (btnProsesSinkron) btnProsesSinkron.style.display = 'inline-flex';
             });
 
             // --- Klik Sudah Lunas ---
@@ -308,11 +316,10 @@
 
                 if (cardHeader) cardHeader.style.display = 'none';
                 if (btnProsesPembayaran) btnProsesPembayaran.style.display = 'none';
+                 if (btnProsesSinkron) btnProsesSinkron.style.display = 'none';
             });
         });
     </script>
-
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const dropdown = document.getElementById('dropdownKelas');
@@ -463,8 +470,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     let globalAllowance = {
         total_allowance: 0,
-        allowances: {}
+        allowances: {},
+        belum_lunas: {},
     };
+    const rowDataMap = new Map();
     // Fungsi untuk load data tabel
     async function loadTableData() {
         const officerId = officerSelect.value;
@@ -495,7 +504,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             globalAllowance = {
                 total_allowance: dataBelumLunas?.total_allowance ||0,
-            allowances: dataBelumLunas?.allowances || {}
+            allowances: dataBelumLunas?.allowances || {},
+                belum_lunas: dataBelumLunas?.belum_lunas || {}
             }
             console.log('global allowance: ', globalAllowance);
 
@@ -528,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderBelumLunasTable(data) {
-        console.log("Data untuk tabel belum lunas:", data);
+        rowDataMap.clear();
 
         if (!data || !data.length) {
             tabelBelumLunas.innerHTML = `
@@ -539,10 +549,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         tabelBelumLunas.innerHTML = data.map((item, i) => {
-            console.log("Item data:", item); // Debug setiap item
 
             return `
-            <tr>
+            <tr data-item='${JSON.stringify(item)}'
+                data-base-earnings="${item.total_earnings || 0}"
+                data-base-deductions="${item.total_deductions || 0}"
+                data-st-hadir="${item.st_hadir || 0}">
                 <td><input type="checkbox" class="row-checkbox-belum"></td>
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || "-"}</td>
@@ -570,7 +582,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-warning rounded-pill">Detail</button>
-                        <button class="btn btn-success rounded-pill">Bayar</button>
+                        <button class="btn btn-success rounded-pill btn-bayar">Bayar</button>
+
                     </div>
                 </td>
             </tr>
@@ -579,13 +592,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll(".custom-input-presensi").forEach(input => {
             input.addEventListener("input", onPresensiChange);
         });
+        document.querySelectorAll(".btn-bayar").forEach(btn => {
+            btn.addEventListener("click", onClickBayar);
+        });
+        //setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
 
 
-        console.log("HTML yang dihasilkan:", tabelBelumLunas.innerHTML);
     }
 
     function renderSudahLunasTable(data) {
-        console.log("Data untuk tabel sudah lunas:", data);
 
         if (!data || !data.length) {
             tabelSudahLunas.innerHTML = `
@@ -645,18 +660,147 @@ document.addEventListener('DOMContentLoaded', function() {
             minimumFractionDigits: 0
         }).format(amount);
     }
-    function onPresensiChange() {
-        const row = this.closest("tr");
 
-        const izin = parseInt(row.querySelector(".izin")?.value) || 0;
-        const hadir = parseInt(row.querySelector(".hadir")?.value) || 0;
-        const alpha = parseInt(row.querySelector(".alpha")?.value) || 0;
-        const staff = parseInt(row.querySelector(".staff")?.value) || 0;
+function onPresensiChange() {
+    const row = this.closest("tr");
+    console.log(row.dataset.item);
+    let item = {};
+    try {
+            item = JSON.parse(row.dataset.item || '{}');
+        } catch (err) {
+            console.error('JSON parse error: ', err)
+        }
+
+    if (!item || Object.keys(item).length === 0) {
+            console.warn("Fallback: Asigning data directly")
+        }
+
+    const izin = parseInt(row.querySelector(".izin")?.value) || 0;
+    const hadir = parseInt(row.querySelector(".hadir")?.value) || 0;
+    const alpha = parseInt(row.querySelector(".alpha")?.value) || 0;
+    const staff = parseInt(row.querySelector(".staff")?.value) || 0;
+
+    let totalEarnings = parseFloat(item.total_earnings) || 0;
+    let totalDeductions = parseFloat(item.total_deductions) || 0;
+
+    const allowanceRate = globalAllowance.total_allowance || 0;
+    totalEarnings += hadir * allowanceRate;
+    result = hadir * allowanceRate;
 
 
+    //const absenceDeductionRate = 10000;
+    //totalDeductions += alpha * absenceDeductionRate;
+
+    const netPayment = totalEarnings - totalDeductions;
+    row.children[6].innerHTML = formatRupiah(totalEarnings);
+    row.children[7].innerHTML = formatRupiah(totalDeductions);
+    row.children[8].innerHTML = formatRupiah(netPayment);
+}
+
+function onClickBayar() {
+    const row = this.closest("tr");
+        let item = {};
+    try {
+            item = JSON.parse(row.dataset.item || '{}');
+        } catch (err) {
+            console.error('JSON parse error: ', err)
+        }
+
+    if (!item || Object.keys(item).length === 0) {
+            console.warn("Fallback: Asigning data directly")
+        }
+    const amountPay = item.net_payment || 0;
+
+    Swal.fire({
+        title: `Pembayaran ${item.officer?.name}`,
+        html:
+        `
+            <p>Tagihan: <strong>${formatRupiah(amountPay)}</strong></p>
+            <input type="text" class="form-control" value="0" id="inputBayar"
+            onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+            oninput="formatCurrencyInput(this)">
+        `,
+        showCancelButton: true,
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            const raw = document.getElementById('inputBayar').value;
+            const value = raw.replace(/[^\d]/g, '');
+
+            console.log('value: ',value);
+            if (!value || value <= 0) {
+                Swal.showValidationMessage('Jumlah bayar tidak valid');
+                return false;
+            }
+            if (parseInt(value) < amountPay) {
+                Swal.showValidationMessage('Jumlah kurang dari tagihan');
+                return false;
+            }
+            return value;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processPayment(item.id, parseInt(result.value));
+        }
+    });
+}
+
+async function processPayment(id, amount) {
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfMeta) {
+        console.error("CSRF token meta tag not found");
+        alert("gagal memproses pembayaran: keamanan tidak terjamin (CSRF tidak ditemukan)");
+        return;
     }
+    const csrfToken = csrfMeta.content;
+
+    try {
+        const response = await fetch(`/payroll-payment/payment/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            },
+            body: JSON.stringify({ amount })
+        });
+        console.log('response proccesPayment: ', response);
+        const result = await response.json();
+        console.log('response: ', result);
+        if (!response.ok) {
+            alert(result.message || "Terjadi error");
+            return;
+        }
+        alert("Pembayaran Berhasil");
+        loadTableData();
+
+    } catch (err) {
+        alert("Gagal terhubung ke server");
+        console.error(err);
+    }
+}
+
     // Inisialisasi awal
     clearTables();
 });
 </script>
+    <script>
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            input.value = new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
+        document.addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll(
+                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"], [name="nilai"]'
+            );
+            inputs.forEach(input => {
+                input.value = parseInt(input.value.replace(/\./g, ''));
+                console.log('parseint : ', input.value);
+            });
+        });
+    </script>
 @endpush

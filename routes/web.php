@@ -420,7 +420,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/getOfficerDetail/{officerId}', [PayrollPaymentController::class, 'getOfficerDetail'])->name('payroll-payment.getOfficerDetail');
         Route::get('/getPayment', [PayrollPaymentController::class, 'getPayment'])->name('payroll-payment.getPayment');
         Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
-        Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
+        Route::post('/payment/{id}', [PayrollPaymentController::class, 'payment'])->name('payroll-payment.payment');
         Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
         Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
     });
@@ -431,3 +431,4 @@ Route::middleware(['auth'])->group(function () {
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');
 // });
+

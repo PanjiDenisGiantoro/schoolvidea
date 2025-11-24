@@ -8,11 +8,19 @@ use App\Models\PayrollComponents;
 use App\Models\Officer;
 use App\Models\Unit;
 use App\Models\AttendanceSync;
+use App\Models\DataRekening;
+use App\Models\Keuangan_transaksi;
+use App\Models\setting_akun;
 use App\Helpers\VideaclassApiHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\Jurnals;
 use Carbon\Carbon;
+use SebastianBergmann\Environment\Console;
+
+use function Laravel\Prompts\error;
 
 class PayrollPaymentController extends Controller
 {
@@ -131,7 +139,6 @@ class PayrollPaymentController extends Controller
         $payments = $query->get();
         $settings = PayrollSetting::where('officers_id', $officerId)->first();
         $allowances = [
-            'salary' => $settings->salary ?? 0,
             'transport_allowance' => $settings->transport_allowance ?? 0,
             'meal_allowance' => $settings->meal_allowance ?? 0,
             'communication_allowance' => $settings->communication_allowance ?? 0,
@@ -172,46 +179,6 @@ class PayrollPaymentController extends Controller
             return response()->json([
                 'settings' => [],
             ], 500);
-        }
-    }
-
-    public function getPaymentData(Request $request)
-    {
-        $officerId = $request->officer_id;
-        $componentId = $request->payment_id; // kamu pakai setting_id tetapi isinya component_id
-        $periode = $request->period;
-        $year = $request->year;
-
-        try {
-
-            $query = PayrollPayment::with([
-                'officer.user',
-                'component',                 // relasi ke komponen
-                'component.componentType',   // kalau nama komponen ada di tabel lain
-            ])
-                ->where('officer_id', $officerId)
-                ->where('component_id', $componentId);
-
-            // Filter bulan
-            if ($periode !== 'all' && !empty($periode)) {
-                $query->where('payment_month', $periode);
-            }
-
-            // Filter tahun
-            if (!empty($year)) {
-                $query->where('payment_year', $year);
-            }
-
-            $data = $query->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Payroll Table Error: " . $e->getMessage());
-            return response()->json(['success' => false, 'data' => []]);
         }
     }
 
@@ -362,6 +329,145 @@ class PayrollPaymentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function payment(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $pembayaran = PayrollPayment::where('id', $id)
+                ->where('status', 'pending')
+                ->first();
+
+            if (!$pembayaran) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Pembayaran sudah dilakukan sebelumnya'
+                ], 400);
+            }
+
+            $jumlahBayar = $request->amount ?? $pembayaran->net_payment;
+            $officer = Officer::find($pembayaran->officer_id);
+            $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk " . $officer->user->name;
+
+            // TRANSAKSI KEUANGAN
+            $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => 'PG' . date('YmdHis') . rand(1000, 9999),
+                'penerima_id' => $officer->id,
+                'penerima_tipe' => Officer::class,
+                'jenis_transaksi' => 'tagihan-keluar',
+                'jumlah' => $jumlahBayar,
+                'metode' => $request->metode ?? 'CASH',
+                'referensi_tagihan_id' => $pembayaran->id,
+                'tanggal_transaksi' => now(),
+                'keterangan' => $keterangan,
+                'created_by' => Auth::id(),
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'status_verifikasi' => 'approved',
+                'verified_at' => now(),
+                'verified_by' => Auth::id(),
+            ]);
+
+            // … lanjutkan jurnal sama seperti kode Anda sebelumnya …
+            // AMBIL REKENING
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)->first();
+
+            if (!$datarekening) {
+                return response()->json([
+                        'status' => false,
+                        'message' => 'Rekening tabungan tidak ditemukan'
+                ]);
+            }
+
+            if ($datarekening->allotment == 'Semua Pembayaran') {
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment', 'Semua Pembayaran')
+                    ->first();
+            } else {
+                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                    ->where('allotment', 'Pembayaran Tagihan')
+                    ->first();
+            }
+
+
+            // AMBIL SETTING AKUN
+            $settings = setting_akun::where('kategori', 'tagihan-keluar');
+
+            if (Auth::user()->unit_id) {
+                $settings->where('unit_id', Auth::user()->unit_id);
+            }
+
+            $settings = $settings->where('status', '1')->first();
+
+            if (!$settings) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data setting tidak ditemukan'
+                ]);
+            }
+
+            $akun_id = $settings->akun_id;
+            $position = $settings->debit;
+
+            // JURNAL
+            if ($position == 1) {
+                // kredit pendapatan, debit kas
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => 0,
+                    'kredit'       => $jumlahBayar,
+                    'keterangan'   => $keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'       => 0,
+                    'debit'        => $jumlahBayar,
+                    'keterangan'   => $keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+            } else {
+                // kebalikan posisi
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => $jumlahBayar,
+                    'kredit'       => 0,
+                    'keterangan'   => $keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'kredit'       => $jumlahBayar,
+                    'debit'        => 0,
+                    'keterangan'   => $keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+            }
+
+
+            $pembayaran->update(['status' => 'paid']);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Pembayaran berhasil'
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Server error: ' . $e->getMessage()
             ], 500);
         }
     }
