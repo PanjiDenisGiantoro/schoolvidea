@@ -62,7 +62,7 @@ services:
 
     # FrankenPHP dengan Laravel
     frankenphp:
-        image: dunglas/frankenphp:latest-php8.4
+        image: dunglas/frankenphp:php8.3
         container_name: frankenphp_app
         working_dir: /app
         environment:
