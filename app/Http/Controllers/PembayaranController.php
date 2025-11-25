@@ -231,9 +231,6 @@ class PembayaranController extends Controller
                 return back()->with('danger', "Setting akun untuk kategori tagihan-masuk belum lengkap.");
             }
 
-
-
-
             $akun_id = $settings->akun_id;
             $position = $settings->debit;
 
