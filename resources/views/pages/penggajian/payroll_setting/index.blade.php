@@ -84,7 +84,7 @@
                 });
 
                 // ✅ Konfirmasi hapus data
-                $('.btn-delete').on('click', function(e) {
+                $('.link-danger').on('click', function(e) {
                     e.preventDefault();
                     const form = $(this).closest('form');
                     Swal.fire({

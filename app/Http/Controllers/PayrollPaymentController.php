@@ -66,25 +66,10 @@ class PayrollPaymentController extends Controller
 
     public function getByOfficer($officerId)
     {
-        $settings = PayrollSetting::where('officers_id', $officerId)
-            ->with(['components.component'])->get();
-        $components = $settings
-            ->flatMap(fn ($s) => $s->components)
-            ->pluck('component')
-            ->unique('id')
-            ->values()
-            ->map(fn ($c) => [
-                'id' => $c->id,
-                'name' => $c->name,
-            ]);
-        $periodes = $settings->pluck('billing_period')->unique()->values();
-        $years = $settings->pluck('start_year')->unique()->values();
+        $paymentType = PayrollSetting::where('officers_id', $officerId)
+            ->pluck('type');
 
-        return response()->json([
-            'components' => $components,
-            'periodes' => $periodes,
-            'years' => $years,
-        ]);
+        return response()->json($paymentType);
     }
     public function getOfficerDetail($officerId)
     {
@@ -109,7 +94,7 @@ class PayrollPaymentController extends Controller
     public function getPayment(Request $request)
     {
         $officerId = $request->officer_id;
-        $paymentId = $request->component_id;
+        $type = 'gaji';
         $periode   = $request->period;
         $year      = $request->year;
         $status    = $request->status ?? 'draft';
@@ -120,8 +105,8 @@ class PayrollPaymentController extends Controller
             $query->where('officer_id', $officerId);
         }
 
-        if ($paymentId && $paymentId !== 'all') {
-            $query->where('component_id', $paymentId);
+        if ($type &&  $type !== 'all') {
+            $query->where('type', $type);
         }
 
         if ($periode && $periode !== 'all') {

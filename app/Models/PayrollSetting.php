@@ -20,8 +20,8 @@ class PayrollSetting extends Model
         'communication_allowance',
         'other_allowance',
         'billing_period',
-        'payment_month',
-        'payment_year',
+        'start_month',
+        'start_year',
         'type',
         'status',
     ];

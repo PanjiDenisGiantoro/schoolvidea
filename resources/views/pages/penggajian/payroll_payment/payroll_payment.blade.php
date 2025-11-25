@@ -32,9 +32,9 @@
                     </div>
                     {{-- Pilih Pembayaran --}}
                     <div class="col-md-4">
-                        <label for="filter_payment" class="form-label fw-semibold">Pilih Pembayaran</label>
-                        <select id="filter_payment" class="form-select rounded-pill shadow-sm">
-                            <option value="">Pilih Pembayaran</option>
+                        <label for="filter_type" class="form-label fw-semibold">Pilih Pembayaran</label>
+                        <select id="filter_type" class="form-select rounded-pill shadow-sm">
+                            <option value="">Pilih Tipe</option>
                         </select>
                     </div>
 
@@ -129,8 +129,10 @@
                     <form id="formCatatan">
                         <div class="mb-3">
 
-                            <x-input-field type="number" placeholder="Nominal" name="salary"
-                                label="Penerimaan Lainnya (Bonus/Sejenisnya)" />
+                            <x-input-field type="text" placeholder="Nominal" id="salary_note" name="salary_note"
+                                label="Penerimaan Lainnya (Bonus/Sejenisnya)"
+                                oninput="formatCurrencyInput(this)"
+                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                         </div>
                         <div class="mb-3">
                             <label for="isiCatatan" class="form-label fw-semibold">Catatan</label>
@@ -387,7 +389,7 @@ try {
 document.addEventListener('DOMContentLoaded', function() {
     const unitSelect = document.getElementById('filter_unit');
     const officerSelect = document.getElementById('filter_officer');
-    const paymentSelect = document.getElementById('filter_payment');
+    const typeSelect = document.getElementById('filter_type');
     const periodSelect = document.getElementById('filter_period');
     const yearSelect = document.getElementById('filter_year');
     const tabelBelumLunas = document.querySelector('#tabelBelumLunas tbody');
@@ -416,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
     unitSelect.addEventListener('change', async function() {
         const unitId = this.value;
         resetSelect(officerSelect, "Pilih Guru & Staff");
-        resetSelect(paymentSelect, "Pilih Pembayaran");
+        resetSelect(typeSelect, "Pilih Pembayaran");
 
         if (!unitId) return;
 
@@ -435,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load data ketika officer dipilih
     officerSelect.addEventListener('change', async function() {
         const officerId = this.value;
-        resetSelect(paymentSelect, "Pilih Pembayaran");
+        resetSelect(typeSelect, "Pilih Pembayaran");
 
         if (!officerId || officerId === "all") return;
 
@@ -453,20 +455,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load komponen pembayaran
         const data = await getData(`/payroll-payment/getByOfficer/${officerId}`);
-        console.log("Data Komponen:", data);
+        console.log("Data Type:", data);
 
-        if (data?.components && data.components.length) {
-            paymentSelect.innerHTML =
-                `<option value="">Pilih Pembayaran</option>` +
+        if (data && data.length) {
+            typeSelect.innerHTML =
+                `<option value="">Pilih Tipe</option>` +
                 `<option value="all">Semua Pembayaran</option>` +
-                data.components.map(p => `
-                    <option value="${p.id}">
-                        ${p.name ?? 'Komponen Tidak Ditemukan'}
+                data.map(p => `
+                    <option value="${p}">
+                        ${p ?? 'Tipe Tidak Ditemukan'}
                     </option>`
                 ).join("");
+
         } else {
-            paymentSelect.innerHTML = `<option value="">Tidak Ada Pembayaran</option>`;
+            typeSelect.innerHTML = `<option value="">Tidak Ada Pembayaran</option>`;
         }
+
     });
     let globalAllowance = {
         total_allowance: 0,
@@ -477,9 +481,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fungsi untuk load data tabel
     async function loadTableData() {
         const officerId = officerSelect.value;
-        const componentId = paymentSelect.value;
+        const type = typeSelect.value;
         const period = periodSelect.value;
         const year = yearSelect.value;
+
+
 
         if (!officerId || officerId === "all") {
             clearTables();
@@ -487,11 +493,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         console.log("Loading data dengan parameter:", {
-            officerId, componentId, period, year
+            officerId, type, period, year
         });
 
-        const urlBelumLunas = `/payroll-payment/getPayment?officer_id=${officerId}&component_id=${componentId}&period=${period}&year=${year}&status=pending`;
-        const urlSudahLunas = `/payroll-payment/getPayment?officer_id=${officerId}&component_id=${componentId}&period=${period}&year=${year}&status=paid`;
+        const urlBelumLunas = `/payroll-payment/getPayment?officer_id=${officerId}&type=${type}&period=${period}&year=${year}&status=pending`;
+        const urlSudahLunas = `/payroll-payment/getPayment?officer_id=${officerId}&type=${type}&period=${period}&year=${year}&status=paid`;
 
         console.log("URL Belum Lunas:", urlBelumLunas);
         console.log("URL Sudah Lunas:", urlSudahLunas);
@@ -522,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listeners untuk filter
-    paymentSelect.addEventListener('change', loadTableData);
+    typeSelect.addEventListener('change', loadTableData);
     periodSelect.addEventListener('change', loadTableData);
     yearSelect.addEventListener('change', loadTableData);
 
@@ -537,6 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>`;
     }
 
+    let selectedRow = null;
     function renderBelumLunasTable(data) {
         rowDataMap.clear();
 
@@ -559,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || "-"}</td>
                 <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
-                <td>${item.component?.name || "-"}</td>
+                <td>${item.type || "-"}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
                         <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}"
@@ -576,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${formatRupiah(item.total_deductions || 0)}</td>
                 <td>${formatRupiah(item.net_payment || 0)}</td>
                 <td>
-                    <button class="btn btn-primary rounded-pill" data-bs-toggle="modal"
+                    <button class="btn btn-primary rounded-pill btn-catatan" data-bs-toggle="modal"
                         data-bs-target="#catatanModal">Catatan</button>
                 </td>
                 <td>
@@ -616,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || "-"}</td>
                 <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
-                <td>${item.component?.name || "-"}</td>
+                <td>${item.type|| "-"}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
                         <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}"
@@ -646,6 +653,33 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join("");
     }
 
+    document.addEventListener('click', function (e) {
+            if (e.target.closest(".btn-catatan")) {
+                selectedRow = e.target.closest("tr");
+            }
+        });
+    document.querySelector('#catatanModal .btn.custom-btn-purple')
+        .addEventListener("click", function() {
+            if (!selectedRow) return;
+        let noteValue = unformatCurrency(document.getElementById('salary_note').value) || 0;
+            let item = {};
+            try {item = JSON.parse(selectedRow.dataset.item || '{}');} catch {}
+            item.salary_note = noteValue;
+            selectedRow.dataset.item = JSON.stringify(item);
+            let baseEarnings = parseInt(selectedRow.dataset.baseEarnings) || 0;
+            let newEarnings = baseEarnings + noteValue;
+            selectedRow.querySelector("td:nth-child(7)").innerHTML = formatRupiah(newEarnings);
+            let deductions = parseInt(selectedRow.dataset.baseDeductions) || 0;
+            let net = newEarnings - deductions;
+            selectedRow.querySelector("td:nth-child(9)").innerHTML = formatRupiah(net);
+            console.log(noteValue);
+            bootstrap.Modal.getInstance(document.getElementById("catatanModal")).hide();
+        });
+
+    function unformatCurrency(str) {
+    return parseInt(str.replace(/[^\d]/g, "")) || 0;
+    }
+
     function formatPaymentMonth(month, year) {
         if (!month || !year) return "-";
         const date = new Date(year, month - 1);
@@ -663,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function onPresensiChange() {
     const row = this.closest("tr");
-    console.log(row.dataset.item);
+
     let item = {};
     try {
             item = JSON.parse(row.dataset.item || '{}');
@@ -679,29 +713,41 @@ function onPresensiChange() {
     const hadir = parseInt(row.querySelector(".hadir")?.value) || 0;
     const alpha = parseInt(row.querySelector(".alpha")?.value) || 0;
     const staff = parseInt(row.querySelector(".staff")?.value) || 0;
-
+    const salaryNote = parseFloat(item.salary_note) || 0;
+    console.log(salaryNote);
     let totalEarnings = parseFloat(item.total_earnings) || 0;
     let totalDeductions = parseFloat(item.total_deductions) || 0;
 
     const allowanceRate = globalAllowance.total_allowance || 0;
-    totalEarnings += hadir * allowanceRate;
+    totalEarnings += (hadir * allowanceRate) + salaryNote;
     result = hadir * allowanceRate;
 
 
     //const absenceDeductionRate = 10000;
     //totalDeductions += alpha * absenceDeductionRate;
 
+
     const netPayment = totalEarnings - totalDeductions;
     row.children[6].innerHTML = formatRupiah(totalEarnings);
     row.children[7].innerHTML = formatRupiah(totalDeductions);
     row.children[8].innerHTML = formatRupiah(netPayment);
+
+    item.total_earnings = totalEarnings;
+    item.total_deductions = totalDeductions;
+    item.net_payment = netPayment;
+    item.izin = izin;
+    item.hadir = hadir;
+    item.alpha = alpha;
+    item.staff = staff;
+
+    rowDataMap.set(row, item);
 }
 
 function onClickBayar() {
     const row = this.closest("tr");
         let item = {};
     try {
-            item = JSON.parse(row.dataset.item || '{}');
+            item = rowDataMap.get(row) || JSON.parse(row.dataset.item || '{}');
         } catch (err) {
             console.error('JSON parse error: ', err)
         }
@@ -789,13 +835,13 @@ async function processPayment(id, amount) {
                 input.value = '';
                 return;
             }
-            input.value = new Intl.NumberFormat('id-ID').format(value);
+            input.value = "Rp. " + new Intl.NumberFormat('id-ID').format(value);
         }
 
         // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
         document.addEventListener('submit', function(e) {
             const inputs = document.querySelectorAll(
-                '.component-value, .deduction-value, [id$="_allowance"], [name="salary"], [name="nilai"]'
+                '.component-value, .deduction-value, [id$="_allowance"], [name="note_salary"], [name="nilai"]'
             );
             inputs.forEach(input => {
                 input.value = parseInt(input.value.replace(/\./g, ''));

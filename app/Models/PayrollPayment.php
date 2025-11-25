@@ -25,6 +25,7 @@ class PayrollPayment extends Model
         'payment_month',
         'notes',
         'status',
+        'type',
     ];
 
     /**
@@ -74,5 +75,9 @@ class PayrollPayment extends Model
     public function component()
     {
         return $this->belongsTo(PayrollComponents::class, 'component_id');
+    }
+        public function payrollType()
+    {
+        return $this->belongsTo(PayrollSetting::class, 'type');
     }
 }

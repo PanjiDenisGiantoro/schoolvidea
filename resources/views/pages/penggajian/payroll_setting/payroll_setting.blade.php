@@ -85,8 +85,8 @@
                     @php
                         $allowances = [
                             'transport' => 'Transport',
-                            'meal' => 'Uang Makan',
-                            'communication' => 'Uang Komunikasi',
+                            'meal' => 'Makan',
+                            'communication' => 'Komunikasi',
                             'other' => 'Lainnya',
                         ];
                     @endphp
@@ -299,7 +299,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bulan Mulai</label>
-                        <select name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}>
+                        <select id="start_month" name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}>
                             <option value="">-- Pilih Bulan Masuk --</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}"
@@ -311,7 +311,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Tahun Mulai</label>
-                        <select name="start_year" class="form-select" {{ $readonly ? 'disabled' : '' }}>
+                        <select id="start_year" name="start_year" class="form-select" {{ $readonly ? 'disabled' : '' }}>
                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                 <option value="{{ $y }}"
                                     {{ isset($setting) && $setting->start_year == $y ? 'selected' : '' }}>
@@ -378,6 +378,16 @@
         const unitSelect = document.querySelector('#unit');
         const officerSelect = document.querySelector('#officer');
         const readonly = @json($readonly);
+        const startMonth = document.getElementById('start_month');
+        const startYear = document.getElementById('start_year');
+        startMonth.addEventListener('change', function(data) {
+            const value = data.target.value;
+            console.log('start_month: ', value);
+        });
+        startYear.addEventListener('change', function(data) {
+            const value = data.target.value;
+            console.log('start_year', value);
+        });
 
         // Toggle input enable/disable
         window.toggleField = function(toggleId, inputId) {
