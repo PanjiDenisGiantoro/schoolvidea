@@ -83,8 +83,8 @@ services:
             DB_SLAVE_PORT: 5432
             REDIS_HOST: redis
             REDIS_PORT: 6379
-        ports:
-            - "8000:8000"
+        expose:
+            - "8000"
         volumes:
             - .:/app
             - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
@@ -101,6 +101,24 @@ services:
               php artisan view:cache &&
               frankenphp run --config /etc/caddy/Caddyfile
             "
+
+    # Nginx Reverse Proxy
+    nginx:
+        image: nginx:alpine
+        container_name: nginx_proxy
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+            - ./docker/nginx/logs:/var/log/nginx
+        networks:
+            - laravel_network
+        depends_on:
+            - frankenphp
+        restart: unless-stopped
 
     # Redis (untuk caching)
     redis:

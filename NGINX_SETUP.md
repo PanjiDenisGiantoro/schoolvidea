@@ -187,6 +187,121 @@ sudo ufw enable
 
 ## Troubleshooting
 
+### 0. Error dpkg saat Install Nginx (Ubuntu/Debian)
+
+**Penyebab:** Package nginx corrupt atau konflik versi
+
+**Error yang muncul:**
+```
+dpkg: error processing package nginx-core (--configure):
+installed nginx-core package post-installation script subprocess returned error exit status 1
+```
+
+**Solusi 1 - Fix dpkg dan reinstall:**
+```bash
+# Stop nginx
+sudo systemctl stop nginx
+sudo killall nginx 2>/dev/null
+
+# Remove broken packages
+sudo apt remove --purge nginx nginx-common nginx-core -y
+
+# Clean dpkg
+sudo dpkg --remove --force-remove-reinstreq nginx
+sudo dpkg --remove --force-remove-reinstreq nginx-core
+sudo dpkg --remove --force-remove-reinstreq nginx-common
+
+# Fix broken packages
+sudo apt --fix-broken install
+sudo dpkg --configure -a
+
+# Clean apt cache
+sudo apt clean
+sudo apt autoclean
+sudo apt autoremove -y
+
+# Update and install
+sudo apt update
+sudo apt install nginx -y
+```
+
+**Solusi 2 - Force remove (jika Solusi 1 gagal):**
+```bash
+# Force remove semua nginx
+sudo apt-get purge nginx* -y
+sudo apt-get autoremove -y
+
+# Remove manual files
+sudo rm -rf /etc/nginx
+sudo rm -rf /var/log/nginx
+sudo rm -rf /var/cache/nginx
+sudo rm -rf /usr/sbin/nginx
+sudo rm -rf /usr/share/nginx
+
+# Fix dpkg
+sudo dpkg --configure -a
+sudo apt --fix-broken install
+
+# Clean and reinstall
+sudo apt clean
+sudo apt update
+sudo apt install nginx -y
+```
+
+**Solusi 3 - Install dari Official Nginx Repository (RECOMMENDED):**
+```bash
+# Remove old nginx
+sudo apt remove --purge nginx* -y
+sudo apt autoremove -y
+
+# Install prerequisites
+sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y
+
+# Import official nginx signing key
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+
+# Verify key
+gpg --dry-run --quiet --no-keyring --import --import-options import-show \
+    /usr/share/keyrings/nginx-archive-keyring.gpg
+
+# Add nginx repository (Ubuntu)
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+    | sudo tee /etc/apt/sources.list.d/nginx.list
+
+# Set priority
+echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+    | sudo tee /etc/apt/preferences.d/99nginx
+
+# Update and install
+sudo apt update
+sudo apt install nginx -y
+
+# Start and enable
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo systemctl status nginx
+```
+
+**Verifikasi setelah install:**
+```bash
+# Cek versi
+nginx -v
+
+# Cek status
+sudo systemctl status nginx
+
+# Buat direktori untuk site configs
+sudo mkdir -p /etc/nginx/sites-available
+sudo mkdir -p /etc/nginx/sites-enabled
+
+# Edit nginx.conf untuk include sites-enabled
+sudo nano /etc/nginx/nginx.conf
+# Pastikan ada baris ini di dalam http block:
+# include /etc/nginx/sites-enabled/*;
+```
+
 ### 1. Error 502 Bad Gateway
 
 **Penyebab:** Nginx tidak bisa connect ke FrankenPHP
