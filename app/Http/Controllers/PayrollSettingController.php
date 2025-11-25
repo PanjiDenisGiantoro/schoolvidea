@@ -87,7 +87,7 @@ class PayrollSettingController extends Controller
 
             "transport_allowance" => "nullable|numeric",
             "meal_allowance" => "nullable|numeric",
-            "communication_allowance" => "nullable|numeric",
+            "staff_allowance" => "nullable|numeric",
             "other_allowance" => "nullable|numeric",
 
             "billing_period" => "required|integer",
@@ -146,7 +146,6 @@ class PayrollSettingController extends Controller
             $allowanceTotal =
                 ($payrollSetting->transport_allowance ?? 0) +
                 ($payrollSetting->meal_allowance ?? 0) +
-                ($payrollSetting->communication_allowance ?? 0) +
                 ($payrollSetting->other_allowance ?? 0);
 
             $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
@@ -234,7 +233,7 @@ class PayrollSettingController extends Controller
 
             "transport_allowance" => "nullable|numeric",
             "meal_allowance" => "nullable|numeric",
-            "communication_allowance" => "nullable|numeric",
+            "staff_allowance" => "nullable|numeric",
             "other_allowance" => "nullable|numeric",
 
             "billing_period" => "required|integer",
@@ -255,9 +254,10 @@ class PayrollSettingController extends Controller
             $payrollSetting->update($validated);
 
             // === 2️⃣ Sync Komponen ===
+            $payrollSetting->components()->detach();
             $componentsData = [];
             $totalComponentValue = 0;
-            if ($request->filled("components_id")) {
+            if ($request->has("components_id")) {
                 foreach ($request->components_id as $i => $compId) {
                     $value = $request->component_value[$i] ?? 0;
                     $totalComponentValue += $value;
@@ -267,9 +267,10 @@ class PayrollSettingController extends Controller
             }
 
             // === 3️⃣ Sync Potongan ===
+            $payrollSetting->deductions()->detach();
             $deductionsData = [];
             $totalDeductions = 0;
-            if ($request->filled("deductions_id")) {
+            if ($request->has("deductions_id")) {
                 foreach ($request->deductions_id as $i => $dedId) {
                     $value = $request->deduction_value[$i] ?? 0;
                     $totalDeductions += $value;
@@ -280,48 +281,62 @@ class PayrollSettingController extends Controller
 
             $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
 
-            // === 4️⃣ Loop billing period & update atau insert PayrollPayment ===
+            // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
+            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+            $totalEarnings = $basicSalary + $totalComponentValue;
+            $netPayment = $totalEarnings - $deductionsTotal;
+
+            // === 5️⃣ Tentukan periode yang diinginkan ===
             $billingPeriod = (int) $validated["billing_period"];
             $startMonth = (int) $validated["start_month"];
-            $startYear  = (int) $validated["start_year"];
+            $startYear = (int) $validated["start_year"];
+
+            // Simpan periode yang akan diupdate/dibuat
+            $targetPeriods = [];
 
             for ($i = 0; $i < $billingPeriod; $i++) {
                 $month = $startMonth + $i;
-                $year  = $startYear;
+                $year = $startYear;
+
+                // Handle rollover tahun dengan benar
                 if ($month > 12) {
-                    $month -= 12;
-                    $year++;
+                    $year += floor(($month - 1) / 12);
+                    $month = ($month - 1) % 12 + 1;
                 }
 
-                // Cek apakah payment sudah ada untuk bulan tersebut & status pending
+                $targetPeriods[] = ['month' => $month, 'year' => $year];
+            }
+
+            // === 6️⃣ Hapus payment yang TIDAK termasuk dalam periode baru ===
+            PayrollPayment::where('payroll_setting_id', $payrollSetting->id)
+                ->where('status', 'pending')
+                ->whereNotIn('payment_month', array_column($targetPeriods, 'month'))
+                ->whereNotIn('payment_year', array_column($targetPeriods, 'year'))
+                ->delete();
+
+            // === 7️⃣ Update atau buat payment untuk setiap periode ===
+            foreach ($targetPeriods as $period) {
                 $payment = PayrollPayment::firstOrNew([
                     'payroll_setting_id' => $payrollSetting->id,
-                    'payment_month'     => $month,
-                    'payment_year'      => $year,
-                    'status'            => 'pending',
+                    'payment_month' => $period['month'],
+                    'payment_year' => $period['year'],
+                    'status' => 'pending',
                 ]);
 
-                // Hitung gaji
-                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
-                $totalEarnings = $basicSalary + $totalComponentValue;
-                $netPayment = $totalEarnings - $deductionsTotal;
-
                 $payment->fill([
-                    "unit_id"            => $validated["units_id"],
-                    "officer_id"         => $validated["officers_id"],
-                    "payroll_setting_id" => $payrollSetting->id,
-                    "type"               => 'gaji',
+                    "unit_id" => $validated["units_id"],
+                    "officer_id" => $validated["officers_id"],
+                    "type" => 'gaji',
 
-                    "teaching_hour_week"  => $request->teaching_hours ?? 0,
+                    "teaching_hour_week" => $request->teaching_hours ?? 0,
                     "teaching_hour_month" => $request->teaching_hours_total ?? 0,
 
-                    "total_earnings"     => $totalEarnings,
-                    "total_deductions"   => $deductionsTotal,
-                    "net_payment"        => $netPayment,
+                    "total_earnings" => $totalEarnings,
+                    "total_deductions" => $deductionsTotal,
+                    "net_payment" => $netPayment,
 
-                    "notes"              => null,
-                    "status"             => "pending",
-
+                    "notes" => null,
+                    "status" => "pending",
                     "updated_at" => now(),
                 ]);
 
@@ -344,8 +359,6 @@ class PayrollSettingController extends Controller
             return back()->with("error", $e->getMessage());
         }
     }
-
-
 
     /**
      * Tampilkan detail satu payroll setting.

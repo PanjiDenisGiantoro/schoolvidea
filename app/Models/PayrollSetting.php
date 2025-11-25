@@ -17,7 +17,7 @@ class PayrollSetting extends Model
         'salary',
         'transport_allowance',
         'meal_allowance',
-        'communication_allowance',
+        'staff_allowance',
         'other_allowance',
         'billing_period',
         'start_month',

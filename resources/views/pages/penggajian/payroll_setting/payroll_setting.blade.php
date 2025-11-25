@@ -59,7 +59,7 @@
                     <div class="col-md-4">
                         <x-input-field type="text" id="position_display" name="position_display" label="Jabatan" readonly
                             :disabled="true" value="" />
-                        <input type="text" name="type" value="perbulan">
+                        <input type="text" name="type" value="gaji">
                     </div>
                 </div>
 
@@ -84,9 +84,9 @@
 
                     @php
                         $allowances = [
+                            'staff' => 'Kehadiran Staff',
                             'transport' => 'Transport',
                             'meal' => 'Makan',
-                            'communication' => 'Komunikasi',
                             'other' => 'Lainnya',
                         ];
                     @endphp
@@ -230,7 +230,7 @@
                                         style="font-size: 16px; padding: 10px 12px;" readonly
                                         {{ isset($show) ? 'disabled' : '' }}>
                                 </div>
-                    
+
         @if (!$readonly)
         <div class="col-md-1 d-flex align-items-center">
             <button type="button" class="btn btn-danger remove-row">
@@ -368,7 +368,7 @@
     </div>
     </div>
 
- 
+
 @endsection
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -444,7 +444,7 @@
             [
                 'transport_allowance',
                 'meal_allowance',
-                'communication_allowance',
+                'staff_allowance',
                 'other_allowance'
             ].forEach(id => {
                 const input = document.getElementById(id);

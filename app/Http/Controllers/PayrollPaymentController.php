@@ -40,16 +40,16 @@ class PayrollPaymentController extends Controller
         } elseif (Auth::user()->unit_id) {
             $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
             $officerList = Officer::where('unit_id', Auth::user()->unit_id)->get();
-            $tagihanList = PayrollComponents::where('unit_id', Auth::user()->unit_id)->get();
-            $akunList = PayrollSetting::where('unit_id', Auth::user()->unit_id)->get();
+            //$tagihanList = PayrollComponents::where('unit_id', Auth::user()->unit_id)->get();
+            $akunList = PayrollSetting::where('units_id', Auth::user()->unit_id)->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $officerList = Officer::all();
-            $tagihanList = PayrollComponents::all();
+            //$tagihanList = PayrollComponents::all();
             $akunList = PayrollSetting::all();
         }
 
-        return view('pages.penggajian.payroll_payment.payroll_payment', compact('units', 'tagihanList', 'officerList', 'akunList'));
+        return view('pages.penggajian.payroll_payment.payroll_payment', compact('units', 'officerList', 'akunList'));
     }
 
     public function getByUnit($unit_id)
@@ -126,9 +126,10 @@ class PayrollPaymentController extends Controller
         $allowances = [
             'transport_allowance' => $settings->transport_allowance ?? 0,
             'meal_allowance' => $settings->meal_allowance ?? 0,
-            'communication_allowance' => $settings->communication_allowance ?? 0,
             'other_allowance' => $settings->other_allowance ?? 0,
         ];
+        $staff = $settings->staff_allowance ?? 0;
+
         $totalAllowance = array_sum($allowances);
 
         return response()->json([
@@ -138,7 +139,8 @@ class PayrollPaymentController extends Controller
             "bindings"     => $query->getBindings(),
             "request_debug" => $request->all(),
             "allowances" => $allowances,
-            "total_allowance" => $totalAllowance
+            "total_allowance" => $totalAllowance,
+            "staff" => $staff
         ]);
     }
 
@@ -174,7 +176,10 @@ class PayrollPaymentController extends Controller
     {
         try {
             $officerId = $request->officer_id;
-            $unitId = $request->unit_id;
+            $unitCode = Unit::where('id', $request->unit_id)->value('code');
+            $unitId = $unitCode;
+            Log::info('unit code'. $unitCode);
+
 
             if (!$officerId || !$unitId) {
                 return response()->json([
@@ -221,8 +226,10 @@ class PayrollPaymentController extends Controller
     public function syncAttendance(Request $request)
     {
         try {
-            $unitId = $request->unit_id;
-            $officerId = $request->officer_id;
+            $unitCode = Unit::where('id', $request->unit_id)->value('code');
+            $unitId = $unitCode;
+            Log::info('unit code'. $unitCode);
+            $officerId = 15502;
             $search = $request->search ?? null;
 
             if (!$unitId) {
@@ -238,7 +245,7 @@ class PayrollPaymentController extends Controller
             if (!$apiResponse) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengambil data dari API Videaclass'
+                    'message' => 'Gagal mengambil data dari API Videaclass!'
                 ], 500);
             }
 
@@ -306,7 +313,8 @@ class PayrollPaymentController extends Controller
                 'message' => "Data presensi berhasil disinkronisasi. Synced: $syncedCount, Error: $errorCount",
                 'synced_count' => $syncedCount,
                 'error_count' => $errorCount,
-                'data' => $syncedRecords
+                'data' => $syncedRecords,
+                'unit_code' => $unitCode
             ]);
 
         } catch (\Exception $e) {
@@ -322,6 +330,10 @@ class PayrollPaymentController extends Controller
     {
         DB::beginTransaction();
         try {
+            $request->validate([
+                'amount' => 'required|numeric|min:1'
+            ]);
+
             $pembayaran = PayrollPayment::where('id', $id)
                 ->where('status', 'pending')
                 ->first();
@@ -330,6 +342,12 @@ class PayrollPaymentController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Pembayaran sudah dilakukan sebelumnya'
+                ], 400);
+            }
+            if ($request->amount < $pembayaran->net_payment) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Jumlah pembayaran kurang'
                 ], 400);
             }
 
@@ -357,29 +375,21 @@ class PayrollPaymentController extends Controller
                 'verified_by' => Auth::id(),
             ]);
 
-            // … lanjutkan jurnal sama seperti kode Anda sebelumnya …
-            // AMBIL REKENING
-            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)->first();
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                ->where(function ($q) {
+                    $q->where('allotment', 'Semua Pembayaran')
+                      ->orWhere('allotment', 'Pembayaran Tagihan');
+                })
+                ->first();
 
             if (!$datarekening) {
                 return response()->json([
-                        'status' => false,
-                        'message' => 'Rekening tabungan tidak ditemukan'
+                    'status' => false,
+                    'message' => 'Rekening tabungan tidak ditemukan'
                 ]);
             }
 
-            if ($datarekening->allotment == 'Semua Pembayaran') {
-                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                    ->where('allotment', 'Semua Pembayaran')
-                    ->first();
-            } else {
-                $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                    ->where('allotment', 'Pembayaran Tagihan')
-                    ->first();
-            }
 
-
-            // AMBIL SETTING AKUN
             $settings = setting_akun::where('kategori', 'tagihan-keluar');
 
             if (Auth::user()->unit_id) {
@@ -396,6 +406,12 @@ class PayrollPaymentController extends Controller
             }
 
             $akun_id = $settings->akun_id;
+            if (!$akun_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data akun tidak ditemukan'
+                ]);
+            }
             $position = $settings->debit;
 
             // JURNAL

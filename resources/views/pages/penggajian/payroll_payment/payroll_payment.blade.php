@@ -217,7 +217,6 @@
 @push('scripts')
 
     <script>
-        // Event listener untuk button "Sinkronkan Presensi"
         document.addEventListener('DOMContentLoaded', function() {
             const btnSinkron = document.getElementById('btnSinkron');
             const unitSelect = document.getElementById('filter_unit');
@@ -252,19 +251,15 @@
                             })
                         });
 
+                        const data = await response.json();
 
-const raw = await response.text();
-console.log('raw data: ', raw);
-
-let data = {};
-try {
-    data = JSON.parse(raw);
-} catch (e) {
-    console.error("Parse error:", e);
-    alert("Response bukan JSON, cek console");
-    return;
-}
-
+                        if (data.success) {
+                            alert('Data presensi berhasil disinkronisasi!\n\n' + JSON.stringify(data.data, null, 2));
+                            console.log('Sync Success:', data);
+                        } else {
+                            alert('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
+                            console.error('Sync Error:', data);
+                        }
                     } catch (error) {
                         alert('Error: ' + error.message);
                         console.error('Sync Exception:', error);
@@ -476,6 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
         total_allowance: 0,
         allowances: {},
         belum_lunas: {},
+        staff: 0,
     };
     const rowDataMap = new Map();
     // Fungsi untuk load data tabel
@@ -511,7 +507,8 @@ document.addEventListener('DOMContentLoaded', function() {
             globalAllowance = {
                 total_allowance: dataBelumLunas?.total_allowance ||0,
             allowances: dataBelumLunas?.allowances || {},
-                belum_lunas: dataBelumLunas?.belum_lunas || {}
+                belum_lunas: dataBelumLunas?.belum_lunas || {},
+                staff: dataBelumLunas?.staff || 0,
             }
             console.log('global allowance: ', globalAllowance);
 
@@ -717,9 +714,11 @@ function onPresensiChange() {
     console.log(salaryNote);
     let totalEarnings = parseFloat(item.total_earnings) || 0;
     let totalDeductions = parseFloat(item.total_deductions) || 0;
+    let staffAllowance = parseFloat(globalAllowance.staff) || 0;
 
+    const staffTotal = staff * staffAllowance;
     const allowanceRate = globalAllowance.total_allowance || 0;
-    totalEarnings += (hadir * allowanceRate) + salaryNote;
+    totalEarnings += (hadir * allowanceRate) + salaryNote + staffTotal;
     result = hadir * allowanceRate;
 
 
@@ -790,14 +789,9 @@ function onClickBayar() {
     });
 }
 
+
 async function processPayment(id, amount) {
-    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfMeta) {
-        console.error("CSRF token meta tag not found");
-        alert("gagal memproses pembayaran: keamanan tidak terjamin (CSRF tidak ditemukan)");
-        return;
-    }
-    const csrfToken = csrfMeta.content;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
     try {
         const response = await fetch(`/payroll-payment/payment/${id}`, {
@@ -808,13 +802,17 @@ async function processPayment(id, amount) {
             },
             body: JSON.stringify({ amount })
         });
-        console.log('response proccesPayment: ', response);
+
         const result = await response.json();
-        console.log('response: ', result);
-        if (!response.ok) {
+        console.log("response:", result);
+
+        // ❗ CEK STATUS JSON DARI BACKEND
+        if (!result.status) {
             alert(result.message || "Terjadi error");
             return;
         }
+
+        // ✔ hanya kalau status = true
         alert("Pembayaran Berhasil");
         loadTableData();
 
@@ -823,6 +821,7 @@ async function processPayment(id, amount) {
         console.error(err);
     }
 }
+
 
     // Inisialisasi awal
     clearTables();
