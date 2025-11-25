@@ -482,7 +482,7 @@ class KeuanganTransaksiController extends Controller
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
                         'debit'        => 0,
-                        'kredit'       => $request->jumlah,
+                        'kredit'       => $transaksi->jumlah,
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
                     ]);
@@ -491,7 +491,7 @@ class KeuanganTransaksiController extends Controller
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $datarekening->akun_id,
                         'kredit'        => 0,
-                        'debit'       => $request->jumlah,
+                        'debit'       => $transaksi->jumlah,
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
                     ]);
@@ -499,7 +499,7 @@ class KeuanganTransaksiController extends Controller
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
-                        'debit'       => $request->jumlah,
+                        'debit'       => $transaksi->jumlah,
                         'kredit'        => 0,
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
@@ -508,7 +508,7 @@ class KeuanganTransaksiController extends Controller
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $datarekening->akun_id,
-                        'kredit'       => $request->jumlah,
+                        'kredit'       => $transaksi->jumlah,
                         'debit'        => 0,
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
@@ -588,7 +588,7 @@ class KeuanganTransaksiController extends Controller
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
                             'debit'        => 0,
-                            'kredit'       => $request->jumlah,
+                            'kredit'       => $transaksi->jumlah,
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
                         ]);
@@ -597,7 +597,7 @@ class KeuanganTransaksiController extends Controller
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $datarekening->akun_id,
                             'kredit'        => 0,
-                            'debit'       => $request->jumlah,
+                            'debit'       => $transaksi->jumlah,
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
                         ]);
@@ -605,7 +605,7 @@ class KeuanganTransaksiController extends Controller
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
-                            'debit'       => $request->jumlah,
+                            'debit'       => $transaksi->jumlah,
                             'kredit'        => 0,
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
@@ -614,7 +614,7 @@ class KeuanganTransaksiController extends Controller
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $datarekening->akun_id,
-                            'kredit'       => $request->jumlah,
+                            'kredit'       => $transaksi->jumlah,
                             'debit'        => 0,
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id

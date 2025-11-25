@@ -233,6 +233,7 @@ class PembayaranController extends Controller
 
 
 
+
             $akun_id = $settings->akun_id;
             $position = $settings->debit;
 
@@ -263,7 +264,7 @@ class PembayaranController extends Controller
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
-                    'debit'       => $request->jumlah,
+                    'debit'       => $jumlahBayar,
                     'kredit'        => 0,
                     'keterangan'   => $keterangan,
                     'unit_id' => Auth::user()->unit_id
@@ -272,7 +273,7 @@ class PembayaranController extends Controller
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $datarekening->akun_id,
-                    'kredit'       => $request->jumlah,
+                    'kredit'       => $jumlahBayar,
                     'debit'        => 0,
                     'keterangan'   => $keterangan,
                     'unit_id' => Auth::user()->unit_id
