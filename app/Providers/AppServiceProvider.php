@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laravel\Telescope\Telescope;
+use Illuminate\Support\Facades\URL;
 use Carbon\Carbon;
 
 
@@ -22,11 +22,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production
         if (app()->environment('production')) {
-            Telescope::auth(function ($request) {
+            URL::forceScheme('https');
+        }
+
+        // Telescope auth (only if available)
+        if (class_exists(\Laravel\Telescope\Telescope::class)) {
+            \Laravel\Telescope\Telescope::auth(function ($request) {
                 return auth()->check() && auth()->user()->is_admin;
             });
         }
+
         Carbon::setLocale('id');
     }
 }

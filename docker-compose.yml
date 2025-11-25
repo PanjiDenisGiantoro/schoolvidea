@@ -83,8 +83,8 @@ services:
             DB_SLAVE_PORT: 5432
             REDIS_HOST: redis
             REDIS_PORT: 6379
-        ports:
-            - "8000:8000"
+        expose:
+            - "8000"
         volumes:
             - .:/app
             - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
@@ -102,40 +102,7 @@ services:
               frankenphp run --config /etc/caddy/Caddyfile
             "
 
-    # Nginx (untuk reverse proxy + SSL)
-    nginx:
-        image: nginx:alpine
-        container_name: nginx_server
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-            - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-            - ./public:/app/public:ro
-            - ./docker/nginx/ssl:/etc/nginx/ssl:ro
-            - ./certbot/conf:/etc/letsencrypt:ro
-            - ./certbot/www:/var/www/certbot:ro
-        networks:
-            - laravel_network
-        depends_on:
-            - frankenphp
-        healthcheck:
-            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
-            interval: 10s
-            timeout: 5s
-            retries: 3
-
-    # Certbot untuk SSL
-    certbot:
-        image: certbot/certbot
-        container_name: certbot
-        volumes:
-            - ./certbot/conf:/etc/letsencrypt
-            - ./certbot/www:/var/www/certbot
-        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
-    # Redis (Optional, untuk caching)
+    # Redis (untuk caching)
     redis:
         image: redis:7-alpine
         container_name: redis_cache
