@@ -4,12 +4,12 @@ services:
         image: postgres:16-alpine
         container_name: postgres_master
         environment:
-            POSTGRES_DB: ${DB_NAME:-laravel}
-            POSTGRES_USER: ${DB_USER:-postgres}
-            POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-            POSTGRES_REPLICATION_MODE: master
-            POSTGRES_REPLICATION_USER: ${REPLICATION_USER:-replicator}
-            POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-replication_password}
+            POSTGRES_DB: "${DB_NAME:-laravel}"
+            POSTGRES_USER: "${DB_USER:-postgres}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD:-password}"
+            POSTGRES_REPLICATION_MODE: "master"
+            POSTGRES_REPLICATION_USER: "${REPLICATION_USER:-replicator}"
+            POSTGRES_REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:-replication_password}"
         ports:
             - "5432:5432"
         volumes:
@@ -22,7 +22,7 @@ services:
         command: >
             -c config_file=/etc/postgresql/postgresql.conf
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -32,13 +32,13 @@ services:
         image: postgres:16-alpine
         container_name: postgres_slave
         environment:
-            POSTGRES_DB: ${DB_NAME:-laravel}
-            POSTGRES_USER: ${DB_USER:-postgres}
-            POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-            POSTGRES_MASTER_SERVICE: postgres-master
-            POSTGRES_REPLICATION_MODE: slave
-            POSTGRES_REPLICATION_USER: ${REPLICATION_USER:-replicator}
-            POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-replication_password}
+            POSTGRES_DB: "${DB_NAME:-laravel}"
+            POSTGRES_USER: "${DB_USER:-postgres}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD:-password}"
+            POSTGRES_MASTER_SERVICE: "postgres-master"
+            POSTGRES_REPLICATION_MODE: "slave"
+            POSTGRES_REPLICATION_USER: "${REPLICATION_USER:-replicator}"
+            POSTGRES_REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:-replication_password}"
         ports:
             - "5433:5432"
         volumes:
@@ -53,7 +53,7 @@ services:
         command: >
             -c config_file=/etc/postgresql/postgresql.conf
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -67,20 +67,20 @@ services:
         container_name: frankenphp_app
         working_dir: /app
         environment:
-            APP_NAME: ${APP_NAME:-Laravel}
-            APP_ENV: ${APP_ENV:-local}
-            APP_DEBUG: ${APP_DEBUG:-true}
-            APP_URL: ${APP_URL:-http://localhost}
-            DB_CONNECTION: pgsql
-            DB_HOST: postgres-master
-            DB_PORT: 5432
-            DB_DATABASE: ${DB_NAME:-laravel}
-            DB_USERNAME: ${DB_USER:-postgres}
-            DB_PASSWORD: ${DB_PASSWORD:-password}
-            DB_SLAVE_HOST: postgres-slave
-            DB_SLAVE_PORT: 5432
-            REDIS_HOST: redis
-            REDIS_PORT: 6379
+            APP_NAME: "${APP_NAME:-Laravel}"
+            APP_ENV: "${APP_ENV:-local}"
+            APP_DEBUG: "${APP_DEBUG:-true}"
+            APP_URL: "${APP_URL:-http://localhost}"
+            DB_CONNECTION: "pgsql"
+            DB_HOST: "postgres-master"
+            DB_PORT: "5432"
+            DB_DATABASE: "${DB_NAME:-laravel}"
+            DB_USERNAME: "${DB_USER:-postgres}"
+            DB_PASSWORD: "${DB_PASSWORD:-password}"
+            DB_SLAVE_HOST: "postgres-slave"
+            DB_SLAVE_PORT: "5432"
+            REDIS_HOST: "redis"
+            REDIS_PORT: "6379"
         expose:
             - "8000"
         volumes:
