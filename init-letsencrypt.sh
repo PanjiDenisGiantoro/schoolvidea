@@ -13,6 +13,8 @@ echo "=== Inisialisasi Let's Encrypt untuk $DOMAIN ==="
 mkdir -p ./certbot/conf
 mkdir -p ./certbot/www
 
+
+
 # Download recommended TLS parameters
 if [ ! -f "./certbot/conf/options-ssl-nginx.conf" ]; then
     echo "### Downloading recommended TLS parameters..."
