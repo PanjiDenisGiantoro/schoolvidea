@@ -132,6 +132,17 @@ class PayrollPaymentController extends Controller
 
         $totalAllowance = array_sum($allowances);
 
+        // Ambil data attendance yang sudah disinkronisasi untuk officer ini
+        $attendance = null;
+        if ($officerId && $officerId !== 'all') {
+            $officer = Officer::find($officerId);
+            if ($officer) {
+                $attendance = AttendanceSync::where('officer_id', $officerId)
+                    ->where('unit_id', $officer->unit_id)
+                    ->first();
+            }
+        }
+
         return response()->json([
             "belum_lunas"  => $payments->whereIn('status', ['draft', 'pending'])->values(),
             "sudah_lunas"  => $payments->where('status', 'paid')->values(),
@@ -140,7 +151,13 @@ class PayrollPaymentController extends Controller
             "request_debug" => $request->all(),
             "allowances" => $allowances,
             "total_allowance" => $totalAllowance,
-            "staff" => $staff
+            "staff" => $staff,
+            "attendance" => $attendance ? [
+                'presence_count' => $attendance->presence_count,
+                'absence_count' => $attendance->absence_count,
+                'is_active' => $attendance->is_active,
+                'synced_at' => $attendance->synced_at,
+            ] : null
         ]);
     }
 
@@ -226,10 +243,17 @@ class PayrollPaymentController extends Controller
     public function syncAttendance(Request $request)
     {
         try {
-            $unitCode = Unit::where('id', $request->unit_id)->value('code');
-            $unitId = $unitCode;
-            Log::info('unit code'. $unitCode);
-            $officerId = '15502';
+            // Check if user is authenticated
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sesi Anda telah berakhir. Silakan login kembali.',
+                    'expired' => true
+                ], 401);
+            }
+
+            $unitId = $request->unit_id;
+            $officerId = $request->officer_id;
             $search = $request->search ?? null;
 
             if (!$unitId) {
@@ -239,13 +263,50 @@ class PayrollPaymentController extends Controller
                 ], 400);
             }
 
-            $videaclassApi = new VideaclassApiHelper();
-            $apiResponse = $videaclassApi->syncAttendanceData($unitId, $search);
-
-            if (!$apiResponse) {
+            // Get Unit and check if it has code (videaclass_id)
+            $unit = Unit::find($unitId);
+            if (!$unit) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengambil data dari API Videaclass!'
+                    'message' => 'Unit tidak ditemukan'
+                ], 404);
+            }
+
+            // Check if unit has code configured (digunakan sebagai videaclass_id)
+            if (empty($unit->code)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unit belum memiliki kode. Silakan isi kode unit di pengaturan unit.',
+                    'details' => [
+                        'unit_id' => $unitId,
+                        'unit_name' => $unit->nama_unit,
+                        'help' => 'Hubungi administrator untuk mengisi kode unit di master data unit.'
+                    ]
+                ], 400);
+            }
+
+            $videaclassApi = new VideaclassApiHelper();
+            $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search);
+
+            // Check if API returned error
+            if (!$apiResponse || isset($apiResponse['error'])) {
+                $errorMsg = 'Gagal mengambil data dari API Videaclass';
+
+                if (isset($apiResponse['message'])) {
+                    if ($apiResponse['message'] === 'Tenant not found') {
+                        $errorMsg = "Unit ID '{$unitId}' tidak ditemukan di Videaclass. Pastikan Unit ID sudah terdaftar di sistem Videaclass.";
+                    } else {
+                        $errorMsg = $apiResponse['message'];
+                    }
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMsg,
+                    'details' => [
+                        'unit_id' => $unitId,
+                        'api_status' => $apiResponse['status'] ?? 'unknown',
+                    ]
                 ], 500);
             }
 
@@ -257,12 +318,16 @@ class PayrollPaymentController extends Controller
 
             foreach ($rows as $attendanceRecord) {
                 try {
-                    // Cari officer berdasarkan registered_number dari Videaclass
-                    $officer = Officer::where('registered_number', $attendanceRecord['registered_number'])
+                    // Cari officer berdasarkan nip yang matching dengan registered_number dari Videaclass
+                    $officer = Officer::where('nip', $attendanceRecord['registered_number'])
                         ->where('unit_id', $unitId)
                         ->first();
 
                     if (!$officer) {
+                        Log::warning('Officer tidak ditemukan', [
+                            'nip' => $attendanceRecord['registered_number'],
+                            'unit_id' => $unitId
+                        ]);
                         $errorCount++;
                         continue;
                     }
@@ -314,7 +379,7 @@ class PayrollPaymentController extends Controller
                 'synced_count' => $syncedCount,
                 'error_count' => $errorCount,
                 'data' => $syncedRecords,
-                'unit_code' => $unitCode
+                
             ]);
 
         } catch (\Exception $e) {

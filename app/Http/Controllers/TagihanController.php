@@ -594,16 +594,6 @@ class TagihanController extends Controller
                     ]);
                 }
 
-                // Transaksi per siswa per item
-                $transaksi = Keuangan_transaksi::create([
-                    'penerima_id'      => $siswa->id,
-                    'penerima_tipe'    => Siswa::class,
-                    'jenis_transaksi'  => 'tagihan',
-                    'jumlah'           => $itemData['nominal'],
-                    'keterangan'       => "Tagihan {$itemData['kategori']->nama_kategori} - ID: {$tagihan->id}",
-                    'created_by'       => Auth::id(),
-                ]);
-
                 // Jurnal debit
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
