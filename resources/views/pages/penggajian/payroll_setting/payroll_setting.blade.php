@@ -380,6 +380,24 @@
         const readonly = @json($readonly);
         const startMonth = document.getElementById('start_month');
         const startYear = document.getElementById('start_year');
+const meal = document.getElementById('meal_allowance');
+
+if (!meal) {
+    console.error("❌ meal_allowance TIDAK ditemukan di DOM!");
+} else {
+    console.log("✔ meal_allowance ditemukan:", meal.value);
+
+    meal.addEventListener('input', function () {
+        console.log("meal_allowance berubah:", this.value);
+    });
+
+    meal.addEventListener('change', function () {
+        console.log("meal_allowance final:", this.value);
+    });
+}
+
+
+
         startMonth.addEventListener('change', function(data) {
             const value = data.target.value;
             console.log('start_month: ', value);
@@ -599,7 +617,6 @@
             cancelButtonText: "Batal",
         }).then((result) => {
             if (result.isConfirmed) {
-
                 // Hapus titik pemisah angka sebelum dikirim
                 const inputs = document.querySelectorAll(
                     '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
@@ -607,7 +624,7 @@
                 inputs.forEach(input => {
                     input.value = input.value.replace(/\./g, '');
                 });
-
+                    
                 e.target.submit(); // lanjut submit
             }
         });

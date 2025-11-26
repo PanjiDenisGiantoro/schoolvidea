@@ -398,7 +398,7 @@ class PayrollPaymentController extends Controller
             $request->validate([
                 'amount' => 'required|numeric|min:1',
                 'earning' => 'required|numeric|min:1',
-                'deduction' => 'required|numeric|min:1',
+                'deduction' => 'nullable|numeric|',
                 'notes' => 'nullable|string|max:200'
             ]);
 

@@ -222,143 +222,193 @@ class PayrollSettingController extends Controller
     }
 
 
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            "units_id" => "required|exists:units,id",
-            "officers_id" => "required|exists:officers,id",
-            "teaching_hours" => "nullable|numeric",
-            "teaching_hours_total" => "nullable|numeric",
-            "salary" => "nullable|numeric",
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+        "units_id" => "required|exists:units,id",
+        "officers_id" => "required|exists:officers,id",
+        "teaching_hours" => "nullable|numeric",
+        "teaching_hours_total" => "nullable|numeric",
+        "salary" => "nullable|numeric",
+        "type" => "required|string",
 
-            "transport_allowance" => "nullable|numeric",
-            "meal_allowance" => "nullable|numeric",
-            "staff_allowance" => "nullable|numeric",
-            "other_allowance" => "nullable|numeric",
+        "transport_allowance" => "nullable|numeric",
+        "meal_allowance" => "nullable|numeric",
+        "staff_allowance" => "nullable|numeric",
+        "other_allowance" => "nullable|numeric",
 
-            "billing_period" => "required|integer",
-            "start_month" => "required|integer",
-            "start_year" => "required|integer",
+        "billing_period" => "required|integer",
+        "start_month" => "required|integer",
+        "start_year" => "required|integer",
 
-            "components_id" => "array",
-            "component_value" => "array",
-            "deductions_id" => "array",
-            "deduction_value" => "array",
-        ]);
+        "components_id" => "array",
+        "component_value" => "array",
+        "deductions_id" => "array",
+        "deduction_value" => "array",
+    ]);
 
-        try {
-            DB::beginTransaction();
+    try {
+        DB::beginTransaction();
 
-            // === 1️⃣ Update payroll setting master ===
-            $payrollSetting = PayrollSetting::findOrFail($id);
-            $payrollSetting->update($validated);
+        // === 1️⃣ Update payroll setting master ===
+        Log::info('Validated update data:', $validated);
 
-            // === 2️⃣ Sync Komponen ===
-            $payrollSetting->components()->detach();
-            $componentsData = [];
-            $totalComponentValue = 0;
-            if ($request->has("components_id")) {
-                foreach ($request->components_id as $i => $compId) {
-                    $value = $request->component_value[$i] ?? 0;
-                    $totalComponentValue += $value;
-                    $componentsData[$compId] = ["value" => $value];
-                }
-                $payrollSetting->components()->sync($componentsData);
+        $payrollSetting = PayrollSetting::findOrFail($id);
+        $payrollSetting->update($validated);
+
+        // === 2️⃣ Sync Komponen ===
+        $payrollSetting->components()->detach();
+        $componentsData = [];
+        $totalComponentValue = 0;
+        if ($request->has("components_id")) {
+            foreach ($request->components_id as $i => $compId) {
+                $value = $request->component_value[$i] ?? 0;
+                $totalComponentValue += $value;
+                $componentsData[$compId] = ["value" => $value];
             }
-
-            // === 3️⃣ Sync Potongan ===
-            $payrollSetting->deductions()->detach();
-            $deductionsData = [];
-            $totalDeductions = 0;
-            if ($request->has("deductions_id")) {
-                foreach ($request->deductions_id as $i => $dedId) {
-                    $value = $request->deduction_value[$i] ?? 0;
-                    $totalDeductions += $value;
-                    $deductionsData[$dedId] = ["value" => $value];
-                }
-                $payrollSetting->deductions()->sync($deductionsData);
-            }
-
-            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
-
-            // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
-            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
-            $totalEarnings = $basicSalary + $totalComponentValue;
-            $netPayment = $totalEarnings - $deductionsTotal;
-
-            // === 5️⃣ Tentukan periode yang diinginkan ===
-            $billingPeriod = (int) $validated["billing_period"];
-            $startMonth = (int) $validated["start_month"];
-            $startYear = (int) $validated["start_year"];
-
-            // Simpan periode yang akan diupdate/dibuat
-            $targetPeriods = [];
-
-            for ($i = 0; $i < $billingPeriod; $i++) {
-                $month = $startMonth + $i;
-                $year = $startYear;
-
-                // Handle rollover tahun dengan benar
-                if ($month > 12) {
-                    $year += floor(($month - 1) / 12);
-                    $month = ($month - 1) % 12 + 1;
-                }
-
-                $targetPeriods[] = ['month' => $month, 'year' => $year];
-            }
-
-            // === 6️⃣ Hapus payment yang TIDAK termasuk dalam periode baru ===
-            PayrollPayment::where('payroll_setting_id', $payrollSetting->id)
-                ->where('status', 'pending')
-                ->whereNotIn('payment_month', array_column($targetPeriods, 'month'))
-                ->whereNotIn('payment_year', array_column($targetPeriods, 'year'))
-                ->delete();
-
-            // === 7️⃣ Update atau buat payment untuk setiap periode ===
-            foreach ($targetPeriods as $period) {
-                $payment = PayrollPayment::firstOrNew([
-                    'payroll_setting_id' => $payrollSetting->id,
-                    'payment_month' => $period['month'],
-                    'payment_year' => $period['year'],
-                    'status' => 'pending',
-                ]);
-
-                $payment->fill([
-                    "unit_id" => $validated["units_id"],
-                    "officer_id" => $validated["officers_id"],
-                    "type" => 'gaji',
-
-                    "teaching_hour_week" => $request->teaching_hours ?? 0,
-                    "teaching_hour_month" => $request->teaching_hours_total ?? 0,
-
-                    "total_earnings" => $totalEarnings,
-                    "total_deductions" => $deductionsTotal,
-                    "net_payment" => $netPayment,
-
-                    "notes" => null,
-                    "status" => "pending",
-                    "updated_at" => now(),
-                ]);
-
-                if (!$payment->exists) {
-                    $payment->created_at = now();
-                }
-
-                $payment->save();
-            }
-
-            DB::commit();
-
-            return redirect()
-                ->route("payroll_settings.index")
-                ->with("success", "Data Berhasil Disimpan.");
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
-            return back()->with("error", $e->getMessage());
+            $payrollSetting->components()->sync($componentsData);
         }
+
+        // === 3️⃣ Sync Potongan ===
+        $payrollSetting->deductions()->detach();
+        $deductionsData = [];
+        $totalDeductions = 0;
+        if ($request->has("deductions_id")) {
+            foreach ($request->deductions_id as $i => $dedId) {
+                $value = $request->deduction_value[$i] ?? 0;
+                $totalDeductions += $value;
+                $deductionsData[$dedId] = ["value" => $value];
+            }
+            $payrollSetting->deductions()->sync($deductionsData);
+        }
+
+        $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+
+        // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
+        $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+        $totalEarnings = $basicSalary + $totalComponentValue;
+        $netPayment = $totalEarnings - $deductionsTotal;
+
+        // === 5️⃣ Tentukan periode yang diinginkan ===
+        $billingPeriod = (int) $validated["billing_period"];
+        $startMonth = (int) $validated["start_month"];
+        $startYear = (int) $validated["start_year"];
+
+        // Simpan periode yang akan diupdate/dibuat
+        $targetPeriods = [];
+
+        for ($i = 0; $i < $billingPeriod; $i++) {
+            $month = $startMonth + $i;
+            $year = $startYear;
+
+            // Handle rollover tahun dengan benar
+            if ($month > 12) {
+                $year += floor(($month - 1) / 12);
+                $month = ($month - 1) % 12 + 1;
+            }
+
+            $targetPeriods[] = ['month' => $month, 'year' => $year];
+        }
+
+        // === 6️⃣ Hapus payment yang TIDAK termasuk dalam periode baru ===
+        PayrollPayment::where('payroll_setting_id', $payrollSetting->id)
+            ->where('status', 'pending')
+            ->whereNotIn('payment_month', array_column($targetPeriods, 'month'))
+            ->whereNotIn('payment_year', array_column($targetPeriods, 'year'))
+            ->delete();
+
+        // === 7️⃣ Update atau buat payment untuk setiap periode ===
+        foreach ($targetPeriods as $period) {
+            $payment = PayrollPayment::firstOrNew([
+                'payroll_setting_id' => $payrollSetting->id,
+                'payment_month' => $period['month'],
+                'payment_year' => $period['year'],
+                'status' => 'pending',
+            ]);
+
+            $payment->fill([
+                "unit_id" => $validated["units_id"],
+                "officer_id" => $validated["officers_id"],
+                "type" => 'gaji',
+
+                "teaching_hour_week" => $request->teaching_hours ?? 0,
+                "teaching_hour_month" => $request->teaching_hours_total ?? 0,
+
+                "total_earnings" => $totalEarnings,
+                "total_deductions" => $deductionsTotal,
+                "net_payment" => $netPayment,
+
+                "notes" => null,
+                "status" => "pending",
+                "updated_at" => now(),
+            ]);
+
+            if (!$payment->exists) {
+                $payment->created_at = now();
+            }
+
+            $payment->save();
+        }
+
+        DB::commit();
+
+        // Response JSON untuk request AJAX/API
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                "success" => true,
+                "message" => "Data Berhasil Disimpan.",
+                "data" => $payrollSetting
+            ], 200);
+        }
+
+        return redirect()
+            ->route("payroll_settings.index")
+            ->with("success", "Data Berhasil Disimpan.");
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        DB::rollBack();
+        Log::error("PAYROLL UPDATE VALIDATION ERROR: " . $e->getMessage());
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                "success" => false,
+                "message" => "Validasi gagal",
+                "errors" => $e->errors()
+            ], 422);
+        }
+
+        return back()->withErrors($e->errors())->withInput();
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        DB::rollBack();
+        Log::error("PAYROLL UPDATE MODEL NOT FOUND: " . $e->getMessage());
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                "success" => false,
+                "message" => "Data tidak ditemukan",
+                "error" => $e->getMessage()
+            ], 404);
+        }
+
+        return back()->with("error", "Data tidak ditemukan");
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error("PAYROLL UPDATE ERROR: " . $e->getMessage());
+
+        // Response JSON untuk error umum
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                "success" => false,
+                "message" => "Terjadi kesalahan sistem",
+                "error" => config('app.debug') ? $e->getMessage() : 'Internal Server Error'
+            ], 500);
+        }
+
+        return back()->with("error", $e->getMessage());
     }
+}
 
     /**
      * Tampilkan detail satu payroll setting.
@@ -427,27 +477,31 @@ class PayrollSettingController extends Controller
     /**
      * Hapus payroll setting.
      */
-    public function destroy($id)
-    {
-        try {
-            // Cari data payroll_setting berdasarkan id
-            $setting = PayrollSetting::findOrFail($id);
 
-            // Hapus data
-            $setting->delete();
+public function destroy($id)
+{
+    try {
+        // Cari data payroll_setting berdasarkan id
+        $setting = PayrollSetting::findOrFail($id);
 
-            // Kembali ke halaman index dengan pesan sukses
-            return redirect()
-                ->route("payroll_settings.index")
-                ->with("success", "Data payroll berhasil dihapus.");
-        } catch (\Throwable $e) {
-            // Jika terjadi error (misalnya data tidak ditemukan)
-            Log::error("Payroll Setting Destroy Error: " . $e->getMessage());
-            return redirect()
-                ->back()
-                ->with("error", "Gagal menghapus data: " . $e->getMessage());
-        }
+        // Hapus hanya payroll payments dengan status 'pending'
+        $setting->payments() // pastikan relasi di model PayrollSetting ada: hasMany(PayrollPayment)
+                ->where('status', 'pending')
+                ->delete();
+
+        // Hapus setting
+        $setting->delete();
+
+        return redirect()
+            ->route("payroll_settings.index")
+            ->with("success", "Data payroll berhasil dihapus.");
+    } catch (\Throwable $e) {
+        Log::error("Payroll Setting Destroy Error: " . $e->getMessage());
+        return redirect()
+            ->back()
+            ->with("error", "Gagal menghapus data: " . $e->getMessage());
     }
+}
 
     /**
      * Ambil data payroll berdasarkan officer (guru/staff).
