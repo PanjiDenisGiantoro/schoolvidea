@@ -229,7 +229,7 @@ class PayrollPaymentController extends Controller
             $unitCode = Unit::where('id', $request->unit_id)->value('code');
             $unitId = $unitCode;
             Log::info('unit code'. $unitCode);
-            $officerId = 15502;
+            $officerId = '15502';
             $search = $request->search ?? null;
 
             if (!$unitId) {
