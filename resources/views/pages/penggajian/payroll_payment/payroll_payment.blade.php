@@ -242,6 +242,7 @@
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                'Accept': 'application/json',
                             },
                             body: JSON.stringify({
                                 unit_id: unitId,
@@ -250,18 +251,49 @@
                             })
                         });
 
+                        // Check if response is actually JSON
+                        const contentType = response.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            // Session expired or redirected to login page
+                            console.error('Non-JSON response received. Session may have expired.');
+                            alert('Sesi Anda telah berakhir. Halaman akan dimuat ulang.\n\nSilakan login kembali.');
+                            window.location.reload();
+                            return;
+                        }
+
                         const data = await response.json();
 
+                        // Check for authentication error
+                        if (response.status === 401 || data.expired) {
+                            alert('Sesi Anda telah berakhir. Halaman akan dimuat ulang.\n\nSilakan login kembali.');
+                            window.location.reload();
+                            return;
+                        }
+
                         if (data.success) {
-                            alert('Data presensi berhasil disinkronisasi!\n\n' + JSON.stringify(data.data, null, 2));
+                            alert('Data presensi berhasil disinkronisasi!\n\nSynced: ' + data.synced_count + '\nError: ' + data.error_count);
                             console.log('Sync Success:', data);
+
+                            // Refresh the attendance data - reload tabel untuk menampilkan data terbaru
+                            if (officerId && officerId !== 'all') {
+                                console.log('Synced data:', data.data);
+                                // Reload tabel untuk menampilkan data presensi yang baru disinkronisasi
+                                loadTableData();
+                            }
                         } else {
                             alert('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
                             console.error('Sync Error:', data);
                         }
                     } catch (error) {
-                        alert('Error: ' + error.message);
                         console.error('Sync Exception:', error);
+
+                        // Check if it's a JSON parse error (likely session expired)
+                        if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                            alert('Sesi Anda telah berakhir atau terjadi kesalahan.\n\nHalaman akan dimuat ulang. Silakan login kembali.');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + error.message + '\n\nSilakan coba lagi atau hubungi administrator.');
+                        }
                     } finally {
                         btnSinkron.disabled = false;
                         btnSinkron.innerHTML = originalText;
@@ -465,6 +497,8 @@ document.addEventListener('DOMContentLoaded', function() {
         total_allowance: 0,
         allowances: {}
     };
+    let globalAttendance = null; // Menyimpan data presensi
+
     // Fungsi untuk load data tabel
     async function loadTableData() {
         const officerId = officerSelect.value;
@@ -497,7 +531,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 total_allowance: dataBelumLunas?.total_allowance ||0,
             allowances: dataBelumLunas?.allowances || {}
             }
+
+            // Simpan data attendance untuk digunakan di render table
+            globalAttendance = dataBelumLunas?.attendance || null;
+
             console.log('global allowance: ', globalAllowance);
+            console.log('global attendance: ', globalAttendance);
 
             console.log("Response Belum Lunas:", dataBelumLunas);
             console.log("Response Sudah Lunas:", dataSudahLunas);
@@ -538,6 +577,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Ambil data presensi dari globalAttendance
+        const presenceCount = globalAttendance?.presence_count || 0;
+        const absenceCount = globalAttendance?.absence_count || 0;
+
         tabelBelumLunas.innerHTML = data.map((item, i) => {
             console.log("Item data:", item); // Debug setiap item
 
@@ -552,9 +595,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="custom-presensi-wrapper">
                         <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi hadir" value="0"
+                        <input type="text" class="custom-input-presensi hadir" value="${presenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="0"
+                        <input type="text" class="custom-input-presensi alpha" value="${absenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                         <input type="text" class="custom-input-presensi staff" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
@@ -595,6 +638,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Ambil data presensi dari globalAttendance
+        const presenceCount = globalAttendance?.presence_count || 0;
+        const absenceCount = globalAttendance?.absence_count || 0;
+
         tabelSudahLunas.innerHTML = data.map((item, i) => `
             <tr>
                 <td><input type="checkbox" class="row-checkbox-sudah"></td>
@@ -606,9 +653,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="custom-presensi-wrapper">
                         <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="0"
+                        <input type="text" class="custom-input-presensi" value="${presenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="0"
+                        <input type="text" class="custom-input-presensi" value="${absenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                         <input type="text" class="custom-input-presensi alpha" value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">

@@ -19,7 +19,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Handle unauthenticated requests with JSON response for API/AJAX calls
+        $exceptions->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->expectsJson() || $request->is('*/sync-attendance') || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sesi Anda telah berakhir. Silakan login kembali.',
+                    'expired' => true
+                ], 401);
+            }
+        });
     })
     ->withProviders([
         App\Providers\QrCodeServiceProvider::class, // <── Tambahkan ini

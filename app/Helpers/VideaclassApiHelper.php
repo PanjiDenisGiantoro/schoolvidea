@@ -35,7 +35,7 @@ class VideaclassApiHelper
                 $params['search'] = $search;
             }
 
-            $response = Http::withHeaders([
+            $response = Http::timeout(30)->withHeaders([
                 'Authorization' => "Bearer {$this->bearerKey}",
                 'Accept' => 'application/json',
             ])->get($url, $params);
@@ -43,16 +43,34 @@ class VideaclassApiHelper
             if ($response->successful()) {
                 return $response->json();
             } else {
+                $errorBody = $response->json();
+                $errorMessage = $errorBody['message'] ?? $response->body();
+
                 Log::error('Videaclass API Error', [
                     'status' => $response->status(),
+                    'message' => $errorMessage,
                     'body' => $response->body(),
                     'url' => $url,
+                    'unit_id' => $unitId,
                 ]);
-                return null;
+
+                // Return error dengan detail
+                return [
+                    'error' => true,
+                    'status' => $response->status(),
+                    'message' => $errorMessage,
+                ];
             }
         } catch (\Exception $e) {
-            Log::error('Videaclass API Exception: ' . $e->getMessage());
-            return null;
+            Log::error('Videaclass API Exception: ' . $e->getMessage(), [
+                'unit_id' => $unitId,
+                'url' => $url ?? 'URL not set',
+            ]);
+
+            return [
+                'error' => true,
+                'message' => $e->getMessage(),
+            ];
         }
     }
 
