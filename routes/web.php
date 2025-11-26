@@ -366,7 +366,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [PayrollSettingController::class, 'store'])->middleware('permission:create_payroll_settings')->name('payroll_settings.store');
         Route::get('/edit/{id}', [PayrollSettingController::class, 'edit'])->middleware('permission:edit_payroll_settings')->name('payroll_settings.edit');
         Route::put('payroll-setting/update/{id}', [PayrollSettingController::class, 'update'])->middleware('permission:edit_payroll_settings')->name('payroll_settings.update');
-        Route::get('/delete/{id}', [PayrollSettingController::class, 'destroy'])->middleware('permission:delete_payroll_settings')->name('payroll_settings.destroy');
+        Route::delete('/delete/{id}', [PayrollSettingController::class, 'destroy'])->middleware('permission:delete_payroll_settings')->name('payroll_settings.destroy');
         Route::get('/show/{id}', [PayrollSettingController::class, 'show'])->name('payroll_settings.show');
 
         // Ambil data payroll berdasarkan guru/staff (AJAX)

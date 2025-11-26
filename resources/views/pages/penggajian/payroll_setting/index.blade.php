@@ -51,10 +51,13 @@
                                                 class="link-warning text-muted">
                                                 <i class="ri-edit-line fs-20 align-middle"></i> Edit
                                             </a>
-                                            <a href="{{ route('payroll_settings.destroy', $item->id) }}"
-                                                class="link-danger text-muted">
-                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
-                                            </a>
+                                            <form action="{{ route('payroll_settings.destroy', $item->id) }}" method="post" class="d-inline-block delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="link-danger text-muted border-0 bg-transparent p-0 delete-btn">
+                                                    <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -84,7 +87,7 @@
                 });
 
                 // ✅ Konfirmasi hapus data
-                $('.link-danger').on('click', function(e) {
+                $('.delete-btn').on('click', function(e) {
                     e.preventDefault();
                     const form = $(this).closest('form');
                     Swal.fire({
