@@ -396,7 +396,10 @@ class PayrollPaymentController extends Controller
         DB::beginTransaction();
         try {
             $request->validate([
-                'amount' => 'required|numeric|min:1'
+                'amount' => 'required|numeric|min:1',
+                'earning' => 'required|numeric|min:1',
+                'deduction' => 'required|numeric|min:1',
+                'notes' => 'nullable|string|max:200'
             ]);
 
             $pembayaran = PayrollPayment::where('id', $id)
@@ -417,6 +420,9 @@ class PayrollPaymentController extends Controller
             }
 
             $jumlahBayar = $request->amount ?? $pembayaran->net_payment;
+            $jumlahEarning  = $request->earning ?? $pembayaran->total_earnings;
+            $jumlahDeduction = $request->deduction ?? $pembayaran->total_deductions;
+            $notes = $request->notes ?? null;
             $officer = Officer::find($pembayaran->officer_id);
             $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk " . $officer->user->name;
 
@@ -521,7 +527,13 @@ class PayrollPaymentController extends Controller
             }
 
 
-            $pembayaran->update(['status' => 'paid']);
+            $pembayaran->update([
+                'status' => 'paid',
+                'total_earnings' => $jumlahEarning,
+                'total_deductions' => $jumlahDeduction,
+                'net_payment' => $jumlahBayar,
+                'notes' => $notes
+            ]);
             DB::commit();
 
             return response()->json([

@@ -704,16 +704,21 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join("");
     }
 
-    document.addEventListener('click', function (e) {
-            if (e.target.closest(".btn-catatan")) {
-                selectedRow = e.target.closest("tr");
-            }
-        });
-document.querySelector('#catatanModal .btn.custom-btn-purple')
-    .addEventListener("click", function() {
+document.addEventListener('click', function (e) {
+    if (e.target.closest(".btn-catatan")) {
+        selectedRow = e.target.closest("tr");
+    }
+});
+
+document
+    .querySelector('#catatanModal .btn.custom-btn-purple')
+    .addEventListener("click", function () {
+
         if (!selectedRow) return;
 
         const noteValue = unformatCurrency(document.getElementById('salary_note').value) || 0;
+        const textNote = String(document.getElementById('isiCatatan').value || " ").trim();
+        
 
         let item = {};
         try {
@@ -722,16 +727,18 @@ document.querySelector('#catatanModal .btn.custom-btn-purple')
 
         // simpan salary_note pada item
         item.salary_note = noteValue;
+        item.text_note = textNote;
         selectedRow.dataset.item = JSON.stringify(item);
 
-        // 🔥 Panggil ulang kalkulasi lengkap
-        const oneInput = selectedRow.querySelector(".hadir"); 
+        // panggil ulang kalkulasi (agar total earning berubah)
+        const oneInput = selectedRow.querySelector(".hadir");
         if (oneInput) {
             onPresensiChange.call(oneInput);
         }
 
         bootstrap.Modal.getInstance(document.getElementById("catatanModal")).hide();
     });
+
 
 
     function unformatCurrency(str) {
@@ -816,6 +823,7 @@ function onClickBayar() {
             console.warn("Fallback: Asigning data directly")
         }
     const amountPay = item.net_payment || 0;
+    const textNote = item.text_note || " ";
 
     Swal.fire({
         title: `Pembayaran ${item.officer?.name}`,
@@ -841,17 +849,19 @@ function onClickBayar() {
                 Swal.showValidationMessage('Jumlah kurang dari tagihan');
                 return false;
             }
-            return value;
+            return {
+                amount: value,
+            };
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            processPayment(item.id, parseInt(result.value));
+            processPayment(item.id, parseInt(result.value.amount), item.total_earnings, item.total_deductions, textNote);
         }
     });
 }
 
 
-async function processPayment(id, amount) {
+async function processPayment(id, amount, earning, deduction, notes) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
     try {
@@ -861,7 +871,7 @@ async function processPayment(id, amount) {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": csrfToken
             },
-            body: JSON.stringify({ amount })
+            body: JSON.stringify({ amount, earning, deduction, notes })
         });
 
         const result = await response.json();
