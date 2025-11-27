@@ -282,6 +282,14 @@
                     }));
 
                     kelasChoices.setChoices(options, 'value', 'label', true);
+
+                    // Panggil callback auto-fill kelas jika ada
+                    if (window.autoFillKelasCallback) {
+                        setTimeout(() => {
+                            window.autoFillKelasCallback();
+                            delete window.autoFillKelasCallback;
+                        }, 100);
+                    }
                 })
                 .catch(err => {
                     console.error('Fetch error:', err);
@@ -307,6 +315,14 @@
                         label: siswa.user.name
                     }));
                     siswaChoices.setChoices(options, 'value', 'label', true);
+
+                    // Panggil callback auto-fill siswa jika ada
+                    if (window.autoFillSiswaCallback) {
+                        setTimeout(() => {
+                            window.autoFillSiswaCallback();
+                            delete window.autoFillSiswaCallback;
+                        }, 100);
+                    }
                 });
         });
 
@@ -453,40 +469,49 @@
         if (params.unit_id && params.kelas_id && params.siswa_id) {
             console.log('Auto-filling from query params:', params);
 
+            // Fungsi helper untuk auto-fill kelas setelah data dimuat
+            function autoFillKelas() {
+                console.log('Step 2: Auto-filling kelas...', params.kelas_id);
+                kelasChoices.setChoiceByValue(params.kelas_id);
+                kelasHidden.value = params.kelas_id;
+
+                // Trigger change untuk load siswa
+                const changeEvent = new Event('change', { bubbles: true });
+                filterKelas.dispatchEvent(changeEvent);
+
+                // Set flag untuk auto-fill siswa setelah data siswa dimuat
+                window.autoFillSiswaId = params.siswa_id;
+            }
+
+            // Fungsi helper untuk auto-fill siswa setelah data dimuat
+            function autoFillSiswa() {
+                if (window.autoFillSiswaId) {
+                    console.log('Step 3: Auto-filling siswa...', window.autoFillSiswaId);
+                    siswaChoices.setChoiceByValue(window.autoFillSiswaId);
+                    penerimaHidden.value = window.autoFillSiswaId;
+
+                    // Trigger change untuk load detail siswa
+                    const changeEvent = new Event('change', { bubbles: true });
+                    siswaSelect.dispatchEvent(changeEvent);
+
+                    delete window.autoFillSiswaId;
+                }
+            }
+
             // Tunggu sebentar agar semua Choices instance sudah terinisialisasi
             setTimeout(() => {
                 console.log('Step 1: Setting unit...', params.unit_id);
+
+                // Set flag untuk auto-fill kelas setelah data kelas dimuat
+                window.autoFillKelasCallback = autoFillKelas;
+                window.autoFillSiswaCallback = autoFillSiswa;
+
                 // Set filter unit
                 unitChoices.setChoiceByValue(params.unit_id);
 
                 // Trigger change untuk load kelas
                 const changeEvent = new Event('change', { bubbles: true });
                 filterUnit.dispatchEvent(changeEvent);
-
-                // Setelah kelas dimuat, set kelas dan siswa
-                setTimeout(() => {
-                    console.log('Step 2: Setting kelas...', params.kelas_id);
-                    // Set filter kelas
-                    kelasChoices.setChoiceByValue(params.kelas_id);
-
-                    // Set hidden input juga
-                    kelasHidden.value = params.kelas_id;
-
-                    // Trigger change untuk load siswa
-                    filterKelas.dispatchEvent(changeEvent);
-
-                    // Setelah siswa dimuat, set siswa
-                    setTimeout(() => {
-                        console.log('Step 3: Setting siswa...', params.siswa_id);
-                        siswaChoices.setChoiceByValue(params.siswa_id);
-
-                        // Set hidden input juga
-                        penerimaHidden.value = params.siswa_id;
-
-                        // Trigger change untuk load detail siswa
-                        siswaSelect.dispatchEvent(changeEvent);
-                    }, 800);
-                }, 800);
             }, 200);
         }
     </script>
