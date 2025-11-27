@@ -1349,10 +1349,6 @@ class TagihanController extends Controller
                     <td style="width: 70%; padding: 8px; border-bottom: 1px solid #ddd;"><strong>' . $kodePembayaran . '</strong></td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Kode Tagihan</strong></td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $kodeTagihanUnique . '</td>
-                </tr>
-                <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Tanggal Invoice</strong></td>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;">' . now()->format('d/m/Y') . '</td>
                 </tr>

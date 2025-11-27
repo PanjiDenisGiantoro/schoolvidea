@@ -92,6 +92,7 @@
                                 <th>Bulan</th>
                                 <th>Biaya Tagihan</th>
                                 <th>Nominal Akhir</th>
+                                <th>Total Bayar</th>
                                 <th>Status</th>
                                 <th>Tgl. Bayar</th>
                                 <th>Aksi</th>
@@ -127,6 +128,13 @@
                                     <td><strong>Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong></td>
                                     <td>
                                         @if ($row['status'] === 'Lunas')
+                                            <strong class="text-success">Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($row['status'] === 'Lunas')
                                             <span class="badge bg-success">Lunas</span>
                                         @else
                                             <span class="badge bg-danger">Belum Lunas</span>
@@ -151,10 +159,22 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="13">Tidak ada data tagihan.</td>
+                                    <td colspan="14">Tidak ada data tagihan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="9" class="text-end">TOTAL:</th>
+                                <th class="text-center">
+                                    @php
+                                        $totalBayar = $dataPerbulan->where('status', 'Lunas')->sum('nominal_akhir');
+                                    @endphp
+                                    <strong class="text-success">Rp {{ number_format($totalBayar, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -232,10 +252,22 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center py-3">Belum ada pembayaran.</td>
+                                    <td colspan="10" class="text-center py-3">Belum ada pembayaran.</td>
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="4" class="text-end">TOTAL PEMBAYARAN:</th>
+                                <th class="text-center">
+                                    @php
+                                        $totalPembayaran = $pembayaranSiswa->where('status_approval', 'approved')->sum('jumlah_bayar');
+                                    @endphp
+                                    <strong class="text-success">Rp {{ number_format($totalPembayaran, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="5"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
