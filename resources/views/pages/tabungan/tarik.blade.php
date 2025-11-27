@@ -255,6 +255,7 @@
 
         filterUnit.addEventListener('change', function() {
             const unitId = this.value;
+            console.log('Unit changed, loading kelas for unitId:', unitId);
 
             // reset select kelas dan siswa
             kelasChoices.clearStore();
@@ -263,14 +264,19 @@
             siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
             kelasHidden.value = '';
 
-            if (!unitId) return;
+            if (!unitId) {
+                console.log('No unitId, skipping fetch');
+                return;
+            }
 
+            console.log('Fetching kelas from:', `/unit/by-unit/${unitId}`);
             fetch(`/unit/by-unit/${unitId}`)
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
                     return res.json();
                 })
                 .then(data => {
+                    console.log('Kelas data loaded:', data);
                     if (!data.length) {
                         kelasChoices.setChoices([{ value: '', label: 'Tidak ada kelas', selected: true }], 'value', 'label', true);
                         return;
@@ -282,13 +288,17 @@
                     }));
 
                     kelasChoices.setChoices(options, 'value', 'label', true);
+                    console.log('Kelas choices updated, checking for callback...');
 
                     // Panggil callback auto-fill kelas jika ada
                     if (window.autoFillKelasCallback) {
+                        console.log('Auto-fill kelas callback found, executing...');
                         setTimeout(() => {
                             window.autoFillKelasCallback();
                             delete window.autoFillKelasCallback;
                         }, 100);
+                    } else {
+                        console.log('No auto-fill kelas callback');
                     }
                 })
                 .catch(err => {
@@ -506,7 +516,8 @@
                 window.autoFillKelasCallback = autoFillKelas;
                 window.autoFillSiswaCallback = autoFillSiswa;
 
-                // Set filter unit
+                // Set filter unit - set nilai manual dulu baru Choices.js
+                filterUnit.value = params.unit_id;
                 unitChoices.setChoiceByValue(params.unit_id);
 
                 // Trigger change untuk load kelas
