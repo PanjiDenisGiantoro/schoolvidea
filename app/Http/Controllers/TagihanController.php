@@ -1104,7 +1104,7 @@ class TagihanController extends Controller
      * Cetak Struk Tagihan (PDF)
      * Digunakan untuk cetak struk dari tabel "Tagihan Seluruh Periode" maupun "Riwayat Pembayaran"
      */
-    public function cetakStruk($tagihanSiswaId, $type = 'tagihan')
+    public function cetakStruk_tagihan($tagihanSiswaId, $type = 'tagihan')
     {
         // Load data tagihan siswa
         $tagihanSiswa = Tagihansiswa::with([

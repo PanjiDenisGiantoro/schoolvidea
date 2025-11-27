@@ -274,7 +274,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
         Route::get('/print-laporan', [TagihanController::class, 'printLaporan'])->name('tagihan.print_laporan');
-        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
+        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk_tagihan'])->name('tagihan.cetak_struk');
         Route::get('/{tagihanSiswaId}/cetak-invoice', [TagihanController::class, 'cetakInvoice'])->name('tagihan.cetak_invoice');
     });
 
@@ -293,7 +293,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
         Route::post('/proses-multiple', [PembayaranController::class, 'prosesMultiplePembayaran'])->name('pembayaran.proses-multiple');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
-        Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
+        Route::get('/{pembayaran}/print-struk_tagihan', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
 
     Route::prefix('migrasi')->middleware('permission:view_migrasi')->group(function () {
