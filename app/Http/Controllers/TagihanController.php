@@ -668,6 +668,11 @@ class TagihanController extends Controller
                 }
             }
 
+            // Hitung total yang sudah dibayar (sum dari pembayaran_tagihan yang approved)
+            $totalBayar = \App\Models\Pembayarantagihan::where('tagihan_siswa_id', $ts->id)
+                ->where('status_approval', 'approved')
+                ->sum('jumlah_bayar');
+
             return [
                 'id'            => $ts->id,
                 'tagihan_id'    => $ts->tagihan_id,
@@ -681,6 +686,7 @@ class TagihanController extends Controller
                 'nominal'       => $nominal,
                 'potongan'      => $totalPotongan,
                 'nominal_akhir' => $nominalSetelahPotongan,
+                'total_bayar'   => $totalBayar,
                 'status'        => $ts->status == 1 ? 'Lunas' : 'Belum Lunas',
                 'tanggal_bayar' => $ts->tanggal_bayar
             ];

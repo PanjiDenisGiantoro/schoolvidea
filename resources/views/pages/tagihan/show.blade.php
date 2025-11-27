@@ -127,10 +127,13 @@
                                     <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
                                     <td><strong>Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong></td>
                                     <td>
-                                        @if ($row['status'] === 'Lunas')
-                                            <strong class="text-success">Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong>
+                                        @if ($row['total_bayar'] > 0)
+                                            <strong class="text-success">Rp {{ number_format($row['total_bayar'], 0, ',', '.') }}</strong>
+                                            @if ($row['status'] !== 'Lunas' && $row['total_bayar'] < $row['nominal_akhir'])
+                                                <br><small class="text-warning">(Cicilan)</small>
+                                            @endif
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-muted">Rp 0</span>
                                         @endif
                                     </td>
                                     <td>
@@ -165,12 +168,27 @@
                         </tbody>
                         <tfoot class="table-secondary">
                             <tr>
-                                <th colspan="9" class="text-end">TOTAL:</th>
+                                <th colspan="9" class="text-end">TOTAL DIBAYAR:</th>
                                 <th class="text-center">
                                     @php
-                                        $totalBayar = $dataPerbulan->where('status', 'Lunas')->sum('nominal_akhir');
+                                        $totalDibayar = $dataPerbulan->sum('total_bayar');
+                                        $totalTagihan = $dataPerbulan->sum('nominal_akhir');
                                     @endphp
-                                    <strong class="text-success">Rp {{ number_format($totalBayar, 0, ',', '.') }}</strong>
+                                    <strong class="text-success">Rp {{ number_format($totalDibayar, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                            <tr>
+                                <th colspan="9" class="text-end">TOTAL TAGIHAN:</th>
+                                <th class="text-center">
+                                    <strong class="text-primary">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                            <tr class="table-warning">
+                                <th colspan="9" class="text-end">SISA TAGIHAN:</th>
+                                <th class="text-center">
+                                    <strong class="text-danger">Rp {{ number_format($totalTagihan - $totalDibayar, 0, ',', '.') }}</strong>
                                 </th>
                                 <th colspan="4"></th>
                             </tr>
