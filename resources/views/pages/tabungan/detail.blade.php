@@ -83,8 +83,8 @@
                     </div>
                     <div class="mt-4 d-flex justify-content-between">
                         <a href="{{ url('tabungan/') }}" class="btn btn-secondary"><i class='bx  bx-chevron-left'></i> </a>
-                        <a href="{{ route('tabungan.create') }}" class="btn btn-success"><i class="bx bx-plus-circle me-1"></i> Setor</a>
-                        <a href="{{ route('tabungan.tarik') }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1"></i>Tarik</a>
+                        <a href="{{ route('tabungan.create', ['siswa_id' => $siswa->id, 'unit_id' => $siswa->unit_id, 'kelas_id' => $siswa->kelas_id]) }}" class="btn btn-success"><i class="bx bx-plus-circle me-1"></i> Setor</a>
+                        <a href="{{ route('tabungan.tarik', ['siswa_id' => $siswa->id, 'unit_id' => $siswa->unit_id, 'kelas_id' => $siswa->kelas_id]) }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1"></i>Tarik</a>
                         <a href="{{ url('keuangan-transaksi?siswa_id=' . $siswa->nisn) }}" class="btn btn-info" title="Lihat detail keuangan siswa"><i class="bx bx-qr" style="font-size: 20px"></i></a>
                         <a href="{{ route('tabungan.print_mutasi', $siswa->id) }}" class="btn btn-warning" target="_blank"><i class="bx bx-printer" style="font-size: 20px"></i></a>
                     </div>

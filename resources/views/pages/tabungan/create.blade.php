@@ -223,6 +223,16 @@
 
 @push('scripts')
     <script>
+        // Get query parameters from URL
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                siswa_id: params.get('siswa_id'),
+                unit_id: params.get('unit_id'),
+                kelas_id: params.get('kelas_id')
+            };
+        }
+
         // Format number with thousands separator
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -467,6 +477,42 @@
                         'Rp 0';
                 })
                 .catch(err => console.error('Fetch detail siswa error:', err));
+        });
+
+        // Auto-fill dari query parameter (ketika dari halaman detail tabungan)
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = getQueryParams();
+
+            if (params.unit_id && params.kelas_id && params.siswa_id) {
+                console.log('Auto-filling from query params:', params);
+
+                // Set filter unit
+                const unitChoices = Choices.getByElement(filterUnit);
+                if (unitChoices) {
+                    unitChoices.setChoiceByValue(params.unit_id);
+                }
+
+                // Trigger change untuk load kelas
+                const changeEvent = new Event('change', { bubbles: true });
+                filterUnit.dispatchEvent(changeEvent);
+
+                // Setelah kelas dimuat, set kelas dan siswa
+                setTimeout(() => {
+                    // Set filter kelas
+                    kelasChoices.setChoiceByValue(params.kelas_id);
+
+                    // Trigger change untuk load siswa
+                    filterKelas.dispatchEvent(changeEvent);
+
+                    // Setelah siswa dimuat, set siswa
+                    setTimeout(() => {
+                        siswaChoices.setChoiceByValue(params.siswa_id);
+
+                        // Trigger change untuk load detail siswa
+                        siswaSelect.dispatchEvent(changeEvent);
+                    }, 500);
+                }, 500);
+            }
         });
     </script>
 @endpush
