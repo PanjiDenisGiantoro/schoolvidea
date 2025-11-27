@@ -508,7 +508,6 @@ public function destroy($id)
      */
     public function fetch($officerId)
     {
-        // Logika ini sudah benar karena memuat 'position'
         $officer = Officer::with(["position"])->find($officerId);
 
         if (!$officer) {
@@ -525,7 +524,6 @@ public function destroy($id)
             ->where("officers_id", $officerId)
             ->first();
 
-        // Menggunakan optional chaining (?->) untuk akses data yang aman
         $positionName =
             $officer->position?->positions_name ?? "Tidak ada jabatan";
 
@@ -536,7 +534,6 @@ public function destroy($id)
         ];
 
         if ($setting) {
-            // Jika setting ditemukan, ambil komponen dan potongan dari relasi many-to-many
             $data["components"] = $setting->components->map(function ($c) {
                 return [
                     "id" => $c->id,
@@ -553,7 +550,6 @@ public function destroy($id)
                 ];
             });
         } else {
-            // Jika setting tidak ditemukan, ambil data default
             $data["components"] = PayrollComponents::select(
                 "id",
                 "name",
@@ -577,7 +573,6 @@ public function destroy($id)
         $officers = Officer::whereHas("unit", function ($query) use ($unit_id) {
             $query->where("id", $unit_id);
         })
-            // PERBAIKAN: Tambahkan 'position' untuk form
             ->with(["user:id,name", "position"])
             ->get(["id", "user_id"]);
 

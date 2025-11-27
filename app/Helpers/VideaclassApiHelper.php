@@ -20,7 +20,7 @@ class VideaclassApiHelper
      * @param bool $isCount Parameter for counting
      * @return array|null
      */
-    public function getAttendanceSessionReport($unitId, $page = 1, $limit = 50, $search = null, $isCount = true)
+    public function getAttendanceSessionReport($unitId, $page = 1, $limit = 50, $search = null, $isCount = true, $period, $endPeriod)
     {
         try {
             $url = "{$this->baseUrl}/{$unitId}/attendance/session/report";
@@ -29,6 +29,8 @@ class VideaclassApiHelper
                 'page' => $page,
                 'limit' => $limit,
                 'is_count' => $isCount ? 'true' : 'false',
+                'period' => $period,
+                'endPeriod' => $endPeriod,
             ];
 
             if ($search) {
@@ -81,8 +83,8 @@ class VideaclassApiHelper
      * @param string|null $search Search parameter (misalnya nama guru)
      * @return array|null
      */
-    public function syncAttendanceData($unitId, $search = null)
+    public function syncAttendanceData($unitId, $search = null, $period, $endPeriod)
     {
-        return $this->getAttendanceSessionReport($unitId, 1, 50, $search, true);
+        return $this->getAttendanceSessionReport($unitId, 1, 50, $search, true, $period, $endPeriod);
     }
 }

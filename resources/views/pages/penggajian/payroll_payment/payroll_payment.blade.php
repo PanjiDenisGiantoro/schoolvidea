@@ -215,12 +215,13 @@
 
 @endsection
 @push('scripts')
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const btnSinkron = document.getElementById('btnSinkron');
             const unitSelect = document.getElementById('filter_unit');
             const officerSelect = document.getElementById('filter_officer');
+
 
             if (btnSinkron) {
                 btnSinkron.addEventListener('click', async function() {
@@ -228,14 +229,50 @@
                     const officerId = officerSelect.value;
 
                     if (!unitId) {
-                        alert('Mohon pilih Unit terlebih dahulu');
+                        //alert('Mohon pilih Unit terlebih dahulu');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Perhatian !!',
+                            text: 'Mohon Pilih Unit Terlebih Dahulu',
+                        });
                         return;
                     }
 
-                    // Show loading state
-                    const originalText = btnSinkron.innerHTML;
-                    btnSinkron.disabled = true;
-                    btnSinkron.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Sedang Sinkronisasi...';
+                    Swal.fire({
+                        title: 'Pilih Rentang Periode',
+                        html: `
+                        <div class="d-flex justify-content-center gap-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Start Date:</label>
+                                <input id="startDate" type="date" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">End Date:</label>
+                                <input id="endDate" type="date" class="form-control">
+                            </div>
+                        </div>
+                        `,
+                        focusConfirm: false,
+                        confirmButtonText: 'Sinkron',
+                        preConfirm: async () => {
+                            const startDate = document.getElementById('startDate').value;
+                            const endDate = document.getElementById('endDate').value;
+
+                            if (!startDate || !endDate) {
+                                Swal.showValidationMessage('Tanggal Wajib Diisi');
+                                return false;
+                            }
+
+                            return {startDate, endDate};
+                        }
+                    }).then(async (res) => {
+                        if (!res.isConfirmed) return;
+
+                        const {startDate, endDate} = res.value;
+
+                            const originalText = btnSinkron.innerHTML;
+                            btnSinkron.disabled = true;
+                            btnSinkron.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Sedang Sinkronisasi...';
 
                     try {
                         const response = await fetch('/payroll-payment/sync-attendance', {
@@ -248,7 +285,9 @@
                             body: JSON.stringify({
                                 unit_id: unitId,
                                 officer_id: officerId || null,
-                                search: officerId ? null : 'han'
+                                search: officerId ? null : 'han',
+                                start_period: startDate,
+                                end_period: endDate,
                             })
                         });
 
@@ -272,17 +311,26 @@
                         }
 
                         if (data.success) {
-                            alert('Data presensi berhasil disinkronisasi!\n\nSynced: ' + data.synced_count + '\nError: ' + data.error_count);
+                            //alert('Data presensi berhasil disinkronisasi!\n\nSynced: ' + data.synced_count + '\nError: ' + data.error_count);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil Hore Hore Yes!!!',
+                                html: `
+                                    Data presensi berhasil disinkronisasi! <br><br>
+                                    Synced: <b>${data.synced_count}</b> <br>
+                                    Error: <b>${data.error_count}</b>
+                                    `
+                            });
                             console.log('Sync Success:', data);
 
                             // Refresh the attendance data - reload tabel untuk menampilkan data terbaru
                             if (officerId && officerId !== 'all') {
                                 console.log('Synced data:', data.data);
                                 // Reload tabel untuk menampilkan data presensi yang baru disinkronisasi
-                                loadTableData();
+                                //loadTableData();
                             }
                         } else {
-                            alert('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
+                            Swal.fire('Gagal sinkronisasi: ' + (data.message || 'Terjadi kesalahan'));
                             console.error('Sync Error:', data);
                         }
                     } catch (error) {
@@ -290,15 +338,18 @@
 
                         // Check if it's a JSON parse error (likely session expired)
                         if (error instanceof SyntaxError && error.message.includes('JSON')) {
-                            alert('Sesi Anda telah berakhir atau terjadi kesalahan.\n\nHalaman akan dimuat ulang. Silakan login kembali.');
+                            Swal.fire('Sesi Anda telah berakhir atau terjadi kesalahan.\n\nHalaman akan dimuat ulang. Silakan login kembali.');
                             window.location.reload();
                         } else {
-                            alert('Error: ' + error.message + '\n\nSilakan coba lagi atau hubungi administrator.');
+                            Swal.fire('Error: ' + error.message + '\n\nSilakan coba lagi atau hubungi administrator.');
                         }
                     } finally {
                         btnSinkron.disabled = false;
                         btnSinkron.innerHTML = originalText;
                     }
+                    });
+
+                    // Show loading state
                 });
             }
         });
@@ -879,16 +930,33 @@ async function processPayment(id, amount, earning, deduction, notes) {
 
         // ❗ CEK STATUS JSON DARI BACKEND
         if (!result.status) {
-            alert(result.message || "Terjadi error");
+            // alert(result.message || "Terjadi error");
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: result.message || "Terjadi Error",
+            });
             return;
         }
 
         // ✔ hanya kalau status = true
-        alert("Pembayaran Berhasil");
+        // alert("Pembayaran Berhasil");
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Pembayaran Berhasil!',
+            timer: 2000,
+            showConfirmButton: false
+        });
         loadTableData();
 
     } catch (err) {
-        alert("Gagal terhubung ke server");
+        // alert("Gagal terhubung ke server");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error !!!',
+            text: 'Gagal Terhubung Ke Server',
+        });
         console.error(err);
     }
 }

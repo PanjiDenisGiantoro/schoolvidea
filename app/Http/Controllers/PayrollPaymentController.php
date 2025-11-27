@@ -285,8 +285,11 @@ class PayrollPaymentController extends Controller
                 ], 400);
             }
 
+            $period = $request->start_period || Carbon::now()->startOfMonth();
+            $endPeriod =  $request->end_period || Carbon::now()->endOfMonth();
+
             $videaclassApi = new VideaclassApiHelper();
-            $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search);
+            $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search, $period, $endPeriod);
 
             // Check if API returned error
             if (!$apiResponse || isset($apiResponse['error'])) {
@@ -456,7 +459,7 @@ class PayrollPaymentController extends Controller
             if (!$datarekening) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Rekening tabungan tidak ditemukan'
+                    'message' => '(Rekening) Akun Anda Tidak Memiliki Akses'
                 ]);
             }
 
