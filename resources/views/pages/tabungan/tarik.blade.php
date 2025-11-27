@@ -14,7 +14,7 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
-                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="filter_unit" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Unit --</option>
                             @foreach($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
@@ -23,13 +23,13 @@
                     </div>
                     <div class="col-md-4">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Kelas --</option>
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-control rounded-pill shadow-sm " data-choices data-choices-sorting-false>
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -455,6 +455,7 @@
 
             // Tunggu sebentar agar semua Choices instance sudah terinisialisasi
             setTimeout(() => {
+                console.log('Step 1: Setting unit...', params.unit_id);
                 // Set filter unit
                 unitChoices.setChoiceByValue(params.unit_id);
 
@@ -464,21 +465,29 @@
 
                 // Setelah kelas dimuat, set kelas dan siswa
                 setTimeout(() => {
+                    console.log('Step 2: Setting kelas...', params.kelas_id);
                     // Set filter kelas
                     kelasChoices.setChoiceByValue(params.kelas_id);
+
+                    // Set hidden input juga
+                    kelasHidden.value = params.kelas_id;
 
                     // Trigger change untuk load siswa
                     filterKelas.dispatchEvent(changeEvent);
 
                     // Setelah siswa dimuat, set siswa
                     setTimeout(() => {
+                        console.log('Step 3: Setting siswa...', params.siswa_id);
                         siswaChoices.setChoiceByValue(params.siswa_id);
+
+                        // Set hidden input juga
+                        penerimaHidden.value = params.siswa_id;
 
                         // Trigger change untuk load detail siswa
                         siswaSelect.dispatchEvent(changeEvent);
-                    }, 500);
-                }, 500);
-            }, 100);
+                    }, 800);
+                }, 800);
+            }, 200);
         }
     </script>
 @endpush
