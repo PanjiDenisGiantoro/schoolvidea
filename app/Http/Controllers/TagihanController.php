@@ -253,13 +253,8 @@ class TagihanController extends Controller
                     ->where('status_approval', 'approved')
                     ->sum('jumlah_bayar');
             }),
-            'belum_dibayar' => $allTagihans->sum(function ($ts) {
-                $nominal_tagihan = $ts->sum('sisa_nominal');
-                $sudah_bayar = $ts->siswa->pembayaranTagihan
-                    ->where('status_approval', 'approved')
-                    ->sum('jumlah_bayar');
-                return max($nominal_tagihan - $sudah_bayar, 0);
-            }),
+            'belum_dibayar' => Tagihansiswa::whereIn('id', $allTagihans->pluck('id'))
+                ->sum('sisa_nominal'),
         ];
 
         // Get units for filter

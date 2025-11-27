@@ -527,20 +527,23 @@
             function autoFillKelas() {
                 console.log('Step 2: Auto-filling kelas...', params.kelas_id);
 
-                // Set nilai manual dulu baru Choices.js
-                filterKelas.value = params.kelas_id;
-                kelasChoices.setChoiceByValue(params.kelas_id);
-                kelasHidden.value = params.kelas_id;
-
-                // Set flag untuk auto-fill siswa setelah data siswa dimuat
-                window.autoFillSiswaId = params.siswa_id;
-
-                // Trigger change untuk load siswa dengan delay
+                // Set nilai di Choices.js untuk menampilkan pilihan yang dipilih
                 setTimeout(() => {
-                    console.log('Triggering kelas change to load siswa...');
-                    const changeEvent = new Event('change', { bubbles: true });
-                    filterKelas.dispatchEvent(changeEvent);
-                }, 100);
+                    filterKelas.value = params.kelas_id;
+                    kelasChoices.setChoiceByValue(params.kelas_id);
+                    kelasHidden.value = params.kelas_id;
+                    console.log('Kelas value set in UI:', params.kelas_id);
+
+                    // Set flag untuk auto-fill siswa setelah data siswa dimuat
+                    window.autoFillSiswaId = params.siswa_id;
+
+                    // Trigger change untuk load siswa
+                    setTimeout(() => {
+                        console.log('Triggering kelas change to load siswa...');
+                        const changeEvent = new Event('change', { bubbles: true });
+                        filterKelas.dispatchEvent(changeEvent);
+                    }, 150);
+                }, 150);
             }
 
             // Fungsi helper untuk auto-fill siswa setelah data dimuat
@@ -548,19 +551,22 @@
                 if (window.autoFillSiswaId) {
                     console.log('Step 3: Auto-filling siswa...', window.autoFillSiswaId);
 
-                    // Set nilai manual dulu baru Choices.js
-                    siswaSelect.value = window.autoFillSiswaId;
-                    siswaChoices.setChoiceByValue(window.autoFillSiswaId);
-                    penerimaHidden.value = window.autoFillSiswaId;
-
-                    // Trigger change untuk load detail siswa dengan delay
+                    // Set nilai di Choices.js untuk menampilkan pilihan yang dipilih
                     setTimeout(() => {
-                        console.log('Triggering siswa change to load detail...');
-                        const changeEvent = new Event('change', { bubbles: true });
-                        siswaSelect.dispatchEvent(changeEvent);
-                    }, 100);
+                        siswaSelect.value = window.autoFillSiswaId;
+                        siswaChoices.setChoiceByValue(window.autoFillSiswaId);
+                        penerimaHidden.value = window.autoFillSiswaId;
+                        console.log('Siswa value set in UI:', window.autoFillSiswaId);
 
-                    delete window.autoFillSiswaId;
+                        // Trigger change untuk load detail siswa
+                        setTimeout(() => {
+                            console.log('Triggering siswa change to load detail...');
+                            const changeEvent = new Event('change', { bubbles: true });
+                            siswaSelect.dispatchEvent(changeEvent);
+                        }, 150);
+
+                        delete window.autoFillSiswaId;
+                    }, 150);
                 }
             }
 

@@ -5,6 +5,9 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="{{ asset('assets/js/alert2.min.js') }}"></script>
 <script src="{{ asset('assets/js/components/form-fileupload.js') }}"></script>
+
+{{-- Choices.js for enhanced select dropdowns --}}
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         function showToast(message, type = 'primary') {
             const toastEl = document.getElementById('liveToast');

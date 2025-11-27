@@ -12,3 +12,6 @@
 <link href="{{ asset('assets/css/alert2.css') }}" rel="stylesheet">
 
 <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
+
+{{-- Choices.js CSS for enhanced select dropdowns --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
