@@ -138,12 +138,12 @@
                                     <td>
                                         @if ($row['status'] === 'Lunas')
                                             <button type="button" class="btn btn-sm btn-success rounded-2"
-                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}')">
+                                                    onclick="cetakStrukPDF({{ $row['id'] }})">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @else
                                             <button type="button" class="btn btn-sm btn-primary rounded-2"
-                                                onclick="cetakStrukPDF({{ $row['id'] }})">
+                                                    onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}')">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @endif
