@@ -594,38 +594,6 @@ class TagihanController extends Controller
                     ]);
                 }
 
-                // Jurnal debit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_debit,
-                    'debit'        => $itemData['nominal'],
-                    'kredit'       => 0,
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                ]);
-
-                // Jurnal kredit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_kredit,
-                    'debit'        => 0,
-                    'kredit'       => $itemData['nominal'],
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                ]);
-
-                // Log transaksi
-                Keuangan_transaksi_logs::create([
-                    'transaksi_id'   => $transaksi->id,
-                    'aksi'           => 'create_tagihan',
-                    'data_lama'      => null,
-                    'data_baru'      => json_encode([
-                        'tagihan_id' => $tagihan->id,
-                        'item_id'    => $tagihanItem->id,
-                        'kategori'   => $itemData['kategori']->nama_kategori,
-                        'jumlah'     => $itemData['nominal'],
-                    ]),
-                    'dilakukan_oleh' => Auth::id(),
-                    'dilakukan_pada' => now(),
-                ]);
             }
         }
 
