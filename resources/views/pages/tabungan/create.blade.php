@@ -333,6 +333,11 @@
         const penerimaHidden = document.getElementById('penerima_hidden');
 
         // Initialize Choices for dependent dropdowns
+        const unitChoices = new Choices(filterUnit, {
+            removeItemButton: false,
+            shouldSort: false
+        });
+
         const kelasChoices = new Choices(filterKelas, {
             removeItemButton: false,
             shouldSort: false
@@ -480,17 +485,15 @@
         });
 
         // Auto-fill dari query parameter (ketika dari halaman detail tabungan)
-        document.addEventListener('DOMContentLoaded', function() {
-            const params = getQueryParams();
+        const params = getQueryParams();
 
-            if (params.unit_id && params.kelas_id && params.siswa_id) {
-                console.log('Auto-filling from query params:', params);
+        if (params.unit_id && params.kelas_id && params.siswa_id) {
+            console.log('Auto-filling from query params:', params);
 
+            // Tunggu sebentar agar semua Choices instance sudah terinisialisasi
+            setTimeout(() => {
                 // Set filter unit
-                const unitChoices = Choices.getByElement(filterUnit);
-                if (unitChoices) {
-                    unitChoices.setChoiceByValue(params.unit_id);
-                }
+                unitChoices.setChoiceByValue(params.unit_id);
 
                 // Trigger change untuk load kelas
                 const changeEvent = new Event('change', { bubbles: true });
@@ -512,7 +515,7 @@
                         siswaSelect.dispatchEvent(changeEvent);
                     }, 500);
                 }, 500);
-            }
-        });
+            }, 100);
+        }
     </script>
 @endpush
