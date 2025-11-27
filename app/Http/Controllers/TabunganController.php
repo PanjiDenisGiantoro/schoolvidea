@@ -274,6 +274,7 @@ class TabunganController extends Controller
                     ->first();
             }
 
+
             if($position == 1){
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,

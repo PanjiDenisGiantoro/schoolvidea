@@ -365,6 +365,42 @@ class KeuanganTransaksiController extends Controller
     }
 
     /**
+     * Cetak struk pembayaran (format thermal printer)
+     */
+    public function cetakStruk($id)
+    {
+        $transaksi = Keuangan_transaksi::with([
+            'penerima.user',
+            'penerima.unit',
+            'creator',
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+        ])->findOrFail($id);
+
+        // Generate HTML dari view struk
+        $html = view('pages.keuangan.transaksi.struk_pembayaran', compact('transaksi'))->render();
+
+        // Konfigurasi mPDF untuk ukuran struk thermal (58mm atau 80mm)
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200], // 80mm width, dynamic height
+            'orientation' => 'P',
+            'margin_left' => 3,
+            'margin_right' => 3,
+            'margin_top' => 3,
+            'margin_bottom' => 3,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+        ]);
+
+        $mpdf->SetTitle('Struk Pembayaran - ' . $transaksi->code_pembayaran);
+        $mpdf->SetAuthor(Auth::user()->name ?? 'System');
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-' . $transaksi->code_pembayaran . '.pdf', 'I');
+    }
+
+    /**
      * Approve transaksi keuangan
      */
 
