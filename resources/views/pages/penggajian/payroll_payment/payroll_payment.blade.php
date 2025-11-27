@@ -82,6 +82,9 @@
                     <li class="d-flex justify-content-between"><strong>Unit Pendidikan:</strong> <span id="officer_unit">-</span></li>
                     <li class="d-flex justify-content-between"><strong>Jabatan:</strong> <span id="officer_jabatan">-</span></li>
                     <li class="d-flex justify-content-between"><strong>Nomor Telepon:</strong> <span id="officer_no_hp">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Nama Bank:</strong> <span id="officer_bank">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Nomor Rekening:</strong> <span id="officer_norek">-</span></li>
+                    <li class="d-flex justify-content-between"><strong>Nomor Virtual Account:</strong> <span id="officer_va">-</span></li>
                 </ul>
             </div>
         </div>
@@ -184,7 +187,6 @@
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle">
                         <thead class="table-primary text-center text-nowrap align-middle">
                              <tr>
-                            <th><input class="custom-checkbox" type="checkbox" id="checkAllSudahLunas"></th>
                             <th>#</th>
                             <th>Nama Guru&Staff</th>
                             <th>Periode Pembayaran</th>
@@ -243,17 +245,21 @@
                         html: `
                         <div class="d-flex justify-content-center gap-4">
                             <div class="col-md-4">
-                                <label class="form-label">Start Date:</label>
+                                <label class="form-label">Tanggal Mulai:</label>
                                 <input id="startDate" type="date" class="form-control">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">End Date:</label>
+                                <label class="form-label">Tanggal Akhir:</label>
                                 <input id="endDate" type="date" class="form-control">
                             </div>
                         </div>
                         `,
                         focusConfirm: false,
                         confirmButtonText: 'Sinkron',
+                        customClass: {
+                            confirmButton: 'btn btn-primary rounded-pill',
+                            title: 'text-primary '
+                        },
                         preConfirm: async () => {
                             const startDate = document.getElementById('startDate').value;
                             const endDate = document.getElementById('endDate').value;
@@ -264,7 +270,16 @@
                             }
 
                             return {startDate, endDate};
-                        }
+                        },
+                        didOpen: () => {
+                            const today = new Date().toISOString().split("T")[0];
+                            const firstDay = new Date();
+                            firstDay.setDate(1);
+                            const setFirstDay = firstDay.toISOString().split("T")[0];
+
+                            document.getElementById('startDate').value = setFirstDay;
+                            document.getElementById('endDate').value = today;
+                        },
                     }).then(async (res) => {
                         if (!res.isConfirmed) return;
 
@@ -315,8 +330,12 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil Hore Hore Yes!!!',
+                                confirmButtonText: 'Tutup',
+                                customClass: {
+                                    confirmButton: 'bg-green'
+                                } ,
                                 html: `
-                                    Data presensi berhasil disinkronisasi! <br><br>
+                                    Data Presensi Berhasil Disinkronisasi<br><br>
                                     Synced: <b>${data.synced_count}</b> <br>
                                     Error: <b>${data.error_count}</b>
                                     `
@@ -529,6 +548,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('officer_jabatan').innerText = detail.officer_position ?? "-";
             document.getElementById('officer_no_hp').innerText = detail.officer_no_hp ?? "-";
             document.getElementById('officer_unit').innerText = detail.officer_unit ?? "-";
+            document.getElementById('officer_bank').innerText = detail.officer_bank ?? "-";
+            document.getElementById('officer_norek').innerText = detail.officer_norek ?? "-";
+            document.getElementById('officer_va').innerText = detail.officer_va ?? "-";
         }
 
         // Load komponen pembayaran
@@ -653,7 +675,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <tr data-item='${JSON.stringify(item)}'
                 data-base-earnings="${item.total_earnings || 0}"
                 data-base-deductions="${item.total_deductions || 0}"
-                data-st-hadir="${item.st_hadir || 0}">
+                data-st-hadir="${item.st_hadir || 0}"
+                data-status="pending">
                 <td><input type="checkbox" class="row-checkbox-belum"></td>
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || "-"}</td>
@@ -720,21 +743,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const absenceCount = globalAttendance?.absence_count || 0;
 
         tabelSudahLunas.innerHTML = data.map((item, i) => `
-            <tr>
-                <td><input type="checkbox" class="row-checkbox-sudah"></td>
+            <tr data-status="paid">
+                
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || "-"}</td>
                 <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
                 <td>${item.type|| "-"}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
-                        <input type="text" class="custom-input-presensi" value="${item.teaching_hour_month || 0}"
+                        <input type="text" class="custom-input-presensi izin" value="${ parseInt(item.teaching_hour_month || 0) }"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="${presenceCount}"
+                        <input type="text" class="custom-input-presensi hadir" value="${presenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi" value="${absenceCount}"
+                        <input type="text" class="custom-input-presensi alpha" value="${absenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="0"
+                        <input type="text" class="custom-input-presensi " value="0"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                     </div>
                 </td>
@@ -767,6 +790,16 @@ document
 
         if (!selectedRow) return;
 
+        const status = selectedRow.dataset.status;
+        if (status === 'paid') {
+            bootstrap.Modal.getInstance(document.getElementById('catatanModal')).hide();
+            document.getElementById('salary_note').disabled = true;
+            document.getElementById('isiCatatan').disabled = true;
+        } else {
+            document.getElementById('salary_note').disabled = false;
+            document.getElementById('isiCatatan').disabled = false;
+        }
+
         const noteValue = unformatCurrency(document.getElementById('salary_note').value) || 0;
         const textNote = String(document.getElementById('isiCatatan').value || " ").trim();
         
@@ -790,6 +823,83 @@ document
         bootstrap.Modal.getInstance(document.getElementById("catatanModal")).hide();
     });
 
+
+document.getElementById("btnProses").addEventListener("click", async () => {
+
+    const rows = Array.from(document.querySelectorAll(".row-checkbox-belum:checked"))
+                    .map(chk => chk.closest("tr"));
+
+    if (rows.length === 0) {
+        Swal.fire("Tidak ada data", "Pilih minimal satu data untuk bayar", "warning");
+        return;
+    }
+
+    // Ambil seluruh item dari row
+    let items = [];
+    rows.forEach(row => {
+        try {
+            let item = rowDataMap.get(row) || JSON.parse(row.dataset.item || '{}');
+            items.push(item);
+        } catch (e) {}
+    });
+
+    // Tampilkan total tagihan
+    let totalTagihan = items.reduce((sum, it) => sum + (it.net_payment || 0), 0);
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Proses Pembayaran Masal',
+        html: `
+            <p>Jumlah data: <strong>${items.length}</strong></p>
+            <p>Total Tagihan: <strong class="text-success">${formatRupiah(totalTagihan)}</strong></p>
+            <input type="text" id="inputMassBayar" class="form-control" 
+                placeholder="Masukkan Nominal Pembayaran"
+                onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                oninput="formatCurrencyInput(this)">
+        `,
+        confirmButtonText: "Bayar Semua",
+        showCancelButton: true,
+        cancelButtonText: "Batal",
+        customClass: {
+            confirmButton: 'bg-green rounded-pill',
+            cancelButton: 'bg-red rounded-pill'
+        },
+        preConfirm: () => {
+            const raw = document.getElementById("inputMassBayar").value;
+            const value = raw.replace(/[^\d]/g, '');
+
+            if (!value || value <= 0) {
+                Swal.showValidationMessage("Jumlah bayar tidak valid");
+                return false;
+            }
+            if (parseInt(value) < totalTagihan) {
+                Swal.showValidationMessage("Jumlah kurang dari total tagihan");
+                return false;
+            }
+
+            return { amount: parseInt(value) };
+        }
+    }).then(async (result) => {
+        if (!result.isConfirmed) return;
+
+        const bayar = result.value.amount;
+
+        await processPaymentAll(item);
+
+        for (const item of items) {
+            await processPaymentAll(
+                item.id,
+                item.net_payment,
+                item.total_earnings,
+                item.total_deductions,
+                item.text_note || " "
+            );
+        }
+
+        Swal.fire("Berhasil", "Pembayaran massal berhasil diproses", "success");
+        loadTableData();
+    });
+});
 
 
     function unformatCurrency(str) {
@@ -877,36 +987,24 @@ function onClickBayar() {
     const textNote = item.text_note || " ";
 
     Swal.fire({
-        title: `Pembayaran ${item.officer?.name}`,
+        icon: 'warning',
+        title: `Pembayaran Gaji ${item.officer?.name}`,
         html:
         `
-            <p>Tagihan: <strong>${formatRupiah(amountPay)}</strong></p>
-            <input type="text" class="form-control" value="0" id="inputBayar"
-            onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-            oninput="formatCurrencyInput(this)">
+            <p>Nominal Gaji: <strong class="text-success">${formatRupiah(amountPay)}</strong></p>
+
         `,
+        confirmButtonText: 'Bayar',
         showCancelButton: true,
         cancelButtonText: 'Batal',
-        preConfirm: () => {
-            const raw = document.getElementById('inputBayar').value;
-            const value = raw.replace(/[^\d]/g, '');
+        customClass: {
+            confirmButton: 'bg-green rounded-pill',
+            cancelButton: 'bg-red rounded-pill'
+        },
 
-            console.log('value: ',value);
-            if (!value || value <= 0) {
-                Swal.showValidationMessage('Jumlah bayar tidak valid');
-                return false;
-            }
-            if (parseInt(value) < amountPay) {
-                Swal.showValidationMessage('Jumlah kurang dari tagihan');
-                return false;
-            }
-            return {
-                amount: value,
-            };
-        }
     }).then((result) => {
         if (result.isConfirmed) {
-            processPayment(item.id, parseInt(result.value.amount), item.total_earnings, item.total_deductions, textNote);
+            processPayment(item.id, item.net_payment, item.total_earnings, item.total_deductions, textNote);
         }
     });
 }
@@ -941,6 +1039,54 @@ async function processPayment(id, amount, earning, deduction, notes) {
 
         // ✔ hanya kalau status = true
         // alert("Pembayaran Berhasil");
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Pembayaran Berhasil!',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        loadTableData();
+
+    } catch (err) {
+        // alert("Gagal terhubung ke server");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error !!!',
+            text: 'Gagal Terhubung Ke Server',
+        });
+        console.error(err);
+    }
+}
+
+async function processPaymentAll(id, amount, earning, deduction, notes) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    try {
+        const response = await fetch(`/payroll-payment/paymentAll/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            },
+            body: JSON.stringify({ amount, earning, deduction, notes })
+        });
+
+        const result = await response.json();
+        console.log("response:", result);
+
+        // ❗ CEK STATUS JSON DARI BACKEND
+        if (!result.status) {
+            // alert(result.message || "Terjadi error");
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: result.message || "Terjadi Error",
+            });
+            return;
+        }
+
+ 
         Swal.fire({
             icon: 'success',
             title: 'Berhasil',

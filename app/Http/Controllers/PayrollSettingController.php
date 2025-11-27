@@ -323,8 +323,11 @@ public function update(Request $request, $id)
                 'payroll_setting_id' => $payrollSetting->id,
                 'payment_month' => $period['month'],
                 'payment_year' => $period['year'],
-                'status' => 'pending',
             ]);
+
+            if ($payment && $payment->status === 'paid') {
+                continue;
+            }
 
             $payment->fill([
                 "unit_id" => $validated["units_id"],
@@ -592,8 +595,11 @@ public function destroy($id)
             'officer_unit' => $officer->unit?->nama_unit ?? "-",
             'officer_nip' => $officer->nip ?? "-",
             'officer_no_hp' => $officer->no_hp ?? "-",
-            'officer_foto' => $officer-> image ?? "",
-            'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan"
+            'officer_foto' => $officer->image ?? "",
+            'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan",
+            'officer_bank' => $officer->bank ?? "-",
+            'officer_norek' => $officer->no_rekening ?? "-",
+            'officer_va' => $officer->va_guru ?? "-",
         ]);
     }
 
