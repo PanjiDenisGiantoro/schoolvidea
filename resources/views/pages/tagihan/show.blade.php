@@ -219,9 +219,10 @@
                                     </td>
                                     <td>{{ $pembayaran['create_by'] ?? '-' }}</td>
                                     <td>
-                                        @if($pembayaran['tagihan_siswa_id'])
-                                            <button type="button" class="btn btn-sm btn-primary"
-                                                onclick="cetakStrukPDF({{ $pembayaran['tagihan_siswa_id'] }})">
+                                        @if($pembayaran['id'])
+                                            <button type="button" class="btn btn-sm btn-warning rounded-pill"
+                                                onclick="cetakStrukPDF({{ $pembayaran['id'] }})"
+                                                title="Cetak Struk">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @else
@@ -283,15 +284,15 @@
             window.open(`/pembayaran/${pembayaranId}/print-struk`, '_blank');
         }
 
-        function cetakStrukPDF(tagihanSiswaId) {
+        function cetakStrukPDF(pembayaranId) {
             // Validasi parameter
-            if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
-                alert('Error: ID Tagihan Siswa tidak valid');
-                console.error('Invalid tagihanSiswaId:', tagihanSiswaId);
+            if (!pembayaranId || pembayaranId === '' || pembayaranId === 'null') {
+                alert('Error: ID Pembayaran tidak valid');
+                console.error('Invalid pembayaranId:', pembayaranId);
                 return;
             }
 
-            const url = `/tagihan/${tagihanSiswaId}/cetak-struk`;
+            const url = `/tagihan/${pembayaranId}/cetak-struk`;
             console.log('Membuka URL:', url);
 
             // Buka halaman cetak struk PDF dalam tab baru

@@ -1431,4 +1431,63 @@ class TagihanController extends Controller
         // Output PDF ke browser
         return $mpdf->Output('Invoice-' . $kodePembayaran . '-' . date('Ymd') . '.pdf', 'I');
     }
+
+    /**
+     * Cetak struk pembayaran tagihan (format thermal printer)
+     */
+    public function cetakStruk($pembayaranId)
+    {
+        // Ambil data pembayaran tagihan
+        $pembayaran = \App\Models\Pembayarantagihan::with([
+            'tagihanSiswa.siswa.user',
+            'tagihanSiswa.siswa.kelas',
+            'tagihanSiswa.tagihan.items.kategori',
+            'tagihanSiswa.siswa.unit',
+            'user' // kasir yang melakukan transaksi
+        ])->findOrFail($pembayaranId);
+
+        // Buat objek transaksi yang kompatibel dengan view struk
+        $transaksi = new \stdClass();
+        $transaksi->code_pembayaran = $pembayaran->code_pembayaran;
+        $transaksi->tanggal_transaksi = $pembayaran->waktu_transaksi;
+        $transaksi->jumlah = $pembayaran->jumlah_bayar;
+        $transaksi->metode = strtoupper($pembayaran->metode_bayar);
+        $transaksi->status_verifikasi = $pembayaran->status_approval;
+        $transaksi->jenis_transaksi = 'pembayaran';
+
+        // Creator/kasir
+        $transaksi->creator = $pembayaran->user;
+
+        // Penerima (siswa)
+        $transaksi->penerima = $pembayaran->tagihanSiswa->siswa;
+        $transaksi->penerima->unit = $pembayaran->tagihanSiswa->siswa->unit;
+        $transaksi->penerima->kelas = $pembayaran->tagihanSiswa->siswa->kelas;
+
+        // Pembayaran tagihan
+        $transaksi->pembayaranTagihan = $pembayaran;
+        $transaksi->pembayaranTagihan->tagihanSiswa->tagihan = $pembayaran->tagihanSiswa->tagihan;
+
+        // Generate HTML dari view struk yang sama
+        $html = view('pages.keuangan.transaksi.struk_pembayaran', compact('transaksi'))->render();
+
+        // Konfigurasi mPDF untuk ukuran struk thermal (80mm)
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200], // 80mm width, dynamic height
+            'orientation' => 'P',
+            'margin_left' => 3,
+            'margin_right' => 3,
+            'margin_top' => 3,
+            'margin_bottom' => 3,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+        ]);
+
+        $mpdf->SetTitle('Struk Pembayaran - ' . $pembayaran->code_pembayaran);
+        $mpdf->SetAuthor(Auth::user()->name ?? 'System');
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-' . $pembayaran->code_pembayaran . '.pdf', 'I');
+    }
 }

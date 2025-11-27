@@ -266,6 +266,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [TagihanController::class, 'create'])->middleware('permission:create_tagihan')->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
+        Route::get('/{pembayaranId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
         Route::get('/perbulanAll/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
         Route::get('/daftarTagihan/{id}', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftarTagihan');
