@@ -419,6 +419,7 @@
         // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
+            console.log('Kelas changed, loading siswa for kelasId:', kelasId);
             kelasHidden.value = kelasId;
 
             // reset select siswa
@@ -429,14 +430,19 @@
                 selected: true
             }], 'value', 'label', true);
 
-            if (!kelasId) return;
+            if (!kelasId) {
+                console.log('No kelasId, skipping fetch');
+                return;
+            }
 
+            console.log('Fetching siswa from:', `/siswa/by-kelas/${kelasId}`);
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
                     return res.json();
                 })
                 .then(data => {
+                    console.log('Siswa data loaded:', data);
                     if (!data.length) {
                         siswaChoices.setChoices([{
                             value: '',
@@ -453,13 +459,17 @@
                     }));
 
                     siswaChoices.setChoices(options, 'value', 'label', true);
+                    console.log('Siswa choices updated, checking for callback...');
 
                     // Panggil callback auto-fill siswa jika ada
                     if (window.autoFillSiswaCallback) {
+                        console.log('Auto-fill siswa callback found, executing...');
                         setTimeout(() => {
                             window.autoFillSiswaCallback();
                             delete window.autoFillSiswaCallback;
                         }, 100);
+                    } else {
+                        console.log('No auto-fill siswa callback');
                     }
                 })
                 .catch(err => {
@@ -516,27 +526,39 @@
             // Fungsi helper untuk auto-fill kelas setelah data dimuat
             function autoFillKelas() {
                 console.log('Step 2: Auto-filling kelas...', params.kelas_id);
+
+                // Set nilai manual dulu baru Choices.js
+                filterKelas.value = params.kelas_id;
                 kelasChoices.setChoiceByValue(params.kelas_id);
                 kelasHidden.value = params.kelas_id;
 
-                // Trigger change untuk load siswa
-                const changeEvent = new Event('change', { bubbles: true });
-                filterKelas.dispatchEvent(changeEvent);
-
                 // Set flag untuk auto-fill siswa setelah data siswa dimuat
                 window.autoFillSiswaId = params.siswa_id;
+
+                // Trigger change untuk load siswa dengan delay
+                setTimeout(() => {
+                    console.log('Triggering kelas change to load siswa...');
+                    const changeEvent = new Event('change', { bubbles: true });
+                    filterKelas.dispatchEvent(changeEvent);
+                }, 100);
             }
 
             // Fungsi helper untuk auto-fill siswa setelah data dimuat
             function autoFillSiswa() {
                 if (window.autoFillSiswaId) {
                     console.log('Step 3: Auto-filling siswa...', window.autoFillSiswaId);
+
+                    // Set nilai manual dulu baru Choices.js
+                    siswaSelect.value = window.autoFillSiswaId;
                     siswaChoices.setChoiceByValue(window.autoFillSiswaId);
                     penerimaHidden.value = window.autoFillSiswaId;
 
-                    // Trigger change untuk load detail siswa
-                    const changeEvent = new Event('change', { bubbles: true });
-                    siswaSelect.dispatchEvent(changeEvent);
+                    // Trigger change untuk load detail siswa dengan delay
+                    setTimeout(() => {
+                        console.log('Triggering siswa change to load detail...');
+                        const changeEvent = new Event('change', { bubbles: true });
+                        siswaSelect.dispatchEvent(changeEvent);
+                    }, 100);
 
                     delete window.autoFillSiswaId;
                 }
