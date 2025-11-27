@@ -1261,7 +1261,7 @@ class TagihanController extends Controller
     /**
      * Cetak Invoice untuk tagihan yang sudah lunas
      */
-    public function cetakInvoice($tagihanSiswaId)
+    public function cetakInvoice(Request $request, $tagihanSiswaId)
     {
         // Load data tagihan siswa dengan relasi pembayaran
         $tagihanSiswa = Tagihansiswa::with([
@@ -1297,8 +1297,14 @@ class TagihanController extends Controller
         $tahun = $date->year;
         $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
 
-        // Generate kode tagihan unique
-        $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT);
+        // Generate kode tagihan unique dengan tanggal lengkap
+        // Jika dikirim dari query parameter, gunakan itu. Jika tidak, generate sendiri
+        $kodeTagihanUnique = $request->query('kode_tagihan');
+
+        if (empty($kodeTagihanUnique)) {
+            // Fallback: generate kode tagihan dengan tanggal hari ini
+            $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT) . '-' . now()->format('Ymd');
+        }
 
         // Ambil kode surat dari unit
         $kodeSurat = $unit->code ?? 'UNIT-' . str_pad($unit->id, 3, '0', STR_PAD_LEFT);

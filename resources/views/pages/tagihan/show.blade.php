@@ -138,7 +138,7 @@
                                     <td>
                                         @if ($row['status'] === 'Lunas')
                                             <button type="button" class="btn btn-sm btn-success rounded-2"
-                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}')">
+                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}', '{{ $row['kode_tagihan'] }}')">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @else
@@ -304,7 +304,7 @@
             }
         }
 
-        function cetakInvoice(tagihanSiswaId, kodePembayaran) {
+        function cetakInvoice(tagihanSiswaId, kodePembayaran, kodeTagihan) {
             // Validasi parameter
             if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
                 alert('Error: ID Tagihan Siswa tidak valid');
@@ -312,8 +312,11 @@
                 return;
             }
 
-            const url = `/tagihan/${tagihanSiswaId}/cetak-invoice`;
+            // Encode kode tagihan untuk URL
+            const encodedKodeTagihan = encodeURIComponent(kodeTagihan || '');
+            const url = `/tagihan/${tagihanSiswaId}/cetak-invoice?kode_tagihan=${encodedKodeTagihan}`;
             console.log('Membuka URL Invoice:', url);
+            console.log('Kode Tagihan:', kodeTagihan);
 
             // Buka halaman cetak invoice PDF dalam tab baru
             const pdfWindow = window.open(url, '_blank');
