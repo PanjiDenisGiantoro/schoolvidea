@@ -294,6 +294,7 @@
 
     <script>
         let tagihanTable;
+        let filterTimeout;
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize DataTable
@@ -372,6 +373,29 @@
                     } else {
                         kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
                     }
+                });
+            }
+
+            // Debounce function untuk filter dengan delay 5 detik
+            function debounceFilter() {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(function() {
+                    tagihanTable.ajax.reload();
+                }, 5000); // 5 detik delay
+            }
+
+            // Event listener untuk filter kelas dengan debounce
+            if (kelasSelect) {
+                kelasSelect.addEventListener('change', function() {
+                    debounceFilter();
+                });
+            }
+
+            // Event listener untuk filter nama siswa dengan debounce
+            const namaSiswaInput = document.getElementById('nama_siswa');
+            if (namaSiswaInput) {
+                namaSiswaInput.addEventListener('input', function() {
+                    debounceFilter();
                 });
             }
         });
