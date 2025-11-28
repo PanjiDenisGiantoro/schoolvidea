@@ -282,7 +282,8 @@ class TagihanController extends Controller
         $tagihanSiswa = Tagihansiswa::with([
             'siswa',
             'tagihan.items.kategori',
-            'potonganSiswa.potongan'
+            'potonganSiswa.potongan',
+            'pembayaranTagihan' // Load pembayaran untuk tagihan_siswa
         ])
             ->where('tagihan_id', $tagihanId)
             ->where('siswa_id', $siswaId)
@@ -316,10 +317,10 @@ class TagihanController extends Controller
             // Jumlah tagihan untuk bulan ini = rincian tagihan - potongan bulan ini
             $jumlahTagihan = $nominal - $potonganBulanIni;
 
-            // Hitung jumlah yang sudah dibayar
-            // Jika status = 1 (lunas), maka sudah dibayar = jumlahTagihan
-            // Jika status != 1 (belum lunas), maka sudah dibayar = 0
-            $jumlahDibayar = ($ts->status == 1) ? $jumlahTagihan : 0;
+            // Ambil jumlah_dibayar dari pembayarantagihan dengan status_approval = 'approved'
+            $jumlahDibayar = $ts->pembayaranTagihan
+                ->where('status_approval', 'approved')
+                ->sum('jumlah_bayar');
 
             // Tunggakan = sisa nominal yang masih harus dibayar
             $jumlahTunggakan = $ts->sisa_nominal;
