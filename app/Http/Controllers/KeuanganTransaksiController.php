@@ -867,7 +867,6 @@ class KeuanganTransaksiController extends Controller
                     $tagihanSiswa->update([
                         'status' => $statusBaru,
                         'sisa_nominal' => $sisaNominalBaru,
-                        'jumlah_dibayar' => max(0, $jumlahDibayarBaru)
                     ]);
                 }
             }
