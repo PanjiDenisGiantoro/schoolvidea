@@ -183,7 +183,7 @@ class PembayaranController extends Controller
                 'tanggal_bayar' => $p->tanggal_bayar->format('Y-m-d'),
                 'metode_bayar' => $p->metode_bayar,
                 'status_approval' => $p->status_approval,
-                'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
+                'file_bukti' => $p->file_bukti ? Storage::disk('public')->url($p->file_bukti) : null,
                 'keterangan' => $p->keterangan,
                 'created_by' => $p->user ? $p->user->name : null,
                 'approved_by' => isset($p->approvedBy) && $p->approvedBy ? $p->approvedBy->name : null,
@@ -817,16 +817,22 @@ Pembayaran akan dicek:
 
             DB::commit();
 
+            $freshPembayaran = $pembayaran->fresh();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Bukti pembayaran berhasil diupload',
                 'data' => [
-                    'pembayaran' => $pembayaran->fresh()->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori']),
+                    'pembayaran' => $freshPembayaran->load(['tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening', 'tagihanSiswa.tagihanItem.kategori']),
+                    'file_bukti' => [
+                        'path' => $freshPembayaran->file_bukti,
+                        'url' => $freshPembayaran->file_bukti ? Storage::disk('public')->url($freshPembayaran->file_bukti) : null
+                    ],
                     'tagihan_info' => [
-                        'kode_tagihan' => $pembayaran->fresh()->kode_tagihan,
-                        'nama_tagihan' => $pembayaran->fresh()->nama_tagihan,
-                        'kategori_tagihan' => $pembayaran->fresh()->kategori_tagihan,
-                        'data_rekening' => $pembayaran->fresh()->data_rekening
+                        'kode_tagihan' => $freshPembayaran->kode_tagihan,
+                        'nama_tagihan' => $freshPembayaran->nama_tagihan,
+                        'kategori_tagihan' => $freshPembayaran->kategori_tagihan,
+                        'data_rekening' => $freshPembayaran->data_rekening
                     ]
                 ]
             ]);
