@@ -14,6 +14,7 @@ use App\Models\DataRekening;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class RiwayatApiController extends Controller
 {
@@ -392,7 +393,7 @@ class RiwayatApiController extends Controller
                         'code_pembayaran' => $pembayaran->code_pembayaran,
                         'jumlah_bayar' => (float)$pembayaran->jumlah_bayar,
                         'metode_bayar' => $pembayaran->metode_bayar,
-                        'file_bukti' => $pembayaran->file_bukti ? url($pembayaran->file_bukti) : null,
+                        'file_bukti' => $pembayaran->file_bukti ? Storage::disk('public')->url($pembayaran->file_bukti) : null,
                         'tanggal_bayar' => $pembayaran->tanggal_bayar,
                         'status_approval' => $pembayaran->status_approval,
                         'keterangan' => $pembayaran->keterangan,
@@ -495,7 +496,7 @@ class RiwayatApiController extends Controller
                         'metode_bayar' => $p->metode_bayar,
                         'keterangan' => $p->keterangan,
                         'status_approval' => $p->status_approval,
-                        'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
+                        'file_bukti' => $p->file_bukti ? Storage::disk('public')->url($p->file_bukti) : null,
                         'keterangan_siswa' => $p->keterangan_siswa,
                         'catatan_approval' => $p->catatan_approval,
                         'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
@@ -564,8 +565,9 @@ class RiwayatApiController extends Controller
                     $namaKategori = $p->tagihanSiswa->tagihanItem->kategori->nama_kategori;
                 }
 
-                // Get status_verifikasi from keuangan_transaksi
+                // Get status_verifikasi and catatan_verifikasi from keuangan_transaksi
                 $statusVerifikasi = $p->keuanganTransaksi ? $p->keuanganTransaksi->status_verifikasi : null;
+                $catatanVerifikasi = $p->keuanganTransaksi ? $p->keuanganTransaksi->catatan_verifikasi : null;
 
                 // Get potongan from tagihanSiswa
                 $potonganList = [];
@@ -650,8 +652,9 @@ class RiwayatApiController extends Controller
                     'metode_bayar' => $p->metode_bayar,
                     'status_approval' => $p->status_approval,
                     'status_verifikasi' => $statusVerifikasi,
-                    'file_bukti' => $p->file_bukti ? url($p->file_bukti) : null,
+                    'file_bukti' => $p->file_bukti ? Storage::disk('public')->url($p->file_bukti) : null,
                     'keterangan' => $p->keterangan,
+                    'catatan_verifikasi' => $catatanVerifikasi,
                     'potongan' => $potonganList,
                     'data_rekenings' => $dataRekenings,
                     'created_by' => $p->user ? $p->user->name : null,
