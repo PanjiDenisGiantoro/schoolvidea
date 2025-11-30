@@ -318,7 +318,9 @@ class TagihanController extends Controller
             // Jumlah tagihan untuk bulan ini = rincian tagihan - potongan bulan ini
             $jumlahTagihan = $nominal - $potonganBulanIni;
 
-            // Ambil jumlah_dibayar dari keuangan_transaksi dengan status_verifikasi dan status_approval = 'approved'
+            // Ambil jumlah_dibayar dari keuangan_transaksi untuk periode ini
+            // Join: keuangan_transaksis.referensi_tagihan_id -> pembayaran_tagihan.id -> tagihan_siswa ($ts)
+            // Filter: status_verifikasi='approved' AND status_approval='approved'
             $jumlahDibayar = Keuangan_transaksi::whereIn('referensi_tagihan_id',
                 $ts->pembayaranTagihan->pluck('id'))
                 ->where('status_verifikasi', 'approved')
