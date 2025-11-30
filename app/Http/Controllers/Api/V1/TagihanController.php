@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tagihan;
 use App\Models\Tagihansiswa;
 use App\Models\Pembayarantagihan;
+use App\Models\Keuangan_transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -317,10 +318,12 @@ class TagihanController extends Controller
             // Jumlah tagihan untuk bulan ini = rincian tagihan - potongan bulan ini
             $jumlahTagihan = $nominal - $potonganBulanIni;
 
-            // Ambil jumlah_dibayar dari pembayarantagihan dengan status_approval = 'approved'
-            $jumlahDibayar = $ts->pembayaranTagihan
+            // Ambil jumlah_dibayar dari keuangan_transaksi dengan status_verifikasi dan status_approval = 'approved'
+            $jumlahDibayar = Keuangan_transaksi::whereIn('referensi_tagihan_id',
+                $ts->pembayaranTagihan->pluck('id'))
+                ->where('status_verifikasi', 'approved')
                 ->where('status_approval', 'approved')
-                ->sum('jumlah_bayar');
+                ->sum('jumlah');
 
             // Tunggakan = sisa nominal yang masih harus dibayar
             $jumlahTunggakan = $ts->sisa_nominal;
