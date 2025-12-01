@@ -854,7 +854,7 @@ class KeuanganTransaksiController extends Controller
                 if ($tagihanSiswa) {
                     // Kembalikan nominal yang sudah dibayar saat reject
                     $jumlahBayar = (int) $pembayaran->jumlah_bayar;
-                    $sisaNominalBaru = $tagihanSiswa->sisa_nominal + $jumlahBayar;
+                    $sisaNominalBaru = $tagihanSiswa->sisa_nominal;
                     $jumlahDibayarBaru = ($tagihanSiswa->jumlah_dibayar ?? 0) - $jumlahBayar;
 
                     // Tentukan status baru setelah reject
@@ -866,7 +866,6 @@ class KeuanganTransaksiController extends Controller
                     // Update tagihan siswa dengan rollback nilai (HANYA field yang ada di tabel)
                     $tagihanSiswa->update([
                         'status' => $statusBaru,
-                        'sisa_nominal' => $sisaNominalBaru,
                     ]);
                 }
             }
