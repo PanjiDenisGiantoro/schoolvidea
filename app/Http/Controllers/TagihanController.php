@@ -251,17 +251,11 @@ class TagihanController extends Controller
             'sudah_dibayar' => $allTagihans->sum(function ($ts) {
                 return $ts->siswa->pembayaranTagihan
                     ->where('status_approval', 'approved')
-                    ->where('status_verifikasi', 'approved')
                     ->sum('jumlah_bayar');
             }),
-            'belum_dibayar' => $allTagihans->sum(function ($ts) {
-                $nominal_tagihan = $ts->tagihan->items->sum('nominal');
-                $sudah_bayar = $ts->siswa->pembayaranTagihan
-                    ->where('status_approval', 'approved')
-                    ->where('status_verifikasi', 'approved')
-                    ->sum('jumlah_bayar');
-                return max($nominal_tagihan - $sudah_bayar, 0);
-            }),
+            'belum_dibayar' => Tagihansiswa::whereIn('id', $allTagihans->pluck('id'))
+                ->sum('sisa_nominal'),
+
         ];
 
         // Get units for filter
@@ -594,38 +588,6 @@ class TagihanController extends Controller
                     ]);
                 }
 
-                // Jurnal debit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_debit,
-                    'debit'        => $itemData['nominal'],
-                    'kredit'       => 0,
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                ]);
-
-                // Jurnal kredit
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id'      => $akun_kredit,
-                    'debit'        => 0,
-                    'kredit'       => $itemData['nominal'],
-                    'keterangan'   => "Tagihan siswa ID: {$siswa->id} - {$itemData['kategori']->nama_kategori}",
-                ]);
-
-                // Log transaksi
-                Keuangan_transaksi_logs::create([
-                    'transaksi_id'   => $transaksi->id,
-                    'aksi'           => 'create_tagihan',
-                    'data_lama'      => null,
-                    'data_baru'      => json_encode([
-                        'tagihan_id' => $tagihan->id,
-                        'item_id'    => $tagihanItem->id,
-                        'kategori'   => $itemData['kategori']->nama_kategori,
-                        'jumlah'     => $itemData['nominal'],
-                    ]),
-                    'dilakukan_oleh' => Auth::id(),
-                    'dilakukan_pada' => now(),
-                ]);
             }
         }
 
@@ -700,6 +662,11 @@ class TagihanController extends Controller
                 }
             }
 
+            // Hitung total yang sudah dibayar (sum dari pembayaran_tagihan yang approved)
+            $totalBayar = \App\Models\Pembayarantagihan::where('tagihan_siswa_id', $ts->id)
+                ->where('status_approval', 'approved')
+                ->sum('jumlah_bayar');
+
             return [
                 'id'            => $ts->id,
                 'tagihan_id'    => $ts->tagihan_id,
@@ -713,6 +680,7 @@ class TagihanController extends Controller
                 'nominal'       => $nominal,
                 'potongan'      => $totalPotongan,
                 'nominal_akhir' => $nominalSetelahPotongan,
+                'total_bayar'   => $totalBayar,
                 'status'        => $ts->status == 1 ? 'Lunas' : 'Belum Lunas',
                 'tanggal_bayar' => $ts->tanggal_bayar
             ];
@@ -1136,7 +1104,7 @@ class TagihanController extends Controller
      * Cetak Struk Tagihan (PDF)
      * Digunakan untuk cetak struk dari tabel "Tagihan Seluruh Periode" maupun "Riwayat Pembayaran"
      */
-    public function cetakStruk($tagihanSiswaId, $type = 'tagihan')
+    public function cetakStruk_tagihan($tagihanSiswaId, $type = 'tagihan')
     {
         // Load data tagihan siswa
         $tagihanSiswa = Tagihansiswa::with([
@@ -1293,7 +1261,7 @@ class TagihanController extends Controller
     /**
      * Cetak Invoice untuk tagihan yang sudah lunas
      */
-    public function cetakInvoice($tagihanSiswaId)
+    public function cetakInvoice(Request $request, $tagihanSiswaId)
     {
         // Load data tagihan siswa dengan relasi pembayaran
         $tagihanSiswa = Tagihansiswa::with([
@@ -1329,8 +1297,14 @@ class TagihanController extends Controller
         $tahun = $date->year;
         $namaKategori = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
 
-        // Generate kode tagihan unique
-        $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT);
+        // Generate kode tagihan unique dengan tanggal lengkap
+        // Jika dikirim dari query parameter, gunakan itu. Jika tidak, generate sendiri
+        $kodeTagihanUnique = $request->query('kode_tagihan');
+
+        if (empty($kodeTagihanUnique)) {
+            // Fallback: generate kode tagihan dengan tanggal hari ini
+            $kodeTagihanUnique = 'TAG-' . str_pad($tagihan->id, 5, '0', STR_PAD_LEFT) . '-' . str_pad($tagihanSiswa->bulan_ke, 2, '0', STR_PAD_LEFT) . '-' . now()->format('Ymd');
+        }
 
         // Ambil kode surat dari unit
         $kodeSurat = $unit->code ?? 'UNIT-' . str_pad($unit->id, 3, '0', STR_PAD_LEFT);
@@ -1373,10 +1347,6 @@ class TagihanController extends Controller
                 <tr style="background-color: #f0f0f0;">
                     <td style="width: 30%; padding: 8px; border-bottom: 1px solid #ddd;"><strong>No. Invoice</strong></td>
                     <td style="width: 70%; padding: 8px; border-bottom: 1px solid #ddd;"><strong>' . $kodePembayaran . '</strong></td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Kode Tagihan</strong></td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $kodeTagihanUnique . '</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Tanggal Invoice</strong></td>
@@ -1462,5 +1432,64 @@ class TagihanController extends Controller
 
         // Output PDF ke browser
         return $mpdf->Output('Invoice-' . $kodePembayaran . '-' . date('Ymd') . '.pdf', 'I');
+    }
+
+    /**
+     * Cetak struk pembayaran tagihan (format thermal printer)
+     */
+    public function cetakStruk($pembayaranId)
+    {
+        // Ambil data pembayaran tagihan
+        $pembayaran = \App\Models\Pembayarantagihan::with([
+            'tagihanSiswa.siswa.user',
+            'tagihanSiswa.siswa.kelas',
+            'tagihanSiswa.tagihan.items.kategori',
+            'tagihanSiswa.siswa.unit',
+            'user' // kasir yang melakukan transaksi
+        ])->findOrFail($pembayaranId);
+
+        // Buat objek transaksi yang kompatibel dengan view struk
+        $transaksi = new \stdClass();
+        $transaksi->code_pembayaran = $pembayaran->code_pembayaran;
+        $transaksi->tanggal_transaksi = $pembayaran->waktu_transaksi;
+        $transaksi->jumlah = $pembayaran->jumlah_bayar;
+        $transaksi->metode = strtoupper($pembayaran->metode_bayar);
+        $transaksi->status_verifikasi = $pembayaran->status_approval;
+        $transaksi->jenis_transaksi = 'pembayaran';
+
+        // Creator/kasir
+        $transaksi->creator = $pembayaran->user;
+
+        // Penerima (siswa)
+        $transaksi->penerima = $pembayaran->tagihanSiswa->siswa;
+        $transaksi->penerima->unit = $pembayaran->tagihanSiswa->siswa->unit;
+        $transaksi->penerima->kelas = $pembayaran->tagihanSiswa->siswa->kelas;
+
+        // Pembayaran tagihan
+        $transaksi->pembayaranTagihan = $pembayaran;
+        $transaksi->pembayaranTagihan->tagihanSiswa->tagihan = $pembayaran->tagihanSiswa->tagihan;
+
+        // Generate HTML dari view struk yang sama
+        $html = view('pages.keuangan.transaksi.struk_pembayaran', compact('transaksi'))->render();
+
+        // Konfigurasi mPDF untuk ukuran struk thermal (80mm)
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200], // 80mm width, dynamic height
+            'orientation' => 'P',
+            'margin_left' => 3,
+            'margin_right' => 3,
+            'margin_top' => 3,
+            'margin_bottom' => 3,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+        ]);
+
+        $mpdf->SetTitle('Struk Pembayaran - ' . $pembayaran->code_pembayaran);
+        $mpdf->SetAuthor(Auth::user()->name ?? 'System');
+        $mpdf->WriteHTML($html);
+
+        // Output PDF ke browser
+        return $mpdf->Output('Struk-' . $pembayaran->code_pembayaran . '.pdf', 'I');
     }
 }

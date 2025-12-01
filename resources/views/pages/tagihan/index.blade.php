@@ -294,6 +294,7 @@
 
     <script>
         let tagihanTable;
+        let filterTimeout;
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize DataTable
@@ -350,6 +351,14 @@
                 allowInput: true
             });
 
+            // Debounce function untuk filter dengan delay 5 detik
+            function debounceFilter() {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(function() {
+                    tagihanTable.ajax.reload();
+                }, 5000); // 5 detik delay
+            }
+
             // Dynamic kelas loading based on unit selection
             const unitSelect = document.getElementById('unit_id');
             const kelasSelect = document.getElementById('kelas_id');
@@ -357,6 +366,8 @@
             if (unitSelect) {
                 unitSelect.addEventListener('change', function() {
                     const unitId = this.value;
+
+                    // Load kelas berdasarkan unit
                     if (unitId) {
                         fetch(`/api/kelas-by-unit/${unitId}`)
                             .then(response => response.json())
@@ -372,6 +383,24 @@
                     } else {
                         kelasSelect.innerHTML = '<option value="">Semua Kelas</option>';
                     }
+
+                    // Reload table langsung tanpa delay untuk unit
+                    tagihanTable.ajax.reload();
+                });
+            }
+
+            // Event listener untuk filter kelas dengan debounce 5 detik
+            if (kelasSelect) {
+                kelasSelect.addEventListener('change', function() {
+                    debounceFilter();
+                });
+            }
+
+            // Event listener untuk filter nama siswa dengan debounce 5 detik
+            const namaSiswaInput = document.getElementById('nama_siswa');
+            if (namaSiswaInput) {
+                namaSiswaInput.addEventListener('input', function() {
+                    debounceFilter();
                 });
             }
         });

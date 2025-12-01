@@ -217,6 +217,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [KeuanganTransaksiController::class, 'show'])->name('keuangan_transaksi.show');
         Route::get('/print-laporan', [KeuanganTransaksiController::class, 'printLaporan'])->name('keuangan_transaksi.print_laporan');
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
+        Route::get('/cetak-struk/{id}', [KeuanganTransaksiController::class, 'cetakStruk'])->name('keuangan_transaksi.cetak_struk');
         Route::get('/datatable', [KeuanganTransaksiController::class, 'datatable'])->name('keuangan-transaksi.datatable');
 
         // Approve/Reject/Cancel routes
@@ -262,6 +263,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [TagihanController::class, 'create'])->middleware('permission:create_tagihan')->name('tagihan.create');
         Route::post('/store', [TagihanController::class, 'store'])->middleware('permission:create_tagihan')->name('tagihan.store');
         Route::get('/show/{tagihanId}/{siswaId}', [TagihanController::class, 'show'])->name('tagihan.show');
+        Route::get('/{pembayaranId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
         Route::get('/bayar/{id}', [TagihanController::class, 'bayar'])->name('tagihan.bayar');
         Route::get('/perbulanAll/{siswaId}', [TagihanController::class, 'perbulanAll'])->name('tagihan.perbulanAll');
         Route::get('/daftarTagihan/{id}', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftarTagihan');
@@ -269,7 +271,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/perbulan/{siswaId}/{tagihanId}', [TagihanController::class, 'perbulan'])->name('tagihan.perbulan');
         Route::get('/bebas/{siswaId}', [TagihanController::class, 'tagihanBebas']);
         Route::get('/print-laporan', [TagihanController::class, 'printLaporan'])->name('tagihan.print_laporan');
-        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk'])->name('tagihan.cetak_struk');
+        Route::get('/{tagihanSiswaId}/cetak-struk', [TagihanController::class, 'cetakStruk_tagihan'])->name('tagihan.cetak_struk');
         Route::get('/{tagihanSiswaId}/cetak-invoice', [TagihanController::class, 'cetakInvoice'])->name('tagihan.cetak_invoice');
     });
 
@@ -288,7 +290,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
         Route::post('/proses-multiple', [PembayaranController::class, 'prosesMultiplePembayaran'])->name('pembayaran.proses-multiple');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
-        Route::get('/{pembayaran}/print-struk', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
+        Route::get('/{pembayaran}/print-struk_tagihan', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });
 
     Route::prefix('migrasi')->middleware('permission:view_migrasi')->group(function () {

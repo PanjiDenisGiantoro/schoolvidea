@@ -391,8 +391,8 @@
                                             data-id="{{ $transaksi->id }}" title="Lihat Detail">
                                             <i class="bx bx-show"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-warning rounded-pill btn-detail-trx"
-                                            data-id="{{ $transaksi->id }}" title="Cetak">
+                                        <button type="button" class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
+                                            data-id="{{ $transaksi->id }}" title="Cetak Struk">
                                             <i class="bx bx-printer"></i>
                                         </button>
                                         {{--                                        @if ($transaksi->status_verifikasi == 'pending') --}}
@@ -720,6 +720,14 @@
                 button.addEventListener('click', function() {
                     const transaksiId = this.dataset.id;
                     window.location.href = `{{ url('keuangan-transaksi/show') }}/${transaksiId}`;
+                });
+            });
+
+            // Handle cetak struk button click
+            document.querySelectorAll('.btn-cetak-trx').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transaksiId = this.dataset.id;
+                    window.open(`{{ url('keuangan-transaksi/cetak-struk') }}/${transaksiId}`, '_blank');
                 });
             });
 

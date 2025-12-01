@@ -92,6 +92,7 @@
                                 <th>Bulan</th>
                                 <th>Biaya Tagihan</th>
                                 <th>Nominal Akhir</th>
+                                <th>Total Bayar</th>
                                 <th>Status</th>
                                 <th>Tgl. Bayar</th>
                                 <th>Aksi</th>
@@ -126,6 +127,16 @@
                                     <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
                                     <td><strong>Rp {{ number_format($row['nominal_akhir'], 0, ',', '.') }}</strong></td>
                                     <td>
+                                        @if ($row['total_bayar'] > 0)
+                                            <strong class="text-success">Rp {{ number_format($row['total_bayar'], 0, ',', '.') }}</strong>
+                                            @if ($row['status'] !== 'Lunas' && $row['total_bayar'] < $row['nominal_akhir'])
+                                                <br><small class="text-warning">(Cicilan)</small>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">Rp 0</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if ($row['status'] === 'Lunas')
                                             <span class="badge bg-success">Lunas</span>
                                         @else
@@ -138,7 +149,7 @@
                                     <td>
                                         @if ($row['status'] === 'Lunas')
                                             <button type="button" class="btn btn-sm btn-success rounded-2"
-                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}')">
+                                                onclick="cetakInvoice({{ $row['id'] }}, '{{ $row['kode_pembayaran'] }}', '{{ $row['kode_tagihan'] }}')">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @else
@@ -151,10 +162,37 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="13">Tidak ada data tagihan.</td>
+                                    <td colspan="14">Tidak ada data tagihan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="9" class="text-end">TOTAL DIBAYAR:</th>
+                                <th class="text-center">
+                                    @php
+                                        $totalDibayar = $dataPerbulan->sum('total_bayar');
+                                        $totalTagihan = $dataPerbulan->sum('nominal_akhir');
+                                    @endphp
+                                    <strong class="text-success">Rp {{ number_format($totalDibayar, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                            <tr>
+                                <th colspan="9" class="text-end">TOTAL TAGIHAN:</th>
+                                <th class="text-center">
+                                    <strong class="text-primary">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                            <tr class="table-warning">
+                                <th colspan="9" class="text-end">SISA TAGIHAN:</th>
+                                <th class="text-center">
+                                    <strong class="text-danger">Rp {{ number_format($totalTagihan - $totalDibayar, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="4"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -219,9 +257,10 @@
                                     </td>
                                     <td>{{ $pembayaran['create_by'] ?? '-' }}</td>
                                     <td>
-                                        @if($pembayaran['tagihan_siswa_id'])
-                                            <button type="button" class="btn btn-sm btn-primary"
-                                                onclick="cetakStrukPDF({{ $pembayaran['tagihan_siswa_id'] }})">
+                                        @if($pembayaran['id'])
+                                            <button type="button" class="btn btn-sm btn-warning rounded-pill"
+                                                onclick="cetakStrukPDF({{ $pembayaran['id'] }})"
+                                                title="Cetak Struk">
                                                 <i class="bx bx-printer"></i>
                                             </button>
                                         @else
@@ -231,10 +270,22 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center py-3">Belum ada pembayaran.</td>
+                                    <td colspan="10" class="text-center py-3">Belum ada pembayaran.</td>
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="4" class="text-end">TOTAL PEMBAYARAN:</th>
+                                <th class="text-center">
+                                    @php
+                                        $totalPembayaran = $pembayaranSiswa->where('status_approval', 'approved')->sum('jumlah_bayar');
+                                    @endphp
+                                    <strong class="text-success">Rp {{ number_format($totalPembayaran, 0, ',', '.') }}</strong>
+                                </th>
+                                <th colspan="5"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -283,15 +334,15 @@
             window.open(`/pembayaran/${pembayaranId}/print-struk`, '_blank');
         }
 
-        function cetakStrukPDF(tagihanSiswaId) {
+        function cetakStrukPDF(pembayaranId) {
             // Validasi parameter
-            if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
-                alert('Error: ID Tagihan Siswa tidak valid');
-                console.error('Invalid tagihanSiswaId:', tagihanSiswaId);
+            if (!pembayaranId || pembayaranId === '' || pembayaranId === 'null') {
+                alert('Error: ID Pembayaran tidak valid');
+                console.error('Invalid pembayaranId:', pembayaranId);
                 return;
             }
 
-            const url = `/tagihan/${tagihanSiswaId}/cetak-struk`;
+            const url = `/tagihan/${pembayaranId}/cetak-struk`;
             console.log('Membuka URL:', url);
 
             // Buka halaman cetak struk PDF dalam tab baru
@@ -303,7 +354,7 @@
             }
         }
 
-        function cetakInvoice(tagihanSiswaId, kodePembayaran) {
+        function cetakInvoice(tagihanSiswaId, kodePembayaran, kodeTagihan) {
             // Validasi parameter
             if (!tagihanSiswaId || tagihanSiswaId === '' || tagihanSiswaId === 'null') {
                 alert('Error: ID Tagihan Siswa tidak valid');
@@ -311,8 +362,11 @@
                 return;
             }
 
-            const url = `/tagihan/${tagihanSiswaId}/cetak-invoice`;
+            // Encode kode tagihan untuk URL
+            const encodedKodeTagihan = encodeURIComponent(kodeTagihan || '');
+            const url = `/tagihan/${tagihanSiswaId}/cetak-invoice?kode_tagihan=${encodedKodeTagihan}`;
             console.log('Membuka URL Invoice:', url);
+            console.log('Kode Tagihan:', kodeTagihan);
 
             // Buka halaman cetak invoice PDF dalam tab baru
             const pdfWindow = window.open(url, '_blank');

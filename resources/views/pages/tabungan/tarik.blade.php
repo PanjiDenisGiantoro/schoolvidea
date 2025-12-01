@@ -14,7 +14,7 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
-                        <select id="filter_unit" class="form-control rounded-pill shadow-sm" data-choices data-choices-sorting-false>
+                        <select id="filter_unit" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Unit --</option>
                             @foreach($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
@@ -23,13 +23,13 @@
                     </div>
                     <div class="col-md-4">
                         <label for="filter_kelas" class="form-label fw-semibold">Filter Kelas</label>
-                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm"data-choices data-choices-sorting-false>
+                        <select id="filter_kelas" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Kelas --</option>
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label for="siswa_id" class="form-label fw-semibold">Pilih Siswa</label>
-                        <select id="siswa_id" class="form-control rounded-pill shadow-sm " data-choices data-choices-sorting-false>
+                        <select id="siswa_id" class="form-control rounded-pill shadow-sm">
                             <option value="">-- Pilih Siswa --</option>
                         </select>
                     </div>
@@ -206,6 +206,16 @@
 
 @push('scripts')
     <script>
+        // Get query parameters from URL
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                siswa_id: params.get('siswa_id'),
+                unit_id: params.get('unit_id'),
+                kelas_id: params.get('kelas_id')
+            };
+        }
+
         // Format number with thousands separator
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -227,11 +237,17 @@
         const kelasHidden = document.getElementById('kelas_hidden');
         const penerimaHidden = document.getElementById('penerima_hidden');
 
+        // Initialize Choices for all dropdowns
+        const unitChoices = new Choices(filterUnit, {
+            removeItemButton: false,
+            shouldSort: false
+        });
 
         const kelasChoices = new Choices(filterKelas, {
             removeItemButton: false,
             shouldSort: false
         });
+
         const siswaChoices = new Choices(siswaSelect, {
             removeItemButton: false,
             shouldSort: false
@@ -239,6 +255,7 @@
 
         filterUnit.addEventListener('change', function() {
             const unitId = this.value;
+            console.log('Unit changed, loading kelas for unitId:', unitId);
 
             // reset select kelas dan siswa
             kelasChoices.clearStore();
@@ -247,14 +264,19 @@
             siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
             kelasHidden.value = '';
 
-            if (!unitId) return;
+            if (!unitId) {
+                console.log('No unitId, skipping fetch');
+                return;
+            }
 
+            console.log('Fetching kelas from:', `/unit/by-unit/${unitId}`);
             fetch(`/unit/by-unit/${unitId}`)
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
                     return res.json();
                 })
                 .then(data => {
+                    console.log('Kelas data loaded:', data);
                     if (!data.length) {
                         kelasChoices.setChoices([{ value: '', label: 'Tidak ada kelas', selected: true }], 'value', 'label', true);
                         return;
@@ -266,6 +288,18 @@
                     }));
 
                     kelasChoices.setChoices(options, 'value', 'label', true);
+                    console.log('Kelas choices updated, checking for callback...');
+
+                    // Panggil callback auto-fill kelas jika ada
+                    if (window.autoFillKelasCallback) {
+                        console.log('Auto-fill kelas callback found, executing...');
+                        setTimeout(() => {
+                            window.autoFillKelasCallback();
+                            delete window.autoFillKelasCallback;
+                        }, 100);
+                    } else {
+                        console.log('No auto-fill kelas callback');
+                    }
                 })
                 .catch(err => {
                     console.error('Fetch error:', err);
@@ -276,21 +310,39 @@
         // Load siswa berdasarkan kelas
         filterKelas.addEventListener('change', function() {
             const kelasId = this.value;
+            console.log('Kelas changed, loading siswa for kelasId:', kelasId);
             kelasHidden.value = kelasId;
             // reset select
             siswaChoices.clearStore(); // bersihkan semua opsi
             siswaChoices.setChoices([{ value: '', label: '-- Pilih Siswa --', selected: true }], 'value', 'label', true);
 
-            if (!kelasId) return;
+            if (!kelasId) {
+                console.log('No kelasId, skipping fetch');
+                return;
+            }
 
+            console.log('Fetching siswa from:', `/siswa/by-kelas/${kelasId}`);
             fetch(`/siswa/by-kelas/${kelasId}`)
                 .then(res => res.json())
                 .then(data => {
+                    console.log('Siswa data loaded:', data);
                     const options = data.map(siswa => ({
                         value: siswa.id,
                         label: siswa.user.name
                     }));
                     siswaChoices.setChoices(options, 'value', 'label', true);
+                    console.log('Siswa choices updated, checking for callback...');
+
+                    // Panggil callback auto-fill siswa jika ada
+                    if (window.autoFillSiswaCallback) {
+                        console.log('Auto-fill siswa callback found, executing...');
+                        setTimeout(() => {
+                            window.autoFillSiswaCallback();
+                            delete window.autoFillSiswaCallback;
+                        }, 100);
+                    } else {
+                        console.log('No auto-fill siswa callback');
+                    }
                 });
         });
 
@@ -430,5 +482,70 @@
                 }
             });
         });
+
+        // Auto-fill dari query parameter (ketika dari halaman detail tabungan)
+        const params = getQueryParams();
+
+        if (params.unit_id && params.kelas_id && params.siswa_id) {
+            console.log('Auto-filling from query params:', params);
+
+            // Fungsi helper untuk auto-fill kelas setelah data dimuat
+            function autoFillKelas() {
+                console.log('Step 2: Auto-filling kelas...', params.kelas_id);
+
+                // Set nilai manual dulu baru Choices.js
+                filterKelas.value = params.kelas_id;
+                kelasChoices.setChoiceByValue(params.kelas_id);
+                kelasHidden.value = params.kelas_id;
+
+                // Set flag untuk auto-fill siswa setelah data siswa dimuat
+                window.autoFillSiswaId = params.siswa_id;
+
+                // Trigger change untuk load siswa dengan delay
+                setTimeout(() => {
+                    console.log('Triggering kelas change to load siswa...');
+                    const changeEvent = new Event('change', { bubbles: true });
+                    filterKelas.dispatchEvent(changeEvent);
+                }, 100);
+            }
+
+            // Fungsi helper untuk auto-fill siswa setelah data dimuat
+            function autoFillSiswa() {
+                if (window.autoFillSiswaId) {
+                    console.log('Step 3: Auto-filling siswa...', window.autoFillSiswaId);
+
+                    // Set nilai manual dulu baru Choices.js
+                    siswaSelect.value = window.autoFillSiswaId;
+                    siswaChoices.setChoiceByValue(window.autoFillSiswaId);
+                    penerimaHidden.value = window.autoFillSiswaId;
+
+                    // Trigger change untuk load detail siswa dengan delay
+                    setTimeout(() => {
+                        console.log('Triggering siswa change to load detail...');
+                        const changeEvent = new Event('change', { bubbles: true });
+                        siswaSelect.dispatchEvent(changeEvent);
+                    }, 100);
+
+                    delete window.autoFillSiswaId;
+                }
+            }
+
+            // Tunggu sebentar agar semua Choices instance sudah terinisialisasi
+            setTimeout(() => {
+                console.log('Step 1: Setting unit...', params.unit_id);
+
+                // Set flag untuk auto-fill kelas setelah data kelas dimuat
+                window.autoFillKelasCallback = autoFillKelas;
+                window.autoFillSiswaCallback = autoFillSiswa;
+
+                // Set filter unit - set nilai manual dulu baru Choices.js
+                filterUnit.value = params.unit_id;
+                unitChoices.setChoiceByValue(params.unit_id);
+
+                // Trigger change untuk load kelas
+                const changeEvent = new Event('change', { bubbles: true });
+                filterUnit.dispatchEvent(changeEvent);
+            }, 200);
+        }
     </script>
 @endpush

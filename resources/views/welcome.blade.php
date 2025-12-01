@@ -6,8 +6,8 @@
 
     <title>Laravel</title>
 
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('assets/images/videa.png') }}" sizes="any">
+    <link rel="icon" href="{{ asset('assets/images/videa.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <!-- Fonts -->
