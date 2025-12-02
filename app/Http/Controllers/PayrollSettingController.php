@@ -97,6 +97,7 @@ class PayrollSettingController extends Controller
             'component_value' => 'array',
             'deductions_id' => 'array',
             'deduction_value' => 'array',
+            'deduction_type' => 'array',
         ]);
 
         try {
@@ -112,7 +113,7 @@ class PayrollSettingController extends Controller
             } else {
                 $validated['teaching_hours_total'] = null;
             }
-            // dd($validated);
+            //dd($validated);
 
             // === Simpan payroll_settings ===
             $payrollSetting = PayrollSetting::updateOrCreate(
@@ -144,11 +145,14 @@ class PayrollSettingController extends Controller
             if ($request->filled('deductions_id')) {
                 foreach ($request->deductions_id as $i => $deductId) {
                     $value = $request->deduction_value[$i] ?? 0;
+                    $type = $request->deduction_type[$i] ?? '';
                     $totalDeductions += $value;
-                    $deductionsData[$deductId] = ['value' => $value];
+                    $deductionsData[$deductId] = ['value' => $value, 'type' => $type];
                 }
                 $payrollSetting->deductions()->sync($deductionsData);
             }
+            //dd($deductionsData);
+            
 
             // === Hitung allowance & deduction ===
             $allowanceTotal =
@@ -156,7 +160,37 @@ class PayrollSettingController extends Controller
                 ($payrollSetting->meal_allowance ?? 0) +
                 ($payrollSetting->other_allowance ?? 0);
 
-            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+            $deductions = $payrollSetting->deductions;
+            $salaryPerUnit = $request->salary ?? 0;
+            $tht = $validated['teaching_hours_total'] ?? $validated['teaching_hours'];
+            $baseSalary1 = $salaryPerUnit * $tht;
+            $totalDeductions = 0;
+
+            if ($deductions->isEmpty())  {
+                $totalDeductions = 0;
+            } else {
+                foreach ($deductions as $deduction) {
+                    $type = $deduction->pivot->type;
+                    $value = $deduction->pivot->value;
+
+                    // dd([
+                    //     'Type' => $type, 
+                    //     'Value' => $value,
+                    //     'BaseSalary' => $baseSalary1,
+                    //     'Calculation' => ($type === 'persen' ? ($value / 100) * $baseSalary1 : $value)
+                    // ]);
+
+                    if ($type === 'nominal') {
+                        $totalDeductions += $value;
+                    } elseif ($type === 'persen') {
+                        $nominalPotongan = ($value / 100) * $baseSalary1;
+                        $totalDeductions += $nominalPotongan;
+                    }
+                }
+            }
+
+            //$deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+            //dd($salaryPerUnit, $tht, $baseSalary1, $totalDeductions);
 
             // === Variabel inti ===
             $billingPeriod = (int) $validated['billing_period'];
@@ -203,7 +237,7 @@ class PayrollSettingController extends Controller
                     'teaching_hour_month' => $request->teaching_hours_total ?? 0,
 
                     'total_earnings' => $totalEarnings,
-                    'total_deductions' => $deductionsTotal,
+                    'total_deductions' => $totalDeductions,
                     'net_payment' => $netPayment,
 
                     'payment_month' => $month,
@@ -252,6 +286,7 @@ class PayrollSettingController extends Controller
             'component_value' => 'array',
             'deductions_id' => 'array',
             'deduction_value' => 'array',
+            'deduction_type' => 'array,'
         ]);
 
         try {
@@ -283,8 +318,9 @@ class PayrollSettingController extends Controller
             if ($request->has('deductions_id')) {
                 foreach ($request->deductions_id as $i => $dedId) {
                     $value = $request->deduction_value[$i] ?? 0;
+                    $type = $request->deduction_type[$i] ?? '';
                     $totalDeductions += $value;
-                    $deductionsData[$dedId] = ['value' => $value];
+                    $deductionsData[$dedId] = ['value' => $value, 'type' => $type];
                 }
                 $payrollSetting->deductions()->sync($deductionsData);
             }
@@ -554,6 +590,7 @@ class PayrollSettingController extends Controller
                     'id' => $d->id,
                     'name' => $d->name,
                     'value' => $d->pivot->value,
+                    'type' => $d->type,
                 ];
             });
         } else {
@@ -566,6 +603,7 @@ class PayrollSettingController extends Controller
                 'id',
                 'name',
                 'price as value',
+                'type'
             )->get();
         }
 

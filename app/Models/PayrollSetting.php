@@ -46,7 +46,7 @@ class PayrollSetting extends Model
     public function deductions()
     {
         return $this->belongsToMany(PayrollDeductions::class, 'payroll_setting_deductions', 'payroll_setting_id', 'deduction_id')
-            ->withPivot('value')
+            ->withPivot('value', 'type')
             ->withTimestamps();
     }
 

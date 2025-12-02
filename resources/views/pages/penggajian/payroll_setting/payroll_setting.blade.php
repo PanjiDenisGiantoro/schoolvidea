@@ -257,6 +257,7 @@
                         <div class="col-md-4">
                             <x-input-field type="text" name="type_deduction" label="Tipe Potongan" readonly
                                 value="-" />
+                                <input type="hidden" name="deduction_type[]" class="deduction-type" value="">
                         </div>
                         <div class="col-md-4">
                             <label for="deductions_id" class="form-label">Nama Potongan <span
@@ -590,6 +591,7 @@
 
                 const row = e.target.closest('.deduction-row');
                 row.querySelector('.deduction-value').value = val;
+                row.querySelector('.deduction-type').value = type;
                 row.querySelector('input[name="type_deduction"]').value = type;
 
                 formatCurrencyInput(row.querySelector('.deduction-value'));
@@ -623,7 +625,7 @@
             if (result.isConfirmed) {
                 // Hapus titik pemisah angka sebelum dikirim
                 const inputs = document.querySelectorAll(
-                    '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+                    '.component-value, .deduction-value, .deduction-type, [id$="_allowance"], [name="salary"]'
                 );
                 inputs.forEach(input => {
                     input.value = input.value.replace(/\./g, '');

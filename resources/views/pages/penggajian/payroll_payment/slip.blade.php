@@ -29,11 +29,11 @@
                 text-align: center;
                 padding-bottom: 10px;
                 margin-bottom: 10px; /* Margin dikurangi */
-                border-bottom: 2px solid #007bff; /* Garis lebih tipis */
+                border-bottom: 2px solid #28a745; /* Garis lebih tipis */
             }
             .header h3 {
                 margin: 0;
-                color: #007bff;
+                color: #28a745;
                 font-size: 15pt; /* Dikecilkan */
                 font-weight: 600;
             }
@@ -90,8 +90,8 @@
 
             /* Bagian Total Akhir */
             .net-payment-box {
-                background-color: #e9f7ff;
-                border: 1px solid #007bff;
+                background-color: #e6ffed;
+                border: 1px solid #28a745;
                 padding: 10px; /* Padding dikurangi */
                 margin-top: 2px;
                 text-align: right;
@@ -100,13 +100,13 @@
             .net-payment-box strong {
                 display: block;
                 font-size: 10pt;
-                color: #007bff;
+                color: #28a745;
                 margin-bottom: 2px;
             }
             .net-payment-box h2 {
                 margin: 0;
                 font-size: 17pt; /* Dikecilkan */
-                color: #007bff;
+                color: #28a745;
                 font-weight: 700;
             }
 
@@ -156,7 +156,9 @@
                 <tr>
                     <td>Jabatan</td>
                     <td>:</td>
-                    <td>{{ $payment->officer->position ?? "-" }}</td>
+                    <td>
+                        {{ $payment->officer->position->positions_name ?? "-" }}
+                    </td>
                 </tr>
                 <tr>
                     <td>Tanggal Pembayaran</td>

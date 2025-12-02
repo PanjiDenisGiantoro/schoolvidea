@@ -181,7 +181,7 @@
         <div class="custom-card-header rounded-top-4 p-4 mb-0">
             <h5 class="text-primary fw-bold">
                 <i class="fa fa-list"></i>
-                Daftar Tagihan Per Bulan
+                Daftar Penggajian Per Bulan
             </h5>
             <div class="d-flex gap-3" id="button-info">
                 <div class="">
@@ -312,9 +312,10 @@
             </div>
         </div>
         <div class="" id="tabelSudahLunas">
-            <div class="table-responsive">
+            <div class="">
                 <table
                     class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle"
+                    id="datatable"
                 >
                     <thead
                         class="table-primary text-center text-nowrap align-middle"
@@ -350,6 +351,8 @@
 
 @push("scripts")
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const btnBelumLunas = document.getElementById('btnBelumLunas');
@@ -1000,7 +1003,8 @@
                 <td>
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-info rounded-pill"><i class="ri-eye-line"></i></button>
-                        <button class="btn btn-success rounded-pill"><i class="ri-pencil-line"></i></button>
+                        <a href="{{ url("#") }}" class="btn btn-success rounded-pill">
+                        <i class="ri-pencil-line"></i></a>
                         <a href="{{ url('payroll-payment/slip/${item.id}') }}" target="_blank" class="btn btn-warning rounded-pill shadow-sm">
                             <i class="ri-printer-line"></i>
                         </a>
@@ -1009,8 +1013,21 @@
             </tr>`;
                     })
                     .join('');
-            }
 
+                $(document).ready(function () {
+                    $('#datatable').DataTable({
+                        responsive: true,
+                        pageLength: 5,
+                        lengthChange: false,
+                        searching: false,
+                        scrollX: true,
+                        retrieve: true,
+                        language: {
+                            url: '{{ asset("assets/datatables/id.json") }}',
+                        },
+                    });
+                });
+            }
             //proses modal ctatan
 
             document.addEventListener('click', function (e) {
@@ -1126,6 +1143,7 @@
                         (sum, it) => sum + (it.net_payment || 0),
                         0,
                     );
+                    console.log('totalTagihan: ', totalTagihan);
                     const totalItems = items.length;
 
                     Swal.fire({

@@ -614,11 +614,11 @@ class PayrollPaymentController extends Controller
             $request->validate([
                 'items' => 'required|array',
                 'items. * .id' => 'required|integer|exists:payroll_payment, id',
-                'items. * .net_payment' => 'required|numeric|min:1',
-                'items. * .earning' => 'required|numeric|min:1',
-                'items. * .deduction' => 'required|numeric|min:1',
+                'items. * .net_payment' => 'required|numeric|min:0',
+                'items. * .earning' => 'required|numeric|min:0',
+                'items. * .deduction' => 'required|numeric|min:0',
                 'items. * .text_note' => 'required|string|max:200',
-                'totalTagihan' => 'required|numeric|min:1',
+                'totalTagihan' => 'required|numeric|min:0',
             ]);
 
             $ids = collect($request->items)->pluck('id')->toArray();
@@ -636,7 +636,7 @@ class PayrollPaymentController extends Controller
             }
 
             // hitung total nominal seluruh payment
-            $totalpembayaran = $request->totalTagihan || 0;
+            $totalpembayaran = $request->totalTagihan ?? 0;
 
             // catat transaksi masal
             $transaksi = Keuangan_transaksi::create([
