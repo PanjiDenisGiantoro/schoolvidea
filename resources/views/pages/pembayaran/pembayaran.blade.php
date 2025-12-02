@@ -660,7 +660,7 @@
                         opt.value = tagihan.id;
                         const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ?? 'Tanpa Kategori';
                         opt.text =
-                            `${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')}`;
+                            `${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')} - ${created_at} - Sisa Tagihan R ${parseInt(sisa_nominal).toLocaleString('id-ID')}`;
                         tagihanSelect.appendChild(opt);
                     });
 

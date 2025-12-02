@@ -422,13 +422,13 @@ class TagihanController extends Controller
 //            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-//        DB::beginTransaction();
+        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
         }
 
-//        try {
+        try {
         // 1. Kumpulkan data items & rekening kombinasi
         $itemRekeningData = [];
         if ($request->has('items') && $request->has('rekening')) {
@@ -591,12 +591,12 @@ class TagihanController extends Controller
             }
         }
 
-//            DB::commit();
+            DB::commit();
         return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
-//        } catch (\Exception $e) {
-////            DB::rollBack();
-//            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
-//        }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
 
@@ -906,6 +906,8 @@ class TagihanController extends Controller
                 'id'            => $first->tagihan->id,
                 'jenis_tagihan' => $first->tagihan->jenis_tagihan,
                 'nominal'       => $first->tagihan->items->sum('nominal'),
+                'created_at' => $first->tagihan->created_at,
+                'sisa_nominal' => $first->tagihan->items->sum('sisa_nominal'),
                 'kategori'      => $first->tagihan->items->map(function ($item) {
                     return [
                         'id'            => $item->kategori->id,
