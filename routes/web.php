@@ -292,6 +292,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('pembayaran.index');
         Route::post('/store', [PembayaranController::class, 'bayar'])->name('pembayaran.store');
         Route::post('/proses-multiple', [PembayaranController::class, 'prosesMultiplePembayaran'])->name('pembayaran.proses-multiple');
+        Route::post('/proses-multiple-with-detail', [PembayaranController::class, 'prosesPembayaranMultipleWithDetail'])->name('pembayaran.proses-multiple-with-detail');
+        Route::get('/detail/{headTagihan}', [PembayaranController::class, 'getPembayaranDetailByHeadTagihan'])->name('pembayaran.detail-by-head');
         Route::post('/catatan', [TagihanController::class, 'simpanCatatan'])->name('pembayaran.catatan');
         Route::get('/{pembayaran}/print-struk_tagihan', [PembayaranController::class, 'printStruk'])->name('pembayaran.print-struk');
     });

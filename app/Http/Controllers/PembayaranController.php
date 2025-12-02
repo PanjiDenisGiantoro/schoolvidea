@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\Pembayarantagihan;
+use App\Models\PembayaranTagihanDetail;
 use App\Models\setting_akun;
 use App\Models\Siswa;
 use App\Models\Tagihan;
@@ -143,9 +144,14 @@ class PembayaranController extends Controller
                 $tanggalBayar = null;
             }
 
+            // Generate head_tagihan unik untuk tracking pembayaran
+            $headTagihan = 'HT' . date('YmdHis') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+
             // simpan pembayaran
             $pembayaran = PembayaranTagihan::create([
                 'code_pembayaran' => 'PS' . date('YmdHis').rand(1000, 9999),
+                'head_tagihan' => $headTagihan,
+                'is_master' => true,
                 'tagihan_siswa_id' => $tagihanSiswa->id,
                 'jumlah_bayar'     => $jumlahBayar,
                 'tanggal_bayar'    => now(),
@@ -153,6 +159,18 @@ class PembayaranController extends Controller
                 'keterangan'       => $keterangan,
                 'create_by'        => Auth::id(),
                 'status_approval' => 'approved',
+                'jumlah_tagihan_detail' => 1,
+            ]);
+
+            // Create detail record untuk tracking (single payment)
+            PembayaranTagihanDetail::create([
+                'head_tagihan' => $headTagihan,
+                'pembayaran_id' => $pembayaran->id,
+                'tagihan_siswa_id' => $tagihanSiswa->id,
+                'jumlah_bayar_detail' => $jumlahBayar,
+                'urutan' => 1,
+                'periode' => $request->bulan ?? null,
+                'tahun' => $request->tahun ?? null,
             ]);
 
             // update status dan sisa_nominal
@@ -777,6 +795,316 @@ class PembayaranController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal reject pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================
+     * FUNGSI PEMBAYARAN MULTIPLE DENGAN HEAD_TAGIHAN & DETAIL
+     * ============================================================
+     */
+
+    /**
+     * Generate nomor head_tagihan yang unik
+     * Format: HT + YYYYMMDDHHMMSS + 4 digit random
+     * Contoh: HT202412021530001234
+     */
+    private function generateHeadTagihan()
+    {
+        return 'HT' . date('YmdHis') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Create record di pembayaran_tagihan_detail untuk tracking
+     * Menyimpan detail setiap tagihan yang dibayarkan dalam satu group
+     */
+    private function createPembayaranDetail($headTagihan, $pembayaranId, $tagihanSiswaId, $jumlahBayar, $urutan, $periode = null, $tahun = null)
+    {
+        return PembayaranTagihanDetail::create([
+            'head_tagihan' => $headTagihan,
+            'pembayaran_id' => $pembayaranId,
+            'tagihan_siswa_id' => $tagihanSiswaId,
+            'jumlah_bayar_detail' => $jumlahBayar,
+            'urutan' => $urutan,
+            'periode' => $periode,
+            'tahun' => $tahun,
+        ]);
+    }
+
+    /**
+     * Proses Pembayaran Multiple dengan Detail Tracking
+     * Improved version dari prosesMultiplePembayaran dengan head_tagihan & detail recording
+     *
+     * Flow:
+     * 1. Validasi input
+     * 2. Generate head_tagihan unik
+     * 3. Create pembayaran master (is_master = true)
+     * 4. Create pembayaran_detail records untuk setiap tagihan
+     * 5. Distribusi pembayaran proporsional
+     * 6. Update status tagihan_siswa
+     * 7. Create transaksi keuangan & jurnal
+     *
+     * @param Request $request
+     * @return JSON response
+     */
+    public function prosesPembayaranMultipleWithDetail(Request $request)
+    {
+        $request->validate([
+            'tagihan_siswa_ids' => 'required|array|min:1',
+            'tagihan_siswa_ids.*' => 'integer|exists:tagihan_siswa,id',
+            'jumlah_bayar' => 'required|integer|min:1',
+            'metode' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $tagihanSiswaIds = $request->tagihan_siswa_ids;
+            $jumlahBayar = (int) $request->jumlah_bayar;
+            $metode = $request->metode ?? 'TUNAI';
+
+            // 1. Load semua tagihan siswa yang akan dibayar
+            $tagihanSiswaList = Tagihansiswa::with('siswa.user', 'tagihan')
+                ->whereIn('id', $tagihanSiswaIds)
+                ->get();
+
+            // 2. Validasi: semua tagihan harus milik siswa yang sama
+            $firstSiswaId = $tagihanSiswaList->first()?->siswa_id;
+            $allSameSiswa = $tagihanSiswaList->every(fn($ts) => $ts->siswa_id === $firstSiswaId);
+
+            if (!$allSameSiswa) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Semua tagihan harus milik siswa yang sama'
+                ], 400);
+            }
+
+            // 3. Hitung total sisa nominal dari semua tagihan
+            $totalSisaNominal = $tagihanSiswaList->sum('sisa_nominal');
+
+            // 4. Validasi: jumlah bayar tidak boleh lebih besar dari total
+            if ($jumlahBayar > $totalSisaNominal) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => "Jumlah bayar tidak boleh lebih besar dari total sisa tagihan (Rp " . number_format($totalSisaNominal, 0, ',', '.') . ")"
+                ], 400);
+            }
+
+            // 5. Validasi: max 10 tagihan per pembayaran
+            if (count($tagihanSiswaIds) > 10) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Maksimal 10 tagihan per pembayaran'
+                ], 400);
+            }
+
+            $siswa = $tagihanSiswaList->first()->siswa;
+            $totalSisaSetelahBayar = $totalSisaNominal - $jumlahBayar;
+
+            // 6. Generate head_tagihan unik
+            $headTagihan = $this->generateHeadTagihan();
+
+            // 7. Create pembayaran master dengan is_master = true
+            $kodePembayaranMaster = 'PS' . date('YmdHis') . rand(1000, 9999);
+            $pembayaranMaster = Pembayarantagihan::create([
+                'code_pembayaran' => $kodePembayaranMaster,
+                'head_tagihan' => $headTagihan,
+                'is_master' => true,
+                'tagihan_siswa_id' => $tagihanSiswaList->first()->id,
+                'jumlah_bayar' => $jumlahBayar,
+                'tanggal_bayar' => now(),
+                'metode_bayar' => $metode,
+                'keterangan' => "Pembayaran gabungan " . count($tagihanSiswaIds) . " tagihan sebesar Rp " . number_format($jumlahBayar, 0, ',', '.'),
+                'create_by' => Auth::id(),
+                'status_approval' => 'approved',
+                'jumlah_tagihan_detail' => count($tagihanSiswaIds),
+            ]);
+
+            // 8. Distribusi pembayaran dan create detail records
+            $pembayaranDetails = [];
+            $sisaBayar = $jumlahBayar;
+            $tagihanIndex = 0;
+
+            foreach ($tagihanSiswaList as $tagihanSiswa) {
+                $sisaNominalTagihan = $tagihanSiswa->sisa_nominal;
+
+                // Tentukan jumlah pembayaran untuk tagihan ini
+                if ($tagihanIndex === count($tagihanSiswaList) - 1) {
+                    // Tagihan terakhir: bayar sisa yang tersisa
+                    $bayarUntukTagihanIni = $sisaBayar;
+                } else {
+                    // Tagihan lainnya: bayar proporsional
+                    $bayarUntukTagihanIni = min($sisaBayar, $sisaNominalTagihan);
+                }
+
+                // Hitung sisa nominal setelah pembayaran
+                $sisaNominalBaru = $sisaNominalTagihan - $bayarUntukTagihanIni;
+
+                // Tentukan status tagihan
+                $statusTagihan = ($sisaNominalBaru == 0) ? '1' : '2';
+                $tanggalBayarTagihan = ($statusTagihan == '1') ? now() : null;
+
+                // 9. Update tagihan siswa
+                $tagihanSiswa->update([
+                    'status' => $statusTagihan,
+                    'sisa_nominal' => $sisaNominalBaru,
+                    'tanggal_bayar' => $tanggalBayarTagihan,
+                ]);
+
+                // 10. Create pembayaran_detail record untuk tracking
+                $this->createPembayaranDetail(
+                    $headTagihan,
+                    $pembayaranMaster->id,
+                    $tagihanSiswa->id,
+                    $bayarUntukTagihanIni,
+                    $tagihanIndex + 1,
+                    $tagihanSiswa->bulan ?? null,
+                    $tagihanSiswa->tahun ?? null
+                );
+
+                // 11. Simpan ke pembayaran details untuk response
+                $pembayaranDetails[] = [
+                    'tagihan_siswa_id' => $tagihanSiswa->id,
+                    'tagihan_nama' => $tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan',
+                    'sisa_nominal_sebelum' => $sisaNominalTagihan,
+                    'jumlah_bayar' => $bayarUntukTagihanIni,
+                    'sisa_nominal_sesudah' => $sisaNominalBaru,
+                    'status' => $statusTagihan,
+                ];
+
+                // 12. Cek apakah masih ada tagihan yang belum lunas untuk tagihan utama ini
+                $hasUnpaid = Tagihansiswa::where('tagihan_id', $tagihanSiswa->tagihan_id)
+                    ->where('status', '0')
+                    ->exists();
+
+                if (!$hasUnpaid) {
+                    Tagihan::where('id', $tagihanSiswa->tagihan_id)
+                        ->update(['status_tagihan' => 1]);
+                }
+
+                $sisaBayar -= $bayarUntukTagihanIni;
+                $tagihanIndex++;
+            }
+
+            // 13. Catat transaksi keuangan master
+            $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => $kodePembayaranMaster,
+                'penerima_id' => $siswa->id,
+                'penerima_tipe' => Siswa::class,
+                'jenis_transaksi' => 'pembayaran-multiple',
+                'jumlah' => $jumlahBayar,
+                'metode' => strtoupper($metode),
+                'referensi_tagihan_id' => $pembayaranMaster->id,
+                'tanggal_transaksi' => now(),
+                'keterangan' => "Pembayaran gabungan " . count($tagihanSiswaIds) . " tagihan dari " . ($siswa->user->name ?? 'Siswa') . " | Head: " . $headTagihan,
+                'created_by' => Auth::id(),
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'status_verifikasi' => 'approved',
+                'verified_at' => now(),
+                'verified_by' => Auth::id(),
+            ]);
+
+            // 14. Buat jurnal debit (kas masuk)
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => setting_akun::where('kategori', 'tagihan-masuk')->where('debit', 1)->first()?->akun_id ?? 1,
+                'debit' => $jumlahBayar,
+                'kredit' => 0,
+                'keterangan' => "Pembayaran gabungan " . count($tagihanSiswaIds) . " tagihan - " . ($siswa->user->name ?? 'Siswa'),
+                'unit_id' => Auth::user()->unit_id,
+            ]);
+
+            // 15. Buat jurnal kredit (hutang berkurang)
+            Jurnals::create([
+                'transaksi_id' => $transaksi->id,
+                'akun_id' => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->first()?->akun_id ?? 2,
+                'debit' => 0,
+                'kredit' => $jumlahBayar,
+                'keterangan' => "Pembayaran gabungan " . count($tagihanSiswaIds) . " tagihan - " . ($siswa->user->name ?? 'Siswa'),
+                'unit_id' => Auth::user()->unit_id,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Pembayaran gabungan berhasil diproses',
+                'data' => [
+                    'head_tagihan' => $headTagihan,
+                    'pembayaran_master' => $pembayaranMaster,
+                    'pembayaran_details' => $pembayaranDetails,
+                    'siswa' => [
+                        'id' => $siswa->id,
+                        'nama' => $siswa->user->name ?? 'Siswa',
+                    ],
+                    'summary' => [
+                        'jumlah_tagihan' => count($tagihanSiswaIds),
+                        'total_sisa_nominal_sebelum' => $totalSisaNominal,
+                        'jumlah_bayar' => $jumlahBayar,
+                        'total_sisa_nominal_sesudah' => $totalSisaSetelahBayar,
+                    ]
+                ]
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Pembayaran Detail by Head Tagihan
+     * Retrieve semua detail pembayaran dari satu head_tagihan
+     */
+    public function getPembayaranDetailByHeadTagihan($headTagihan)
+    {
+        try {
+            $details = PembayaranTagihanDetail::byHeadTagihan($headTagihan)
+                ->with('tagihanSiswa.siswa.user', 'tagihanSiswa.tagihan', 'pembayaran')
+                ->orderBy('urutan')
+                ->get();
+
+            if ($details->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data pembayaran tidak ditemukan'
+                ], 404);
+            }
+
+            $pembayaranMaster = $details->first()->pembayaran;
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'head_tagihan' => $headTagihan,
+                    'pembayaran_master' => $pembayaranMaster,
+                    'details' => $details->map(function($detail) {
+                        return [
+                            'urutan' => $detail->urutan,
+                            'siswa_nama' => $detail->tagihanSiswa->siswa->user->name ?? '-',
+                            'tagihan_nama' => $detail->tagihanSiswa->tagihan->jenis_tagihan ?? '-',
+                            'periode' => $detail->periode,
+                            'tahun' => $detail->tahun,
+                            'jumlah_bayar' => $detail->jumlah_bayar_detail,
+                            'jumlah_bayar_formatted' => $detail->formatted_jumlah_bayar,
+                        ];
+                    }),
+                    'total_bayar' => $details->sum('jumlah_bayar_detail'),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -57,4 +57,52 @@ class Pembayarantagihan extends Model
     {
         return $this->tagihanSiswa?->tagihan?->rekening ?? null;
     }
+
+    /**
+     * Relasi ke PembayaranTagihanDetail (detail pembayaran multiple)
+     */
+    public function pembayaranDetail()
+    {
+        return $this->hasMany(PembayaranTagihanDetail::class, 'pembayaran_id');
+    }
+
+    /**
+     * Relasi ke pembayaran master jika ini adalah pembayaran detail
+     */
+    public function parentPembayaran()
+    {
+        return $this->belongsTo(Pembayarantagihan::class, 'parent_pembayaran_id');
+    }
+
+    /**
+     * Relasi ke pembayaran detail jika ini adalah pembayaran master
+     */
+    public function childPembayaran()
+    {
+        return $this->hasMany(Pembayarantagihan::class, 'parent_pembayaran_id');
+    }
+
+    /**
+     * Scope untuk filter by head_tagihan
+     */
+    public function scopeByHeadTagihan($query, $headTagihan)
+    {
+        return $query->where('head_tagihan', $headTagihan);
+    }
+
+    /**
+     * Scope untuk filter pembayaran master saja
+     */
+    public function scopeMaster($query)
+    {
+        return $query->where('is_master', true);
+    }
+
+    /**
+     * Scope untuk filter pembayaran detail saja
+     */
+    public function scopeDetail($query)
+    {
+        return $query->where('is_master', false);
+    }
 }

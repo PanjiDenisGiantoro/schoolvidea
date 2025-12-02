@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git commit:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(php artisan:*)"
     ],
     "deny": [],
     "ask": []

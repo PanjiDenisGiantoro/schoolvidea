@@ -104,7 +104,7 @@ class DataRekeningController extends Controller
             'allotment'     => 'required|string|max:50',
             'kcp_name'      => 'string|max:50',
             'unit_id'       => 'required|exists:units,id',
-            'akun_id'       => 'required|exists:akuns,id',
+            'akun_id'       => 'required',
             'status'        => 'required|in:1,0',
             'image'         => 'nullable|string',
         ]);
@@ -199,7 +199,7 @@ class DataRekeningController extends Controller
             'allotment'      => 'required|string|max:50',
             'kcp_name'       => 'string|max:50',
             'unit_id'        => 'required|exists:units,id',
-            'akun_id'        => 'required|exists:akuns,id',
+            'akun_id'        => 'required',
             'status'         => 'required|in:1,0',
             'image'          => 'nullable|string'
         ]);

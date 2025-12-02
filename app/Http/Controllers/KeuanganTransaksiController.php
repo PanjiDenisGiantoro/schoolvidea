@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use App\Models\Jurnals;
 use App\Models\setting_akun;
 use App\Models\DataRekening;
+use App\Models\PembayaranTagihanDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -247,7 +248,28 @@ class KeuanganTransaksiController extends Controller
             ->orderBy('dilakukan_pada', 'desc')
             ->get();
 
-        return view('pages.keuangan.transaksi.show', compact('transaksi', 'logs'));
+        // Check apakah pembayaran multiple (jenis_transaksi = 'pembayaran-multiple')
+        // atau jika ada head_tagihan dari pembayaran_tagihan
+        $pembayaranDetail = null;
+        $headTagihan = null;
+
+        if (in_array($transaksi->jenis_transaksi, ['pembayaran-multiple', 'pembayaran', 'tagihan'])) {
+            // Get head_tagihan dari pembayaran_tagihan
+            if ($transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->head_tagihan) {
+                $headTagihan = $transaksi->pembayaranTagihan->head_tagihan;
+
+                // Get semua detail pembayaran
+                $pembayaranDetail = PembayaranTagihanDetail::byHeadTagihan($headTagihan)
+                    ->with([
+                        'tagihanSiswa.siswa.user',
+                        'tagihanSiswa.tagihan',
+                    ])
+                    ->orderBy('urutan')
+                    ->get();
+            }
+        }
+
+        return view('pages.keuangan.transaksi.show', compact('transaksi', 'logs', 'pembayaranDetail', 'headTagihan'));
     }
 
     /**
@@ -726,7 +748,7 @@ class KeuanganTransaksiController extends Controller
 
                     // Get data rekening dari allotment pembayaran tagihan
                     $dataRekeningKredit = DataRekening::where('unit_id', $unitId)
-                        ->where('allotment', 'Pembayaran Tagihan')
+                        ->whereIn('allotment', ['Pembayaran Tagihan', 'Pembayaran Tabungan'])
                         ->where('status', '1')
                         ->first();
 

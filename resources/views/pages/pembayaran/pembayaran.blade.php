@@ -1067,87 +1067,128 @@
             }
         });
 
-        // Fungsi untuk proses pembayaran multiple
+        // Fungsi untuk proses pembayaran multiple dengan detail tracking
         function prosesMultiplePembayaran(selectedTagihan) {
-            let successCount = 0;
-            let failedCount = 0;
             const totalTagihan = selectedTagihan.length;
+            const totalNominal = selectedTagihan.reduce((sum, t) => sum + t.nominal, 0);
 
-            // Tampilkan loading
+            // Input nominal pembayaran (bisa full atau sebagian)
             Swal.fire({
-                title: 'Memproses Pembayaran...',
-                html: `<p>Sedang memproses ${totalTagihan} tagihan</p>`,
-                allowOutsideClick: false,
+                title: 'Masukan Nominal Pembayaran',
+                html: `
+                    <div class="mb-3">
+                        <p class="text-muted mb-3">Total ${totalTagihan} tagihan</p>
+                        <label class="form-label">Maksimal: Rp ${totalNominal.toLocaleString('id-ID')}</label>
+                        <input type="text" id="swal-input-nominal-pembayaran" class="form-control"
+                            placeholder="Contoh: 1.500.000" style="font-size: 1.1rem;" value="${totalNominal.toLocaleString('id-ID')}">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: "Proses Pembayaran",
+                cancelButtonText: "Batal",
                 didOpen: () => {
-                    Swal.showLoading();
+                    const input = document.getElementById('swal-input-nominal-pembayaran');
+
+                    // Format number with thousands separator
+                    function formatNumber(num) {
+                        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    }
+
+                    // Remove all non-digit characters
+                    function unformatNumber(str) {
+                        return str.replace(/\D/g, '');
+                    }
+
+                    input.addEventListener('input', function(e) {
+                        let rawValue = unformatNumber(this.value);
+                        if (rawValue) {
+                            this.value = formatNumber(rawValue);
+                        }
+                    });
+
+                    input.focus();
+                    input.select();
+                },
+                preConfirm: () => {
+                    const input = document.getElementById('swal-input-nominal-pembayaran');
+                    const rawValue = input.value.replace(/\D/g, '');
+                    const val = parseInt(rawValue);
+
+                    if (!rawValue || val <= 0) {
+                        Swal.showValidationMessage("Nominal harus lebih dari 0");
+                        return false;
+                    }
+                    if (val > totalNominal) {
+                        Swal.showValidationMessage(
+                            `Nominal tidak boleh lebih besar dari total tagihan (Rp ${totalNominal.toLocaleString('id-ID')})`);
+                        return false;
+                    }
+                    return val;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const jumlahBayar = result.value;
+
+                    // Kumpulkan ID tagihan
+                    const tagihanIds = selectedTagihan.map(t => parseInt(t.id));
+
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses Pembayaran...',
+                        html: `<p>Sedang memproses ${totalTagihan} tagihan sebesar Rp ${jumlahBayar.toLocaleString('id-ID')}</p>`,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Call endpoint baru: proses-multiple-with-detail
+                    fetch('/pembayaran/proses-multiple-with-detail', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            tagihan_siswa_ids: tagihanIds,
+                            jumlah_bayar: jumlahBayar,
+                            metode: 'TUNAI',
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status) {
+                                // Sukses
+                                Swal.fire({
+                                    title: "Berhasil!",
+                                    html: `
+                                        <p>Pembayaran gabungan berhasil diproses</p>
+                                        <p class="mt-3"><strong>Head Tagihan:</strong></p>
+                                        <p class="font-monospace bg-light p-2 rounded">${data.data.head_tagihan}</p>
+                                        <p class="mt-3">
+                                            <strong>Summary:</strong><br>
+                                            Jumlah Tagihan: ${data.data.summary.jumlah_tagihan}<br>
+                                            Total Bayar: Rp ${data.data.summary.jumlah_bayar.toLocaleString('id-ID')}
+                                        </p>
+                                    `,
+                                    icon: "success",
+                                    confirmButtonText: "OK",
+                                    allowOutsideClick: false
+                                }).then(() => {
+                                    // Reload list tagihan
+                                    document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
+                                });
+                            } else {
+                                // Error
+                                Swal.fire("Gagal!", data.message || "Pembayaran gagal diproses", "error");
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error:', err);
+                            Swal.fire("Error!", "Terjadi kesalahan saat memproses pembayaran: " + err.message, "error");
+                        });
                 }
             });
-
-            // Proses pembayaran satu per satu secara sequential
-            processNextPayment(0);
-
-            function processNextPayment(index) {
-                if (index >= selectedTagihan.length) {
-                    // Semua pembayaran selesai diproses
-                    Swal.fire({
-                        title: 'Proses Selesai',
-                        html: `
-                            <p><strong>Berhasil:</strong> ${successCount} tagihan</p>
-                            <p><strong>Gagal:</strong> ${failedCount} tagihan</p>
-                        `,
-                        icon: successCount > 0 ? 'success' : 'error',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reload list tagihan
-                        document.getElementById('nama_tagihan').dispatchEvent(new Event('change'));
-                    });
-                    return;
-                }
-
-                const tagihan = selectedTagihan[index];
-
-                // Dapatkan data dari window global jika ada
-                const tagihanData = window.tagihanDataMap ? window.tagihanDataMap.get(tagihan.id) : null;
-
-                fetch('/pembayaran/store', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        tagihan_siswa_id: tagihan.id,
-                        bulan: tagihanData?.bulan || tagihan.periode,
-                        tahun: tagihanData?.tahun || new Date().getFullYear(),
-                        nominal: tagihan.nominal,
-                        jumlah_bayar: tagihan.nominal,
-                        kategori_id: tagihanData?.kategori_id || 1,
-                        metode: 'TUNAI',
-                    })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status == 1 || data.status == true) {
-                            successCount++;
-                        } else {
-                            failedCount++;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error:', err);
-                        failedCount++;
-                    })
-                    .finally(() => {
-                        // Update progress
-                        const processed = index + 1;
-                        Swal.update({
-                            html: `<p>Memproses ${processed} dari ${totalTagihan} tagihan...</p>`
-                        });
-
-                        // Proses tagihan berikutnya
-                        processNextPayment(index + 1);
-                    });
-            }
         }
     </script>
 

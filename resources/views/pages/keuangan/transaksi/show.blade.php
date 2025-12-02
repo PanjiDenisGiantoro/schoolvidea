@@ -84,8 +84,106 @@
 
                 <hr>
 
-                {{-- Detail Tagihan jika jenis transaksi adalah tagihan/pembayaran --}}
-                @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
+                {{-- Detail Tagihan untuk Single Payment atau Multiple Payment --}}
+                @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran', 'pembayaran-multiple']) && $transaksi->pembayaranTagihan)
+
+                {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
+                @if($transaksi->jenis_transaksi == 'pembayaran-multiple' && $pembayaranDetail && $pembayaranDetail->count() > 1)
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-list-check"></i> Daftar Tagihan ({{ $pembayaranDetail->count() }} tagihan)
+                </h6>
+
+                @if($headTagihan)
+                <div class="alert alert-info mb-3 small">
+                    <strong><i class="bx bx-tag me-1"></i>Head Tagihan:</strong>
+                    <span class="font-monospace bg-white px-2 py-1 rounded">{{ $headTagihan }}</span>
+                </div>
+                @endif
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 25%;">Nama Tagihan</th>
+                                <th style="width: 20%;">Periode</th>
+                                <th style="width: 20%;">Nominal</th>
+                                <th style="width: 20%;">Dibayar</th>
+                                <th style="width: 10%;">Siswa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($pembayaranDetail as $detail)
+                            @php
+                                $bulanIndo = [
+                                    'January' => 'Januari',
+                                    'February' => 'Februari',
+                                    'March' => 'Maret',
+                                    'April' => 'April',
+                                    'May' => 'Mei',
+                                    'June' => 'Juni',
+                                    'July' => 'Juli',
+                                    'August' => 'Agustus',
+                                    'September' => 'September',
+                                    'October' => 'Oktober',
+                                    'November' => 'November',
+                                    'December' => 'Desember',
+                                    'Oktober' => 'Oktober',
+                                    'Januari' => 'Januari',
+                                    'Februari' => 'Februari',
+                                    'Maret' => 'Maret',
+                                    'Mei' => 'Mei',
+                                    'Juni' => 'Juni',
+                                    'Juli' => 'Juli',
+                                    'Agustus' => 'Agustus',
+                                    'November' => 'November',
+                                    'Desember' => 'Desember',
+                                ];
+                                $periode = $detail->periode ?? '-';
+                                $tahun = $detail->tahun ?? date('Y');
+
+                                // Convert bulan ke bahasa Indonesia jika dalam bahasa Inggris
+                                $periodeIndo = $bulanIndo[$periode] ?? $periode;
+                            @endphp
+                            <tr>
+                                <td class="fw-bold text-center">
+                                    <span class="badge bg-primary rounded-circle">{{ $detail->urutan }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark">{{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ $periodeIndo }} {{ $tahun }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ substr($detail->tagihanSiswa->siswa->user->name ?? '-', 0, 15) }}</small>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Tidak ada detail tagihan</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="4" class="text-end">Total Pembayaran:</th>
+                                <th colspan="2" class="text-success fw-bold">Rp {{ number_format($pembayaranDetail->sum('jumlah_bayar_detail'), 0, ',', '.') }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <hr>
+
+                {{-- Single Payment Detail --}}
+                @else
                 <h6 class="fw-bold text-primary mb-2">
                     <i class="bx bx-receipt"></i> Detail Tagihan
                 </h6>
@@ -118,6 +216,8 @@
                 </ul>
 
                 <hr>
+                @endif
+
                 @endif
 
                 <h6 class="fw-bold text-primary mb-2">
