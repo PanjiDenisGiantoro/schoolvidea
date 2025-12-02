@@ -380,22 +380,26 @@
         const readonly = @json($readonly);
         const startMonth = document.getElementById('start_month');
         const startYear = document.getElementById('start_year');
-const meal = document.getElementById('meal_allowance');
+        const teachingHour = document.getElementById('teaching_hours');
+        const teachingHourTotal = document.getElementById('teaching_hours_total');
 
-if (!meal) {
-    console.error("❌ meal_allowance TIDAK ditemukan di DOM!");
-} else {
-    console.log("✔ meal_allowance ditemukan:", meal.value);
-
-    meal.addEventListener('input', function () {
-        console.log("meal_allowance berubah:", this.value);
-    });
-
-    meal.addEventListener('change', function () {
-        console.log("meal_allowance final:", this.value);
-    });
-}
-
+        function checkLock() {
+            if (teachingHour.value.trim() !== '') {
+                teachingHourTotal.value = '';
+                teachingHourTotal.disabled = true;
+            } else {
+                teachingHourTotal.disabled = false;
+            }
+            if (teachingHourTotal.value.trim() !== '') {
+                teachingHour.value = '';
+                teachingHour.disabled = true;
+            } else {
+                teachingHour.disabled = false;
+            }
+        }
+        teachingHour.addEventListener('input', checkLock);
+        teachingHourTotal.addEventListener('input', checkLock);
+        checkLock();
 
 
         startMonth.addEventListener('change', function(data) {
@@ -624,7 +628,7 @@ if (!meal) {
                 inputs.forEach(input => {
                     input.value = input.value.replace(/\./g, '');
                 });
-                    
+
                 e.target.submit(); // lanjut submit
             }
         });

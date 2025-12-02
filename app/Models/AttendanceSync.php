@@ -17,10 +17,13 @@ class AttendanceSync extends Model
         'videaclass_id',
         'registered_number',
         'fullname',
+        'presence',
         'presence_count',
         'absence_count',
         'is_active',
         'synced_at',
+        'month',
+        'year',
     ];
 
     protected $casts = [

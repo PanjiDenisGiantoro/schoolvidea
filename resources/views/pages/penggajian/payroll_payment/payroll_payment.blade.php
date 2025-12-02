@@ -294,6 +294,7 @@
                                 Presensi
                                 <div class="custom-presensi-header">
                                     <span class="text-white">JM</span>
+                                    <span class="text-white">JB</span>
                                     <span class="text-white">Hadir</span>
                                     <span class="text-white">T.Hadir</span>
                                     <span class="text-white">H.Staff</span>
@@ -327,6 +328,7 @@
                                 Presensi
                                 <div class="custom-presensi-header">
                                     <span class="text-white">JM</span>
+                                    <span class="text-white">JB</span>
                                     <span class="text-white">Hadir</span>
                                     <span class="text-white">T.Hadir</span>
                                     <span class="text-white">H. Staff</span>
@@ -350,9 +352,113 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const btnSinkron = document.getElementById('btnSinkron');
+            const btnBelumLunas = document.getElementById('btnBelumLunas');
+            const btnSudahLunas = document.getElementById('btnSudahLunas');
+            const tabelBelumLunas = document.getElementById('tabelBelumLunas');
+            const tabelSudahLunas = document.getElementById('tabelSudahLunas');
+            const cardHeader = document.querySelector('#button-info');
+            const btnProsesPembayaran = document.getElementById('btnProses');
+            const btnProsesSinkron = document.getElementById('btnSinkron');
+
+            // --- Default tampilan: Belum Lunas aktif ---
+            btnBelumLunas.classList.add('custom-active-btn');
+            btnSudahLunas.classList.remove('custom-active-btn');
+            tabelBelumLunas.style.display = 'block';
+            tabelSudahLunas.style.display = 'none';
+            if (cardHeader) cardHeader.style.display = 'flex';
+            if (btnProsesPembayaran)
+                btnProsesPembayaran.style.display = 'inline-flex';
+            if (btnProsesSinkron)
+                btnProsesSinkron.style.display = 'inline-flex';
+
+            // --- Klik Belum Lunas ---
+            btnBelumLunas.addEventListener('click', function () {
+                btnBelumLunas.classList.add('custom-active-btn');
+                btnSudahLunas.classList.remove('custom-active-btn');
+                tabelBelumLunas.style.display = 'block';
+                tabelSudahLunas.style.display = 'none';
+
+                if (cardHeader) cardHeader.style.display = 'flex';
+                if (btnProsesPembayaran)
+                    btnProsesPembayaran.style.display = 'inline-flex';
+                if (btnProsesSinkron)
+                    btnProsesSinkron.style.display = 'inline-flex';
+            });
+
+            // --- Klik Sudah Lunas ---
+            btnSudahLunas.addEventListener('click', function () {
+                btnSudahLunas.classList.add('custom-active-btn');
+                btnBelumLunas.classList.remove('custom-active-btn');
+                tabelSudahLunas.style.display = 'block';
+                tabelBelumLunas.style.display = 'none';
+
+                if (cardHeader) cardHeader.style.display = 'none';
+                if (btnProsesPembayaran)
+                    btnProsesPembayaran.style.display = 'none';
+                if (btnProsesSinkron) btnProsesSinkron.style.display = 'none';
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdown = document.getElementById('dropdownKelas');
+            const input = dropdown.querySelector('.dropdown-input');
+            const list = dropdown.querySelector('.dropdown-list');
+            const options = dropdown.querySelectorAll('.dropdown-options li');
+            const searchInput = dropdown.querySelector(
+                '.dropdown-search-input',
+            );
+
+            // Toggle dropdown
+            input.addEventListener('click', (e) => {
+                e.stopPropagation();
+                list.classList.toggle('active');
+                searchInput.focus();
+            });
+
+            // Klik di luar -> tutup dropdown
+            document.addEventListener('click', () =>
+                list.classList.remove('active'),
+            );
+
+            // Klik item
+            options.forEach((option) => {
+                option.addEventListener('click', () => {
+                    input.value = option.textContent;
+                    input.setAttribute('data-value', option.dataset.value);
+                    list.classList.remove('active');
+                    input.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Search filter
+            searchInput.addEventListener('keyup', function () {
+                const term = this.value.toLowerCase();
+                options.forEach((option) => {
+                    option.style.display = option.textContent
+                        .toLowerCase()
+                        .includes(term)
+                        ? 'block'
+                        : 'none';
+                });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
             const unitSelect = document.getElementById('filter_unit');
             const officerSelect = document.getElementById('filter_officer');
+            const typeSelect = document.getElementById('filter_type');
+            const periodSelect = document.getElementById('filter_period');
+            const yearSelect = document.getElementById('filter_year');
+            const tabelBelumLunas = document.querySelector(
+                '#tabelBelumLunas tbody',
+            );
+            const tabelSudahLunas = document.querySelector(
+                '#tabelSudahLunas tbody',
+            );
+
+            const btnSinkron = document.getElementById('btnSinkron');
 
             if (btnSinkron) {
                 btnSinkron.addEventListener('click', async function () {
@@ -501,7 +607,7 @@
                                 if (officerId && officerId !== 'all') {
                                     console.log('Synced data:', data.data);
                                     // Reload tabel untuk menampilkan data presensi yang baru disinkronisasi
-                                    //loadTableData();
+                                    loadTableData();
                                 }
                             } else {
                                 Swal.fire(
@@ -538,105 +644,7 @@
                     // Show loading state
                 });
             }
-        });
-    </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const btnBelumLunas = document.getElementById('btnBelumLunas');
-            const btnSudahLunas = document.getElementById('btnSudahLunas');
-            const tabelBelumLunas = document.getElementById('tabelBelumLunas');
-            const tabelSudahLunas = document.getElementById('tabelSudahLunas');
-            const cardHeader = document.querySelector('#button-info');
-            const btnProsesPembayaran = document.getElementById('btnProses');
-            const btnProsesSinkron = document.getElementById('btnSinkron');
-
-            // --- Default tampilan: Belum Lunas aktif ---
-            btnBelumLunas.classList.add('custom-active-btn');
-            btnSudahLunas.classList.remove('custom-active-btn');
-            tabelBelumLunas.style.display = 'block';
-            tabelSudahLunas.style.display = 'none';
-            if (cardHeader) cardHeader.style.display = 'flex';
-            if (btnProsesPembayaran)
-                btnProsesPembayaran.style.display = 'inline-flex';
-            if (btnProsesSinkron)
-                btnProsesSinkron.style.display = 'inline-flex';
-
-            // --- Klik Belum Lunas ---
-            btnBelumLunas.addEventListener('click', function () {
-                btnBelumLunas.classList.add('custom-active-btn');
-                btnSudahLunas.classList.remove('custom-active-btn');
-                tabelBelumLunas.style.display = 'block';
-                tabelSudahLunas.style.display = 'none';
-
-                if (cardHeader) cardHeader.style.display = 'flex';
-                if (btnProsesPembayaran)
-                    btnProsesPembayaran.style.display = 'inline-flex';
-                if (btnProsesSinkron)
-                    btnProsesSinkron.style.display = 'inline-flex';
-            });
-
-            // --- Klik Sudah Lunas ---
-            btnSudahLunas.addEventListener('click', function () {
-                btnSudahLunas.classList.add('custom-active-btn');
-                btnBelumLunas.classList.remove('custom-active-btn');
-                tabelSudahLunas.style.display = 'block';
-                tabelBelumLunas.style.display = 'none';
-
-                if (cardHeader) cardHeader.style.display = 'none';
-                if (btnProsesPembayaran)
-                    btnProsesPembayaran.style.display = 'none';
-                if (btnProsesSinkron) btnProsesSinkron.style.display = 'none';
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const dropdown = document.getElementById('dropdownKelas');
-            const input = dropdown.querySelector('.dropdown-input');
-            const list = dropdown.querySelector('.dropdown-list');
-            const options = dropdown.querySelectorAll('.dropdown-options li');
-            const searchInput = dropdown.querySelector(
-                '.dropdown-search-input',
-            );
-
-            // Toggle dropdown
-            input.addEventListener('click', (e) => {
-                e.stopPropagation();
-                list.classList.toggle('active');
-                searchInput.focus();
-            });
-
-            // Klik di luar -> tutup dropdown
-            document.addEventListener('click', () =>
-                list.classList.remove('active'),
-            );
-
-            // Klik item
-            options.forEach((option) => {
-                option.addEventListener('click', () => {
-                    input.value = option.textContent;
-                    input.setAttribute('data-value', option.dataset.value);
-                    list.classList.remove('active');
-                    input.dispatchEvent(new Event('change'));
-                });
-            });
-
-            // Search filter
-            searchInput.addEventListener('keyup', function () {
-                const term = this.value.toLowerCase();
-                options.forEach((option) => {
-                    option.style.display = option.textContent
-                        .toLowerCase()
-                        .includes(term)
-                        ? 'block'
-                        : 'none';
-                });
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
             function setupSelectAll(checkAllId, rowCheckboxClass) {
                 const checkAll = document.getElementById(checkAllId);
                 const rowCheckboxes = document.querySelectorAll(
@@ -653,33 +661,13 @@
 
                 rowCheckboxes.forEach((cb) => {
                     cb.addEventListener('change', function () {
-                        const allChecked = Array.from(rowCheckboxes).every(
+                        const allChecked = [...rowCheckboxes].every(
                             (x) => x.checked,
                         );
                         checkAll.checked = allChecked;
                     });
                 });
             }
-
-            // Inisialisasi untuk masing-masing tabel
-            //setupSelectAll('checkAllSudahLunas', 'row-checkbox-sudah');
-            setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const unitSelect = document.getElementById('filter_unit');
-            const officerSelect = document.getElementById('filter_officer');
-            const typeSelect = document.getElementById('filter_type');
-            const periodSelect = document.getElementById('filter_period');
-            const yearSelect = document.getElementById('filter_year');
-            const tabelBelumLunas = document.querySelector(
-                '#tabelBelumLunas tbody',
-            );
-            const tabelSudahLunas = document.querySelector(
-                '#tabelSudahLunas tbody',
-            );
-
             function resetSelect(selectElement, placeholder = 'Pilih') {
                 selectElement.innerHTML = `<option value="">${placeholder}</option>`;
             }
@@ -727,7 +715,7 @@
                 const officerId = this.value;
                 resetSelect(typeSelect, 'Pilih Pembayaran');
 
-                if (!officerId || officerId === 'all') return;
+                if (!officerId) return;
 
                 // Load detail officer
                 const detail = await getData(
@@ -763,7 +751,6 @@
                 if (data && data.length) {
                     typeSelect.innerHTML =
                         `<option value="">Pilih Tipe</option>` +
-                        `<option value="all">Semua Pembayaran</option>` +
                         data
                             .map(
                                 (p) => `
@@ -783,17 +770,16 @@
                 staff: 0,
             };
             const rowDataMap = new Map();
-            let globalAttendance = null; // Menyimpan data presensi
+            let globalAttendance = null;
             console.log('globalAttendance: ', globalAttendance);
 
-            // Fungsi untuk load data tabel
             async function loadTableData() {
                 const officerId = officerSelect.value;
                 const type = typeSelect.value;
                 const period = periodSelect.value;
                 const year = yearSelect.value;
 
-                if (!officerId || officerId === 'all') {
+                if (!officerId) {
                     clearTables();
                     return;
                 }
@@ -825,13 +811,21 @@
                     };
 
                     // Simpan data attendance untuk digunakan di render table
-                    globalAttendance = dataBelumLunas?.attendance || null;
-
-                    console.log('global allowance: ', globalAllowance);
+                    //globalAttendance = dataBelumLunas?.attendance || null;
+                    if (dataBelumLunas?.attendanceMap) {
+                        globalAttendance = {
+                            attendanceMap: dataBelumLunas.attendanceMap,
+                        };
+                    } else if (dataBelumLunas?.attendance) {
+                        globalAttendance = {
+                            attendanceMap: {
+                                [officerId]: dataBelumLunas.attendance,
+                            },
+                        };
+                    } else {
+                        globalAttendance = { attendanceMap: {} };
+                    }
                     console.log('global attendance: ', globalAttendance);
-
-                    console.log('Response Belum Lunas:', dataBelumLunas);
-                    console.log('Response Sudah Lunas:', dataSudahLunas);
 
                     // PERBAIKAN: Gunakan struktur yang sesuai dengan response
                     renderBelumLunasTable(dataBelumLunas?.belum_lunas || []);
@@ -869,12 +863,26 @@
                     return;
                 }
 
-                // Ambil data presensi dari globalAttendance
-                const presenceCount = globalAttendance?.presence_count || 0;
-                const absenceCount = globalAttendance?.absence_count || 0;
-
                 tabelBelumLunas.innerHTML = data
                     .map((item, i) => {
+                        const officerId = item.officer?.id;
+                        let presenceCount = 0;
+                        let absenceCount = 0;
+                        let staffCount = 0;
+
+                        if (globalAttendance?.attendanceMap && officerId) {
+                            const attendance =
+                                globalAttendance.attendanceMap[officerId];
+                            if (
+                                attendance &&
+                                attendance.month === item.payment_month &&
+                                attendance.year === item.payment_year
+                            ) {
+                                presenceCount = attendance.presence_count || 0;
+                                absenceCount = attendance.absence_count || 0;
+                                staffCount = attendance.presence || 0;
+                            }
+                        }
                         return `
             <tr data-item='${JSON.stringify(item)}'
                 data-base-earnings="${item.total_earnings || 0}"
@@ -889,13 +897,15 @@
                 <td>${item.type || '-'}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
-                        <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month) || 0}"
+                        <input type="text" class="custom-input-presensi hadir_week" value="${parseInt(item.teaching_hour_week) || 0}"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi hadir_month" value="${parseInt(item.teaching_hour_month) || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                         <input type="text" class="custom-input-presensi hadir" value="${presenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                         <input type="text" class="custom-input-presensi alpha" value="${absenceCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi staff" value="0"
+                        <input type="text" class="custom-input-presensi staff" value="${staffCount}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
                     </div>
                 </td>
@@ -933,65 +943,98 @@
                     }
                 });
 
-                //setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
+                setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
+                console.log(
+                    'row-checkbox-belum:',
+                    document.querySelectorAll('.row-checkbox-belum').length,
+                );
             }
-
             function renderSudahLunasTable(data) {
                 if (!data || !data.length) {
-                    tabelSudahLunas.innerHTML = `
-                <tr>
-                    <td colspan="11" class="text-center text-muted">Tidak ada data sudah lunas</td>
-                </tr>`;
+                    tabelSudahLunas.innerHTML = `<tr><td colspan="11" class="text-center text-muted">Tidak ada data sudah lunas</td></tr>`;
                     return;
                 }
 
-                // Ambil data presensi dari globalAttendance
-                const presenceCount = globalAttendance?.presence_count || 0;
-                const absenceCount = globalAttendance?.absence_count || 0;
-
                 tabelSudahLunas.innerHTML = data
-                    .map(
-                        (item, i) => `
-            <tr data-status="paid">
+                    .map((item, i) => {
+                        const officerId = item.officer?.id;
+                        let presenceCount = 0;
+                        let absenceCount = 0;
+                        let staffCount = 0;
 
+                        if (globalAttendance?.attendanceMap && officerId) {
+                            const attendance =
+                                globalAttendance.attendanceMap[officerId];
+                            if (
+                                attendance &&
+                                attendance.month === item.payment_month &&
+                                attendance.year === item.payment_year
+                            ) {
+                                presenceCount = attendance.presence_count || 0;
+                                absenceCount = attendance.absence_count || 0;
+                                staffCount = attendance.presence || 0;
+                            }
+                        }
+
+                        return `
+            <tr data-status="paid"
+            data-item='${JSON.stringify(item)}'>
                 <td>${i + 1}</td>
                 <td>${item.officer?.name || '-'}</td>
                 <td>${formatPaymentMonth(item.payment_month, item.payment_year)}</td>
                 <td>${item.type || '-'}</td>
                 <td>
                     <div class="custom-presensi-wrapper">
-                        <input type="text" class="custom-input-presensi izin" value="${parseInt(item.teaching_hour_month || 0)}"
+                        <input type="text" class="custom-input-presensi hadir_week" value="${parseInt(item.teaching_hour_week || 0)}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi hadir_month" value="${parseInt(item.teaching_hour_month) || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi hadir" value="${presenceCount}"
-                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="${absenceCount}"
-                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi " value="0"
-                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
+                        <input type="text" class="custom-input-presensi hadir" value="${presenceCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi alpha" value="${absenceCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi staff" value="${staffCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
                     </div>
                 </td>
                 <td>${formatRupiah(item.total_earnings || 0)}</td>
                 <td>${formatRupiah(item.total_deductions || 0)}</td>
                 <td>${formatRupiah(item.net_payment || 0)}</td>
-                <td>
-                    <button class="btn btn-primary rounded-pill" data-bs-toggle="modal"
-                        data-bs-target="#catatanModal">Catatan</button>
-                </td>
+                <td><button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#catatanModal">Catatan</button></td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-warning rounded-pill">Detail</button>
-                        <button class="btn btn-success rounded-pill">Edit</button>
+                        <button class="btn btn-info rounded-pill"><i class="ri-eye-line"></i></button>
+                        <button class="btn btn-success rounded-pill"><i class="ri-pencil-line"></i></button>
+                        <a href="{{ url('payroll-payment/slip/${item.id}') }}" target="_blank" class="btn btn-warning rounded-pill shadow-sm">
+                            <i class="ri-printer-line"></i>
+                        </a>
                     </div>
                 </td>
-            </tr>
-        `,
-                    )
+            </tr>`;
+                    })
                     .join('');
             }
+
             //proses modal ctatan
+
             document.addEventListener('click', function (e) {
                 if (e.target.closest('.btn-catatan')) {
                     selectedRow = e.target.closest('tr');
+                    let item = {};
+                    try {
+                        item = JSON.parse(selectedRow.dataset.item || '{}');
+                    } catch {}
+
+                    const status = selectedRow.dataset.status;
+
+                    // ⚡ Perbaikan: pakai .value
+                    document.getElementById('salary_note').value =
+                        item.salary_note
+                            ? formatCurrencyInput(item.salary_note)
+                            : '';
+                    document.getElementById('isiCatatan').value =
+                        item.text_note ?? '';
+
+                    document.getElementById('salary_note').disabled =
+                        status === 'paid';
+                    document.getElementById('isiCatatan').disabled =
+                        status === 'paid';
                 }
             });
 
@@ -1190,7 +1233,10 @@
                     console.warn('Fallback: Asigning data directly');
                 }
 
-                const izin = parseInt(row.querySelector('.izin')?.value) || 0;
+                const hadir_week =
+                    parseInt(row.querySelector('.hadir_week')?.value) || 0;
+                const hadir_month =
+                    parseInt(row.querySelector('.hadir_month')?.value) || 0;
                 const hadir = parseInt(row.querySelector('.hadir')?.value) || 0;
                 const alpha = parseInt(row.querySelector('.alpha')?.value) || 0;
                 const staff = parseInt(row.querySelector('.staff')?.value) || 0;
@@ -1217,7 +1263,8 @@
                 item.total_earnings = totalEarnings;
                 item.total_deductions = totalDeductions;
                 item.net_payment = netPayment;
-                item.izin = izin;
+                item.hadir_week = hadir_week;
+                item.hadir_month = hadir_month;
                 item.hadir = hadir;
                 item.alpha = alpha;
                 item.staff = staff;

@@ -25,6 +25,7 @@ class PayrollPayment extends Model
         'notes',
         'status',
         'type',
+        'salary_note'
     ];
 
     /**

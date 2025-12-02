@@ -422,13 +422,13 @@ class TagihanController extends Controller
 //            'siswa.*' => 'nullable|exists:siswas,id',
         ]);
 
-//        DB::beginTransaction();
+        //        DB::beginTransaction();
 
         if ($request->jenis_tagihan == '') {
             $request->jenis_tagihan = 'bebas';
         }
 
-//        try {
+        //        try {
         // 1. Kumpulkan data items & rekening kombinasi
         $itemRekeningData = [];
         if ($request->has('items') && $request->has('rekening')) {
@@ -472,7 +472,7 @@ class TagihanController extends Controller
         $siswaList = [];
         if ($request->target === 'per' && $request->has('siswa')) {
             $query = Siswa::whereIn('id', $request->siswa)
-                ->where('status','1');
+                ->where('status', '1');
 
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
             if (Auth::user()->yayasan_id) {
@@ -488,7 +488,7 @@ class TagihanController extends Controller
             $siswaList = $query->get();
         } elseif ($request->target === 'all' && $request->kelas) {
             $query = Siswa::where('kelas_id', $request->kelas)
-                ->where('status','1');
+                ->where('status', '1');
             // Filter berdasarkan prioritas: yayasan_id > unit_id > admin
             if (Auth::user()->yayasan_id) {
                 $query->whereHas('kelas.unit', function ($q) {
@@ -522,7 +522,7 @@ class TagihanController extends Controller
 
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
-            $settings->whereHas('unit', function($q) {
+            $settings->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -531,7 +531,7 @@ class TagihanController extends Controller
             $settings->where('unit_id', $request->unit_id);
         }
 
-        $settings = $settings->where('status','1')->get();
+        $settings = $settings->where('status', '1')->get();
         $akun_debit = $settings->where('debit', 1)->first()?->akun_id; // piutang siswa
         $akun_kredit = $settings->where('kredit', 1)->first()?->akun_id; // pendapatan sekolah
 
@@ -591,12 +591,12 @@ class TagihanController extends Controller
             }
         }
 
-//            DB::commit();
+        //            DB::commit();
         return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dibuat dan jurnal dicatat.');
-//        } catch (\Exception $e) {
-////            DB::rollBack();
-//            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
-//        }
+        //        } catch (\Exception $e) {
+        ////            DB::rollBack();
+        //            return back()->withInput()->with('danger', 'Terjadi kesalahan: ' . $e->getMessage());
+        //        }
     }
 
 

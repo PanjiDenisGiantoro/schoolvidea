@@ -13,6 +13,7 @@ use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollPaymentController;
+use App\Http\Controllers\PayrollPaymentController as ControllersPayrollPaymentController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PositionsController;
@@ -420,6 +421,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/paymentAll', [PayrollPaymentController::class, 'paymentAll'])->name('payroll-payment.paymentAll');
         Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
         Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
+        Route::get('/slip/{id}', [PayrollPaymentController::class, 'slip'])->name('payroll-payment.slip');
     });
 });
 // Route::get('/payroll-payment', function () {
