@@ -719,7 +719,7 @@ class KeuanganTransaksiController extends Controller
 
                     // Get akun dari setting_akun untuk unit ini
                     $settingAkunDebit = setting_akun::where('unit_id', $unitId)
-                        ->where('kategori', 'Pembayaran Tagihan')
+                        ->where('kategori', 'tagihan-masuk')
                         ->where('debit', 1)
                         ->where('status', '1')
                         ->first();
@@ -749,6 +749,7 @@ class KeuanganTransaksiController extends Controller
                             'tanggal' => now(),
                             'unit_id' => Auth::user()->unit_id
                         ]);
+
                     }
 
                     // Kredit: Akun dari data_rekenings (lawannya pembayaran)
