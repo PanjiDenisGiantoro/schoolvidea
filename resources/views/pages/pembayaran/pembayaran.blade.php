@@ -659,8 +659,14 @@
                         const opt = document.createElement('option');
                         opt.value = tagihan.id;
                         const kategoriNama = tagihan.kategori?.[0]?.nama_kategori ?? 'Tanpa Kategori';
-                        opt.text =
-                            `${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')} - ${created_at} - Sisa Tagihan R ${parseInt(sisa_nominal).toLocaleString('id-ID')}`;
+                        // Format tanggal
+                        const date = new Date(tagihan.created_at);
+                        const formattedDate = date.toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        opt.text = `${kategoriNama} - Rp ${parseInt(tagihan.nominal).toLocaleString('id-ID')} - ${formattedDate}`;
                         tagihanSelect.appendChild(opt);
                     });
 
