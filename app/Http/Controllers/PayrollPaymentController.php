@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\VideaclassApiHelper;
+use App\Models\AttendanceSync;
+use App\Models\DataRekening;
+use App\Models\Jurnals;
+use App\Models\Keuangan_transaksi;
+use App\Models\Officer;
+use App\Models\PayrollComponents;
 use App\Models\PayrollPayment;
 use App\Models\PayrollSetting;
-use App\Models\PayrollComponents;
-use App\Models\Officer;
+use App\Models\setting_akun;
 use App\Models\Unit;
-use App\Models\AttendanceSync;
-use App\Helpers\VideaclassApiHelper;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+
+use function Laravel\Prompts\error;
 
 class PayrollPaymentController extends Controller
 {
@@ -22,89 +29,76 @@ class PayrollPaymentController extends Controller
             $units = Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
             $officerList = Officer::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->get();
+            })->orderBy('created_at', 'desc')->get();
             $tagihanList = PayrollComponents::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->get();
+            })->orderBy('created_at', 'desc')->get();
             $akunList = PayrollSetting::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->get();
+            })->orderBy('created_at', 'desc')->get();
         } elseif (Auth::user()->unit_id) {
             $units = Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
-            $officerList = Officer::where('unit_id', Auth::user()->unit_id)->get();
-            $tagihanList = PayrollComponents::where('unit_id', Auth::user()->unit_id)->get();
-            $akunList = PayrollSetting::where('unit_id', Auth::user()->unit_id)->get();
+            $officerList = Officer::where('unit_id', Auth::user()->unit_id)->orderBy('created_at', 'desc')->get();
+            // $tagihanList = PayrollComponents::where('unit_id', Auth::user()->unit_id)->get();
+            $akunList = PayrollSetting::where('units_id', Auth::user()->unit_id)->orderBy('created_at', 'desc')->get();
         } else {
             $units = Unit::where('status', '1')->get();
             $officerList = Officer::all();
-            $tagihanList = PayrollComponents::all();
+            // $tagihanList = PayrollComponents::all();
             $akunList = PayrollSetting::all();
         }
 
-        return view('pages.penggajian.payroll_payment.payroll_payment', compact('units', 'tagihanList', 'officerList', 'akunList'));
+        return view('pages.penggajian.payroll_payment.payroll_payment', compact('units', 'officerList', 'akunList'));
     }
 
     public function getByUnit($unit_id)
     {
-        $officers = Officer::whereHas("unit", function ($query) use ($unit_id) {
-            $query->where("id", $unit_id);
+        $officers = Officer::whereHas('unit', function ($query) use ($unit_id) {
+            $query->where('id', $unit_id);
         })
             // PERBAIKAN: Tambahkan 'position' untuk form
-            ->with(["user:id,name", "position"])
-            ->get(["id", "user_id"]);
+            ->with(['user:id,name', 'position'])
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'user_id']);
 
         return response()->json($officers);
     }
 
     public function getByOfficer($officerId)
     {
-        $settings = PayrollSetting::where('officers_id', $officerId)
-            ->with(['components.component'])->get();
-        $components = $settings
-            ->flatMap(fn ($s) => $s->components)
-            ->pluck('component')
-            ->unique('id')
-            ->values()
-            ->map(fn ($c) => [
-                'id' => $c->id,
-                'name' => $c->name,
-            ]);
-        $periodes = $settings->pluck('billing_period')->unique()->values();
-        $years = $settings->pluck('start_year')->unique()->values();
+        $paymentType = PayrollSetting::where('officers_id', $officerId)
+            ->pluck('type');
 
-        return response()->json([
-            'components' => $components,
-            'periodes' => $periodes,
-            'years' => $years,
-        ]);
+        return response()->json($paymentType);
     }
+
     public function getOfficerDetail($officerId)
     {
         $officer = Officer::with([
             'position:id,positions_name',
-            'unit:id,nama_unit'
+            'unit:id,nama_unit',
         ])->find($officerId);
 
         return response()->json([
-            'officer_name' => $officer->name ?? "-",
-            'officer_unit' => $officer->unit?->nama_unit ?? "-",
-            'officer_nip' => $officer->nip ?? "-",
-            'officer_no_hp' => $officer->no_hp ?? "-",
-            'officer_foto' => $officer-> image ?? "",
-            'officer_position' => $officer->position?->positions_name ?? "Tidak ada Jabatan"
+            'officer_name' => $officer->name ?? '-',
+            'officer_unit' => $officer->unit?->nama_unit ?? '-',
+            'officer_nip' => $officer->nip ?? '-',
+            'officer_no_hp' => $officer->no_hp ?? '-',
+            'officer_foto' => $officer->image ?? '',
+            'officer_position' => $officer->position?->positions_name ?? 'Tidak ada Jabatan',
+            'officer_bank' => $officer->bank ?? '-',
+            'officer_norek' => $officer->no_rekening ?? '-',
+            'officer_va' => $officer->va_guru ?? '-',
         ]);
     }
-
-
-
 
     public function getPayment(Request $request)
     {
         $officerId = $request->officer_id;
-        $paymentId = $request->component_id;
-        $periode   = $request->period;
-        $year      = $request->year;
-        $status    = $request->status ?? 'draft';
+        $type = 'gaji';
+        $periode = $request->period;
+        $year = $request->year;
+        $status = $request->status ?? 'draft';
 
         $query = PayrollPayment::with('component', 'officer.user');
 
@@ -112,8 +106,8 @@ class PayrollPaymentController extends Controller
             $query->where('officer_id', $officerId);
         }
 
-        if ($paymentId && $paymentId !== 'all') {
-            $query->where('component_id', $paymentId);
+        if ($type && $type !== 'all') {
+            $query->where('type', $type);
         }
 
         if ($periode && $periode !== 'all') {
@@ -128,15 +122,15 @@ class PayrollPaymentController extends Controller
             $query->where('status', $status);
         }
 
-        $payments = $query->get();
+        $payments = $query->orderBy('created_at', 'desc')->get();
         $settings = PayrollSetting::where('officers_id', $officerId)->first();
         $allowances = [
-            'salary' => $settings->salary ?? 0,
             'transport_allowance' => $settings->transport_allowance ?? 0,
             'meal_allowance' => $settings->meal_allowance ?? 0,
-            'communication_allowance' => $settings->communication_allowance ?? 0,
             'other_allowance' => $settings->other_allowance ?? 0,
         ];
+        $staff = $settings->staff_allowance ?? 0;
+
         $totalAllowance = array_sum($allowances);
 
         // Ambil data attendance yang sudah disinkronisasi untuk officer ini
@@ -151,23 +145,22 @@ class PayrollPaymentController extends Controller
         }
 
         return response()->json([
-            "belum_lunas"  => $payments->whereIn('status', ['draft', 'pending'])->values(),
-            "sudah_lunas"  => $payments->where('status', 'paid')->values(),
-            "query_sql"    => $query->toSql(),
-            "bindings"     => $query->getBindings(),
-            "request_debug" => $request->all(),
-            "allowances" => $allowances,
-            "total_allowance" => $totalAllowance,
-            "attendance" => $attendance ? [
+            'belum_lunas' => $payments->whereIn('status', ['draft', 'pending'])->values(),
+            'sudah_lunas' => $payments->where('status', 'paid')->values(),
+            'query_sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'request_debug' => $request->all(),
+            'allowances' => $allowances,
+            'total_allowance' => $totalAllowance,
+            'staff' => $staff,
+            'attendance' => $attendance ? [
                 'presence_count' => $attendance->presence_count,
                 'absence_count' => $attendance->absence_count,
                 'is_active' => $attendance->is_active,
                 'synced_at' => $attendance->synced_at,
-            ] : null
+            ] : null,
         ]);
     }
-
-
 
     public function getPaymentList(Request $request, $officerId)
     {
@@ -176,59 +169,19 @@ class PayrollPaymentController extends Controller
                 ->with([
                     'components.component:id,name',
                     'deductions.deduction:id,name',
-                    'officer'
+                    'officer',
                 ])
                 ->get();
 
             return response()->json([
                 'settings' => $settings,
             ]);
-
         } catch (\Exception $e) {
-            Log::error("GetPaymentList Error: " . $e->getMessage());
+            Log::error('GetPaymentList Error: ' . $e->getMessage());
+
             return response()->json([
                 'settings' => [],
             ], 500);
-        }
-    }
-
-    public function getPaymentData(Request $request)
-    {
-        $officerId = $request->officer_id;
-        $componentId = $request->payment_id; // kamu pakai setting_id tetapi isinya component_id
-        $periode = $request->period;
-        $year = $request->year;
-
-        try {
-
-            $query = PayrollPayment::with([
-                'officer.user',
-                'component',                 // relasi ke komponen
-                'component.componentType',   // kalau nama komponen ada di tabel lain
-            ])
-                ->where('officer_id', $officerId)
-                ->where('component_id', $componentId);
-
-            // Filter bulan
-            if ($periode !== 'all' && !empty($periode)) {
-                $query->where('payment_month', $periode);
-            }
-
-            // Filter tahun
-            if (!empty($year)) {
-                $query->where('payment_year', $year);
-            }
-
-            $data = $query->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Payroll Table Error: " . $e->getMessage());
-            return response()->json(['success' => false, 'data' => []]);
         }
     }
 
@@ -239,12 +192,14 @@ class PayrollPaymentController extends Controller
     {
         try {
             $officerId = $request->officer_id;
-            $unitId = $request->unit_id;
+            $unitCode = Unit::where('id', $request->unit_id)->value('code');
+            $unitId = $unitCode;
+            Log::info('unit code' . $unitCode);
 
-            if (!$officerId || !$unitId) {
+            if (! $officerId || ! $unitId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Officer ID dan Unit ID diperlukan'
+                    'message' => 'Officer ID dan Unit ID diperlukan',
                 ], 400);
             }
 
@@ -252,11 +207,11 @@ class PayrollPaymentController extends Controller
                 ->where('unit_id', $unitId)
                 ->first();
 
-            if (!$attendance) {
+            if (! $attendance) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Data presensi belum disinkronisasi',
-                    'data' => null
+                    'data' => null,
                 ]);
             }
 
@@ -268,14 +223,14 @@ class PayrollPaymentController extends Controller
                     'absence_count' => $attendance->absence_count,
                     'is_active' => $attendance->is_active,
                     'synced_at' => $attendance->synced_at,
-                ]
+                ],
             ]);
-
         } catch (\Exception $e) {
-            Log::error("Get Attendance Data Error: " . $e->getMessage());
+            Log::error('Get Attendance Data Error: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -287,11 +242,11 @@ class PayrollPaymentController extends Controller
     {
         try {
             // Check if user is authenticated
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Sesi Anda telah berakhir. Silakan login kembali.',
-                    'expired' => true
+                    'expired' => true,
                 ], 401);
             }
 
@@ -299,19 +254,19 @@ class PayrollPaymentController extends Controller
             $officerId = $request->officer_id;
             $search = $request->search ?? null;
 
-            if (!$unitId) {
+            if (! $unitId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unit ID diperlukan'
+                    'message' => 'Unit ID diperlukan',
                 ], 400);
             }
 
             // Get Unit and check if it has code (videaclass_id)
             $unit = Unit::find($unitId);
-            if (!$unit) {
+            if (! $unit) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unit tidak ditemukan'
+                    'message' => 'Unit tidak ditemukan',
                 ], 404);
             }
 
@@ -323,16 +278,19 @@ class PayrollPaymentController extends Controller
                     'details' => [
                         'unit_id' => $unitId,
                         'unit_name' => $unit->nama_unit,
-                        'help' => 'Hubungi administrator untuk mengisi kode unit di master data unit.'
-                    ]
+                        'help' => 'Hubungi administrator untuk mengisi kode unit di master data unit.',
+                    ],
                 ], 400);
             }
 
+            $period = $request->start_period || Carbon::now()->startOfMonth();
+            $endPeriod = $request->end_period || Carbon::now()->endOfMonth();
+
             $videaclassApi = new VideaclassApiHelper();
-            $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search);
+            $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search, $period, $endPeriod);
 
             // Check if API returned error
-            if (!$apiResponse || isset($apiResponse['error'])) {
+            if (! $apiResponse || isset($apiResponse['error'])) {
                 $errorMsg = 'Gagal mengambil data dari API Videaclass';
 
                 if (isset($apiResponse['message'])) {
@@ -349,7 +307,7 @@ class PayrollPaymentController extends Controller
                     'details' => [
                         'unit_id' => $unitId,
                         'api_status' => $apiResponse['status'] ?? 'unknown',
-                    ]
+                    ],
                 ], 500);
             }
 
@@ -366,12 +324,13 @@ class PayrollPaymentController extends Controller
                         ->where('unit_id', $unitId)
                         ->first();
 
-                    if (!$officer) {
+                    if (! $officer) {
                         Log::warning('Officer tidak ditemukan', [
                             'nip' => $attendanceRecord['registered_number'],
-                            'unit_id' => $unitId
+                            'unit_id' => $unitId,
                         ]);
                         $errorCount++;
+
                         continue;
                     }
 
@@ -393,7 +352,7 @@ class PayrollPaymentController extends Controller
                     );
 
                     // Jika ada officer_id filter, hanya kembalikan data untuk officer itu
-                    if (!$officerId || $officerId == $officer->id) {
+                    if (! $officerId || $officerId == $officer->id) {
                         $syncedRecords[] = [
                             'id' => $sync->id,
                             'officer_id' => $officer->id,
@@ -408,7 +367,7 @@ class PayrollPaymentController extends Controller
 
                     $syncedCount++;
                 } catch (\Exception $e) {
-                    Log::error("Error processing attendance record: " . $e->getMessage(), [
+                    Log::error('Error processing attendance record: ' . $e->getMessage(), [
                         'record' => $attendanceRecord,
                         'unit_id' => $unitId,
                     ]);
@@ -421,16 +380,314 @@ class PayrollPaymentController extends Controller
                 'message' => "Data presensi berhasil disinkronisasi. Synced: $syncedCount, Error: $errorCount",
                 'synced_count' => $syncedCount,
                 'error_count' => $errorCount,
-                'data' => $syncedRecords
-            ]);
+                'data' => $syncedRecords,
 
+            ]);
         } catch (\Exception $e) {
-            Log::error("Attendance Sync Error: " . $e->getMessage());
+            Log::error('Attendance Sync Error: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
             ], 500);
         }
     }
 
+    public function payment(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'amount' => 'required|numeric|min:1',
+                'earning' => 'required|numeric|min:1',
+                'deduction' => 'nullable|numeric|',
+                'notes' => 'nullable|string|max:200',
+                'salarynote' => 'nullable|numeric',
+            ]);
+
+            $pembayaran = PayrollPayment::where('id', $id)
+                ->where('status', 'pending')
+                ->first();
+
+            if (! $pembayaran) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Pembayaran sudah dilakukan sebelumnya',
+                ], 400);
+            }
+            if ($request->amount < $pembayaran->net_payment) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Jumlah pembayaran kurang',
+                ], 400);
+            }
+
+            $jumlahBayar = $request->amount ?? $pembayaran->net_payment;
+            $jumlahEarning = $request->earning ?? $pembayaran->total_earnings;
+            $jumlahDeduction = $request->deduction ?? $pembayaran->total_deductions;
+            $notes = $request->notes ?? null;
+            $salaryNote = $request->salarynote ?? 0;
+            Log::info('salary note: ' . $salaryNote);
+            $officer = Officer::find($pembayaran->officer_id);
+            $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk " . $officer->user->name;
+
+            // TRANSAKSI KEUANGAN
+            $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => 'PG' . date('YmdHis') . rand(1000, 9999),
+                'penerima_id' => $officer->id,
+                'penerima_tipe' => Officer::class,
+                'jenis_transaksi' => 'tagihan-keluar',
+                'jumlah' => $jumlahBayar,
+                'metode' => $request->metode ?? 'CASH',
+                'referensi_tagihan_id' => $pembayaran->id,
+                'tanggal_transaksi' => now(),
+                'keterangan' => $keterangan,
+                'created_by' => Auth::id(),
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'status_verifikasi' => 'approved',
+                'verified_at' => now(),
+                'verified_by' => Auth::id(),
+            ]);
+
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                ->where(function ($q) {
+                    $q->where('allotment', 'Semua Pembayaran')
+                        ->orWhere('allotment', 'Pembayaran Tagihan');
+                })
+                ->first();
+
+            if (! $datarekening) {
+                return response()->json([
+                    'status' => false,
+                    'message' => '(Rekening) Akun Anda Tidak Memiliki Akses',
+                ]);
+            }
+
+            $settings = setting_akun::where('kategori', 'tagihan-keluar');
+
+            if (Auth::user()->unit_id) {
+                $settings->where('unit_id', Auth::user()->unit_id);
+            }
+
+            $settings = $settings->where('status', '1')->first();
+
+            if (! $settings) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data setting tidak ditemukan',
+                ]);
+            }
+
+            $akun_id = $settings->akun_id;
+            if (! $akun_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data akun tidak ditemukan',
+                ]);
+            }
+            $position = $settings->debit;
+
+            // JURNAL
+            if ($position == 1) {
+                // kredit pendapatan, debit kas
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $akun_id,
+                    'debit' => 0,
+                    'kredit' => $jumlahBayar,
+                    'keterangan' => $keterangan,
+                    'unit_id' => Auth::user()->unit_id,
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $datarekening->akun_id,
+                    'kredit' => 0,
+                    'debit' => $jumlahBayar,
+                    'keterangan' => $keterangan,
+                    'unit_id' => Auth::user()->unit_id,
+                ]);
+            } else {
+                // kebalikan posisi
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $akun_id,
+                    'debit' => $jumlahBayar,
+                    'kredit' => 0,
+                    'keterangan' => $keterangan,
+                    'unit_id' => Auth::user()->unit_id,
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $datarekening->akun_id,
+                    'kredit' => $jumlahBayar,
+                    'debit' => 0,
+                    'keterangan' => $keterangan,
+                    'unit_id' => Auth::user()->unit_id,
+                ]);
+            }
+
+            $pembayaran->update([
+                'status' => 'paid',
+                'total_earnings' => $jumlahEarning,
+                'total_deductions' => $jumlahDeduction,
+                'net_payment' => $jumlahBayar,
+                'notes' => $notes,
+                'salary_note' => $salaryNote,
+            ]);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Pembayaran berhasil',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Server error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function paymentAll(Request $request)
+    {
+        DB::begintransaction();
+        try {
+            // validasi
+            $request->validate([
+                'items' => 'required|array',
+                'items. * .id' => 'required|integer|exists:payroll_payment, id',
+                'items. * .net_payment' => 'required|numeric|min:1',
+                'items. * .earning' => 'required|numeric|min:1',
+                'items. * .deduction' => 'required|numeric|min:1',
+                'items. * .text_note' => 'required|string|max:200',
+                'totalTagihan' => 'required|numeric|min:1',
+            ]);
+
+            $ids = collect($request->items)->pluck('id')->toArray();
+
+            // ambil semua pembayaran pending
+            $pembayaran = PayrollPayment::wherein('id', $ids)
+                ->where('status', 'pending')
+                ->get();
+
+            if ($pembayaran->count() === 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'semua pembayaran sudah diproses sebelumnya',
+                ], 400);
+            }
+
+            // hitung total nominal seluruh payment
+            $totalpembayaran = $request->totalTagihan || 0;
+
+            // catat transaksi masal
+            $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => 'pg' . date('ymdhis') . rand(1000, 9999),
+                'penerima_id' => null,
+                'penerima_tipe' => 'mass',
+                'jenis_transaksi' => 'tagihan-keluar',
+                'jumlah' => $totalpembayaran,
+                'metode' => $request->metode ?? 'cash',
+                'referensi_tagihan_id' => null,
+                'tanggal_transaksi' => now(),
+                'keterangan' => 'pembayaran gaji masal',
+                'created_by' => Auth::id(),
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'status_verifikasi' => 'approved',
+                'verified_at' => now(),
+                'verified_by' => Auth::id(),
+            ]);
+
+            // ambil akun & posisi jurnal
+            $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                ->where(function ($q) {
+                    $q->where('allotment', 'Semua Pembayaran')
+                        ->orWhere('allotment', 'Pembayaran Tagihan');
+                })
+                ->first();
+
+            $settings = setting_akun::where('kategori', 'tagihan-keluar')
+                ->where('unit_id', Auth::user()->unit_id)
+                ->where('status', 1)
+                ->firstorfail();
+
+            // jurnal
+            $akun_id = $settings->akun_id;
+            $position = $settings->debit;
+
+            if ($position == 1) {
+                // kredit pendapatan, debit kas
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $akun_id,
+                    'debit' => 0,
+                    'kredit' => $totalpembayaran,
+                    'keterangan' => 'pembayaran gaji masal',
+                    'unit_id' => auth::user()->unit_id,
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $datarekening->akun_id,
+                    'debit' => $totalpembayaran,
+                    'kredit' => 0,
+                    'keterangan' => 'pembayaran gaji masal',
+                    'unit_id' => auth::user()->unit_id,
+                ]);
+            } else {
+                // kebalikan posisi
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $akun_id,
+                    'debit' => $totalpembayaran,
+                    'kredit' => 0,
+                    'keterangan' => 'pembayaran gaji masal',
+                    'unit_id' => auth::user()->unit_id,
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id' => $datarekening->akun_id,
+                    'kredit' => $totalpembayaran,
+                    'debit' => 0,
+                    'keterangan' => 'pembayaran gaji masal',
+                    'unit_id' => auth::user()->unit_id,
+                ]);
+            }
+
+            foreach ($request->items as $item) {
+                PayrollPayment::where('id', $item['id'])
+                    ->where('status', 'pending')
+                    ->update([
+                        'status' => 'paid',
+                        'notes' => $item['text_note'],
+                        'total_earnings' => $item['earning'],
+                        'total_deductions' => $item['deduction'],
+                        'net_payment' => $item['net_payment'],
+                    ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'pembayaran masal berhasil',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'server error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

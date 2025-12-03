@@ -188,7 +188,11 @@
         {{-- Judul Struk --}}
         <div class="text-center section">
             <div class="bold" style="font-size: 12px;">BUKTI PEMBAYARAN</div>
-            <div class="small">{{ strtoupper($transaksi->jenis_transaksi === 'tagihan' || $transaksi->jenis_transaksi === 'pembayaran' ? 'PEMBAYARAN TAGIHAN' : str_replace('_', ' ', $transaksi->jenis_transaksi)) }}</div>
+            @if($isMultiple)
+                <div class="small">PEMBAYARAN TAGIHAN MULTIPLE</div>
+            @else
+                <div class="small">{{ strtoupper($transaksi->jenis_transaksi === 'tagihan' || $transaksi->jenis_transaksi === 'pembayaran' ? 'PEMBAYARAN TAGIHAN' : str_replace('_', ' ', $transaksi->jenis_transaksi)) }}</div>
+            @endif
         </div>
 
         <div class="divider"></div>

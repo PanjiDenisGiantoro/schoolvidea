@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PayrollPayment extends Model
 {
@@ -25,6 +24,7 @@ class PayrollPayment extends Model
         'payment_month',
         'notes',
         'status',
+        'type',
     ];
 
     /**
@@ -74,5 +74,10 @@ class PayrollPayment extends Model
     public function component()
     {
         return $this->belongsTo(PayrollComponents::class, 'component_id');
+    }
+
+    public function payrollType()
+    {
+        return $this->belongsTo(PayrollSetting::class, 'type');
     }
 }
