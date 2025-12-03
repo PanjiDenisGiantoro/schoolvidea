@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
+use App\Models\Pembayarantagihan;
 use App\Models\Siswa;
 use App\Models\Jurnals;
 use App\Models\setting_akun;
@@ -12,6 +13,7 @@ use App\Models\PembayaranTagihanDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Mpdf\Mpdf;
 
 class KeuanganTransaksiController extends Controller
@@ -1199,6 +1201,425 @@ class KeuanganTransaksiController extends Controller
             'recordsFiltered' => $totalRecords,
             'data' => $data
         ]);
+    }
+
+    /**
+     * Approve multiple payments with detail (pembayaran multiple)
+     * Accepts: pembayaran_id (master payment ID) or head_tagihan
+     */
+    public function approveMultiple(Request $request)
+    {
+        $request->validate([
+            'pembayaran_id' => 'required_without:head_tagihan|integer|exists:pembayaran_tagihan,id',
+            'head_tagihan' => 'required_without:pembayaran_id|string',
+            'catatan_verifikasi' => 'nullable|string'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            Log::info('========== PEMBAYARAN MULTIPLE APPROVE STARTED ==========');
+
+            // Get master pembayaran
+            $pembayaranId = $request->pembayaran_id;
+            $headTagihan = $request->head_tagihan;
+
+            if ($pembayaranId) {
+                $pembayaran = Pembayarantagihan::with(['pembayaranDetail.tagihanSiswa.tagihan', 'tagihanSiswa'])->findOrFail($pembayaranId);
+                $headTagihan = $pembayaran->head_tagihan;
+            } else {
+                // Find master pembayaran by head_tagihan
+                $pembayaran = Pembayarantagihan::with(['pembayaranDetail.tagihanSiswa.tagihan', 'tagihanSiswa'])
+                    ->where('head_tagihan', $headTagihan)
+                    ->where('is_master', true)
+                    ->firstOrFail();
+            }
+
+            Log::info('Master Pembayaran ID: ' . $pembayaran->id);
+            Log::info('Head Tagihan: ' . $headTagihan);
+            Log::info('Total Items: ' . count($pembayaran->pembayaranDetail));
+
+            // Check if already approved
+            if ($pembayaran->status_approval === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran multiple ini sudah diapprove sebelumnya'
+                ], 400);
+            }
+
+            // Load all detail records and tagihan_siswa
+            $details = PembayaranTagihanDetail::with('tagihanSiswa.tagihan')
+                ->where('head_tagihan', $headTagihan)
+                ->get();
+
+            if ($details->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada detail pembayaran ditemukan'
+                ], 400);
+            }
+
+            Log::info('Processing ' . $details->count() . ' detail items...');
+
+            // Process each detail item
+            $totalJumlahBayar = 0;
+            $processedItems = [];
+
+            foreach ($details as $detail) {
+                $tagihanSiswa = $detail->tagihanSiswa;
+                $jumlahBayar = (int) $detail->jumlah_bayar_detail;
+
+                Log::info("Processing Detail #{$detail->urutan} | Tagihan Siswa ID: {$tagihanSiswa->id} | Amount: {$jumlahBayar}");
+
+                // Calculate remaining balance
+                $sisaNominalBaru = $tagihanSiswa->sisa_nominal - $jumlahBayar;
+                $jumlahDibayarBaru = ($tagihanSiswa->jumlah_dibayar ?? 0) + $jumlahBayar;
+
+                // Determine new status
+                if ($sisaNominalBaru <= 0) {
+                    $statusBaru = 1; // Lunas
+                    $sisaNominalBaru = 0;
+                } elseif ($jumlahDibayarBaru > 0) {
+                    $statusBaru = 2; // Cicilan
+                } else {
+                    $statusBaru = 0; // Belum Bayar
+                }
+
+                // Update tagihan_siswa
+                $tagihanSiswa->update([
+                    'status' => $statusBaru,
+                    'sisa_nominal' => $sisaNominalBaru,
+                    'jumlah_dibayar' => $jumlahDibayarBaru,
+                    'tanggal_bayar' => now(),
+                ]);
+
+                Log::info("Updated Tagihan Siswa | Status: {$statusBaru} | Sisa: {$sisaNominalBaru}");
+
+                $processedItems[] = [
+                    'detail_id' => $detail->id,
+                    'tagihan_siswa_id' => $tagihanSiswa->id,
+                    'jumlah_bayar' => $jumlahBayar,
+                    'status_baru' => $statusBaru,
+                    'sisa_nominal_baru' => $sisaNominalBaru
+                ];
+
+                $totalJumlahBayar += $jumlahBayar;
+            }
+
+            // Update master pembayaran
+            $pembayaran->update([
+                'status_approval' => 'approved',
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
+                'catatan_approval' => $request->catatan_verifikasi
+            ]);
+
+            Log::info('✓ Master pembayaran updated to APPROVED');
+
+            // Find and update keuangan_transaksi
+            $transaksi = Keuangan_transaksi::where('code_pembayaran', $pembayaran->code_pembayaran)
+                ->where('referensi_tagihan_id', $pembayaran->id)
+                ->first();
+
+            if ($transaksi) {
+                $transaksi->update([
+                    'status_verifikasi' => 'approved',
+                    'status_approval' => 'approved',
+                    'catatan_verifikasi' => $request->catatan_verifikasi,
+                    'verified_by' => Auth::id(),
+                    'verified_at' => now()
+                ]);
+
+                Log::info('✓ Keuangan transaksi updated | Transaksi ID: ' . $transaksi->id);
+
+                // Create journal entries for each item
+                Log::info('Creating journal entries for each item...');
+
+                foreach ($details as $detail) {
+                    $tagihanSiswa = $detail->tagihanSiswa;
+                    $tagihan = $tagihanSiswa->tagihan;
+                    $siswa = $tagihanSiswa->siswa;
+                    $unitId = $siswa->unit_id;
+                    $jumlahBayar = (int) $detail->jumlah_bayar_detail;
+
+                    $keterangan = "{$tagihan->jenis_tagihan} - {$siswa->user->name} - Rp " . number_format($jumlahBayar, 0, ',', '.');
+
+                    // Get akun dari setting_akun
+                    $settingAkunDebit = setting_akun::where('unit_id', $unitId)
+                        ->where('kategori', 'tagihan-masuk')
+                        ->where('debit', 1)
+                        ->where('status', '1')
+                        ->first();
+
+                    // Get data rekening
+                    $dataRekeningKredit = DataRekening::where('unit_id', $unitId)
+                        ->whereIn('allotment', ['Pembayaran Tagihan', 'Semua Pembayaran'])
+                        ->where('status', '1')
+                        ->first();
+
+                    if ($settingAkunDebit && $dataRekeningKredit) {
+                        // Debit: Akun tagihan masuk
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $settingAkunDebit->akun_id,
+                            'debit' => $jumlahBayar,
+                            'kredit' => 0,
+                            'keterangan' => $keterangan,
+                            'tanggal' => now(),
+                            'unit_id' => $unitId
+                        ]);
+
+                        // Kredit: Akun rekening sekolah
+                        Jurnals::create([
+                            'transaksi_id' => $transaksi->id,
+                            'akun_id' => $dataRekeningKredit->akun_id,
+                            'kredit' => $jumlahBayar,
+                            'debit' => 0,
+                            'keterangan' => $keterangan,
+                            'tanggal' => now(),
+                            'unit_id' => $unitId
+                        ]);
+
+                        Log::info("✓ Journal created for item #{$detail->urutan}");
+                    } else {
+                        Log::warning("⚠️ Setting akun or data rekening not found for unit {$unitId}");
+                    }
+                }
+
+                Log::info('✓ All journal entries created');
+            } else {
+                Log::warning('⚠️ Keuangan transaksi not found - creating new one');
+                $masterTagihanSiswa = $pembayaran->tagihanSiswa;
+
+                $transaksi = Keuangan_transaksi::create([
+                    'code_pembayaran' => $pembayaran->code_pembayaran,
+                    'penerima_id' => $masterTagihanSiswa->siswa->id,
+                    'penerima_tipe' => Siswa::class,
+                    'jenis_transaksi' => 'tagihan',
+                    'jumlah' => $totalJumlahBayar,
+                    'metode' => $pembayaran->metode_bayar,
+                    'referensi_tagihan_id' => $pembayaran->id,
+                    'tanggal_transaksi' => $pembayaran->tanggal_bayar,
+                    'keterangan' => $pembayaran->keterangan,
+                    'created_by' => Auth::id(),
+                    'status_approval' => 'approved',
+                    'status_verifikasi' => 'approved',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                    'verified_by' => Auth::id(),
+                    'verified_at' => now()
+                ]);
+
+                Log::info('✓ Keuangan transaksi created (fallback) | Transaksi ID: ' . $transaksi->id);
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id,
+                'aksi' => 'approve_multiple',
+                'data_lama' => json_encode(['status_approval' => 'pending', 'items' => count($details)]),
+                'data_baru' => json_encode(['status_approval' => 'approved', 'items' => count($details)]),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            DB::commit();
+
+            Log::info('========== PEMBAYARAN MULTIPLE APPROVE COMPLETED SUCCESSFULLY ==========');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran multiple berhasil diapprove',
+                'data' => [
+                    'pembayaran_id' => $pembayaran->id,
+                    'head_tagihan' => $headTagihan,
+                    'status_approval' => 'approved',
+                    'total_items' => count($processedItems),
+                    'total_jumlah_bayar' => $totalJumlahBayar,
+                    'processed_items' => $processedItems,
+                    'transaksi_id' => $transaksi->id,
+                    'approval_info' => [
+                        'approved_by' => Auth::user()->name,
+                        'approved_at' => now()->format('Y-m-d H:i:s'),
+                        'catatan' => $request->catatan_verifikasi ?? '-'
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('❌ ERROR dalam pembayaran multiple approve');
+            Log::error('Exception: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal approve pembayaran multiple: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject multiple payments with detail (pembayaran multiple)
+     * Accepts: pembayaran_id (master payment ID) or head_tagihan
+     */
+    public function rejectMultiple(Request $request)
+    {
+        $request->validate([
+            'pembayaran_id' => 'required_without:head_tagihan|integer|exists:pembayaran_tagihan,id',
+            'head_tagihan' => 'required_without:pembayaran_id|string',
+            'catatan_verifikasi' => 'required|string'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            Log::info('========== PEMBAYARAN MULTIPLE REJECT STARTED ==========');
+
+            // Get master pembayaran
+            $pembayaranId = $request->pembayaran_id;
+            $headTagihan = $request->head_tagihan;
+
+            if ($pembayaranId) {
+                $pembayaran = Pembayarantagihan::with(['pembayaranDetail.tagihanSiswa.tagihan', 'tagihanSiswa'])->findOrFail($pembayaranId);
+                $headTagihan = $pembayaran->head_tagihan;
+            } else {
+                // Find master pembayaran by head_tagihan
+                $pembayaran = Pembayarantagihan::with(['pembayaranDetail.tagihanSiswa.tagihan', 'tagihanSiswa'])
+                    ->where('head_tagihan', $headTagihan)
+                    ->where('is_master', true)
+                    ->firstOrFail();
+            }
+
+            Log::info('Master Pembayaran ID: ' . $pembayaran->id);
+            Log::info('Head Tagihan: ' . $headTagihan);
+            Log::info('Total Items: ' . count($pembayaran->pembayaranDetail));
+
+            // Check if already rejected
+            if ($pembayaran->status_approval === 'rejected') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran multiple ini sudah direject sebelumnya'
+                ], 400);
+            }
+
+            // Load all detail records
+            $details = PembayaranTagihanDetail::with('tagihanSiswa.tagihan')
+                ->where('head_tagihan', $headTagihan)
+                ->get();
+
+            if ($details->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada detail pembayaran ditemukan'
+                ], 400);
+            }
+
+            Log::info('Processing ' . $details->count() . ' detail items for rejection...');
+
+            // Process each detail item (rollback)
+            $processedItems = [];
+
+            foreach ($details as $detail) {
+                $tagihanSiswa = $detail->tagihanSiswa;
+                $jumlahBayar = (int) $detail->jumlah_bayar_detail;
+
+                Log::info("Rejecting Detail #{$detail->urutan} | Tagihan Siswa ID: {$tagihanSiswa->id} | Amount: {$jumlahBayar}");
+
+                // Rollback: Kembalikan sisa_nominal
+                $sisaNominalBaru = $tagihanSiswa->sisa_nominal + $jumlahBayar;
+                $sisaNominalBaruview = $tagihanSiswa->sisa_nominal ;
+                $jumlahDibayarBaru = max(0, ($tagihanSiswa->jumlah_dibayar ?? 0) - $jumlahBayar);
+
+                // Determine new status
+                if ($jumlahDibayarBaru > 0 && $sisaNominalBaru > 0) {
+                    $statusBaru = 2; // Cicilan jika masih ada pembayaran sebelumnya
+                } else {
+                    $statusBaru = 0; // Belum Bayar
+                }
+
+                // Update tagihan_siswa
+                $tagihanSiswa->update([
+                    'status' => $statusBaru
+                ]);
+
+                Log::info("Updated Tagihan Siswa | Status: {$statusBaru} | Sisa: {$sisaNominalBaruview}");
+
+                $processedItems[] = [
+                    'detail_id' => $detail->id,
+                    'tagihan_siswa_id' => $tagihanSiswa->id,
+                    'jumlah_bayar' => $jumlahBayar,
+                    'status_baru' => $statusBaru,
+                    'sisa_nominal_baru' => $sisaNominalBaruview
+                ];
+            }
+
+            // Update master pembayaran
+            $pembayaran->update([
+                'status_approval' => 'rejected'
+            ]);
+
+            Log::info('✓ Master pembayaran updated to REJECTED');
+
+            // Find and update keuangan_transaksi
+            $transaksi = Keuangan_transaksi::where('code_pembayaran', $pembayaran->code_pembayaran)
+                ->where('referensi_tagihan_id', $pembayaran->id)
+                ->first();
+
+            if ($transaksi) {
+                $transaksi->update([
+                    'status_verifikasi' => 'rejected',
+                    'status_approval' => 'rejected',
+                    'catatan_verifikasi' => $request->catatan_verifikasi,
+                    'verified_by' => Auth::id(),
+                    'verified_at' => now()
+                ]);
+
+                Log::info('✓ Keuangan transaksi updated to REJECTED | Transaksi ID: ' . $transaksi->id);
+            }
+
+            // Log activity
+            Keuangan_transaksi_logs::create([
+                'transaksi_id' => $transaksi->id ?? null,
+                'aksi' => 'reject_multiple',
+                'data_lama' => json_encode(['status_approval' => 'pending', 'items' => count($details)]),
+                'data_baru' => json_encode(['status_approval' => 'rejected', 'items' => count($details)]),
+                'dilakukan_oleh' => Auth::id(),
+                'dilakukan_pada' => now(),
+            ]);
+
+            DB::commit();
+
+            Log::info('========== PEMBAYARAN MULTIPLE REJECT COMPLETED SUCCESSFULLY ==========');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran multiple berhasil direject',
+                'data' => [
+                    'pembayaran_id' => $pembayaran->id,
+                    'head_tagihan' => $headTagihan,
+                    'status_approval' => 'rejected',
+                    'total_items' => count($processedItems),
+                    'processed_items' => $processedItems,
+                    'rejection_info' => [
+                        'rejected_by' => Auth::user()->name,
+                        'rejected_at' => now()->format('Y-m-d H:i:s'),
+                        'catatan' => $request->catatan_verifikasi
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('❌ ERROR dalam pembayaran multiple reject');
+            Log::error('Exception: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reject pembayaran multiple: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

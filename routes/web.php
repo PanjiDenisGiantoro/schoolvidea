@@ -227,6 +227,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');
         Route::post('/reject/{id}', [KeuanganTransaksiController::class, 'reject'])->name('keuangan_transaksi.reject');
         Route::post('/cancel/{id}', [KeuanganTransaksiController::class, 'cancel'])->name('keuangan_transaksi.cancel');
+
+        // Approve/Reject Multiple routes (for pembayaran multiple with detail)
+        Route::post('/approve-multiple', [KeuanganTransaksiController::class, 'approveMultiple'])->name('keuangan_transaksi.approve_multiple');
+        Route::post('/reject-multiple', [KeuanganTransaksiController::class, 'rejectMultiple'])->name('keuangan_transaksi.reject_multiple');
     });
 
     Route::prefix('akun')->middleware('permission:view_akun')->group(function () {

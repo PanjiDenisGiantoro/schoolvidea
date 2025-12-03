@@ -437,6 +437,281 @@ Pembayaran akan dicek:
     }
 
     /**
+     * @OA\Post(
+     *     path="/pembayaran/proses-multiple-with-detail",
+     *     tags={"Pembayaran"},
+     *     summary="Process multiple payments with detail",
+     *     description="Process multiple student bill payments in one request.
+     *
+Status tagihan_siswa:
+- 0 = Belum Bayar - dapat lanjut bayar (jika tidak ada pembayaran pending)
+- 1 = Lunas - sudah bayar lunas, tidak dapat membayar lagi
+- 2 = Cicilan - masih cicilan, dapat lanjut bayar (jika tidak ada pembayaran pending)
+
+Pembayaran akan dicek:
+1. Jika status = 1 (Lunas): Reject pembayaran
+2. Jika ada pembayaran_tagihan dengan status_approval = pending: Reject pembayaran
+3. Jika status = 0 atau 2 dan tidak ada pending: Accept pembayaran",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"pembayaran_items"},
+     *             @OA\Property(
+     *                 property="pembayaran_items",
+     *                 type="array",
+     *                 description="Array of bills to be paid",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"tagihan_siswa_id","jumlah_bayar"},
+     *                     @OA\Property(property="tagihan_siswa_id", type="integer", example=1),
+     *                     @OA\Property(property="jumlah_bayar", type="integer", example=500000)
+     *                 )
+     *             ),
+     *             @OA\Property(property="metode", type="string", example="CASH", description="CASH, TRANSFER, QRIS, VIRTUAL_ACCOUNT, MOBILE_BANKING, NONTUNAI, TUNAI"),
+     *             @OA\Property(property="keterangan", type="string", example="Pembayaran SPP multiple bulan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Multiple payments submitted and waiting for approval (status_approval = pending)"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error, bill already paid (status=1), or have pending payment"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
+    public function prosesPembayaranMultipleWithDetail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'pembayaran_items' => 'required|array|min:1',
+            'pembayaran_items.*.tagihan_siswa_id' => 'required|integer|exists:tagihan_siswa,id',
+            'pembayaran_items.*.jumlah_bayar' => 'required|numeric|min:1',
+            'metode' => 'nullable|string|in:CASH,TRANSFER,QRIS,VIRTUAL_ACCOUNT,MOBILE_BANKING,NONTUNAI,TUNAI',
+            'keterangan' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            Log::info('========== PEMBAYARAN MULTIPLE WITH DETAIL STARTED ==========');
+            Log::info('Total items: ' . count($request->pembayaran_items));
+            Log::info('Metode: ' . ($request->metode ?? 'CASH'));
+
+            // Load all tagihan_siswa records
+            $tagihanIds = array_column($request->pembayaran_items, 'tagihan_siswa_id');
+            $tagihanSiswaRecords = Tagihansiswa::with(['siswa', 'tagihan'])
+                ->whereIn('id', $tagihanIds)
+                ->get()
+                ->keyBy('id');
+
+            // Validate all bills
+            $totalJumlahBayar = 0;
+            $validationErrors = [];
+            $pembayaranItems = [];
+
+            foreach ($request->pembayaran_items as $index => $item) {
+                $tagihanSiswaId = $item['tagihan_siswa_id'];
+                $jumlahBayar = (int) $item['jumlah_bayar'];
+
+                if (!isset($tagihanSiswaRecords[$tagihanSiswaId])) {
+                    $validationErrors[] = "Item {$index}: Tagihan siswa ID {$tagihanSiswaId} tidak ditemukan";
+                    continue;
+                }
+
+                $tagihanSiswa = $tagihanSiswaRecords[$tagihanSiswaId];
+
+                // ============= VALIDASI STATUS TAGIHAN =============
+                // Status: 0 = Belum Bayar, 1 = Lunas, 2 = Cicilan
+                if ($tagihanSiswa->status == 1) {
+                    Log::warning("⚠️ Item {$index}: Tagihan sudah lunas untuk tagihan siswa ID: {$tagihanSiswaId}");
+                    $validationErrors[] = "Item {$index}: Tagihan ini sudah lunas dan tidak perlu dibayar lagi";
+                    continue;
+                }
+
+                // ============= CEK PEMBAYARAN PENDING =============
+                $existingPendingPayment = Pembayarantagihan::where('tagihan_siswa_id', $tagihanSiswaId)
+                    ->where('status_approval', 'pending')
+                    ->first();
+
+                if ($existingPendingPayment) {
+                    Log::warning("⚠️ Item {$index}: Ada pembayaran yang masih menunggu approval");
+                    $validationErrors[] = "Item {$index}: Sudah ada pembayaran yang sedang menunggu persetujuan admin";
+                    continue;
+                }
+
+                $sisaNominal = (int) $tagihanSiswa->sisa_nominal;
+
+                if ($jumlahBayar > $sisaNominal) {
+                    Log::warning("⚠️ Item {$index}: Jumlah bayar lebih besar dari sisa nominal");
+                    $validationErrors[] = "Item {$index}: Jumlah bayar ({$jumlahBayar}) tidak boleh lebih besar dari sisa tagihan ({$sisaNominal})";
+                    continue;
+                }
+
+                $pembayaranItems[] = [
+                    'tagihan_siswa' => $tagihanSiswa,
+                    'tagihan_siswa_id' => $tagihanSiswaId,
+                    'jumlah_bayar' => $jumlahBayar,
+                    'sisa_nominal' => $sisaNominal
+                ];
+
+                $totalJumlahBayar += $jumlahBayar;
+            }
+
+            if (!empty($validationErrors)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi pembayaran gagal',
+                    'errors' => $validationErrors
+                ], 400);
+            }
+
+            if (empty($pembayaranItems)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada item pembayaran yang valid'
+                ], 400);
+            }
+
+            Log::info('✓ Semua validasi pembayaran berhasil');
+            Log::info('Total jumlah bayar: ' . $totalJumlahBayar);
+
+            // Generate payment code for master
+            $codePembayaran = 'PAY' . date('YmdHis') . rand(1000, 9999);
+            Log::info('Payment Code Generated: ' . $codePembayaran);
+
+            // Generate head_tagihan identifier
+            $headTagihan = 'HEAD' . date('YmdHis') . rand(1000, 9999);
+            Log::info('Head Tagihan Generated: ' . $headTagihan);
+
+            // Prepare default description
+            $keterangan = $request->keterangan ?? "Pembayaran multiple {$totalJumlahBayar} dari " . count($pembayaranItems) . " tagihan";
+            Log::info('Keterangan: ' . $keterangan);
+
+            // Get first tagihan siswa for master record (as reference)
+            $masterTagihanSiswa = $pembayaranItems[0]['tagihan_siswa'];
+
+            // Save master payment with PENDING status
+            Log::info('Creating master payment record with PENDING status...');
+            $pembayaran = Pembayarantagihan::create([
+                'code_pembayaran' => $codePembayaran,
+                'tagihan_siswa_id' => $masterTagihanSiswa->id, // Reference to first tagihan
+                'jumlah_bayar' => $totalJumlahBayar,
+                'tanggal_bayar' => now(),
+                'metode_bayar' => $request->metode ?? 'CASH',
+                'keterangan' => $keterangan,
+                'create_by' => Auth::id(),
+                'status_approval' => 'pending', // Set as PENDING
+                'is_master' => true, // Mark as master
+                'head_tagihan' => $headTagihan,
+                'jumlah_tagihan_detail' => count($pembayaranItems),
+            ]);
+
+            Log::info('✓ Master payment record created | Pembayaran ID: ' . $pembayaran->id);
+            Log::info('⏳ Status: PENDING (Menunggu persetujuan admin)');
+
+            // Create detail records for each item
+            Log::info('Creating detail payment records...');
+            $urutan = 1;
+            foreach ($pembayaranItems as $item) {
+                $detail = \App\Models\PembayaranTagihanDetail::create([
+                    'head_tagihan' => $headTagihan,
+                    'pembayaran_id' => $pembayaran->id,
+                    'tagihan_siswa_id' => $item['tagihan_siswa_id'],
+                    'jumlah_bayar_detail' => $item['jumlah_bayar'],
+                    'urutan' => $urutan,
+                    'periode' => $item['tagihan_siswa']->bulan_ke,
+                    'tahun' => $item['tagihan_siswa']->tagihan->tahun_mulai ?? date('Y'),
+                ]);
+
+                Log::info("✓ Detail {$urutan} created | Tagihan Siswa ID: " . $item['tagihan_siswa_id'] . " | Amount: " . $item['jumlah_bayar']);
+                $urutan++;
+            }
+
+            Log::info('✓ All detail records created');
+
+            // Create financial transaction record with PENDING status
+            Log::info('Creating financial transaction record with PENDING status...');
+            $transaksi = Keuangan_transaksi::create([
+                'code_pembayaran' => $codePembayaran,
+                'penerima_id' => $masterTagihanSiswa->siswa->id,
+                'penerima_tipe' => Siswa::class,
+                'jenis_transaksi' => 'tagihan',
+                'jumlah' => $totalJumlahBayar,
+                'metode' => $request->metode ?? 'CASH',
+                'referensi_tagihan_id' => $pembayaran->id,
+                'tanggal_transaksi' => now(),
+                'keterangan' => $keterangan,
+                'created_by' => Auth::id(),
+                'status_approval' => 'pending', // Set as PENDING
+                'status_verifikasi' => 'pending'
+            ]);
+
+            Log::info('✓ Financial transaction created | Transaksi ID: ' . $transaksi->id);
+            Log::info('⏳ Transaksi Status: PENDING (Menunggu persetujuan admin)');
+
+            DB::commit();
+
+            Log::info('========== PEMBAYARAN MULTIPLE WITH DETAIL COMPLETED - PENDING FOR APPROVAL ==========');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran multiple berhasil dicatat dan menunggu persetujuan admin',
+                'data' => [
+                    'pembayaran' => $pembayaran->load(['pembayaranDetail', 'tagihanSiswa.siswa', 'tagihanSiswa.tagihan.rekening']),
+                    'transaksi' => $transaksi,
+                    'detail_items' => $pembayaranItems,
+                    'status_approval' => 'pending',
+                    'keterangan_status' => [
+                        'pembayaran_status' => 'pending',
+                        'transaksi_status' => 'pending',
+                        'journal_entries' => 'Belum dibuat - akan dibuat saat di-approve',
+                        'sisa_nominal' => 'Belum dikurangi - akan dikurangi saat di-approve'
+                    ],
+                    'ringkasan' => [
+                        'head_tagihan' => $headTagihan,
+                        'code_pembayaran' => $codePembayaran,
+                        'total_items' => count($pembayaranItems),
+                        'total_jumlah_bayar' => $totalJumlahBayar,
+                        'metode' => $request->metode ?? 'CASH'
+                    ],
+                    'next_action' => 'Tunggu persetujuan dari admin melalui endpoint approve dengan ID pembayaran: ' . $pembayaran->id
+                ]
+            ], 201);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('❌ ERROR dalam pembayaran multiple with detail');
+            Log::error('Exception: ' . $th->getMessage());
+            Log::error('File: ' . $th->getFile() . ' | Line: ' . $th->getLine());
+            Log::error('========== PEMBAYARAN MULTIPLE WITH DETAIL FAILED ==========');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * @OA\Get(
      *     path="/pembayaran/{id}",
      *     tags={"Pembayaran"},

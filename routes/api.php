@@ -116,6 +116,10 @@ Route::prefix("v1")->group(function () {
         // Route::apiResource('potongan', \App\Http\Controllers\Api\V1\PotonganController::class);
 
         // Pembayaran routes
+        Route::post("pembayaran/proses-multiple-with-detail", [
+            \App\Http\Controllers\Api\V1\PembayaranController::class,
+            "prosesPembayaranMultipleWithDetail",
+        ]);
         Route::get("pembayaran/pending-approval", [
             \App\Http\Controllers\Api\V1\PembayaranController::class,
             "pendingApproval",
