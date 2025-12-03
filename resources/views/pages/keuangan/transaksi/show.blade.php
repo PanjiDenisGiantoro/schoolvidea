@@ -105,10 +105,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 5%;">#</th>
-                                <th style="width: 25%;">Nama Tagihan</th>
-                                <th style="width: 20%;">Periode</th>
-                                <th style="width: 20%;">Nominal</th>
-                                <th style="width: 20%;">Dibayar</th>
+                                <th style="width: 20%;">Nama Tagihan</th>
+                                <th style="width: 15%;">Periode</th>
+                                <th style="width: 15%;">Nominal</th>
+                                <th style="width: 15%;">Potongan</th>
+                                <th style="width: 15%;">Dibayar</th>
                                 <th style="width: 10%;">Siswa</th>
                             </tr>
                         </thead>
@@ -159,6 +160,18 @@
                                     <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
                                 </td>
                                 <td>
+                                    @php
+                                        $totalPotongan = $detail->tagihanSiswa->potonganSiswa->sum('nominal');
+                                    @endphp
+                                    @if($totalPotongan > 0)
+                                        <span class="text-warning fw-bold">
+                                            <small class="badge bg-warning text-dark">-Rp {{ number_format($totalPotongan, 0, ',', '.') }}</small>
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
                                     <span class="text-success fw-bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</span>
                                 </td>
                                 <td>
@@ -167,13 +180,25 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Tidak ada detail tagihan</td>
+                                <td colspan="7" class="text-center text-muted">Tidak ada detail tagihan</td>
                             </tr>
                             @endforelse
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
                                 <th colspan="4" class="text-end">Total Pembayaran:</th>
+                                <th>
+                                    @php
+                                        $totalAllPotongan = $pembayaranDetail->sum(function($item) {
+                                            return $item->tagihanSiswa->potonganSiswa->sum('nominal');
+                                        });
+                                    @endphp
+                                    @if($totalAllPotongan > 0)
+                                        <span class="text-warning fw-bold">-Rp {{ number_format($totalAllPotongan, 0, ',', '.') }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </th>
                                 <th colspan="2" class="text-success fw-bold">Rp {{ number_format($pembayaranDetail->sum('jumlah_bayar_detail'), 0, ',', '.') }}</th>
                             </tr>
                         </tfoot>
@@ -206,6 +231,19 @@
                                 <li>
                                     {{ $item->kategori->nama_kategori ?? '-' }}
                                     - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
+                                </li>
+                            @endforeach
+                        </ul>
+                        @endif
+
+                        @if($tagihanSiswa->potonganSiswa && $tagihanSiswa->potonganSiswa->count() > 0)
+                        <li class="mt-2"><strong>Potongan (Diskon/Beasiswa):</strong></li>
+                        <ul class="mt-1">
+                            @foreach($tagihanSiswa->potonganSiswa as $potongan)
+                                <li>
+                                    <span class="badge bg-warning text-dark">{{ $potongan->potongan->tipe_potongan === 'persentase' ? $potongan->potongan->nilai . '%' : 'Nominal' }}</span>
+                                    {{ $potongan->potongan->keterangan ?? '-' }}
+                                    - Rp {{ number_format($potongan->nominal ?? 0, 0, ',', '.') }}
                                 </li>
                             @endforeach
                         </ul>
