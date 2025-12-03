@@ -120,6 +120,10 @@ Route::prefix("v1")->group(function () {
             \App\Http\Controllers\Api\V1\PembayaranController::class,
             "prosesPembayaranMultipleWithDetail",
         ]);
+        Route::post("pembayaran/upload-bukti-multiple", [
+            \App\Http\Controllers\Api\V1\PembayaranController::class,
+            "uploadBuktiMultiple",
+        ]);
         Route::get("pembayaran/pending-approval", [
             \App\Http\Controllers\Api\V1\PembayaranController::class,
             "pendingApproval",

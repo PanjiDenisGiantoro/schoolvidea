@@ -1123,6 +1123,199 @@ Pembayaran akan dicek:
 
     /**
      * @OA\Post(
+     *     path="/pembayaran/upload-bukti-multiple",
+     *     tags={"Pembayaran"},
+     *     summary="Upload bukti pembayaran multiple",
+     *     description="Upload bukti pembayaran untuk pembayaran multiple dengan detail. Bukti akan di-assign ke master pembayaran record.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"file_bukti"},
+     *                 @OA\Property(
+     *                     property="pembayaran_id",
+     *                     type="integer",
+     *                     description="Master payment ID (required jika tidak ada head_tagihan)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="head_tagihan",
+     *                     type="string",
+     *                     description="Head tagihan identifier (required jika tidak ada pembayaran_id)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="file_bukti",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="File bukti pembayaran (jpg, jpeg, png, pdf | max 5MB)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="keterangan_siswa",
+     *                     type="string",
+     *                     description="Catatan dari siswa (opsional)"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Bukti pembayaran berhasil diupload"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Pembayaran not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function uploadBuktiMultiple(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'pembayaran_id' => 'required_without:head_tagihan|integer|exists:pembayaran_tagihan,id',
+            'head_tagihan' => 'required_without:pembayaran_id|string',
+            'file_bukti' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'keterangan_siswa' => 'nullable|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            Log::info('========== UPLOAD BUKTI PEMBAYARAN MULTIPLE STARTED ==========');
+
+            // Get master pembayaran
+            $pembayaranId = $request->pembayaran_id;
+            $headTagihan = $request->head_tagihan;
+
+            if ($pembayaranId) {
+                $pembayaran = Pembayarantagihan::find($pembayaranId);
+            } else {
+                // Find master pembayaran by head_tagihan
+                $pembayaran = Pembayarantagihan::where('head_tagihan', $headTagihan)
+                    ->where('is_master', true)
+                    ->first();
+            }
+
+            if (!$pembayaran) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran multiple not found'
+                ], 404);
+            }
+
+            Log::info('Master Pembayaran ID: ' . $pembayaran->id);
+            Log::info('Head Tagihan: ' . ($pembayaran->head_tagihan ?? 'N/A'));
+
+            // Verify this is a master payment (multiple)
+            if (!$pembayaran->is_master) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran ini bukan pembayaran multiple (is_master harus true)'
+                ], 400);
+            }
+
+            // Delete old file if exists
+            if ($pembayaran->file_bukti && Storage::disk('public')->exists($pembayaran->file_bukti)) {
+                Storage::disk('public')->delete($pembayaran->file_bukti);
+                Log::info('✓ Old bukti file deleted: ' . $pembayaran->file_bukti);
+            }
+
+            // Upload new file
+            $file = $request->file('file_bukti');
+            $fileName = 'bukti_bayar_multiple_' . $pembayaran->code_pembayaran . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('bukti_pembayaran', $fileName, 'public');
+
+            Log::info('✓ File uploaded: ' . $filePath);
+
+            // Update master pembayaran with bukti
+            $pembayaran->update([
+                'file_bukti' => $filePath,
+                'keterangan_siswa' => $request->keterangan_siswa,
+                'status_approval' => 'pending'
+            ]);
+
+            Log::info('✓ Master pembayaran updated with bukti file');
+
+            // Get detail items to include in response
+            $details = PembayaranTagihanDetail::with('tagihanSiswa.tagihan', 'tagihanSiswa.siswa')
+                ->where('head_tagihan', $pembayaran->head_tagihan)
+                ->get();
+
+            Log::info('Total detail items: ' . $details->count());
+
+            $freshPembayaran = $pembayaran->fresh();
+
+            DB::commit();
+
+            Log::info('========== UPLOAD BUKTI PEMBAYARAN MULTIPLE COMPLETED ==========');
+
+            // Format detail items untuk response
+            $detailItems = $details->map(function ($detail) {
+                return [
+                    'id' => $detail->id,
+                    'urutan' => $detail->urutan,
+                    'tagihan_siswa_id' => $detail->tagihan_siswa_id,
+                    'tagihan_nama' => $detail->tagihanSiswa->tagihan->jenis_tagihan ?? '-',
+                    'siswa_nama' => $detail->tagihanSiswa->siswa->user->name ?? '-',
+                    'jumlah_bayar' => (float) $detail->jumlah_bayar_detail,
+                    'periode' => $detail->periode,
+                    'tahun' => $detail->tahun
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran multiple berhasil diupload',
+                'data' => [
+                    'pembayaran' => [
+                        'id' => $freshPembayaran->id,
+                        'code_pembayaran' => $freshPembayaran->code_pembayaran,
+                        'head_tagihan' => $freshPembayaran->head_tagihan,
+                        'is_master' => $freshPembayaran->is_master,
+                        'jumlah_bayar' => (float) $freshPembayaran->jumlah_bayar,
+                        'status_approval' => $freshPembayaran->status_approval,
+                        'tanggal_bayar' => $freshPembayaran->tanggal_bayar->format('Y-m-d'),
+                        'metode_bayar' => $freshPembayaran->metode_bayar
+                    ],
+                    'file_bukti' => [
+                        'path' => $freshPembayaran->file_bukti,
+                        'url' => $freshPembayaran->file_bukti ? Storage::disk('public')->url($freshPembayaran->file_bukti) : null,
+                        'uploaded_at' => now()->format('Y-m-d H:i:s')
+                    ],
+                    'detail_items' => $detailItems,
+                    'summary' => [
+                        'total_items' => $details->count(),
+                        'total_jumlah_bayar' => (float) $details->sum('jumlah_bayar_detail'),
+                        'keterangan_siswa' => $freshPembayaran->keterangan_siswa ?? '-'
+                    ]
+                ]
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('❌ ERROR dalam upload bukti pembayaran multiple');
+            Log::error('Exception: ' . $th->getMessage());
+            Log::error('File: ' . $th->getFile() . ' | Line: ' . $th->getLine());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
      *     path="/pembayaran/{id}/approve",
      *     tags={"Pembayaran"},
      *     summary="Approve payment",

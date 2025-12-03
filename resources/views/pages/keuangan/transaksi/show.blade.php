@@ -348,6 +348,15 @@
 
 
                 {{-- Approve/Reject Buttons --}}
+                @php
+                    // Detect apakah ini pembayaran multiple atau single
+                    $isMultiple = in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran'])
+                        && $transaksi->pembayaranTagihan
+                        && $transaksi->pembayaranTagihan->is_master === true;
+                    $headTagihan = $transaksi->pembayaranTagihan->head_tagihan ?? null;
+                    $pembayaranId = $transaksi->referensi_tagihan_id;
+                @endphp
+
                 @if($transaksi->status_verifikasi == 'pending')
                     @if($transaksi->jenis_transaksi == 'penarikan_tabungan' && $transaksi->status_approval == 'pending')
                         <div class="mt-3">
@@ -360,7 +369,8 @@
                                 <i class="bx bx-key"></i> Verifikasi Token
                             </button>
                             <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
-                                    data-id="{{ $transaksi->id }}">
+                                    data-id="{{ $transaksi->id }}"
+                                    data-is-multiple="false">
                                 <i class="bx bx-x-circle me-1"></i> Reject Transaksi
                             </button>
                         </div>
@@ -369,12 +379,18 @@
                     @else
                         <div class="mt-3">
                             <button type="button" class="btn btn-success w-100 rounded-pill shadow-sm mb-2 btn-approve-detail"
-                                    data-id="{{ $transaksi->id }}">
-                                <i class="bx bx-check-circle me-1"></i> Approve Transaksi
+                                    data-id="{{ $transaksi->id }}"
+                                    data-is-multiple="{{ $isMultiple ? 'true' : 'false' }}"
+                                    @if($isMultiple) data-head-tagihan="{{ $headTagihan }}" @endif>
+                                <i class="bx bx-check-circle me-1"></i>
+                                {{ $isMultiple ? 'Approve Pembayaran Multiple' : 'Approve Transaksi' }}
                             </button>
                             <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm mb-2 btn-reject-detail"
-                                    data-id="{{ $transaksi->id }}">
-                                <i class="bx bx-x-circle me-1"></i> Reject Transaksi
+                                    data-id="{{ $transaksi->id }}"
+                                    data-is-multiple="{{ $isMultiple ? 'true' : 'false' }}"
+                                    @if($isMultiple) data-head-tagihan="{{ $headTagihan }}" @endif>
+                                <i class="bx bx-x-circle me-1"></i>
+                                {{ $isMultiple ? 'Reject Pembayaran Multiple' : 'Reject Transaksi' }}
                             </button>
                         </div>
 
@@ -538,7 +554,9 @@
             if (approveBtn) {
                 approveBtn.addEventListener('click', function() {
                     const transaksiId = this.dataset.id;
-                    approveTransaksi(transaksiId);
+                    const isMultiple = this.dataset.isMultiple === 'true';
+                    const headTagihan = this.dataset.headTagihan;
+                    approveTransaksi(transaksiId, isMultiple, headTagihan);
                 });
             }
 
@@ -547,14 +565,18 @@
             if (rejectBtn) {
                 rejectBtn.addEventListener('click', function() {
                     const transaksiId = this.dataset.id;
-                    rejectTransaksi(transaksiId);
+                    const isMultiple = this.dataset.isMultiple === 'true';
+                    const headTagihan = this.dataset.headTagihan;
+                    rejectTransaksi(transaksiId, isMultiple, headTagihan);
                 });
             }
         });
 
-        function approveTransaksi(transaksiId) {
+        function approveTransaksi(transaksiId, isMultiple, headTagihan) {
+            const title = isMultiple ? 'Approve Pembayaran Multiple' : 'Approve Transaksi';
+
             Swal.fire({
-                title: 'Approve Transaksi',
+                title: title,
                 html: `
                     <div class="text-start">
                         <label for="catatan-approve" class="form-label">Catatan (Opsional)</label>
@@ -570,14 +592,16 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     const catatan = document.getElementById('catatan-approve').value;
-                    processApproval(transaksiId, catatan);
+                    processApproval(transaksiId, catatan, isMultiple, headTagihan);
                 }
             });
         }
 
-        function rejectTransaksi(transaksiId) {
+        function rejectTransaksi(transaksiId, isMultiple, headTagihan) {
+            const title = isMultiple ? 'Reject Pembayaran Multiple' : 'Reject Transaksi';
+
             Swal.fire({
-                title: 'Reject Transaksi',
+                title: title,
                 html: `
                     <div class="text-start">
                         <label for="catatan-reject" class="form-label">Alasan Reject <span class="text-danger">*</span></label>
@@ -600,12 +624,12 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    processRejection(transaksiId, result.value);
+                    processRejection(transaksiId, result.value, isMultiple, headTagihan);
                 }
             });
         }
 
-        function processApproval(transaksiId, catatan) {
+        function processApproval(transaksiId, catatan, isMultiple, headTagihan) {
             Swal.fire({
                 title: 'Memproses...',
                 allowOutsideClick: false,
@@ -614,16 +638,32 @@
                 }
             });
 
-            fetch(`{{ url('keuangan-transaksi/approve') }}/${transaksiId}`, {
+            // Tentukan endpoint berdasarkan tipe (single vs multiple)
+            let url, body;
+
+            if (isMultiple) {
+                // Multiple payment endpoint
+                url = `{{ url('keuangan-transaksi/approve-multiple') }}`;
+                body = {
+                    pembayaran_id: transaksiId,
+                    catatan_verifikasi: catatan
+                };
+            } else {
+                // Single payment endpoint
+                url = `{{ url('keuangan-transaksi/approve') }}/${transaksiId}`;
+                body = {
+                    catatan_verifikasi: catatan
+                };
+            }
+
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({
-                    catatan_verifikasi: catatan
-                })
+                body: JSON.stringify(body)
             })
             .then(response => response.json())
             .then(data => {
@@ -656,7 +696,7 @@
             });
         }
 
-        function processRejection(transaksiId, catatan) {
+        function processRejection(transaksiId, catatan, isMultiple, headTagihan) {
             Swal.fire({
                 title: 'Memproses...',
                 allowOutsideClick: false,
@@ -665,16 +705,32 @@
                 }
             });
 
-            fetch(`{{ url('keuangan-transaksi/reject') }}/${transaksiId}`, {
+            // Tentukan endpoint berdasarkan tipe (single vs multiple)
+            let url, body;
+
+            if (isMultiple) {
+                // Multiple payment endpoint
+                url = `{{ url('keuangan-transaksi/reject-multiple') }}`;
+                body = {
+                    pembayaran_id: transaksiId,
+                    catatan_verifikasi: catatan
+                };
+            } else {
+                // Single payment endpoint
+                url = `{{ url('keuangan-transaksi/reject') }}/${transaksiId}`;
+                body = {
+                    catatan_verifikasi: catatan
+                };
+            }
+
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({
-                    catatan_verifikasi: catatan
-                })
+                body: JSON.stringify(body)
             })
             .then(response => response.json())
             .then(data => {
