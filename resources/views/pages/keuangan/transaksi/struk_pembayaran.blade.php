@@ -194,11 +194,38 @@
         <div class="divider"></div>
 
         {{-- Informasi Transaksi --}}
+        @php
+            // Determine if this is multiple or single payment
+            $isMultiple = false;
+            $headTagihan = null;
+            $pembayaranDetail = null;
+
+            if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan) {
+                if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
+                    $isMultiple = true;
+                    $headTagihan = $transaksi->pembayaranTagihan->head_tagihan;
+                    $pembayaranDetail = \App\Models\PembayaranTagihanDetail::where('head_tagihan', $headTagihan)->get();
+                }
+            }
+        @endphp
+
         <div class="section">
             <div class="info-row">
                 <div class="info-label">No. Transaksi</div>
+                <div class="info-value">:
+                    @if($isMultiple)
+                        {{ $headTagihan }}
+                    @else
+                        {{ $transaksi->code_pembayaran }}
+                    @endif
+                </div>
+            </div>
+            @if($isMultiple)
+            <div class="info-row">
+                <div class="info-label">Kode Pembayaran</div>
                 <div class="info-value">: {{ $transaksi->code_pembayaran }}</div>
             </div>
+            @endif
             <div class="info-row">
                 <div class="info-label">Tanggal</div>
                 <div class="info-value">: {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y H:i') }}</div>
@@ -207,6 +234,16 @@
                 <div class="info-label">Kasir</div>
                 <div class="info-value">: {{ $transaksi->creator->name ?? '-' }}</div>
             </div>
+            @if($isMultiple)
+            <div class="info-row">
+                <div class="info-label">Jenis</div>
+                <div class="info-value">: PEMBAYARAN MULTIPLE</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Jumlah Tagihan</div>
+                <div class="info-value">: {{ $pembayaranDetail->count() }} Tagihan</div>
+            </div>
+            @endif
         </div>
 
         <div class="divider"></div>
@@ -232,10 +269,50 @@
 
         {{-- Detail Pembayaran --}}
         <div class="section">
-            <div class="section-title">RINCIAN PEMBAYARAN</div>
+            @if($isMultiple)
+                {{-- PEMBAYARAN MULTIPLE --}}
+                <div class="section-title">RINCIAN PEMBAYARAN MULTIPLE ({{ $pembayaranDetail->count() }} Tagihan)</div>
+                <table class="item-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">No</th>
+                            <th style="width: 50%;">Nama Tagihan</th>
+                            <th style="width: 40%;" class="text-right">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $totalDetail = 0; @endphp
+                        @forelse($pembayaranDetail as $detail)
+                            <tr>
+                                <td>{{ $detail->urutan }}</td>
+                                <td>
+                                    {{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}
+                                    <br><small style="font-size: 9px;">Periode: {{ $detail->periode ?? '-' }} Tahun {{ $detail->tahun ?? '-' }}</small>
+                                </td>
+                                <td class="text-right bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</td>
+                            </tr>
+                            @php $totalDetail += $detail->jumlah_bayar_detail; @endphp
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center small">Tidak ada detail tagihan</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
-            @if(in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan)
-                {{-- Pembayaran Tagihan --}}
+                {{-- Additional info for multiple payments --}}
+                <div style="margin-top: 8px; padding: 5px; background: #f5f5f5; border: 1px dashed #000;">
+                    <div class="small bold">CATATAN PEMBAYARAN MULTIPLE:</div>
+                    <div class="small" style="margin-top: 3px;">
+                        - Pembayaran ini mencakup {{ $pembayaranDetail->count() }} item tagihan<br>
+                        - Setiap item akan diproses sesuai urutan<br>
+                        - Total pembayaran: Rp {{ number_format($totalDetail, 0, ',', '.') }}
+                    </div>
+                </div>
+
+            @elseif(in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan)
+                {{-- PEMBAYARAN SINGLE --}}
+                <div class="section-title">RINCIAN PEMBAYARAN</div>
                 <table class="item-table">
                     <thead>
                         <tr>
@@ -263,6 +340,7 @@
 
             @elseif($transaksi->jenis_transaksi === 'setoran_tabungan')
                 {{-- Setoran Tabungan --}}
+                <div class="section-title">RINCIAN PEMBAYARAN</div>
                 <div class="info-row">
                     <div class="info-label">Setoran Tabungan</div>
                     <div class="info-value text-right bold">Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</div>
@@ -270,6 +348,7 @@
 
             @elseif($transaksi->jenis_transaksi === 'penarikan_tabungan')
                 {{-- Penarikan Tabungan --}}
+                <div class="section-title">RINCIAN PEMBAYARAN</div>
                 <div class="info-row">
                     <div class="info-label">Penarikan Tabungan</div>
                     <div class="info-value text-right bold">Rp {{ number_format($transaksi->jumlah, 0, ',', '.') }}</div>

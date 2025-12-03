@@ -285,10 +285,28 @@
                     </thead>
                     <tbody>
                         @forelse($transaksis as $transaksi)
+                            @php
+                                // Determine which code to display based on payment type
+                                $displayCode = $transaksi->code_pembayaran;
+                                $isMulitple = false;
+
+                                if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan) {
+                                    if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
+                                        $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
+                                        $isMulitple = true;
+                                    }
+                                }
+                            @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    <span class="badge bg-secondary">{{ $transaksi->code_pembayaran }}</span>
+                                    <span class="badge @if($isMulitple) bg-info @else bg-secondary @endif">
+                                        @if($isMulitple)
+                                            <i class="bx bx-link-alt me-1"></i>{{ $displayCode }}
+                                        @else
+                                            {{ $displayCode }}
+                                        @endif
+                                    </span>
                                 </td>
                                 <td>
                                     @if ($transaksi->penerima)
