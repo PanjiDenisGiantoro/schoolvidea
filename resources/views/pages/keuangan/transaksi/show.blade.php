@@ -642,10 +642,10 @@
             let url, body;
 
             if (isMultiple) {
-                // Multiple payment endpoint
+                // Multiple payment endpoint - gunakan head_tagihan untuk find pembayaran
                 url = `{{ url('keuangan-transaksi/approve-multiple') }}`;
                 body = {
-                    pembayaran_id: transaksiId,
+                    head_tagihan: headTagihan,  // UBAH: gunakan head_tagihan bukan pembayaran_id
                     catatan_verifikasi: catatan
                 };
             } else {
@@ -709,10 +709,10 @@
             let url, body;
 
             if (isMultiple) {
-                // Multiple payment endpoint
+                // Multiple payment endpoint - gunakan head_tagihan untuk find pembayaran
                 url = `{{ url('keuangan-transaksi/reject-multiple') }}`;
                 body = {
-                    pembayaran_id: transaksiId,
+                    head_tagihan: headTagihan,  // UBAH: gunakan head_tagihan bukan pembayaran_id
                     catatan_verifikasi: catatan
                 };
             } else {

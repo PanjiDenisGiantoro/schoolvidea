@@ -1210,10 +1210,18 @@ class KeuanganTransaksiController extends Controller
     public function approveMultiple(Request $request)
     {
         $request->validate([
-            'pembayaran_id' => 'required_without:head_tagihan|integer|exists:pembayaran_tagihan,id',
-            'head_tagihan' => 'required_without:pembayaran_id|string',
+            'pembayaran_id' => 'nullable|integer',
+            'head_tagihan' => 'nullable|string',
             'catatan_verifikasi' => 'nullable|string'
         ]);
+
+        // Validate at least one identifier is provided
+        if (!$request->pembayaran_id && !$request->head_tagihan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran ID atau Head Tagihan harus disediakan'
+            ], 422);
+        }
 
         DB::beginTransaction();
 
@@ -1466,10 +1474,18 @@ class KeuanganTransaksiController extends Controller
     public function rejectMultiple(Request $request)
     {
         $request->validate([
-            'pembayaran_id' => 'required_without:head_tagihan|integer|exists:pembayaran_tagihan,id',
-            'head_tagihan' => 'required_without:pembayaran_id|string',
+            'pembayaran_id' => 'nullable|integer',
+            'head_tagihan' => 'nullable|string',
             'catatan_verifikasi' => 'required|string'
         ]);
+
+        // Validate at least one identifier is provided
+        if (!$request->pembayaran_id && !$request->head_tagihan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran ID atau Head Tagihan harus disediakan'
+            ], 422);
+        }
 
         DB::beginTransaction();
 
