@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Controller;
 use App\Models\Jurnals;
 use App\Models\Keuangan_transaksi;
 use App\Models\Pembayarantagihan;
+use App\Models\PembayaranTagihanDetail;
 use App\Models\setting_akun;
 use App\Models\Siswa;
 use App\Models\Tagihan;
