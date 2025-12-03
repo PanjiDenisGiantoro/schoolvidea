@@ -764,8 +764,12 @@
                 <td class="text-end text-success">Rp ${parseInt(tagihan.jumlah_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center"><span class="badge bg-success">LUNAS</span></td>
                                 <td>
-                                    <a href="{{ url('#') }}" class="btn btn-success"><i class='ri-eye-line' style="font-size: 16px"></i></a>
-                                    <a href="{{ url('#') }}" class="btn btn-warning"><i class="ri-printer-line" style="font-size: 16px"></i></a>
+                                    <a href="{{ url('keuangan-transaksi/show') }}/${tagihan.keuangan_transaksi_id}" class="btn btn-success btn-sm rounded-pill" title="Lihat Detail">
+                                        <i class='ri-eye-line' style="font-size: 16px"></i> Detail
+                                    </a>
+                                    <a href="{{ url('keuangan-transaksi/cetak-struk') }}/${tagihan.keuangan_transaksi_id}" class="btn btn-warning btn-sm rounded-pill" title="Cetak Struk" target="_blank">
+                                        <i class="ri-printer-line" style="font-size: 16px"></i> Struk
+                                    </a>
                                 </td>
             </tr>
         `).join('');

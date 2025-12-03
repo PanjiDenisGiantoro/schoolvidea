@@ -218,7 +218,11 @@ class PembayaranController extends Controller
 
 
             if (!$datarekening) {
-                return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Rekening tabungan tidak ditemukan.'
+                ], 400);
             }
 
 

@@ -735,7 +735,8 @@ class TagihanController extends Controller
             'siswa',
             'tagihan',
             'tagihanItem.kategori', // Load item spesifik via relasi
-            'potonganSiswa.potongan'
+            'potonganSiswa.potongan',
+            'pembayaranTagihan' // Load pembayaran untuk get keuangan_transaksi
         ])
             ->where('siswa_id', $siswaId)
             ->whereHas('tagihan', function ($query) {
@@ -777,9 +778,21 @@ class TagihanController extends Controller
             $jumlahTagihan = $nominal - $totalPotongan;
             $jumlahDibayar = $ts->sisa_nominal;
 
+            // Get keuangan_transaksi id dari pembayaran yang related
+            $keuanganTransaksiId = null;
+            if ($ts->pembayaranTagihan && $ts->pembayaranTagihan->count() > 0) {
+                // Ambil pembayaran pertama dan cari keuangan_transaksi nya
+                $pembayaran = $ts->pembayaranTagihan->first();
+                $keuanganTransaksi = \App\Models\Keuangan_transaksi::where('referensi_tagihan_id', $pembayaran->id)->first();
+                if ($keuanganTransaksi) {
+                    $keuanganTransaksiId = $keuanganTransaksi->id;
+                }
+            }
+
             $row = [
                 'no'                => $counter++,
                 'id'                => $ts->id,
+                'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F'),
                 'tahun'             => $date->year,
                 'tagihan_kelas'     => $namaKategori, // Nama kategori spesifik
@@ -812,7 +825,8 @@ class TagihanController extends Controller
             'siswa',
             'tagihan',
             'tagihanItem.kategori', // Load item spesifik
-            'potonganSiswa.potongan'
+            'potonganSiswa.potongan',
+            'pembayaranTagihan' // Load pembayaran untuk get keuangan_transaksi
         ])
             ->where('tagihan_id', $tagihanId)
             ->where('siswa_id', $siswaId)
@@ -852,9 +866,21 @@ class TagihanController extends Controller
             $jumlahDibayar = $ts->sisa_nominal;
             $jumlahTunggakan = $ts->sisa_nominal;
 
+            // Get keuangan_transaksi id dari pembayaran yang related
+            $keuanganTransaksiId = null;
+            if ($ts->pembayaranTagihan && $ts->pembayaranTagihan->count() > 0) {
+                // Ambil pembayaran pertama dan cari keuangan_transaksi nya
+                $pembayaran = $ts->pembayaranTagihan->first();
+                $keuanganTransaksi = \App\Models\Keuangan_transaksi::where('referensi_tagihan_id', $pembayaran->id)->first();
+                if ($keuanganTransaksi) {
+                    $keuanganTransaksiId = $keuanganTransaksi->id;
+                }
+            }
+
             $row = [
                 'no'                => $index + 1,
                 'id'                => $ts->id,
+                'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F Y'),
                 'tagihan_kelas'     => $namaKategori, // Nama kategori spesifik
                 'rincian_tagihan'   => (int) $nominal, // Nominal item spesifik
