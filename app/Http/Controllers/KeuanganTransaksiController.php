@@ -400,8 +400,21 @@ class KeuanganTransaksiController extends Controller
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
         ])->findOrFail($id);
 
+        // Detect if this is multiple or single payment
+        $isMultiple = false;
+        $pembayaranDetail = null;
+        $headTagihan = null;
+
+        if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan) {
+            if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
+                $isMultiple = true;
+                $headTagihan = $transaksi->pembayaranTagihan->head_tagihan;
+                $pembayaranDetail = PembayaranTagihanDetail::where('head_tagihan', $headTagihan)->get();
+            }
+        }
+
         // Generate HTML dari view struk
-        $html = view('pages.keuangan.transaksi.struk_pembayaran', compact('transaksi'))->render();
+        $html = view('pages.keuangan.transaksi.struk_pembayaran', compact('transaksi', 'isMultiple', 'pembayaranDetail', 'headTagihan'))->render();
 
         // Konfigurasi mPDF untuk ukuran struk thermal (58mm atau 80mm)
         $mpdf = new Mpdf([
