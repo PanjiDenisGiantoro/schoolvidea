@@ -745,11 +745,13 @@ class PayrollPaymentController extends Controller
 
     public function slip($id)
     {
-        $payment = PayrollPayment::with(['officer'])->findOrFail($id);
+        $payment = PayrollPayment::with(['officer.unit'])->findOrFail($id);
+        $unit_image = Unit::where('id', $payment->unit_id)->value('image');
+        $unit_image_path = $unit_image ? public_path($unit_image) : null;
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
-            'format' => [210, 148], // A5
+            'format' => 'A4',    // [210, 148], // A5
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 5,
@@ -757,10 +759,21 @@ class PayrollPaymentController extends Controller
             // 'orientation' => 'L',
         ]);
 
-        $html = view('pages.penggajian.payroll_payment.slip', compact('payment'))->render();
+        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path']))->render();
 
         $mpdf->WriteHTML($html);
 
         return $mpdf->Output("slip-{$payment->id}.pdf", 'I');
+    }
+
+    public function detail($id)
+    {
+        $payment = PayrollPayment::with(['officer'])->findOrFail($id);
+
+        // return view('pages.penggajian.payroll_payment.detail', compact('payment'));
+
+        return response()->json([
+            'payment' => $payment,
+        ]);
     }
 }

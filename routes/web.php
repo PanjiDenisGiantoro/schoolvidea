@@ -422,6 +422,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
         Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
         Route::get('/slip/{id}', [PayrollPaymentController::class, 'slip'])->name('payroll-payment.slip');
+        Route::get('/detail/{id}', [PayrollPaymentController::class, 'detail'])->name('payroll-payment.detail');
     });
 });
 // Route::get('/payroll-payment', function () {

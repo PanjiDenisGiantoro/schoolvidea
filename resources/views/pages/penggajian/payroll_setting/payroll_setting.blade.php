@@ -207,7 +207,8 @@
                                 <div class="col-md-4">
                                     <x-input-field type="text" name="type_deduction" label="Tipe Potongan" readonly
                                         :disabled="isset($show)" value="{{ $ded->type }}" />
-                                </div>
+                                        {{-- <input type="hidden" id="deduction_type_update[]" name="deduction_type_update[]" class="deduction-type-update" value="{{ $ded->type }}">
+--}}                                </div>
                                 <div class="col-md-4">
                                     <label for="deductions_id" class="form-label">Nama Potongan <span
                                             class="text-danger">*</span></label>
@@ -625,7 +626,7 @@
             if (result.isConfirmed) {
                 // Hapus titik pemisah angka sebelum dikirim
                 const inputs = document.querySelectorAll(
-                    '.component-value, .deduction-value, .deduction-type, [id$="_allowance"], [name="salary"]'
+                    '.component-value, .deduction-value, .deduction-type, .deduction-type-update, [id$="_allowance"], [name="salary"]'
                 );
                 inputs.forEach(input => {
                     input.value = input.value.replace(/\./g, '');

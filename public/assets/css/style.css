@@ -299,16 +299,16 @@
 }
 
 .custom-input-presensi.hadir_week {
-    background-color: #fff3cd; /* kuning muda */
+    background-color: #d1e7dd; /* kuning muda */
 }
 .custom-input-presensi.hadir_month {
-    background-color: #cecdff; /* kuning muda */
+    background-color: #d1e7dd; /* kuning muda */
 }
 .custom-input-presensi.alpha {
-    background-color: #f8d7da; /* merah muda */
+    background-color: #d1e7dd; /* merah muda */
 }
 .custom-input-presensi.staff {
-    background-color: #cdfff8; /* kuning muda */
+    background-color: #d1e7dd; /* kuning muda */
 }
 
 .custom-presensi-header {
@@ -782,10 +782,19 @@ body.dark-theme .custom-input-presensi.hadir {
     background-color: #064e3b;
 }
 body.dark-theme .custom-input-presensi.izin {
-    background-color: #78350f;
+    background-color: #064e3b;
 }
 body.dark-theme .custom-input-presensi.alpha {
-    background-color: #7f1d1d;
+    background-color: #064e3b;
+}
+body.dark-theme .custom-input-presensi.hadir_week {
+    background-color: #064e3b; /* kuning muda */
+}
+body.dark-theme .custom-input-presensi.hadir_month {
+    background-color: #064e3b; /* kuning muda */
+}
+body.dark-theme .custom-input-presensi.staff {
+    background-color: #064e3b; /* kuning muda */
 }
 
 /* Scrollbar */

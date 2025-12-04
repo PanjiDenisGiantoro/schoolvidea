@@ -947,10 +947,6 @@
                 });
 
                 setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
-                console.log(
-                    'row-checkbox-belum:',
-                    document.querySelectorAll('.row-checkbox-belum').length,
-                );
             }
             function renderSudahLunasTable(data) {
                 if (!data || !data.length) {
@@ -999,12 +995,14 @@
                 <td>${formatRupiah(item.total_earnings || 0)}</td>
                 <td>${formatRupiah(item.total_deductions || 0)}</td>
                 <td>${formatRupiah(item.net_payment || 0)}</td>
-                <td><button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#catatanModal">Catatan</button></td>
+                <td>
+                    <button class="btn btn-primary rounded-pill btn-catatan" data-bs-toggle="modal"
+                        data-bs-target="#catatanModal">Catatan</button>
+                </td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-info rounded-pill"><i class="ri-eye-line"></i></button>
-                        <a href="{{ url("#") }}" class="btn btn-success rounded-pill">
-                        <i class="ri-pencil-line"></i></a>
+                        <a href="{{ url('payroll-payment/detail/${item.id}') }}" class="btn btn-success rounded-pill">
+                        <i class="ri-eye-line"></i></a>
                         <a href="{{ url('payroll-payment/slip/${item.id}') }}" target="_blank" class="btn btn-warning rounded-pill shadow-sm">
                             <i class="ri-printer-line"></i>
                         </a>
@@ -1029,7 +1027,6 @@
                 });
             }
             //proses modal ctatan
-
             document.addEventListener('click', function (e) {
                 if (e.target.closest('.btn-catatan')) {
                     selectedRow = e.target.closest('tr');
@@ -1040,11 +1037,8 @@
 
                     const status = selectedRow.dataset.status;
 
-                    // ⚡ Perbaikan: pakai .value
                     document.getElementById('salary_note').value =
-                        item.salary_note
-                            ? formatCurrencyInput(item.salary_note)
-                            : '';
+                        item.salary_note ? formatRupiah(item.salary_note) : '';
                     document.getElementById('isiCatatan').value =
                         item.text_note ?? '';
 
@@ -1136,14 +1130,12 @@
                             return {};
                         }
                     });
-                    console.log('data items: ', items);
 
                     // Hitung total
                     const totalTagihan = items.reduce(
                         (sum, it) => sum + (it.net_payment || 0),
                         0,
                     );
-                    console.log('totalTagihan: ', totalTagihan);
                     const totalItems = items.length;
 
                     Swal.fire({

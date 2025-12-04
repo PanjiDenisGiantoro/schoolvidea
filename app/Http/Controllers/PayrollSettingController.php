@@ -113,7 +113,7 @@ class PayrollSettingController extends Controller
             } else {
                 $validated['teaching_hours_total'] = null;
             }
-            //dd($validated);
+            // dd($validated);
 
             // === Simpan payroll_settings ===
             $payrollSetting = PayrollSetting::updateOrCreate(
@@ -151,8 +151,6 @@ class PayrollSettingController extends Controller
                 }
                 $payrollSetting->deductions()->sync($deductionsData);
             }
-            //dd($deductionsData);
-            
 
             // === Hitung allowance & deduction ===
             $allowanceTotal =
@@ -166,19 +164,12 @@ class PayrollSettingController extends Controller
             $baseSalary1 = $salaryPerUnit * $tht;
             $totalDeductions = 0;
 
-            if ($deductions->isEmpty())  {
+            if ($deductions->isEmpty()) {
                 $totalDeductions = 0;
             } else {
                 foreach ($deductions as $deduction) {
                     $type = $deduction->pivot->type;
                     $value = $deduction->pivot->value;
-
-                    // dd([
-                    //     'Type' => $type, 
-                    //     'Value' => $value,
-                    //     'BaseSalary' => $baseSalary1,
-                    //     'Calculation' => ($type === 'persen' ? ($value / 100) * $baseSalary1 : $value)
-                    // ]);
 
                     if ($type === 'nominal') {
                         $totalDeductions += $value;
@@ -189,14 +180,13 @@ class PayrollSettingController extends Controller
                 }
             }
 
-            //$deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
-            //dd($salaryPerUnit, $tht, $baseSalary1, $totalDeductions);
-
             // === Variabel inti ===
             $billingPeriod = (int) $validated['billing_period'];
             $startMonth = (int) $validated['start_month'];
             $startYear = (int) $validated['start_year'];
             $rows = [];
+            $backup = $payrollSetting->load(['components', 'deductions'])->toArray();
+            $backup['total_deductions'] = $totalDeductions;
 
             // === Loop komponen → bulan ===
 
@@ -214,12 +204,12 @@ class PayrollSettingController extends Controller
                 $paymentMonth = sprintf('%02d-%04d', $month, $year);
 
                 // Gaji pokok (per komponen dihitung sama)
-                if (!$request->teaching_hours) {
+                if (! $request->teaching_hours) {
                     $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0);
-                } else if (!$request->teaching_hours_total) {
+                } elseif (! $request->teaching_hours_total) {
                     $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
                 }
-                //$basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+                // $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
 
                 // Total pendapatan per komponen
                 $totalEarnings = $basicSalary + $totalComponentValue;
@@ -244,20 +234,25 @@ class PayrollSettingController extends Controller
                     'payment_year' => $year,
                     'notes' => null,
                     'status' => 'pending',
+                    'details' => $backup,
 
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
             }
 
+            foreach ($rows as $data) {
+                PayrollPayment::create($data);
+            }
+
             // Insert sekali (super cepat)
-            PayrollPayment::insert($rows);
+            // PayrollPayment::insert($rows);
 
             return redirect()
                 ->route('payroll_settings.index')
                 ->with('success', 'Data Berhasil Disimpan');
         } catch (\Throwable $e) {
-            Log::error('PAYROLL ERROR: '.$e->getMessage());
+            Log::error('PAYROLL ERROR: ' . $e->getMessage());
 
             return back()->with('error', $e->getMessage());
         }
@@ -286,7 +281,7 @@ class PayrollSettingController extends Controller
             'component_value' => 'array',
             'deductions_id' => 'array',
             'deduction_value' => 'array',
-            'deduction_type' => 'array,'
+            'deduction_type' => 'array',
         ]);
 
         try {
@@ -294,7 +289,13 @@ class PayrollSettingController extends Controller
 
             // === 1️⃣ Update payroll setting master ===
             Log::info('Validated update data:', $validated);
-
+            if ($request->teaching_hours_total !== null) {
+                $validated['teaching_hours_total'] = $request->teaching_hours_total;
+            } elseif ($request->teaching_hours !== null) {
+                $validated['teaching_hours_total'] = $request->teaching_hours * 4;
+            } else {
+                $validated['teaching_hours_total'] = null;
+            }
             $payrollSetting = PayrollSetting::findOrFail($id);
             $payrollSetting->update($validated);
 
@@ -325,12 +326,41 @@ class PayrollSettingController extends Controller
                 $payrollSetting->deductions()->sync($deductionsData);
             }
 
-            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
-
             // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
-            $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+            if (! $request->teaching_hours) {
+                $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0);
+            } elseif (! $request->teaching_hours_total) {
+                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+            }
+            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
+            $deductions = $payrollSetting->deductions;
+            $totalDeductions1 = 0;
+
+            if ($deductions->isEmpty()) {
+                $totalDeductions1 = 0;
+            } else {
+                foreach ($deductions as $deduction) {
+                    $type = (! empty($deduction->pivot->type))
+                        ? $deduction->pivot->type
+                        : $deduction->type;
+
+                    $value = $deduction->pivot->value;
+
+                    // dump([$type, $value, $deduction->type]);
+
+                    if ($type === 'nominal') {
+                        $totalDeductions1 += $value;
+                        // dump(['total nominal' => $value]);
+                    } elseif ($type === 'persen') {
+                        $nominalPotongan = ($value / 100) * $basicSalary;
+                        $totalDeductions1 += $nominalPotongan;
+                        // dump(['total persen' => $nominalPotongan, 'basic salary' => $basicSalary]);
+                    }
+                }
+            }
+            // dd($totalDeductions);
             $totalEarnings = $basicSalary + $totalComponentValue;
-            $netPayment = $totalEarnings - $deductionsTotal;
+            $netPayment = $totalEarnings - $totalDeductions1;
 
             // === 5️⃣ Tentukan periode yang diinginkan ===
             $billingPeriod = (int) $validated['billing_period'];
@@ -339,6 +369,8 @@ class PayrollSettingController extends Controller
 
             // Simpan periode yang akan diupdate/dibuat
             $targetPeriods = [];
+            $backup = $payrollSetting->load(['components', 'deductions'])->toArray();
+            $backup['total_deductions'] = $totalDeductions;
 
             for ($i = 0; $i < $billingPeriod; $i++) {
                 $month = $startMonth + $i;
@@ -381,8 +413,9 @@ class PayrollSettingController extends Controller
                     'teaching_hour_month' => $request->teaching_hours_total ?? 0,
 
                     'total_earnings' => $totalEarnings,
-                    'total_deductions' => $deductionsTotal,
+                    'total_deductions' => $totalDeductions1,
                     'net_payment' => $netPayment,
+                    'details' => $backup,
 
                     'notes' => null,
                     'status' => 'pending',
@@ -412,7 +445,7 @@ class PayrollSettingController extends Controller
                 ->with('success', 'Data Berhasil Disimpan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE VALIDATION ERROR: '.$e->getMessage());
+            Log::error('PAYROLL UPDATE VALIDATION ERROR: ' . $e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -425,7 +458,7 @@ class PayrollSettingController extends Controller
             return back()->withErrors($e->errors())->withInput();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE MODEL NOT FOUND: '.$e->getMessage());
+            Log::error('PAYROLL UPDATE MODEL NOT FOUND: ' . $e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -438,7 +471,7 @@ class PayrollSettingController extends Controller
             return back()->with('error', 'Data tidak ditemukan');
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE ERROR: '.$e->getMessage());
+            Log::error('PAYROLL UPDATE ERROR: ' . $e->getMessage());
 
             // Response JSON untuk error umum
             if ($request->expectsJson() || $request->is('api/*')) {
@@ -538,11 +571,11 @@ class PayrollSettingController extends Controller
                 ->route('payroll_settings.index')
                 ->with('success', 'Data payroll berhasil dihapus.');
         } catch (\Throwable $e) {
-            Log::error('Payroll Setting Destroy Error: '.$e->getMessage());
+            Log::error('Payroll Setting Destroy Error: ' . $e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus data: '.$e->getMessage());
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 
