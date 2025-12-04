@@ -390,7 +390,10 @@
                 <strong>Catatan:</strong>
                 <p>{{ $payment->notes ?? "-" }}</p>
                 <strong>Nominal:</strong>
-                <p>Rp {{ $payment->salary_note ? 0 : "-" }}</p>
+                <p>
+                    Rp
+                    {{ number_format($payment->salary_note, 0, ",", ".") }}
+                </p>
             </div>
 
             {{-- Gaji Bersih --}}
