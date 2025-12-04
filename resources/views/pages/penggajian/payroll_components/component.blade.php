@@ -81,31 +81,6 @@
 
 @endsection
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            // SweetAlert2 untuk hapus
-            $('.link-danger').on('click', function(e) {
-                e.preventDefault(); // cegah link langsung ke href
-                var url = $(this).attr('href');
-
-                Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    text: "Data akan dihapus permanen!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // redirect ke URL hapus
-                        window.location.href = url;
-                    }
-                });
-            });
-        });
-    </script>
     @if ($payroll_components->isNotEmpty())
         <script>
             $(document).ready(function() {
@@ -136,6 +111,17 @@
                         }
                     });
                 });
+            });
+        </script>
+    @endif
+        @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
             });
         </script>
     @endif

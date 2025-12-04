@@ -59,7 +59,7 @@
                     <div class="col-md-4">
                         <x-input-field type="text" id="position_display" name="position_display" label="Jabatan" readonly
                             :disabled="true" value="" />
-                        <input type="text" name="type" value="perbulan">
+                        <input type="text" name="type" value="gaji">
                     </div>
                 </div>
 
@@ -84,9 +84,9 @@
 
                     @php
                         $allowances = [
+                            'staff' => 'Kehadiran Staff',
                             'transport' => 'Transport',
-                            'meal' => 'Uang Makan',
-                            'communication' => 'Uang Komunikasi',
+                            'meal' => 'Makan',
                             'other' => 'Lainnya',
                         ];
                     @endphp
@@ -135,7 +135,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label for="component_value" class="form-label">Nilai Komponen <span
                                             class="text-danger">*</span></label>
                                     <input type="text" name="component_value[]"
@@ -144,6 +144,14 @@
                                         value="{{ number_format($comp->pivot->value ?? 0, 0, '.', '.') }}"
                                         oninput="formatCurrencyInput(this)">
                                 </div>
+
+        @if (!$readonly)
+        <div class="col-md-1 d-flex align-items-center">
+            <button type="button" class="btn btn-danger remove-row">
+                <i class="bx bx-trash"></i>
+            </button>
+        </div>
+        @endif
                             </div>
                         @endforeach
                     @endif
@@ -199,7 +207,8 @@
                                 <div class="col-md-4">
                                     <x-input-field type="text" name="type_deduction" label="Tipe Potongan" readonly
                                         :disabled="isset($show)" value="{{ $ded->type }}" />
-                                </div>
+                                        {{-- <input type="hidden" id="deduction_type_update[]" name="deduction_type_update[]" class="deduction-type-update" value="{{ $ded->type }}">
+--}}                                </div>
                                 <div class="col-md-4">
                                     <label for="deductions_id" class="form-label">Nama Potongan <span
                                             class="text-danger">*</span></label>
@@ -213,7 +222,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label for="deductions_value" class="form-label">Nilai Potongan <span
                                             class="text-danger">*</span></label>
                                     <input type="text" name="deduction_value[]" class="form-control deduction-value"
@@ -222,6 +231,14 @@
                                         style="font-size: 16px; padding: 10px 12px;" readonly
                                         {{ isset($show) ? 'disabled' : '' }}>
                                 </div>
+
+        @if (!$readonly)
+        <div class="col-md-1 d-flex align-items-center">
+            <button type="button" class="btn btn-danger remove-row">
+                <i class="bx bx-trash"></i>
+            </button>
+        </div>
+        @endif
                             </div>
                         @endforeach
                     @endif
@@ -241,6 +258,7 @@
                         <div class="col-md-4">
                             <x-input-field type="text" name="type_deduction" label="Tipe Potongan" readonly
                                 value="-" />
+                                <input type="hidden" name="deduction_type[]" class="deduction-type" value="">
                         </div>
                         <div class="col-md-4">
                             <label for="deductions_id" class="form-label">Nama Potongan <span
@@ -283,7 +301,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bulan Mulai</label>
-                        <select name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}>
+                        <select id="start_month" name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}>
                             <option value="">-- Pilih Bulan Masuk --</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}"
@@ -295,7 +313,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Tahun Mulai</label>
-                        <select name="start_year" class="form-select" {{ $readonly ? 'disabled' : '' }}>
+                        <select id="start_year" name="start_year" class="form-select" {{ $readonly ? 'disabled' : '' }}>
                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                 <option value="{{ $y }}"
                                     {{ isset($setting) && $setting->start_year == $y ? 'selected' : '' }}>
@@ -352,220 +370,271 @@
     </div>
     </div>
 
-    {{-- ======================== SCRIPT ======================== --}}
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const formSection = document.querySelector('#form-section');
-                const unitSelect = document.querySelector('#unit');
-                const officerSelect = document.querySelector('#officer');
-                const readonly = @json($readonly);
 
-                // Toggle input enable/disable
-                window.toggleField = function(toggleId, inputId) {
-                    const toggle = document.getElementById(toggleId);
-                    const input = document.getElementById(inputId);
-                    if (toggle.checked) {
-                        input.disabled = false;
-                        input.placeholder = "Nominal";
-                    } else {
-                        input.disabled = true;
-                        input.value = "";
-                        input.placeholder = "Nonaktif";
-                    }
+@endsection
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const formSection = document.querySelector('#form-section');
+        const unitSelect = document.querySelector('#unit');
+        const officerSelect = document.querySelector('#officer');
+        const readonly = @json($readonly);
+        const startMonth = document.getElementById('start_month');
+        const startYear = document.getElementById('start_year');
+        const teachingHour = document.getElementById('teaching_hours');
+        const teachingHourTotal = document.getElementById('teaching_hours_total');
+
+        function checkLock() {
+            if (teachingHour.value.trim() !== '') {
+                teachingHourTotal.value = '';
+                teachingHourTotal.disabled = true;
+            } else {
+                teachingHourTotal.disabled = false;
+            }
+            if (teachingHourTotal.value.trim() !== '') {
+                teachingHour.value = '';
+                teachingHour.disabled = true;
+            } else {
+                teachingHour.disabled = false;
+            }
+        }
+        teachingHour.addEventListener('input', checkLock);
+        teachingHourTotal.addEventListener('input', checkLock);
+        checkLock();
+
+
+        startMonth.addEventListener('change', function(data) {
+            const value = data.target.value;
+            console.log('start_month: ', value);
+        });
+        startYear.addEventListener('change', function(data) {
+            const value = data.target.value;
+            console.log('start_year', value);
+        });
+
+        // Toggle input enable/disable
+        window.toggleField = function(toggleId, inputId) {
+            const toggle = document.getElementById(toggleId);
+            const input = document.getElementById(inputId);
+            if (toggle.checked) {
+                input.disabled = false;
+                input.placeholder = "Nominal";
+            } else {
+                input.disabled = true;
+                input.value = "";
+                input.placeholder = "Nonaktif";
+            }
+        };
+
+        // Auto enable allowance input (mode edit)
+        document.querySelectorAll('input[type="number"][id$="_allowance"]').forEach(input => {
+            if (input.value && parseFloat(input.value) > 0) {
+                input.disabled = false;
+            }
+        });
+
+        // Filter Officer Berdasarkan Unit
+        unitSelect.addEventListener('change', async () => {
+            const unitId = unitSelect.value;
+            officerSelect.innerHTML = '<option value="">-- Pilih Guru & Staff --</option>';
+            officerSelect.disabled = true;
+
+            if (!unitId) return;
+
+            try {
+                const res = await fetch(`/payroll-setting/officers/by-unit/${unitId}`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+                const data = await res.json();
+                officerSelect.disabled = false;
+                data.forEach(o => {
+                    const opt = document.createElement('option');
+                    opt.value = o.id;
+                    opt.textContent = o.user.name;
+                    officerSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error fetching officers:', err);
+            }
+        });
+
+        // Load komponen & potongan setelah guru dipilih
+        officerSelect.addEventListener('change', async () => {
+            const officerId = officerSelect.value;
+            if (!officerId) return;
+
+            // Reset allowance
+            [
+                'transport_allowance',
+                'meal_allowance',
+                'staff_allowance',
+                'other_allowance'
+            ].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = '';
+                    input.disabled = true;
+                    input.placeholder = 'Nonaktif';
+
+                    const toggle = document.getElementById(id.replace('_allowance', '_toggle'));
+                    if (toggle) toggle.checked = false;
                 }
-
-                // Auto enable allowance input jika ada value (mode edit)
-                document.querySelectorAll('input[type="number"][id$="_allowance"]').forEach(input => {
-                    if (input.value && parseFloat(input.value) > 0) {
-                        input.disabled = false;
-                    }
-                });
-
-                // Filter Officer Berdasarkan Unit
-                unitSelect.addEventListener('change', async () => {
-                    const unitId = unitSelect.value;
-                    officerSelect.innerHTML = '<option value="">-- Pilih Guru & Staff --</option>';
-                    officerSelect.disabled = true;
-
-                    if (!unitId) return;
-
-                    try {
-                        const res = await fetch(`/payroll-setting/officers/by-unit/${unitId}`);
-                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-                        const data = await res.json();
-                        officerSelect.disabled = false;
-                        data.forEach(o => {
-                            const opt = document.createElement('option');
-                            opt.value = o.id;
-                            opt.textContent = o.user.name;
-                            officerSelect.appendChild(opt);
-                        });
-                    } catch (err) {
-                        console.error('Error fetching officers:', err);
-                    }
-                });
-
-                // Load komponen & potongan setelah guru dipilih
-                officerSelect.addEventListener('change', async () => {
-                    const officerId = officerSelect.value;
-                    if (!officerId) return;
-
-                    // Reset allowance
-                    ['transport_allowance', 'meal_allowance', 'communication_allowance', 'other_allowance']
-                    .forEach(id => {
-                        const input = document.getElementById(id);
-                        if (input) {
-                            input.value = '';
-                            input.disabled = true;
-                            input.placeholder = 'Nonaktif';
-                            const toggle = document.getElementById(id.replace('_allowance',
-                                '_toggle'));
-                            if (toggle) toggle.checked = false;
-                        }
-                    });
-
-                    try {
-                        const res = await fetch(`/payroll-setting/fetch/${officerId}`);
-                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-                        const data = await res.json();
-                        console.log("Data dari server:", data);
-
-                        if (data.status === 'error') {
-                            console.error('Error from server:', data.message);
-                            return;
-                        }
-
-                        // Isi position display dan hidden field
-                        document.getElementById('position_display').value = data.position_name || data
-                            .positions_name || '-';
-
-                        let hiddenInput = document.querySelector('[name="position_id"]');
-                        if (!hiddenInput) {
-                            hiddenInput = document.createElement('input');
-                            hiddenInput.type = 'hidden';
-                            hiddenInput.name = 'position_id';
-                            officerSelect.closest('form').appendChild(hiddenInput);
-                        }
-                        hiddenInput.value = data.position_id || '';
-
-                        // Isi komponen gaji
-                        const compSelects = document.querySelectorAll('.component-select');
-                        compSelects.forEach(select => {
-                            select.innerHTML = '<option value="">-- Pilih Komponen --</option>';
-                            if (data.components && Array.isArray(data.components)) {
-                                data.components.forEach(c => {
-                                    const opt = document.createElement('option');
-                                    opt.value = c.id;
-                                    opt.dataset.value = c.value;
-                                    opt.textContent = c.name;
-                                    select.appendChild(opt);
-                                });
-                            }
-                        });
-
-                        // Isi potongan
-                        const dedSelects = document.querySelectorAll('.deduction-select');
-                        dedSelects.forEach(select => {
-                            select.innerHTML = '<option value="">-- Pilih Potongan --</option>';
-                            if (data.deductions && Array.isArray(data.deductions)) {
-                                data.deductions.forEach(d => {
-                                    const opt = document.createElement('option');
-                                    opt.value = d.id;
-                                    opt.dataset.value = d.value;
-                                    opt.dataset.type = d.type || '-';
-                                    opt.textContent = d.name;
-                                    select.appendChild(opt);
-                                });
-                            }
-                        });
-
-                        // Update position di existing component rows
-                        document.querySelectorAll('.component-row [name="position"]').forEach(input => {
-                            input.value = data.position_name || '-';
-                        });
-
-                    } catch (err) {
-                        console.error('Error fetching officer data:', err);
-                    }
-                });
-
-                // Tambah row dinamis dari template
-                document.addEventListener('click', e => {
-                    if (e.target.closest('.remove-row')) {
-                        const row = e.target.closest('.component-row, .deduction-row');
-                        if (row) row.remove();
-                    }
-                    if (e.target.closest('.add-component')) {
-                        const container = document.querySelector('#component-container');
-                        const template = document.querySelector('#component-template');
-                        const clone = template.content.cloneNode(true);
-
-                        // Isi position dari data yang sudah di-load
-                        const positionValue = document.getElementById('position_display').value;
-                        const positionInput = clone.querySelector('[name="position"]');
-                        if (positionInput) {
-                            positionInput.value = positionValue;
-                        }
-
-                        const addBtn = container.querySelector('.add-component').closest('.col-md-3');
-                        container.insertBefore(clone, addBtn);
-                    }
-                    if (e.target.closest('.add-deduction')) {
-                        const container = document.querySelector('#deduction-container');
-                        const template = document.querySelector('#deduction-template');
-                        const clone = template.content.cloneNode(true);
-                        const addBtn = container.querySelector('.add-deduction').closest('.col-md-3');
-                        container.insertBefore(clone, addBtn);
-                    }
-                });
-
-                // Auto Isi Nilai Komponen / Potongan
-                document.addEventListener('change', e => {
-                    if (e.target.classList.contains('component-select')) {
-                        const val = e.target.selectedOptions[0].dataset.value || '';
-                        const input = e.target.closest('.component-row').querySelector('.component-value');
-                        input.value = val;
-                        formatCurrencyInput(input);
-                    }
-                    if (e.target.classList.contains('deduction-select')) {
-                        const selectedOption = e.target.selectedOptions[0];
-                        const val = selectedOption.dataset.value || '';
-                        const type = selectedOption.dataset.type || '-';
-
-                        const row = e.target.closest('.deduction-row');
-                        const inputValue = row.querySelector('.deduction-value');
-                        const inputType = row.querySelector('input[name="type_deduction"]');
-
-                        // Isi tipe potongan & nilai potongan otomatis
-                        inputType.value = type;
-                        inputValue.value = val;
-                        formatCurrencyInput(inputValue);
-                    }
-                });
-
             });
 
-            function formatCurrencyInput(input) {
-                let value = input.value.replace(/[^\d]/g, '');
-                if (value === '') {
-                    input.value = '';
+            try {
+                const res = await fetch(`/payroll-setting/fetch/${officerId}`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+                const data = await res.json();
+                console.log("Data dari server:", data);
+
+                if (data.status === 'error') {
+                    console.error('Error from server:', data.message);
                     return;
                 }
-                input.value = new Intl.NumberFormat('id-ID').format(value);
+
+                // Position
+                document.getElementById('position_display').value = data.position_name || data.positions_name || '-';
+
+                let hiddenInput = document.querySelector('[name="position_id"]');
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'position_id';
+                    officerSelect.closest('form').appendChild(hiddenInput);
+                }
+                hiddenInput.value = data.position_id || '';
+
+                // Komponen
+                const compSelects = document.querySelectorAll('.component-select');
+                compSelects.forEach(select => {
+                    select.innerHTML = '<option value="">-- Pilih Komponen --</option>';
+                    if (data.components) {
+                        data.components.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c.id;
+                            opt.dataset.value = c.value;
+                            opt.textContent = c.name;
+                            select.appendChild(opt);
+                        });
+                    }
+                });
+
+                // Deduction
+                const dedSelects = document.querySelectorAll('.deduction-select');
+                dedSelects.forEach(select => {
+                    select.innerHTML = '<option value="">-- Pilih Potongan --</option>';
+                    if (data.deductions) {
+                        data.deductions.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.id;
+                            opt.dataset.value = d.value;
+                            opt.dataset.type = d.type || '-';
+                            opt.textContent = d.name;
+                            select.appendChild(opt);
+                        });
+                    }
+                });
+
+                // Update posisi di row komponen yang sudah ada
+                document.querySelectorAll('.component-row [name="position"]').forEach(input => {
+                    input.value = data.position_name || '-';
+                });
+
+            } catch (err) {
+                console.error('Error fetching officer data:', err);
+            }
+        });
+
+        // Tambah row dinamis
+        document.addEventListener('click', e => {
+            if (e.target.closest('.remove-row')) {
+                const row = e.target.closest('.component-row, .deduction-row');
+                if (row) row.remove();
             }
 
-            // Sebelum submit → hapus semua titik agar dikirim sebagai angka murni
-            document.addEventListener('submit', function(e) {
+            if (e.target.closest('.add-component')) {
+                const container = document.querySelector('#component-container');
+                const template = document.querySelector('#component-template');
+                const clone = template.content.cloneNode(true);
+
+                const positionValue = document.getElementById('position_display').value;
+                clone.querySelector('[name="position"]').value = positionValue;
+
+                const addBtn = container.querySelector('.add-component').closest('.col-md-3');
+                container.insertBefore(clone, addBtn);
+            }
+
+            if (e.target.closest('.add-deduction')) {
+                const container = document.querySelector('#deduction-container');
+                const template = document.querySelector('#deduction-template');
+                const clone = template.content.cloneNode(true);
+
+                const addBtn = container.querySelector('.add-deduction').closest('.col-md-3');
+                container.insertBefore(clone, addBtn);
+            }
+        });
+
+        // Auto isi nilai komponen
+        document.addEventListener('change', e => {
+            if (e.target.classList.contains('component-select')) {
+                const val = e.target.selectedOptions[0].dataset.value || '';
+                const input = e.target.closest('.component-row').querySelector('.component-value');
+                input.value = val;
+                formatCurrencyInput(input);
+            }
+            if (e.target.classList.contains('deduction-select')) {
+                const opt = e.target.selectedOptions[0];
+
+                const val = opt.dataset.value || '';
+                const type = opt.dataset.type || '-';
+
+                const row = e.target.closest('.deduction-row');
+                row.querySelector('.deduction-value').value = val;
+                row.querySelector('.deduction-type').value = type;
+                row.querySelector('input[name="type_deduction"]').value = type;
+
+                formatCurrencyInput(row.querySelector('.deduction-value'));
+            }
+        });
+    });
+
+    function formatCurrencyInput(input) {
+        let value = input.value.replace(/[^\d]/g, '');
+        if (value === '') {
+            input.value = '';
+            return;
+        }
+        input.value = new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    // ==========================================
+    // 🔥 KONFIRMASI ALERT sebelum submit form
+    // ==========================================
+    document.addEventListener('submit', function (e) {
+        e.preventDefault(); // batal submit dulu
+
+        Swal.fire({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menyimpan data payroll?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, simpan",
+            cancelButtonText: "Batal",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Hapus titik pemisah angka sebelum dikirim
                 const inputs = document.querySelectorAll(
-                    '.component-value, .deduction-value, [id$="_allowance"], [name="salary"]'
+                    '.component-value, .deduction-value, .deduction-type, .deduction-type-update, [id$="_allowance"], [name="salary"]'
                 );
                 inputs.forEach(input => {
                     input.value = input.value.replace(/\./g, '');
                 });
-            });
-        </script>
-    @endpush
-@endsection
+
+                e.target.submit(); // lanjut submit
+            }
+        });
+    });
+</script>
+@endpush
