@@ -703,6 +703,7 @@
 
                 if (data && data.length) {
                     officerSelect.innerHTML =
+                        `<option value="">Pilih Guru & Staff</option>` +
                         `<option value="all">Semua Guru & Staff</option>` +
                         data
                             .map(
@@ -921,7 +922,8 @@
                 </td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-warning rounded-pill">Detail</button>
+                        <a href="{{ url('payroll-payment/detail/${item.id}') }}" class="btn btn-warning rounded-pill">
+                        Detail</a>
                         <button class="btn btn-success rounded-pill btn-bayar">Bayar</button>
 
                     </div>
@@ -1015,7 +1017,7 @@
                 $(document).ready(function () {
                     $('#datatable').DataTable({
                         responsive: true,
-                        pageLength: 5,
+                        pageLength: 10,
                         lengthChange: false,
                         searching: false,
                         scrollX: true,
