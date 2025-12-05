@@ -262,6 +262,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/neraca_saldo', [JurnalController::class, 'neraca_saldo'])->name('report.neraca_saldo');
         Route::get('/neraca', [JurnalController::class, 'neraca'])->name('report.neraca');
         Route::get('/labarugi', [JurnalController::class, 'labarugi'])->name('report.labarugi');
+        Route::get('/tagihan', [ReportController::class, 'tagihan'])->name('report.tagihan');
     });
 
     Route::prefix('tagihan')->middleware('permission:view_tagihan')->group(function () {
