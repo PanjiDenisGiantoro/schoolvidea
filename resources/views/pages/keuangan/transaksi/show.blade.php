@@ -388,10 +388,9 @@
                 {{-- Approve/Reject Buttons --}}
                 @php
                     // Detect apakah ini pembayaran multiple atau single
-                    $isMultiple = in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran'])
-                        && $transaksi->pembayaranTagihan
-                        && $transaksi->pembayaranTagihan->is_master === true;
+                    // Jika ada head_tagihan maka multiple, jika tidak ada maka single
                     $headTagihan = $transaksi->pembayaranTagihan->head_tagihan ?? null;
+                    $isMultiple = !empty($headTagihan);
                     $pembayaranId = $transaksi->referensi_tagihan_id;
                 @endphp
 
