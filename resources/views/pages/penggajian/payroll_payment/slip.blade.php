@@ -327,6 +327,27 @@
                         </tr>
                     @endforeach
 
+                    <tr>
+                        <td colspan="2">Transport</td>
+                        <td class="amount" style="font-weight: 500">
+                            Rp
+                            {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Makan</td>
+                        <td class="amount" style="font-weight: 500">
+                            Rp
+                            {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">lainnya</td>
+                        <td class="amount" style="font-weight: 500">
+                            Rp
+                            {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
+                        </td>
+                    </tr>
                     <tr style="font-weight: bold; background-color: #e6ffed">
                         <td colspan="2" style="font-weight: bold">
                             TOTAL PENERIMAAN
@@ -367,7 +388,7 @@
                                     {{ number_format($deduction["pivot"]["value"], 0, ",", ".") }}
                                 @else
                                     {{-- Jika persen → nominal POTONGAN sudah dihitung di total_deductions --}}
-                                    {{ number_format(($deduction["pivot"]["value"] / 100) * $payment->details["salary"] * ($payment->teaching_hour_week ?? $payment->teaching_hour_month), 0, ",", ".") }}
+                                    {{ number_format(($deduction["pivot"]["value"] / 100) * $payment->total_earnings, 0, ",", ".") }}
                                 @endif
                             </td>
                         </tr>

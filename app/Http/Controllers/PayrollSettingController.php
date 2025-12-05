@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class PayrollSettingController extends Controller
 {
@@ -72,14 +73,15 @@ class PayrollSettingController extends Controller
         );
     }
 
-    /**
-     * Simpan atau update data payroll.
-     */
+    // Simpan atau update data payroll.
     public function store(Request $request)
     {
         $validated = $request->validate([
             'units_id' => 'required|exists:units,id',
-            'officers_id' => 'required|exists:officers,id',
+            'officers_id' => [
+                'required', 'exists:officers,id',
+                Rule::unique('payroll_settings', 'officers_id'),
+            ],
             'teaching_hours' => 'nullable|numeric',
             'teaching_hours_total' => 'nullable|numeric',
             'salary' => 'nullable|numeric',
@@ -98,13 +100,14 @@ class PayrollSettingController extends Controller
             'deductions_id' => 'array',
             'deduction_value' => 'array',
             'deduction_type' => 'array',
+        ], [
+            'officers_id.unique' => 'Guru & Staff Sudah Terdaftar!',
+            'officers_id.exists' => 'Guru & Staff Tidak Ditemukan!',
+            'officers_id.required' => 'Guru & Staff Wajib Dipilih!',
         ]);
 
         try {
             Log::info('PAYROLL DEBUG START', $validated);
-
-            // $validated['teaching_hours_total'] =
-            //    $request->teaching_hours_total ?? ($request->teaching_hours * 4);
 
             if ($request->teaching_hours_total !== null) {
                 $validated['teaching_hours_total'] = $request->teaching_hours_total;
@@ -113,8 +116,6 @@ class PayrollSettingController extends Controller
             } else {
                 $validated['teaching_hours_total'] = null;
             }
-            // dd($validated);
-
             // === Simpan payroll_settings ===
             $payrollSetting = PayrollSetting::updateOrCreate(
                 [
@@ -153,32 +154,32 @@ class PayrollSettingController extends Controller
             }
 
             // === Hitung allowance & deduction ===
-            $allowanceTotal =
-                ($payrollSetting->transport_allowance ?? 0) +
-                ($payrollSetting->meal_allowance ?? 0) +
-                ($payrollSetting->other_allowance ?? 0);
+            // $allowanceTotal =
+            //     ($payrollSetting->transport_allowance ?? 0) +
+            //     ($payrollSetting->meal_allowance ?? 0) +
+            //     ($payrollSetting->other_allowance ?? 0);
 
-            $deductions = $payrollSetting->deductions;
-            $salaryPerUnit = $request->salary ?? 0;
-            $tht = $validated['teaching_hours_total'] ?? $validated['teaching_hours'];
-            $baseSalary1 = $salaryPerUnit * $tht;
+            //$deductions = $payrollSetting->deductions;
+            //$salaryPerUnit = $request->salary ?? 0;
+            //$tht = $validated['teaching_hours_total'] ?? $validated['teaching_hours'];
+            //$baseSalary1 = ($salaryPerUnit * $tht) + ($allowanceTotal ?? 0) + ($totalComponentValue ?? 0);
             $totalDeductions = 0;
 
-            if ($deductions->isEmpty()) {
-                $totalDeductions = 0;
-            } else {
-                foreach ($deductions as $deduction) {
-                    $type = $deduction->pivot->type;
-                    $value = $deduction->pivot->value;
+            // if ($deductions->isEmpty()) {
+            //     $totalDeductions = 0;
+            // } else {
+            //     foreach ($deductions as $deduction) {
+            //         $type = $deduction->pivot->type;
+            //         $value = $deduction->pivot->value;
 
-                    if ($type === 'nominal') {
-                        $totalDeductions += $value;
-                    } elseif ($type === 'persen') {
-                        $nominalPotongan = ($value / 100) * $baseSalary1;
-                        $totalDeductions += $nominalPotongan;
-                    }
-                }
-            }
+            //         if ($type === 'nominal') {
+            //             $totalDeductions += $value;
+            //         } elseif ($type === 'persen') {
+            //             $nominalPotongan = ($value / 100) * $baseSalary1;
+            //             $totalDeductions += $nominalPotongan;
+            //         }
+            //     }
+            // }
 
             // === Variabel inti ===
             $billingPeriod = (int) $validated['billing_period'];
@@ -326,38 +327,42 @@ class PayrollSettingController extends Controller
                 $payrollSetting->deductions()->sync($deductionsData);
             }
 
+            // $allowanceTotal =
+            //     ($payrollSetting->transport_allowance ?? 0) +
+            //     ($payrollSetting->meal_allowance ?? 0) +
+            //     ($payrollSetting->other_allowance ?? 0);
+
             // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
             if (! $request->teaching_hours) {
-                $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0);
+                $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0) ;
             } elseif (! $request->teaching_hours_total) {
-                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0) ;
             }
-            $deductionsTotal = $payrollSetting->deductions->sum('pivot.value');
-            $deductions = $payrollSetting->deductions;
+            // $deductions = $payrollSetting->deductions;
             $totalDeductions1 = 0;
 
-            if ($deductions->isEmpty()) {
-                $totalDeductions1 = 0;
-            } else {
-                foreach ($deductions as $deduction) {
-                    $type = (! empty($deduction->pivot->type))
-                        ? $deduction->pivot->type
-                        : $deduction->type;
+            // if ($deductions->isEmpty()) {
+            //     $totalDeductions1 = 0;
+            // } else {
+            //     foreach ($deductions as $deduction) {
+            //         $type = (! empty($deduction->pivot->type))
+            //             ? $deduction->pivot->type
+            //             : $deduction->type;
 
-                    $value = $deduction->pivot->value;
+            //         $value = $deduction->pivot->value;
 
-                    // dump([$type, $value, $deduction->type]);
+            //         // dump([$type, $value, $deduction->type]);
 
-                    if ($type === 'nominal') {
-                        $totalDeductions1 += $value;
-                        // dump(['total nominal' => $value]);
-                    } elseif ($type === 'persen') {
-                        $nominalPotongan = ($value / 100) * $basicSalary;
-                        $totalDeductions1 += $nominalPotongan;
-                        // dump(['total persen' => $nominalPotongan, 'basic salary' => $basicSalary]);
-                    }
-                }
-            }
+            //         if ($type === 'nominal') {
+            //             $totalDeductions1 += $value;
+            //             // dump(['total nominal' => $value]);
+            //         } elseif ($type === 'persen') {
+            //             $nominalPotongan = ($value / 100) * $basicSalary;
+            //             $totalDeductions1 += $nominalPotongan;
+            //             // dump(['total persen' => $nominalPotongan, 'basic salary' => $basicSalary]);
+            //         }
+            //     }
+            // }
             // dd($totalDeductions);
             $totalEarnings = $basicSalary + $totalComponentValue;
             $netPayment = $totalEarnings - $totalDeductions1;

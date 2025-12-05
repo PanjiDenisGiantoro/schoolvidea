@@ -350,8 +350,8 @@
 @endsection
 
 @push("scripts")
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script></script>
 
 @push("scripts")
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1259,12 +1259,28 @@
                 let totalEarnings = parseFloat(item.total_earnings) || 0;
                 let totalDeductions = parseFloat(item.total_deductions) || 0;
                 let staffAllowance = parseFloat(globalAllowance.staff) || 0;
+                let deduction = item.details['deductions'];
 
                 const staffTotal = staff * staffAllowance;
                 const allowanceRate = globalAllowance.total_allowance || 0;
                 totalEarnings +=
                     hadir * allowanceRate + salaryNote + staffTotal;
                 result = hadir * allowanceRate;
+
+                if (Array.isArray(deduction) && deduction.length > 0) {
+                    deduction.forEach((d) => {
+                        let type = d.type || d.pivot?.type;
+                        let value = parseFloat(d.value || d.pivot?.value || 0);
+
+                        if (type === 'nominal') {
+                            totalDeductions += value;
+                        } else if (type === 'persen') {
+                            const nominalPotongan =
+                                (value / 100) * totalEarnings;
+                            totalDeductions += nominalPotongan; // harus += bukan =
+                        }
+                    });
+                }
 
                 //const absenceDeductionRate = 10000;
                 //totalDeductions += alpha * absenceDeductionRate;
@@ -1374,8 +1390,6 @@
                         });
                         return;
                     }
-
-                    // ✔ hanya kalau status = true
                     // alert("Pembayaran Berhasil");
                     Swal.fire({
                         icon: 'success',

@@ -637,4 +637,14 @@
         });
     });
 </script>
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ $errors->first() }}',
+                showConfirmButton: true,
+            });
+        </script>
+    @endif
 @endpush

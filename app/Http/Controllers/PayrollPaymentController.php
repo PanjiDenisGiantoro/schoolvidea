@@ -468,12 +468,12 @@ class PayrollPaymentController extends Controller
                     'message' => 'Pembayaran sudah dilakukan sebelumnya',
                 ], 400);
             }
-            if ($request->amount < $pembayaran->net_payment) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Jumlah pembayaran kurang',
-                ], 400);
-            }
+            // if ($request->amount < $pembayaran->net_payment) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Jumlah pembayaran kurang',
+            //     ], 400);
+            // }
 
             $jumlahBayar = $request->amount ?? $pembayaran->net_payment;
             $jumlahEarning = $request->earning ?? $pembayaran->total_earnings;
@@ -751,7 +751,7 @@ class PayrollPaymentController extends Controller
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
-            'format' => 'A4',    // [210, 148], // A5
+            'format' => 'A4',    // [210, 148], = A5
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 5,
@@ -770,10 +770,10 @@ class PayrollPaymentController extends Controller
     {
         $payment = PayrollPayment::with(['officer'])->findOrFail($id);
 
-        // return view('pages.penggajian.payroll_payment.detail', compact('payment'));
+        return view('pages.penggajian.payroll_payment.detail', compact('payment'));
 
-        return response()->json([
-            'payment' => $payment,
-        ]);
+        // return response()->json([
+        //    'payment' => $payment,
+        // ]);
     }
 }
