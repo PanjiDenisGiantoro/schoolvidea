@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payroll_setting_deductions', function (Blueprint $table) {
-            $table->dropColumn(['period', 'year']);
-            $table->string('type')->nullable();
-        });
+        // Schema::table('payroll_setting_deductions', function (Blueprint $table) {
+        //     $table->dropColumn(['period', 'year']);
+        //     $table->string('type')->nullable();
+        // });
     }
 
     /**
@@ -22,10 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payroll_setting_deductions', function (Blueprint $table) {
-            $table->string('period')->nullable();
-            $table->integer('year')->nullable();
-            $table->dropColumn('type');
-        });
+        // Schema::table('payroll_setting_deductions', function (Blueprint $table) {
+        //     $table->string('period')->nullable();
+        //     $table->integer('year')->nullable();
+        //     $table->dropColumn('type');
+        // });
     }
 };

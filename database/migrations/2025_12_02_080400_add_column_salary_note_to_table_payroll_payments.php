@@ -6,23 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-        Schema::table('payroll_payments', function (Blueprint $table) {
-            $table->integer('salary_note')->nullable();
-        });
+        // Schema::table('payroll_payments', function (Blueprint $table) {
+        //     $table->integer('salary_note')->nullable();
+        // });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
-        Schema::table('payroll_payments', function (Blueprint $table) {
-            $table->dropColumn('salary_note');
-        });
+        // Schema::table('payroll_payments', function (Blueprint $table) {
+        //     $table->dropColumn('salary_note');
+        // });
     }
 };

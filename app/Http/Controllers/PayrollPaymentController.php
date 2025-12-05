@@ -456,6 +456,11 @@ class PayrollPaymentController extends Controller
                 'deduction' => 'nullable|numeric|',
                 'notes' => 'nullable|string|max:200',
                 'salarynote' => 'nullable|numeric',
+                'hourWeek' => 'nullable|numeric',
+                'hourMonth' => 'nullable|numeric',
+                'presenceCount' => 'nullable|numeric',
+                'presence' => 'nullable|numeric',
+                'absence' => 'nullable|numeric',
             ]);
 
             $pembayaran = PayrollPayment::where('id', $id)
@@ -589,6 +594,9 @@ class PayrollPaymentController extends Controller
                 'net_payment' => $jumlahBayar,
                 'notes' => $notes,
                 'salary_note' => $salaryNote,
+                'presence' => $request->presence,
+                'presence_count' => $request->presenceCount,
+                'absence_count' => $request->absence,
             ]);
             DB::commit();
 

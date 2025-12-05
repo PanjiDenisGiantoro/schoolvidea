@@ -991,9 +991,9 @@
                         <input type="text" class="custom-input-presensi hadir_week" value="${parseInt(item.teaching_hour_week || 0)}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
                         <input type="text" class="custom-input-presensi hadir_month" value="${parseInt(item.teaching_hour_month) || 0}"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxLength="3">
-                        <input type="text" class="custom-input-presensi hadir" value="${presenceCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
-                        <input type="text" class="custom-input-presensi alpha" value="${absenceCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
-                        <input type="text" class="custom-input-presensi staff" value="${staffCount}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi hadir" value="${parseInt(item.presence_count)}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi alpha" value="${parseInt(item.absence_count)}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
+                        <input type="text" class="custom-input-presensi staff" value="${parseInt(item.presence)}" onkeypress="return event.charCode >=48 && event.charCode <=57" maxLength="3">
                     </div>
                 </td>
                 <td>${formatRupiah(item.total_earnings || 0)}</td>
@@ -1318,6 +1318,11 @@
                 }
                 const salaryNote = item.salary_note || '0';
                 const textNote = item.text_note || ' ';
+                const hourWeek = item.teaching_hour_week || 0;
+                const hourMonth = item.teaching_hour_month || 0;
+                const presenceCount = item.hadir || 0;
+                const presence = item.staff || 0;
+                const absence = item.alpha || 0;
 
                 Swal.fire({
                     icon: 'warning',
@@ -1341,6 +1346,11 @@
                             item.total_deductions,
                             textNote,
                             salaryNote,
+                            hourWeek,
+                            hourMonth,
+                            presenceCount,
+                            presence,
+                            absence,
                         );
                     }
                 });
@@ -1353,6 +1363,11 @@
                 deduction,
                 notes,
                 salarynote,
+                hourWeek,
+                hourMonth,
+                presenceCount,
+                presence,
+                absence,
             ) {
                 const csrfToken = document.querySelector(
                     'meta[name="csrf-token"]',
@@ -1373,6 +1388,11 @@
                                 deduction,
                                 notes,
                                 salarynote,
+                                hourWeek,
+                                hourMonth,
+                                presenceCount,
+                                presence,
+                                absence,
                             }),
                         },
                     );

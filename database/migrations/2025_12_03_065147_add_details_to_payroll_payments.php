@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payroll_payments', function (Blueprint $table) {
-            $table->jsonb('details')->nullable();
-        });
+        // Schema::table('payroll_payments', function (Blueprint $table) {
+        //     $table->jsonb('details')->nullable();
+        // });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payroll_payments', function (Blueprint $table) {
-            $table->dropColumn('details');
-        });
+        // Schema::table('payroll_payments', function (Blueprint $table) {
+        //     $table->dropColumn('details');
+        // });
     }
 };
