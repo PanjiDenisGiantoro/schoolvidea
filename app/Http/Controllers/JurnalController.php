@@ -27,34 +27,102 @@ class JurnalController extends Controller
 
     }
 
-    public function jurnal()
+    public function jurnal(Request $request)
     {
-        $jurnals = Jurnals::with('akun')
-            ->where('unit_id', auth()->user()->unit_id)
-            ->orderBy('tanggal', 'asc')->get();
-    $headers = [
-        "Tanggal",
-        "Akun",
-        "Keterangan",
-        "Debit",
-        "Kredit"
-    ];
-
-        return view('pages.report.jurnal.jurnal', compact('jurnals', 'headers'));
-    }
-    public function buku_besar()
-    {
-        // bisa filter periode
+        // Get filter parameters
         $from = $request->from ?? date('Y-m-01');
-        $to   = $request->to ?? date('Y-m-t');
+        $to = $request->to ?? date('Y-m-t');
+        $akun_id = $request->akun_id;
+        $search = $request->search;
 
-        // ambil akun
-        $akuns = Akun::with(['jurnals' => function($q) use ($from, $to) {
-            $q->whereBetween('tanggal', [$from, $to])->orderBy('tanggal', 'asc');
-        }])->get();
+        // Get all akuns for filter dropdown
+        $akuns = Akun::where('unit_id', auth()->user()->unit_id)
+            ->orderBy('kode_akun', 'asc')
+            ->get();
 
-        return view('pages.report.buku_besar.buku_besar', compact('akuns', 'from', 'to'));
+        // Build query with filters
+        $query = Jurnals::with(['akun', 'transaksi'])
+            ->where('unit_id', auth()->user()->unit_id)
+            ->whereBetween('tanggal', [$from, $to]);
 
+        // Filter by akun
+        if ($akun_id) {
+            $query->where('akun_id', $akun_id);
+        }
+
+        // Search by keterangan or akun name
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('keterangan', 'like', '%' . $search . '%')
+                  ->orWhereHas('akun', function($q2) use ($search) {
+                      $q2->where('nama_akun', 'like', '%' . $search . '%')
+                         ->orWhere('kode_akun', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        $jurnals = $query->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $headers = [
+            "Tanggal",
+            "Akun",
+            "Keterangan",
+            "Debit",
+            "Kredit"
+        ];
+
+        return view('pages.report.jurnal.jurnal', compact('jurnals', 'headers', 'akuns', 'from', 'to', 'akun_id', 'search'));
+    }
+    public function buku_besar(Request $request)
+    {
+        // Get filter parameters
+        $from = $request->from ?? date('Y-m-01');
+        $to = $request->to ?? date('Y-m-t');
+        $akun_id = $request->akun_id;
+        $search = $request->search;
+        $tipe = $request->tipe; // ASET, LIABILITAS, EKUITAS, PENDAPATAN, BEBAN
+
+        // Get all akuns for filter dropdown
+        $allAkuns = Akun::where('unit_id', auth()->user()->unit_id)
+            ->orderBy('kode_akun', 'asc')
+            ->get();
+
+        // Build query for buku besar
+        $query = Akun::with(['jurnals' => function($q) use ($from, $to) {
+            $q->whereBetween('tanggal', [$from, $to])
+              ->orderBy('tanggal', 'asc')
+              ->orderBy('created_at', 'asc');
+        }])
+        ->where('unit_id', auth()->user()->unit_id);
+
+        // Filter by specific akun
+        if ($akun_id) {
+            $query->where('id', $akun_id);
+        }
+
+        // Filter by tipe akun
+        if ($tipe) {
+            $query->where('tipe', $tipe);
+        }
+
+        // Search by akun name or kode
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_akun', 'like', '%' . $search . '%')
+                  ->orWhere('kode_akun', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Only show accounts that have transactions in the period
+        $query->whereHas('jurnals', function($q) use ($from, $to) {
+            $q->whereBetween('tanggal', [$from, $to]);
+        });
+
+        $akuns = $query->orderBy('kode_akun', 'asc')->get();
+
+        return view('pages.report.buku_besar.buku_besar', compact('akuns', 'from', 'to', 'allAkuns', 'akun_id', 'search', 'tipe'));
     }
     public function neraca_saldo()
     {
