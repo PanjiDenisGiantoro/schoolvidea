@@ -21,6 +21,8 @@
                             <th>Total Kelas</th>
                             <th>Total Officer</th>
                             <th>Total Jurusan</th>
+                            <th>Total Role</th>
+                            <th>Total Jabatan</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -31,10 +33,12 @@
                                 <td>{{ $row['kelas'] }}</td>
                                 <td>{{ $row['officer'] }}</td>
                                 <td>{{ $row['jurusan'] }}</td>
+                                <td>{{ $row['role'] }}</td>
+                                <td>{{ $row['position'] }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted">Tidak ada data</td>
+                                <td colspan="7" class="text-center text-muted">Tidak ada data</td>
                             </tr>
                         @endforelse
                         </tbody>
@@ -223,6 +227,46 @@
                             <!-- Button untuk Download Template dan Import -->
                             <div class="d-flex justify-content-between">
                                 <a href="{{ route('export.jurusantkelas') }}" class="btn btn-outline-secondary">Download Template</a>
+                                <button type="submit" class="btn btn-dark">Import</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Import Role --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">Import Data Role</div>
+                    <div class="card-body">
+                        <form action="{{ route('import.role') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <!-- Upload File -->
+                            <input type="file" name="file" class="form-control mb-2" required>
+
+                            <!-- Button untuk Download Template dan Import -->
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ route('export.roleexport') }}" class="btn btn-outline-secondary">Download Template</a>
+                                <button type="submit" class="btn btn-dark">Import</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Import Position (Jabatan) --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">Import Data Jabatan (Position)</div>
+                    <div class="card-body">
+                        <form action="{{ route('import.position') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <!-- Upload File -->
+                            <input type="file" name="file" class="form-control mb-2" required>
+
+                            <!-- Button untuk Download Template dan Import -->
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ route('export.positionexport') }}" class="btn btn-outline-secondary">Download Template</a>
                                 <button type="submit" class="btn btn-dark">Import</button>
                             </div>
                         </form>

@@ -308,11 +308,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/import/kelas', [\App\Http\Controllers\MigrasiController::class, 'importKelas'])->middleware('permission:import_migrasi')->name('import.kelas');
         Route::post('/import/officer', [\App\Http\Controllers\MigrasiController::class, 'importOfficer'])->middleware('permission:import_migrasi')->name('import.officer');
         Route::post('/import/jurusan', [\App\Http\Controllers\MigrasiController::class, 'importJurusan'])->middleware('permission:import_migrasi')->name('import.jurusan');
+        Route::post('/import/role', [\App\Http\Controllers\MigrasiController::class, 'importRole'])->middleware('permission:import_migrasi')->name('import.role');
+        Route::post('/import/position', [\App\Http\Controllers\MigrasiController::class, 'importPosition'])->middleware('permission:import_migrasi')->name('import.position');
         Route::get('/import/template/{type}', [\App\Http\Controllers\MigrasiController::class, 'downloadTemplate'])->name('import.template');
         Route::get('/officerexport', [\App\Http\Controllers\MigrasiController::class, 'exportOfficer'])->middleware('permission:export_migrasi')->name('export.officerexport');
         Route::get('/exportkelas/', [\App\Http\Controllers\MigrasiController::class, 'exportkelas'])->middleware('permission:export_migrasi')->name('export.exportkelas');
         Route::get('/jurusantkelas/', [\App\Http\Controllers\MigrasiController::class, 'jurusantkelas'])->middleware('permission:export_migrasi')->name('export.jurusantkelas');
         Route::get('/siswatkelas/', [\App\Http\Controllers\MigrasiController::class, 'exportSiswa'])->middleware('permission:export_migrasi')->name('export.exportSiswa');
+        Route::get('/roleexport/', [\App\Http\Controllers\MigrasiController::class, 'exportRole'])->middleware('permission:export_migrasi')->name('export.roleexport');
+        Route::get('/positionexport/', [\App\Http\Controllers\MigrasiController::class, 'exportPosition'])->middleware('permission:export_migrasi')->name('export.positionexport');
     });
 
     Route::prefix('rekening')->middleware('permission:view_rekening')->group(function () {

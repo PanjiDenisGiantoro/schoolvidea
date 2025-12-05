@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Keuangan_transaksi;
 use App\Models\Keuangan_transaksi_logs;
 use App\Models\Pembayarantagihan;
+use App\Models\PembayaranTagihanDetail;
 use App\Models\Saldo_keuangan;
 use App\Models\Tagihansiswa;
 use App\Models\Tagihansiswa_mutasi;
@@ -629,9 +630,65 @@ class RiwayatApiController extends Controller
                     ];
                 }
 
+                // Check if this is a multi-payment (has head_tagihan)
+                $listTagihan = null;
+                if ($p->head_tagihan) {
+                    // Fetch all related payment details
+                    $detailPembayaran = PembayaranTagihanDetail::where('head_tagihan', $p->head_tagihan)
+                        ->with([
+                            'tagihanSiswa.siswa',
+                            'tagihanSiswa.tagihanItem.kategori',
+                            'tagihanSiswa.tagihan',
+                            'tagihanSiswa.potonganSiswa.potongan'
+                        ])
+                        ->get();
+
+                    $listTagihan = $detailPembayaran->map(function ($detail) use ($bulanArray) {
+                        $tagihanSiswa = $detail->tagihanSiswa;
+
+                        // Get kategori info
+                        $kategoriNama = 'N/A';
+                        if ($tagihanSiswa && $tagihanSiswa->tagihanItem && $tagihanSiswa->tagihanItem->kategori) {
+                            $kategoriNama = $tagihanSiswa->tagihanItem->kategori->nama_kategori;
+                        }
+
+                        // Calculate bulan text
+                        $bulanKe = $tagihanSiswa ? $tagihanSiswa->bulan_ke : null;
+                        $tahun = $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->tahun_mulai : null;
+                        $bulanText = $bulanKe && $tahun ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahun : 'N/A';
+
+                        // Get nominal tagihan
+                        $nominalTagihan = $tagihanSiswa && $tagihanSiswa->tagihanItem ? (float)$tagihanSiswa->tagihanItem->nominal : 0;
+
+                        // Get potongan
+                        $potonganTotal = 0;
+                        if ($tagihanSiswa && $tagihanSiswa->potonganSiswa) {
+                            foreach ($tagihanSiswa->potonganSiswa as $potongan) {
+                                $potonganTotal += (float)$potongan->nominal;
+                            }
+                        }
+
+                        return [
+                            'id' => $detail->id,
+                            'tagihan_siswa_id' => $detail->tagihan_siswa_id,
+                            'nama_tagihan' => $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->nama_tagihan : 'N/A',
+                            'kategori' => $kategoriNama,
+                            'periode' => $bulanText,
+                            'tahun' => $tahun,
+                            'nominal_tagihan' => $nominalTagihan,
+                            'jumlah_potongan' => $potonganTotal,
+                            'jumlah_tagihan' => $nominalTagihan - $potonganTotal,
+                            'jumlah_bayar_detail' => (float)$detail->jumlah_bayar_detail,
+                            'created_at' => $detail->created_at,
+                        ];
+                    })->toArray();
+                }
+
                 return [
                     'id' => $p->id,
                     'code_pembayaran' => $p->code_pembayaran,
+                    'head_tagihan' => $p->head_tagihan,
+                    'is_multi_payment' => $p->head_tagihan ? true : false,
                     'tagihan_siswa_id' => $p->tagihan_siswa_id,
                     'siswa_id' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->id : null,
                     'siswa_nama' => $p->tagihanSiswa && $p->tagihanSiswa->siswa ? $p->tagihanSiswa->siswa->nama_lengkap : 'N/A',
@@ -657,6 +714,7 @@ class RiwayatApiController extends Controller
                     'catatan_verifikasi' => $catatanVerifikasi,
                     'potongan' => $potonganList,
                     'data_rekenings' => $dataRekenings,
+                    'list_tagihan' => $listTagihan,
                     'created_by' => $p->user ? $p->user->name : null,
                     'approved_by' => $p->approvedBy ? $p->approvedBy->name : null,
                     'approved_at' => $p->approved_at ? $p->approved_at : null,

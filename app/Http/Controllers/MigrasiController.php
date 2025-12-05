@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exports\JurusanExport;
+use App\Exports\RoleExport;
+use App\Exports\PositionExport;
 use App\Jobs\ImportJurusanJob;
+use App\Jobs\ImportRoleJob;
+use App\Jobs\ImportPositionJob;
 use App\Exports\KelasExport;
 use App\Exports\OfficerExport;
 use App\Exports\OfficerTemplateExport;
@@ -18,6 +22,8 @@ use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Officer;
 use App\Models\Siswa;
+use App\Models\Roles;
+use App\Models\Positions;
 use App\Models\Tahun_ajaran;
 use App\Models\Unit;
 use Illuminate\Http\Request;
@@ -62,6 +68,8 @@ class MigrasiController extends Controller
                 'kelas'   => \App\Models\Kelas::where('unit_id', $unit->id)->count(),
                 'officer' => \App\Models\Officer::where('unit_id', $unit->id)->count(),
                 'jurusan' => \App\Models\Jurusan::where('unit_id', $unit->id)->count(),
+                'role'    => \App\Models\Roles::count(),
+                'position' => \App\Models\Positions::count(),
             ];
         }
         return view('pages.migrasi.migrasi',compact('totals','unit_migrasi','tahun_ajaran'));
@@ -181,6 +189,50 @@ class MigrasiController extends Controller
     public function jurusantkelas()
     {
         return Excel::download(new JurusanExport(), 'jurusan.xlsx');
+    }
+
+    public function importRole(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls'
+        ]);
+
+        try{
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            dispatch(new ImportRoleJob($filePath));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data Role: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Data role berhasil diimport!');
+    }
+
+    public function importPosition(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls'
+        ]);
+
+        try{
+            $file = $request->file('file');
+            $filePath = $file->store('temp');
+            dispatch(new ImportPositionJob($filePath));
+        }catch (\Exception $e){
+            return back()->with('danger', 'Gagal import data Position: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Data position (jabatan) berhasil diimport!');
+    }
+
+    public function exportRole()
+    {
+        return Excel::download(new RoleExport(), 'role.xlsx');
+    }
+
+    public function exportPosition()
+    {
+        return Excel::download(new PositionExport(), 'position.xlsx');
     }
 
 }
