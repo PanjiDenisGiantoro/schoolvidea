@@ -645,36 +645,131 @@ class TabunganController extends Controller
     }
     public function reportAll(Request $request)
     {
+        // Get filter parameters
         $from = $request->from ?? date('Y-m-01');
-        $to   = $request->to ?? date('Y-m-t');
+        $to = $request->to ?? date('Y-m-t');
+        $unit_id = $request->unit_id;
+        $kelas_id = $request->kelas_id;
+        $search = $request->search;
+        $status = $request->status; // aktif, rendah, kosong
 
-        $saldos = Saldo_keuangan::with('siswa')->get();
+        // Get units and kelas for filter
+        $units = \App\Models\Unit::all();
+        $kelas = \App\Models\Kelas::all();
+
+        // Build query for saldo dengan filter
+        $query = Saldo_keuangan::with(['siswa.user', 'siswa.kelas', 'siswa.unit']);
+
+        // Filter by unit
+        if ($unit_id) {
+            $query->whereHas('siswa', function($q) use ($unit_id) {
+                $q->where('unit_id', $unit_id);
+            });
+        }
+
+        // Filter by kelas
+        if ($kelas_id) {
+            $query->whereHas('siswa', function($q) use ($kelas_id) {
+                $q->where('kelas_id', $kelas_id);
+            });
+        }
+
+        // Filter by search (NISN or nama siswa)
+        if ($search) {
+            $query->whereHas('siswa', function($q) use ($search) {
+                $q->where('nisn', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($q2) use ($search) {
+                      $q2->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        // Filter by auth user unit
+        if (auth()->user()->unit_id) {
+            $query->whereHas('siswa', function($q) {
+                $q->where('unit_id', auth()->user()->unit_id);
+            });
+        }
+
+        $saldos = $query->get();
 
         $rekap = [];
+        $totalSetoran = 0;
+        $totalPenarikan = 0;
+        $totalSaldo = 0;
+
         foreach ($saldos as $saldo) {
-            $transaksis = Keuangan_transaksi::where('penerima_id', $saldo->user_id)
+            if (!$saldo->siswa) continue;
+
+            // Get transactions in periode
+            $transaksis = Keuangan_transaksi::where('penerima_id', $saldo->siswa->id)
                 ->where('penerima_tipe', Siswa::class)
+                ->where('status_verifikasi', 'approved')
                 ->whereBetween('tanggal_transaksi', [$from, $to])
                 ->get();
 
-
-            $setoran   = $transaksis->where('jenis_transaksi', 'setoran_tabungan')->sum('jumlah');
+            $setoran = $transaksis->where('jenis_transaksi', 'setoran_tabungan')->sum('jumlah');
             $penarikan = $transaksis->where('jenis_transaksi', 'penarikan_tabungan')->sum('jumlah');
+            $saldoAkhir = $saldo->saldo_akhir;
+
+            // Filter by status
+            if ($status === 'kosong' && $saldoAkhir > 0) continue;
+            if ($status === 'rendah' && ($saldoAkhir == 0 || $saldoAkhir > 100000)) continue;
+            if ($status === 'aktif' && $saldoAkhir <= 100000) continue;
 
             $rekap[] = [
-                'nama'        => $saldo->siswa->nisn ?? 'Siswa-'.$saldo->user_id,
-                'setoran'     => $setoran,
-                'penarikan'   => $penarikan,
-                'saldo_akhir' => $saldo->saldo_akhir,
+                'siswa_id' => $saldo->siswa->id,
+                'nisn' => $saldo->siswa->nisn ?? '-',
+                'nama' => $saldo->siswa->user->name ?? '-',
+                'kelas' => $saldo->siswa->kelas->nama_kelas ?? '-',
+                'unit' => $saldo->siswa->unit->nama_unit ?? '-',
+                'setoran' => $setoran,
+                'penarikan' => $penarikan,
+                'saldo_akhir' => $saldoAkhir,
             ];
+
+            $totalSetoran += $setoran;
+            $totalPenarikan += $penarikan;
+            $totalSaldo += $saldoAkhir;
         }
 
+        $summary = [
+            'jumlah_siswa' => count($rekap),
+            'total_setoran' => $totalSetoran,
+            'total_penarikan' => $totalPenarikan,
+            'total_saldo' => $totalSaldo,
+        ];
+
+        // Handle export
+        if ($request->has('export')) {
+            return $this->exportTabungan($request->export, $rekap, $summary, $from, $to);
+        }
 
         return view('pages.report.tabungan.tabunganall', compact(
             'rekap',
+            'summary',
             'from',
-            'to'
+            'to',
+            'units',
+            'kelas',
+            'unit_id',
+            'kelas_id',
+            'search',
+            'status'
         ));
+    }
+
+    private function exportTabungan($type, $rekap, $summary, $from, $to)
+    {
+        if ($type === 'excel') {
+            return \Excel::download(
+                new \App\Exports\TabunganReportExport($rekap, $summary, $from, $to),
+                'laporan-tabungan-' . date('Y-m-d') . '.xlsx'
+            );
+        } elseif ($type === 'pdf') {
+            $pdf = \PDF::loadView('pages.report.tabungan.tabungan-pdf', compact('rekap', 'summary', 'from', 'to'));
+            return $pdf->download('laporan-tabungan-' . date('Y-m-d') . '.pdf');
+        }
     }
 
     /**
