@@ -144,8 +144,6 @@ class SiswaImport implements ToModel, WithHeadingRow
                 ]
             );
 
-            Log::info('✓ Saldo_keuangan processed | ID: ' . $saldo->id);
-
             DB::commit();
             Log::info('✓ Transaction committed successfully');
             Log::info('========== SISWA IMPORT COMPLETED ==========');
