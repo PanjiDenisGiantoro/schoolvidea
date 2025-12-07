@@ -11,26 +11,25 @@ class RoleExport implements FromCollection, WithHeadings, WithEvents
 {
     public function collection()
     {
-        // Return empty collection with 10 empty rows to show dropdown
+        // Return empty collection with 10 empty rows
         return new Collection([
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
+            [''],
         ]);
     }
 
     public function headings(): array
     {
         return [
-            'name',
-            'guard_name'
+            'ROLE'
         ];
     }
 
@@ -40,14 +39,13 @@ class RoleExport implements FromCollection, WithHeadings, WithEvents
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Ambil data untuk dropdown
-                $guardNames = ['web', 'api'];
+                // Set background color kuning untuk kolom A (ROLE)
+                $sheet->getStyle('A1:A1000')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
 
-                // Dropdown untuk Guard Name (Column B)
-                $sheet->getDataValidation('B2:B1000')
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $guardNames) . '"');
+                // Bold untuk header
+                $sheet->getStyle('A1')->getFont()->setBold(true);
             },
         ];
     }

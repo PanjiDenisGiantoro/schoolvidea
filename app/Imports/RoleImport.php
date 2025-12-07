@@ -18,8 +18,11 @@ class RoleImport implements ToModel, WithHeadingRow
         $row = array_map('strval', $row);
 
         try {
-            if (empty($row['name'])) {
-                Log::warning('⚠️ Missing required fields (name), skipping...');
+            // Header sekarang adalah 'ROLE', bukan 'name'
+            $roleName = $row['role'] ?? null;
+
+            if (empty($roleName)) {
+                Log::warning('⚠️ Missing required fields (role), skipping...');
                 return null;
             }
 
@@ -28,22 +31,23 @@ class RoleImport implements ToModel, WithHeadingRow
 
             /**
              * Update atau Create Role
+             * guard_name statis = 'web'
              */
             Log::info('Processing Role Data');
 
             $role = Roles::updateOrCreate(
                 [
-                    'name' => $row['name'],
+                    'name' => $roleName,
                 ],
                 [
-                    'guard_name' => $row['guard_name'] ?? 'web',
+                    'guard_name' => 'web',
                 ]
             );
 
             // Juga buat di Spatie Permission jika belum ada
             \Spatie\Permission\Models\Role::firstOrCreate(
-                ['name' => $row['name']],
-                ['guard_name' => $row['guard_name'] ?? 'web']
+                ['name' => $roleName],
+                ['guard_name' => 'web']
             );
 
             Log::info('✓ Role created/updated | ID: ' . $role->id);
