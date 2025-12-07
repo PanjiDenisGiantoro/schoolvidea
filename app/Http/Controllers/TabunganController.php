@@ -192,7 +192,7 @@ class TabunganController extends Controller
         $request->validate([
             'kelas_id'       => 'required',
             'penerima_id'    => 'required',
-            'jumlah'         => 'required|numeric|min:1000',
+            'jumlah'         => 'required|numeric',
             'keterangan'     => 'nullable|string',
         ]);
 
