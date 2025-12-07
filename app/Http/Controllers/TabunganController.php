@@ -1258,8 +1258,14 @@ class TabunganController extends Controller
     public function massStatus(Request $request)
     {
         $ids = $request->input('ids', []);
+        $status = $request->input('status'); // 1 untuk aktif, 0 untuk non-aktif
+
         if (empty($ids)) {
             return response()->json(['status' => 'error', 'message' => 'Tidak ada data yang dipilih.'], 400);
+        }
+
+        if (!in_array($status, [0, 1], true)) {
+            return response()->json(['status' => 'error', 'message' => 'Status tidak valid.'], 400);
         }
 
         // Ambil semua saldo berdasarkan ID
@@ -1269,17 +1275,17 @@ class TabunganController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
         }
 
-        // Jika semua aktif, ubah jadi nonaktif; jika tidak, ubah jadi aktif
-        $allActive = $saldos->every(fn ($s) => $s->status == 1);
-        $newStatus = $allActive ? 0 : 1;
-
+        // Update status sesuai parameter yang dikirim
+        $updated = 0;
         foreach ($saldos as $saldo) {
-            $saldo->update(['status' => $newStatus]);
+            $saldo->update(['status' => $status]);
+            $updated++;
         }
 
+        $statusText = $status == 1 ? 'diaktifkan' : 'dinonaktifkan';
         return response()->json([
             'status' => 'success',
-            'message' => $newStatus ? 'Siswa berhasil diaktifkan.' : 'Siswa berhasil dinonaktifkan.'
+            'message' => "$updated tabungan berhasil $statusText."
         ]);
     }
     /**

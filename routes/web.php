@@ -223,6 +223,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/print-detail/{id}', [KeuanganTransaksiController::class, 'printDetail'])->name('keuangan_transaksi.print_detail');
         Route::get('/cetak-struk/{id}', [KeuanganTransaksiController::class, 'cetakStruk'])->name('keuangan_transaksi.cetak_struk');
         Route::get('/datatable', [KeuanganTransaksiController::class, 'datatable'])->name('keuangan-transaksi.datatable');
+        Route::get('/pending-tagihan', [KeuanganTransaksiController::class, 'pendingTagihan'])->name('keuangan_transaksi.pending_tagihan');
 
         // Approve/Reject/Cancel routes
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');

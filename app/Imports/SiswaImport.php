@@ -3,6 +3,7 @@ namespace App\Imports;
 
 use App\Models\Kelas;
 use App\Models\Roles;
+use App\Models\Saldo_keuangan;
 use App\Models\User;
 use App\Models\Siswa;
 use Illuminate\Support\Facades\Log;
@@ -127,6 +128,11 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
 
+            Saldo_keuangan::create([
+                'user_id' => $user->id,
+                'saldo_akhir' => 0,
+                'status' => 0,
+            ]);
             DB::commit();
             Log::info('✓ Transaction committed successfully');
             Log::info('========== SISWA IMPORT COMPLETED ==========');

@@ -371,14 +371,32 @@
                         <i class="bx bx-money-withdraw"></i> Tarik
                     </a>
 
-{{--                    @if($total_pending > 0)--}}
-{{--                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions()">--}}
-{{--                        <i class="bx bx-time-five"></i> Pending--}}
-{{--                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">--}}
-{{--                            {{ \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])->count() }}--}}
-{{--                        </span>--}}
-{{--                    </button>--}}
-{{--                    @endif--}}
+                    @php
+                        $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
+                            ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                            ->count();
+                        $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
+                            ->where('jenis_transaksi', 'pembayaran_tagihan')
+                            ->count();
+                    @endphp
+
+                    @if($pendingTabungan > 0)
+                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tabungan')">
+                        <i class="bx bx-time-five"></i> Pending Tabungan
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ $pendingTabungan }}
+                        </span>
+                    </button>
+                    @endif
+
+                    @if($pendingTagihan > 0)
+                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tagihan')">
+                        <i class="bx bx-receipt"></i> Pending Tagihan
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ $pendingTagihan }}
+                        </span>
+                    </button>
+                    @endif
 
                     <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
@@ -392,8 +410,11 @@
                 <div class="custom-card-header rounded-top-3">
                     <div class="col-md-4">
                         <span class="fw-bold text-primary me-3" style="font-size: 14px">Daftar Tabungan</span>
-                        <button type="button" id="btnProsesStatus" class="custom-btn-info gap-3">
-                            <i class="ri-checkbox-multiple-line me-2"></i>Aktivasi Semua Status
+                        <button type="button" id="btnAktifkan" class="btn btn-sm btn-success gap-2">
+                            <i class="bx bx-check-circle me-1"></i>Aktifkan
+                        </button>
+                        <button type="button" id="btnNonAktifkan" class="btn btn-sm btn-danger gap-2">
+                            <i class="bx bx-x-circle me-1"></i>Non-Aktifkan
                         </button>
                     </div>
                     <div>
@@ -489,7 +510,17 @@
     }
 
 
-    function showPendingTransactions() {
+    function showPendingTransactions(type = 'tabungan') {
+        // Tentukan judul dan URL berdasarkan tipe
+        const titles = {
+            'tabungan': 'Transaksi Pending Tabungan',
+            'tagihan': 'Transaksi Pending Tagihan/Pembayaran'
+        };
+        const icons = {
+            'tabungan': 'bx-time-five',
+            'tagihan': 'bx-receipt'
+        };
+
         // Template modal
         const modalHtml = `
             <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
@@ -497,7 +528,7 @@
                     <div class="modal-content">
                         <div class="modal-header bg-warning">
                             <h5 class="modal-title fw-bold" id="pendingModalLabel">
-                                <i class="bx bx-time-five me-2"></i>Transaksi Pending Approval
+                                <i class="bx ${icons[type]} me-2"></i>${titles[type]}
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -522,7 +553,12 @@
         const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
         modal.show();
 
-        fetch('/tabungan/transaksi?status=pending', {
+        // URL berbeda berdasarkan tipe
+        const url = type === 'tagihan'
+            ? '/keuangan-transaksi/pending-tagihan'
+            : '/tabungan/transaksi?status=pending';
+
+        fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
@@ -537,9 +573,18 @@
                 let tableRows = '';
 
                 data.data.forEach((trx, index) => {
-                    const jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
-                    const jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
-                    const jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+                    // Determine badge based on transaction type
+                    let jenisClass, jenisIcon, jenisText;
+
+                    if (type === 'tagihan') {
+                        jenisClass = 'info';
+                        jenisIcon = 'receipt';
+                        jenisText = 'Pembayaran Tagihan';
+                    } else {
+                        jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
+                        jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
+                        jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
+                    }
 
                     const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
                         day: '2-digit',
@@ -550,13 +595,20 @@
                     });
 
                     let statusBadge = '';
-                    if (trx.jenis_transaksi === 'penarikan_tabungan') {
+                    if (type === 'tagihan') {
+                        statusBadge = '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Menunggu Verifikasi</span>';
+                    } else if (trx.jenis_transaksi === 'penarikan_tabungan') {
                         statusBadge = trx.status_approval === 'pending'
                             ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
                             : '';
                     } else {
                         statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
                     }
+
+                    // Additional info for tagihan
+                    const additionalInfo = type === 'tagihan' && trx.nama_tagihan
+                        ? `<br><small class="text-muted">${trx.nama_tagihan}</small>`
+                        : '';
 
                     tableRows += `
                         <tr class="align-middle">
@@ -565,6 +617,7 @@
                                 <span class="badge bg-${jenisClass} px-3 py-2">
                                     <i class="bx bx-${jenisIcon} me-1"></i>${jenisText}
                                 </span>
+                                ${additionalInfo}
                             </td>
                             <td><strong>${trx.nomor_transaksi || trx.code_pembayaran}</strong></td>
                             <td>${trx.siswa_nama || '-'}</td>
@@ -787,7 +840,8 @@
             });
         });
 
-        btnMass?.addEventListener('click', function() {
+        // Button Aktifkan
+        document.getElementById('btnAktifkan')?.addEventListener('click', function() {
             const selected = [...document.querySelectorAll('input[name="checkbox"]:checked')]
                 .map(chk => chk.dataset.id)
                 .filter(id => id);
@@ -798,11 +852,12 @@
             }
 
             Swal.fire({
-                title: 'Yakin ingin mengubah status?',
-                text: 'Status semua tabungan yang dipilih akan diubah (aktif/nonaktif)',
+                title: 'Aktifkan Tabungan?',
+                text: `${selected.length} tabungan akan diaktifkan`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Ubah',
+                confirmButtonText: 'Ya, Aktifkan',
+                confirmButtonColor: '#28a745',
                 cancelButtonText: 'Batal'
             }).then(res => {
                 if (res.isConfirmed) {
@@ -812,7 +867,48 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ ids: selected })
+                        body: JSON.stringify({ ids: selected, status: 1 })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success')
+                            Swal.fire('Berhasil!', data.message, 'success').then(() => location.reload());
+                        else
+                            Swal.fire('Gagal!', data.message, 'error');
+                    })
+                    .catch(() => Swal.fire('Error!', 'Terjadi kesalahan saat memproses', 'error'));
+                }
+            });
+        });
+
+        // Button Non-Aktifkan
+        document.getElementById('btnNonAktifkan')?.addEventListener('click', function() {
+            const selected = [...document.querySelectorAll('input[name="checkbox"]:checked')]
+                .map(chk => chk.dataset.id)
+                .filter(id => id);
+
+            if (selected.length === 0) {
+                Swal.fire('Peringatan', 'Silahkan pilih minimal satu siswa!', 'warning');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Non-Aktifkan Tabungan?',
+                text: `${selected.length} tabungan akan di-nonaktifkan`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Non-Aktifkan',
+                confirmButtonColor: '#dc3545',
+                cancelButtonText: 'Batal'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    fetch("{{ route('tabungan.massStatus') }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ids: selected, status: 0 })
                     })
                     .then(res => res.json())
                     .then(data => {

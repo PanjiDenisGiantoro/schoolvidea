@@ -200,7 +200,7 @@
                                 <td>{{ $detail['siswa']->user->name ?? '-' }}</td>
                                 <td>{{ $detail['tagihan']->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $detail['tagihan']->kelas->nama_kelas ?? '-' }}</td>
-                                <td>{{ $detail['tagihan']->nama_tagihan ?? '-' }}</td>
+                                <td>{{ $detail['tagihan_siswa']->tagihanItem->kategori->nama_kategori ?? '-' }}</td>
                                 <td class="text-end">
                                     <span class="text-primary fw-bold">
                                         Rp {{ number_format($detail['jumlah_tagihan'], 0, ',', '.') }}

@@ -1650,4 +1650,67 @@ class KeuanganTransaksiController extends Controller
         }
     }
 
+    /**
+     * Get pending tagihan transactions
+     */
+    public function pendingTagihan(Request $request)
+    {
+        try {
+            // Query pending tagihan
+            $query = Keuangan_transaksi::with([
+                'penerima',
+                'creator',
+                'pembayaranTagihan.tagihanSiswa.tagihan'
+            ])
+            ->where('status_verifikasi', 'pending')
+            ->whereIn('jenis_transaksi', ['pembayaran_tagihan', 'tagihan', 'pembayaran']);
+
+            // Apply base filters (unit, yayasan)
+            $query = $this->applyBaseFilters($query, $request);
+
+            // Order by latest
+            $transaksis = $query->orderBy('created_at', 'desc')->get();
+
+            // Format data for response
+            $data = $transaksis->map(function ($trx) {
+                return [
+                    'transaksi_id' => $trx->id,
+                    'nomor_transaksi' => $trx->code_pembayaran,
+                    'code_pembayaran' => $trx->code_pembayaran,
+                    'siswa_nama' => $trx->penerima && $trx->penerima_tipe === 'App\Models\Siswa'
+                        ? ($trx->penerima->user->name ?? '-')
+                        : ($trx->penerima->name ?? '-'),
+                    'nisn' => $trx->penerima && $trx->penerima_tipe === 'App\Models\Siswa'
+                        ? ($trx->penerima->nisn ?? '-')
+                        : '-',
+                    'jenis_transaksi' => $trx->jenis_transaksi,
+                    'nama_tagihan' => $trx->pembayaranTagihan && $trx->pembayaranTagihan->tagihanSiswa && $trx->pembayaranTagihan->tagihanSiswa->tagihan
+                        ? $trx->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan
+                        : '-',
+                    'jumlah' => $trx->jumlah,
+                    'metode' => $trx->metode,
+                    'tanggal_transaksi' => $trx->tanggal_transaksi,
+                    'status_verifikasi' => $trx->status_verifikasi,
+                    'status_approval' => $trx->status_approval ?? 'pending',
+                    'created_by' => $trx->creator->name ?? '-',
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'count' => $data->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ ERROR fetching pending tagihan');
+            Log::error('Exception: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data pending tagihan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

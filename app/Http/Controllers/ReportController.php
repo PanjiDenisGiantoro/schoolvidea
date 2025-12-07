@@ -33,6 +33,7 @@ class ReportController extends Controller
             'items.kategori',
             'tagihanSiswa.siswa.user',
             'tagihanSiswa.siswa.kelas',
+            'tagihanSiswa.tagihanItem.kategori',
             'tagihanSiswa.pembayarantagihan',
             'tagihanSiswa.potonganSiswa'
         ]);
