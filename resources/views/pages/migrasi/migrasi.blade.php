@@ -271,7 +271,7 @@
                                             <button type="submit" class="btn btn-warning">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'jurusan') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.jurusantkelas') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>

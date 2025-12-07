@@ -23,7 +23,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1">Total Siswa</p>
-                            <h4 class="mb-0">{{ $summary['jumlah_siswa'] }}</h4>
+                            <h4 class="mb-0">{{ $summary['jumlah_siswa'] ?? 0 }}</h4>
                         </div>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1">Total Setoran</p>
-                            <h4 class="mb-0">Rp {{ number_format($summary['total_setoran'], 0, ',', '.') }}</h4>
+                            <h4 class="mb-0">Rp {{ number_format($summary['total_setoran'] ?? 0, 0, ',', '.') }}</h4>
                         </div>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1">Total Penarikan</p>
-                            <h4 class="mb-0">Rp {{ number_format($summary['total_penarikan'], 0, ',', '.') }}</h4>
+                            <h4 class="mb-0">Rp {{ number_format($summary['total_penarikan'] ?? 0, 0, ',', '.') }}</h4>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1">Total Saldo</p>
-                            <h4 class="mb-0">Rp {{ number_format($summary['total_saldo'], 0, ',', '.') }}</h4>
+                            <h4 class="mb-0">Rp {{ number_format($summary['total_saldo'] ?? 0, 0, ',', '.') }}</h4>
                         </div>
                     </div>
                 </div>
@@ -196,31 +196,32 @@
                         @forelse($rekap as $index => $row)
                             <tr>
                                 <td class="text-center">{{ $index + 1 }}</td>
-                                <td>{{ $row['nisn'] }}</td>
-                                <td>{{ $row['nama'] }}</td>
-                                <td>{{ $row['kelas'] }}</td>
-                                <td>{{ $row['unit'] }}</td>
+                                <td>{{ $row['nisn'] ?? '-' }}</td>
+                                <td>{{ $row['nama'] ?? '-' }}</td>
+                                <td>{{ $row['kelas'] ?? '-' }}</td>
+                                <td>{{ $row['unit'] ?? '-' }}</td>
                                 <td class="text-end">
                                     <span class="text-success fw-bold">
-                                        Rp {{ number_format($row['setoran'], 0, ',', '.') }}
+                                        Rp {{ number_format($row['setoran'] ?? 0, 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="text-end">
                                     <span class="text-danger fw-bold">
-                                        Rp {{ number_format($row['penarikan'], 0, ',', '.') }}
+                                        Rp {{ number_format($row['penarikan'] ?? 0, 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="text-end">
                                     @php
+                                        $saldoAkhir = $row['saldo_akhir'] ?? 0;
                                         $saldoClass = 'text-primary';
-                                        if ($row['saldo_akhir'] == 0) {
+                                        if ($saldoAkhir == 0) {
                                             $saldoClass = 'text-muted';
-                                        } elseif ($row['saldo_akhir'] < 100000) {
+                                        } elseif ($saldoAkhir < 100000) {
                                             $saldoClass = 'text-warning';
                                         }
                                     @endphp
                                     <span class="{{ $saldoClass }} fw-bold">
-                                        Rp {{ number_format($row['saldo_akhir'], 0, ',', '.') }}
+                                        Rp {{ number_format($saldoAkhir, 0, ',', '.') }}
                                     </span>
                                 </td>
                             </tr>
@@ -240,13 +241,13 @@
                         <tr>
                             <th colspan="5" class="text-end">Total:</th>
                             <th class="text-end text-success">
-                                Rp {{ number_format($summary['total_setoran'], 0, ',', '.') }}
+                                Rp {{ number_format($summary['total_setoran'] ?? 0, 0, ',', '.') }}
                             </th>
                             <th class="text-end text-danger">
-                                Rp {{ number_format($summary['total_penarikan'], 0, ',', '.') }}
+                                Rp {{ number_format($summary['total_penarikan'] ?? 0, 0, ',', '.') }}
                             </th>
                             <th class="text-end text-primary">
-                                Rp {{ number_format($summary['total_saldo'], 0, ',', '.') }}
+                                Rp {{ number_format($summary['total_saldo'] ?? 0, 0, ',', '.') }}
                             </th>
                         </tr>
                     </tfoot>
@@ -298,14 +299,19 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        @if(count($rekap) > 0)
         $('#tabunganTable').DataTable({
             responsive: true,
             pageLength: 25,
             order: [[0, 'asc']],
             language: {
                 url: '{{ asset("assets/datatables/id.json") }}'
-            }
+            },
+            columnDefs: [
+                { orderable: false, targets: 0 }
+            ]
         });
+        @endif
     });
 </script>
 @endpush
