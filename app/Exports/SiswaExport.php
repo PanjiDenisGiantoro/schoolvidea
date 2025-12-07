@@ -62,6 +62,12 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                         ->setFormula1('"' . $kelasValidationList . '"');
                 }
 
+                $sheet->getStyle('A1:N1')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
+
+                // Bold untuk header
+                $sheet->getStyle('A1:T1')->getFont()->setBold(true);
                 // Dropdown untuk Status (Column G)
                 $sheet->getDataValidation('G2:G1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
