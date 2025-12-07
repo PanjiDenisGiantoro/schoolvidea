@@ -371,33 +371,6 @@
                         <i class="bx bx-money-withdraw"></i> Tarik
                     </a>
 
-                    @php
-                        $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
-                            ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                            ->count();
-                        $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
-                            ->where('jenis_transaksi', 'pembayaran_tagihan')
-                            ->count();
-                    @endphp
-
-                    @if($pendingTabungan > 0)
-                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tabungan')">
-                        <i class="bx bx-time-five"></i> Pending Tabungan
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ $pendingTabungan }}
-                        </span>
-                    </button>
-                    @endif
-
-                    @if($pendingTagihan > 0)
-                    <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tagihan')">
-                        <i class="bx bx-receipt"></i> Pending Tagihan
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ $pendingTagihan }}
-                        </span>
-                    </button>
-                    @endif
-
                     <a href="{{ route('tabungan.print_laporan', request()->all()) }}" target="_blank"
                         class="btn btn-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
                         <i class="bx bx-printer"></i> Cetak
