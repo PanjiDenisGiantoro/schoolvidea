@@ -251,10 +251,10 @@
 
                 <div class="d-flex justify-content-between gap-3">
                     @php
-                        $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
+                        $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
                             ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
                             ->count();
-                        $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_verifikasi', 'pending')
+                        $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
                             ->where('jenis_transaksi', 'pembayaran_tagihan')
                             ->count();
                     @endphp

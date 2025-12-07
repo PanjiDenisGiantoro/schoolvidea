@@ -112,6 +112,7 @@ class SiswaImport implements ToModel, WithHeadingRow
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                 ],
                 [
+                    'nis' => $row['nis'],
                     'kelas_id' => $kelas->id,
                     'user_id' => $user->id,
                     'rfid_no' => $row['rfid_no'],
@@ -128,11 +129,23 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
 
-            Saldo_keuangan::create([
-                'user_id' => $user->id,
-                'saldo_akhir' => 0,
-                'status' => 0,
-            ]);
+            /**
+             * 5. Create or check Saldo_keuangan
+             */
+            Log::info('Step 5: Processing Saldo_keuangan');
+
+            $saldo = Saldo_keuangan::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                ],
+                [
+                    'saldo_akhir' => 0,
+                    'status' => 0,
+                ]
+            );
+
+            Log::info('✓ Saldo_keuangan processed | ID: ' . $saldo->id);
+
             DB::commit();
             Log::info('✓ Transaction committed successfully');
             Log::info('========== SISWA IMPORT COMPLETED ==========');

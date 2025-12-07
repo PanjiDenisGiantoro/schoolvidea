@@ -16,23 +16,23 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
     {
         // Return empty collection with 10 empty rows to show dropdown
         return new Collection([
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '','', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '','', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '','', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '','', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '','', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '','', '', '', '', '', '', '', '', ''],
         ]);
     }
 
     public function headings(): array
     {
         return [
-            'NISN', 'Name', 'Email', 'Password', 'RFID No', 'Kelas', 'Status', 'VA Siswa', 'Jenis Kelamin', 'Agama', 'No HP Orang Tua', 'Nama Orang Tua', 'Bank', 'No Rekening'
+           'NIS','NISN', 'Name', 'Email', 'Password', 'RFID No', 'Kelas', 'Status', 'VA Siswa', 'Jenis Kelamin', 'Agama', 'No HP Orang Tua', 'Nama Orang Tua', 'Bank', 'No Rekening'
         ];
     }
 
@@ -60,18 +60,18 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                     }, $kelas);
                     $kelasValidationList = implode(',', $kelasEscaped);
 
-                    $sheet->getDataValidation('F2:F1000')
+                    $sheet->getDataValidation('G2:G1000')
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $kelasValidationList . '"');
                 }
 
-                $sheet->getStyle('A1:N1')->getFill()
+                $sheet->getStyle('A1:O1')->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFFFF00'); // Kuning
 
                 // Bold untuk header
-                $sheet->getStyle('A1:T1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:U1')->getFont()->setBold(true);
                 // Dropdown untuk Status (Column G)
                 $sheet->getDataValidation('G2:G1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
@@ -79,13 +79,13 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                     ->setFormula1('"' . implode(',', $status) . '"');
 
                 // Dropdown untuk Jenis Kelamin (Column I)
-                $sheet->getDataValidation('I2:I1000')
+                $sheet->getDataValidation('J2:J1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
                     ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
 
                 // Dropdown untuk Agama (Column J)
-                $sheet->getDataValidation('J2:J1000')
+                $sheet->getDataValidation('K2:K1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
                     ->setFormula1('"' . implode(',', $agama) . '"');
