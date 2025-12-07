@@ -60,7 +60,7 @@ class Siswa extends Model
     }
     public function saldo()
     {
-        return $this->hasOne(Saldo_keuangan::class, 'user_id');
+        return $this->hasOne(Saldo_keuangan::class, 'user_id', 'user_id');
     }
     public function jurusan()
     {
