@@ -49,7 +49,15 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
                     ->pluck('name')
                     ->toArray();
                 $jurusanNames = Jurusan::pluck('nama_jurusan')->toArray();
-                $status = ['1', '0'];
+                $status = ['aktif', 'non_aktif'];
+
+                // Set background color kuning untuk header row pertama
+                $sheet->getStyle('A1:D1')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
+
+                // Bold untuk header
+                $sheet->getStyle('A1:D1')->getFont()->setBold(true);
 
                 // Dropdown untuk Guru/Wali Kelas (Column B)
                 if (!empty($officerNames)) {

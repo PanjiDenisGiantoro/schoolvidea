@@ -27,6 +27,20 @@ class PositionImport implements ToModel, WithHeadingRow
             Log::info('✓ Transaction started');
 
             /**
+             * Konversi status: 'aktif' -> '1', 'non_aktif' -> '0'
+             */
+            $status = '1'; // Default aktif
+            if (isset($row['status'])) {
+                if (strtolower($row['status']) == 'aktif') {
+                    $status = '1';
+                } elseif (strtolower($row['status']) == 'non_aktif') {
+                    $status = '0';
+                } else {
+                    $status = $row['status']; // Jika sudah angka, gunakan langsung
+                }
+            }
+
+            /**
              * Update atau Create Position
              */
             Log::info('Processing Position Data');
@@ -36,7 +50,7 @@ class PositionImport implements ToModel, WithHeadingRow
                     'positions_name' => $row['positions_name'],
                 ],
                 [
-                    'status' => $row['status'] ?? '1',
+                    'status' => $status,
                 ]
             );
 

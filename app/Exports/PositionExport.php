@@ -41,7 +41,15 @@ class PositionExport implements FromCollection, WithHeadings, WithEvents
                 $sheet = $event->sheet->getDelegate();
 
                 // Ambil data untuk dropdown
-                $status = ['1', '0'];
+                $status = ['aktif', 'non_aktif'];
+
+                // Set background color kuning untuk header row pertama
+                $sheet->getStyle('A1:B1')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
+
+                // Bold untuk header
+                $sheet->getStyle('A1:B1')->getFont()->setBold(true);
 
                 // Dropdown untuk Status (Column B)
                 $sheet->getDataValidation('B2:B1000')

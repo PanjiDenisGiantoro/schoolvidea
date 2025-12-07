@@ -65,6 +65,14 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                 $jenisKelamin = ['Laki-laki', 'Perempuan'];
                 $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
 
+                // Set background color kuning untuk header row pertama
+                $sheet->getStyle('A1:T1')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
+
+                // Bold untuk header
+                $sheet->getStyle('A1:T1')->getFont()->setBold(true);
+
                 // Dropdown untuk Role (Column D)
                 if (!empty($rolePetugas)) {
                     // Escape values that contain commas or quotes

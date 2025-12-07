@@ -29,6 +29,20 @@ class JurusanImport implements ToModel, WithHeadingRow
             return null;
         }
 
+        /**
+         * Konversi status: 'aktif' -> '1', 'non_aktif' -> '0'
+         */
+        $status = '1'; // Default aktif
+        if (isset($row['status'])) {
+            if (strtolower($row['status']) == 'aktif') {
+                $status = '1';
+            } elseif (strtolower($row['status']) == 'non_aktif') {
+                $status = '0';
+            } else {
+                $status = $row['status']; // Jika sudah angka, gunakan langsung
+            }
+        }
+
         // Cek apakah kode_jurusan sudah ada di database
         $jurusan = Jurusan::where('kode_jurusan', $row['kode_jurusan'])
             ->where('unit_id', $this->unit_id)
@@ -43,7 +57,7 @@ class JurusanImport implements ToModel, WithHeadingRow
                 'keterangan'      => $row['keterangan'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'status'          => $row['status'] ?? 1,
+                'status'          => $status,
             ]);
 
             return $jurusan; // Mengembalikan objek yang di-update
@@ -55,7 +69,7 @@ class JurusanImport implements ToModel, WithHeadingRow
                 'keterangan'      => $row['keterangan'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'status'          => $row['status'] ?? 1,
+                'status'          => $status,
             ]);
         }
     }

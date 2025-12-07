@@ -33,8 +33,22 @@ class KelasImport implements ToModel, WithHeadingRow
         $jurusan = Jurusan::where('nama_jurusan', $row['jurusan'])->first();
         $jurusan_id = $jurusan ? $jurusan->id : null;
 
+        /**
+         * Konversi status: 'aktif' -> '1', 'non_aktif' -> '0'
+         */
+        $status = '1'; // Default aktif
+        if (isset($row['status'])) {
+            if (strtolower($row['status']) == 'aktif') {
+                $status = '1';
+            } elseif (strtolower($row['status']) == 'non_aktif') {
+                $status = '0';
+            } else {
+                $status = $row['status']; // Jika sudah angka, gunakan langsung
+            }
+        }
+
         // Skip jika ada field yang kosong
-        if (is_null($officer_id) || is_null($jurusan_id) || is_null($row['status'])) {
+        if (is_null($officer_id) || is_null($jurusan_id)) {
             return null; // Skip this row if any of these values are null
         }
 
@@ -50,7 +64,7 @@ class KelasImport implements ToModel, WithHeadingRow
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
                 'officer_id'      => $officer_id,
-                'status'          => $row['status'],
+                'status'          => $status,
                 'jurusan_id'      => $jurusan_id,
             ]);
             return $kelas; // Mengembalikan objek yang diupdate
@@ -61,7 +75,7 @@ class KelasImport implements ToModel, WithHeadingRow
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
                 'officer_id'      => $officer_id,
-                'status'          => $row['status'],
+                'status'          => $status,
                 'jurusan_id'      => $jurusan_id,
             ]);
         }
