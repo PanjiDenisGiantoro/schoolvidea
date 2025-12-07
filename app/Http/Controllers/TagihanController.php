@@ -249,7 +249,9 @@ class TagihanController extends Controller
                 return $ts->tagihan->items->sum('nominal');
             }),
             'sudah_dibayar' => $allTagihans->sum(function ($ts) {
+                // Hitung total pembayaran yang sudah approved untuk tagihan ini saja
                 return $ts->siswa->pembayaranTagihan
+                    ->where('tagihan_id', $ts->tagihan_id)
                     ->where('status_approval', 'approved')
                     ->sum('jumlah_bayar');
             }),
