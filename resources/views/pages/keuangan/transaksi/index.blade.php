@@ -660,7 +660,7 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
-                            <thead class="table-warning">
+                            <thead class="table-warning text-white">
                                 <tr>
                                     <th class="text-center" style="width:50px;">#</th>
                                     <th class="text-center" style="width:120px;">Jenis</th>
