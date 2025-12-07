@@ -413,28 +413,35 @@
             // Update hidden input with raw value
             jumlahHidden.value = rawValue;
 
-            let value = parseInt(rawValue) || 0;
-
-            if (value > saldoAwal) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Saldo Tidak Cukup!',
-                    text: `Jumlah penarikan tidak boleh lebih besar dari saldo (Rp ${saldoAwal.toLocaleString('id-ID')})`,
-                    confirmButtonColor: '#f56565'
-                });
-                // Set ke saldo maksimal
-                rawValue = saldoAwal.toString();
-                jumlahHidden.value = rawValue;
+            // Format display value
+            if (rawValue) {
                 this.value = formatNumber(rawValue);
-                value = saldoAwal;
-            } else {
-                // Format display value
-                if (rawValue) {
-                    this.value = formatNumber(rawValue);
-                }
             }
 
+            let value = parseInt(rawValue) || 0;
+
+            // Update jumlah transaksi display
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
+
+            // Reset all warnings and styling
+            jumlahWarningMin.classList.add('d-none');
+            jumlahWarningMax.classList.add('d-none');
+            jumlahHint.classList.remove('d-none');
+            this.classList.remove('is-invalid');
+
+            // Validate minimum amount (1000)
+            if (value > 0 && value < 1000) {
+                jumlahWarningMin.classList.remove('d-none');
+                jumlahHint.classList.add('d-none');
+                this.classList.add('is-invalid');
+            }
+
+            // Validate maximum amount (saldo)
+            if (value > saldoAwal && saldoAwal > 0) {
+                jumlahWarningMax.classList.remove('d-none');
+                jumlahHint.classList.add('d-none');
+                this.classList.add('is-invalid');
+            }
         });
 
         // Handle submit dengan SweetAlert confirmation
@@ -461,6 +468,16 @@
                     icon: 'warning',
                     title: 'Perhatian!',
                     text: 'Silakan masukkan jumlah penarikan yang valid',
+                    confirmButtonColor: '#f56565'
+                });
+                return;
+            }
+
+            if (parseInt(jumlah) < 1000) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Penarikan Tidak Valid!',
+                    text: 'Jumlah penarikan minimal Rp 1.000',
                     confirmButtonColor: '#f56565'
                 });
                 return;
