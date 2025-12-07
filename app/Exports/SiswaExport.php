@@ -4,6 +4,7 @@ namespace App\Exports;
 use App\Models\Roles_petugas;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -44,8 +45,8 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
 
                 // Ambil data untuk dropdown
                 $kelas = Kelas::pluck('nama_kelas')
-                    ->when($this->unit_id, function ($query) {
-                        return $query->where('unit_id', $this->unit_id);
+                    ->when(Auth::user()->unit_id, function ($query) {
+                        return $query->where('unit_id', Auth::user()->unit_id);
                     })
                     ->toArray();
                 $jenisKelamin = ['Laki-laki', 'Perempuan'];
