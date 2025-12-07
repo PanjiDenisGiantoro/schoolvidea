@@ -122,7 +122,10 @@
                                             required>
                                         <input type="hidden" name="jumlah" id="jumlah">
                                     </div>
-                                    <small class="text-muted">Minimal setoran Rp 1.000</small>
+                                    <small class="text-muted" id="jumlah_hint">Minimal setoran Rp 1.000</small>
+                                    <small class="text-danger d-none" id="jumlah_warning">
+                                        <i class="bx bx-error-circle me-1"></i>Jumlah setoran tidak boleh kurang dari Rp 1.000!
+                                    </small>
                                 </div>
 
                                 <div class="mb-4">
@@ -181,6 +184,24 @@
         .form-control:focus {
             box-shadow: 0 0 0 0.25rem rgba(72, 187, 120, 0.25);
             border-color: #48bb78;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        #jumlah_warning {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
         .student-info .info-item {
@@ -244,6 +265,8 @@
         const jumlahDisplay = document.getElementById('jumlah_display');
         const jumlahHidden = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
+        const jumlahWarning = document.getElementById('jumlah_warning');
+        const jumlahHint = document.getElementById('jumlah_hint');
 
         jumlahDisplay.addEventListener('input', function(e) {
             // Get raw value without formatting
@@ -260,6 +283,17 @@
             // Update jumlah transaksi display
             const value = parseInt(rawValue) || 0;
             jumlahTransaksi.innerText = 'Rp ' + value.toLocaleString('id-ID');
+
+            // Show/hide warning based on value
+            if (value > 0 && value < 1000) {
+                jumlahWarning.classList.remove('d-none');
+                jumlahHint.classList.add('d-none');
+                this.classList.add('is-invalid');
+            } else {
+                jumlahWarning.classList.add('d-none');
+                jumlahHint.classList.remove('d-none');
+                this.classList.remove('is-invalid');
+            }
         });
 
         // Handle submit dengan SweetAlert confirmation
@@ -286,6 +320,16 @@
                     icon: 'warning',
                     title: 'Perhatian!',
                     text: 'Silakan masukkan jumlah setoran yang valid',
+                    confirmButtonColor: '#48bb78'
+                });
+                return;
+            }
+
+            if (parseInt(jumlah) < 1000) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Setoran Tidak Valid!',
+                    text: 'Jumlah setoran minimal Rp 1.000',
                     confirmButtonColor: '#48bb78'
                 });
                 return;
