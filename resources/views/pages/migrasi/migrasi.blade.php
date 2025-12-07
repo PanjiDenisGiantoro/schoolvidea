@@ -127,7 +127,7 @@
                                             <button type="submit" class="btn btn-primary">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'siswa') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.exportSiswa') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>
@@ -175,7 +175,7 @@
                                             <button type="submit" class="btn btn-success">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'kelas') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.exportkelas') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>
@@ -223,7 +223,7 @@
                                             <button type="submit" class="btn btn-info">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'officer') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.officerexport') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>
