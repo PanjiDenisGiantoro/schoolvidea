@@ -560,7 +560,8 @@ class TabunganController extends Controller
         if ($allLogs->isNotEmpty()) {
             // Hitung saldo awal (kebalikan dari saldo akhir dengan semua transaksi)
             foreach ($allLogs as $log) {
-                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                    in_array($log->status_approval, ['approve', 'approved'])) {
                     $runningBalance += $log->jumlah;
                 } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                           in_array($log->status_approval, ['approve', 'approved'])) {
@@ -575,7 +576,8 @@ class TabunganController extends Controller
         foreach ($allLogs as $log) {
             $log->saldo_sebelum = $runningBalance;
 
-            if ($log->jenis_transaksi === 'setoran_tabungan') {
+            if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                in_array($log->status_approval, ['approve', 'approved'])) {
                 $runningBalance += $log->jumlah;
             } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                       in_array($log->status_approval, ['approve', 'approved'])) {
@@ -1097,7 +1099,8 @@ class TabunganController extends Controller
 
         if ($allLogs->isNotEmpty()) {
             foreach ($allLogs as $log) {
-                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                    in_array($log->status_approval, ['approve', 'approved'])) {
                     $runningBalance += $log->jumlah;
                 } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                           in_array($log->status_approval, ['approve', 'approved'])) {
@@ -1112,7 +1115,8 @@ class TabunganController extends Controller
         foreach ($allLogs as $log) {
             $log->saldo_sebelum = $runningBalance;
 
-            if ($log->jenis_transaksi === 'setoran_tabungan') {
+            if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                in_array($log->status_approval, ['approve', 'approved'])) {
                 $runningBalance += $log->jumlah;
             } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                       in_array($log->status_approval, ['approve', 'approved'])) {
@@ -1195,7 +1199,8 @@ class TabunganController extends Controller
 
         if ($allLogs->isNotEmpty()) {
             foreach ($allLogs as $log) {
-                if ($log->jenis_transaksi === 'setoran_tabungan') {
+                if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                    in_array($log->status_approval, ['approve', 'approved'])) {
                     $runningBalance += $log->jumlah;
                 } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                           in_array($log->status_approval, ['approve', 'approved'])) {
@@ -1210,7 +1215,8 @@ class TabunganController extends Controller
         foreach ($allLogs as $log) {
             $log->saldo_sebelum = $runningBalance;
 
-            if ($log->jenis_transaksi === 'setoran_tabungan') {
+            if ($log->jenis_transaksi === 'setoran_tabungan' &&
+                in_array($log->status_approval, ['approve', 'approved'])) {
                 $runningBalance += $log->jumlah;
             } elseif ($log->jenis_transaksi === 'penarikan_tabungan' &&
                       in_array($log->status_approval, ['approve', 'approved'])) {
