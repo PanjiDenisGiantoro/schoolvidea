@@ -224,6 +224,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cetak-struk/{id}', [KeuanganTransaksiController::class, 'cetakStruk'])->name('keuangan_transaksi.cetak_struk');
         Route::get('/datatable', [KeuanganTransaksiController::class, 'datatable'])->name('keuangan-transaksi.datatable');
         Route::get('/pending-tagihan', [KeuanganTransaksiController::class, 'pendingTagihan'])->name('keuangan_transaksi.pending_tagihan');
+        Route::get('/pending-tabungan', [KeuanganTransaksiController::class, 'pendingTabungan'])->name('keuangan_transaksi.pending_tabungan');
 
         // Approve/Reject/Cancel routes
         Route::post('/approve/{id}', [KeuanganTransaksiController::class, 'approve'])->name('keuangan_transaksi.approve');

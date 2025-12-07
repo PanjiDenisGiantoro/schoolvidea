@@ -571,7 +571,7 @@
         // URL berbeda berdasarkan tipe
         const url = type === 'tagihan'
             ? '/keuangan-transaksi/pending-tagihan'
-            : '/tabungan/transaksi?status=pending';
+            : '/keuangan-transaksi/pending-tabungan';
 
         fetch(url, {
             method: 'GET',
