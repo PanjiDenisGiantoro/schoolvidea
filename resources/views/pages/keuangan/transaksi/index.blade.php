@@ -253,9 +253,19 @@
                     @php
                         $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
                             ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                            ->when(Auth::user()->unit_id, function($q) {
+                                $q->whereHas('penerima', function($sq) {
+                                    $sq->where('unit_id', Auth::user()->unit_id);
+                                });
+                            })
                             ->count();
                         $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
                             ->where('jenis_transaksi', 'pembayaran_tagihan')
+                            ->when(Auth::user()->unit_id, function($q) {
+                                $q->whereHas('penerima', function($sq) {
+                                    $sq->where('unit_id', Auth::user()->unit_id);
+                                });
+                            })
                             ->count();
                     @endphp
 
