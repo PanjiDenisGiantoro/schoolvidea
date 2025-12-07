@@ -39,8 +39,8 @@ class RoleExport implements FromCollection, WithHeadings, WithEvents
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Set background color kuning untuk kolom A (ROLE)
-                $sheet->getStyle('A1:A1000')->getFill()
+                // Set background color kuning untuk header A1 saja
+                $sheet->getStyle('A1')->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFFFF00'); // Kuning
 

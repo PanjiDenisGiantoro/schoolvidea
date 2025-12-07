@@ -243,16 +243,13 @@ class TagihanController extends Controller
 
         $allTagihans = $allTagihansQuery->get();
 
-        // Hitung sudah dibayar dari keuangan_transaksis
-        $tagihanIds = $allTagihans->pluck('tagihan_id')->unique();
-        $siswaIds = $allTagihans->pluck('siswa_id')->unique();
+        // Hitung sudah dibayar dari pembayaran_tagihan
+        $tagihanSiswaIds = $allTagihans->pluck('id')->unique();
 
-        $sudahDibayar = \App\Models\Keuangan_transaksi::whereIn('tagihan_id', $tagihanIds)
-            ->whereIn('penerima_id', $siswaIds)
-            ->where('penerima_tipe', \App\Models\Siswa::class)
+        $sudahDibayar = \App\Models\Pembayarantagihan::whereIn('tagihan_siswa_id', $tagihanSiswaIds)
             ->whereIn('status_verifikasi', ['approved', 'approve'])
             ->whereIn('status_approval', ['approved', 'approve'])
-            ->sum('jumlah');
+            ->sum('jumlah_bayar');
 
         $summary = [
             'jumlah_data' => $allTagihans->count(),
