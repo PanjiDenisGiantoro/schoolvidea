@@ -566,8 +566,8 @@
         fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
         .then(response => response.json())
