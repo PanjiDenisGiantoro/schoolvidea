@@ -18,8 +18,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
 
 use function Laravel\Prompts\error;
+use function Symfony\Component\Clock\now;
 
 class PayrollPaymentController extends Controller
 {
@@ -66,8 +68,13 @@ class PayrollPaymentController extends Controller
 
     public function getByOfficer($officerId)
     {
-        $paymentType = PayrollSetting::where('officers_id', $officerId)
-            ->pluck('type');
+        if ($officerId === 'all') {
+            // Kalau all, maka tampilkan semua tipe yang tersedia
+            $paymentType = PayrollSetting::pluck('type')->unique()->values();
+        } else {
+            $paymentType = PayrollSetting::where('officers_id', $officerId)
+                ->pluck('type');
+        }
 
         return response()->json($paymentType);
     }
@@ -95,52 +102,88 @@ class PayrollPaymentController extends Controller
     public function getPayment(Request $request)
     {
         $officerId = $request->officer_id;
-        $type = 'gaji';
+        $type = $request->type ?? 'gaji';
         $periode = $request->period;
         $year = $request->year;
         $status = $request->status ?? 'draft';
 
         $query = PayrollPayment::with('component', 'officer.user');
 
+        // Filter officer
         if ($officerId && $officerId !== 'all') {
             $query->where('officer_id', $officerId);
         }
 
+        // Filter type
         if ($type && $type !== 'all') {
             $query->where('type', $type);
         }
 
+        // Filter periode
         if ($periode && $periode !== 'all') {
             $query->where('payment_month', $periode);
         }
 
+        // Filter tahun
         if ($year) {
             $query->where('payment_year', $year);
         }
 
-        if ($status !== 'all') {
+        // Filter status
+        if ($status && $status !== 'all') {
             $query->where('status', $status);
         }
 
+        // Eksekusi query
         $payments = $query->orderBy('created_at', 'desc')->get();
-        $settings = PayrollSetting::where('officers_id', $officerId)->first();
+
+        // Karena "all" = tidak filter, PayrollSetting hanya berlaku jika officerId != all
+        $settings = ($officerId && $officerId !== 'all')
+            ? PayrollSetting::where('officers_id', $officerId)->first()
+            : null;
+
         $allowances = [
             'transport_allowance' => $settings->transport_allowance ?? 0,
             'meal_allowance' => $settings->meal_allowance ?? 0,
             'other_allowance' => $settings->other_allowance ?? 0,
         ];
-        $staff = $settings->staff_allowance ?? 0;
 
+        $staff = $settings->staff_allowance ?? 0;
         $totalAllowance = array_sum($allowances);
 
-        // Ambil data attendance yang sudah disinkronisasi untuk officer ini
+        // Ambil data attendance per bulan sesuai payment
         $attendance = null;
+
         if ($officerId && $officerId !== 'all') {
             $officer = Officer::find($officerId);
+
             if ($officer) {
+                // Ambil attendance untuk bulan & tahun yang sesuai payment
                 $attendance = AttendanceSync::where('officer_id', $officerId)
                     ->where('unit_id', $officer->unit_id)
+                    ->where('month', $periode ?? Carbon::now()->month)
+                    ->where('year', $year ?? Carbon::now()->year)
                     ->first();
+            }
+        }
+
+        $attendanceMap = [];
+
+        if ($officerId === 'all') {
+            $officerIds = $payments->pluck('officer_id')->unique();
+
+            $attendances = AttendanceSync::whereIn('officer_id', $officerIds)
+                ->where('month', $periode ?? Carbon::now()->month)
+                ->where('year', $year ?? Carbon::now()->year)
+                ->get();
+
+            foreach ($attendances as $att) {
+                $attendanceMap[$att->officer_id] = [
+                    'presence_count' => $att->presence_count,
+                    'absence_count' => $att->absence_count,
+                    'is_active' => $att->is_active,
+                    'synced_at' => $att->synced_at,
+                ];
             }
         }
 
@@ -158,7 +201,10 @@ class PayrollPaymentController extends Controller
                 'absence_count' => $attendance->absence_count,
                 'is_active' => $attendance->is_active,
                 'synced_at' => $attendance->synced_at,
+                'month' => $attendance->month,
+                'year' => $attendance->year,
             ] : null,
+            'attedanceMap' => $attendanceMap,
         ]);
     }
 
@@ -253,6 +299,8 @@ class PayrollPaymentController extends Controller
             $unitId = $request->unit_id;
             $officerId = $request->officer_id;
             $search = $request->search ?? null;
+            $month = Carbon::now()->month;
+            $year = Carbon::now()->year;
 
             if (! $unitId) {
                 return response()->json([
@@ -340,14 +388,18 @@ class PayrollPaymentController extends Controller
                             'unit_id' => $unitId,
                             'officer_id' => $officer->id,
                             'videaclass_id' => $attendanceRecord['id'],
+
                         ],
                         [
                             'registered_number' => $attendanceRecord['registered_number'],
                             'fullname' => $attendanceRecord['fullname'],
                             'presence_count' => $attendanceRecord['presence_count'],
+                            'presence' => $attendanceRecord['presence'],
                             'absence_count' => $attendanceRecord['absence_count'],
                             'is_active' => $attendanceRecord['is_active'],
                             'synced_at' => now(),
+                            'month' => $month,
+                            'year' => $year,
                         ]
                     );
 
@@ -359,6 +411,7 @@ class PayrollPaymentController extends Controller
                             'officer_name' => $officer->user->name ?? $officer->name,
                             'registered_number' => $sync->registered_number,
                             'fullname' => $sync->fullname,
+                            'presence' => $sync->presence,
                             'presence_count' => $sync->presence_count,
                             'absence_count' => $sync->absence_count,
                             'is_active' => $sync->is_active,
@@ -415,19 +468,18 @@ class PayrollPaymentController extends Controller
                     'message' => 'Pembayaran sudah dilakukan sebelumnya',
                 ], 400);
             }
-            if ($request->amount < $pembayaran->net_payment) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Jumlah pembayaran kurang',
-                ], 400);
-            }
+            // if ($request->amount < $pembayaran->net_payment) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Jumlah pembayaran kurang',
+            //     ], 400);
+            // }
 
             $jumlahBayar = $request->amount ?? $pembayaran->net_payment;
             $jumlahEarning = $request->earning ?? $pembayaran->total_earnings;
             $jumlahDeduction = $request->deduction ?? $pembayaran->total_deductions;
             $notes = $request->notes ?? null;
             $salaryNote = $request->salarynote ?? 0;
-            Log::info('salary note: ' . $salaryNote);
             $officer = Officer::find($pembayaran->officer_id);
             $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk " . $officer->user->name;
 
@@ -562,11 +614,11 @@ class PayrollPaymentController extends Controller
             $request->validate([
                 'items' => 'required|array',
                 'items. * .id' => 'required|integer|exists:payroll_payment, id',
-                'items. * .net_payment' => 'required|numeric|min:1',
-                'items. * .earning' => 'required|numeric|min:1',
-                'items. * .deduction' => 'required|numeric|min:1',
+                'items. * .net_payment' => 'required|numeric|min:0',
+                'items. * .earning' => 'required|numeric|min:0',
+                'items. * .deduction' => 'required|numeric|min:0',
                 'items. * .text_note' => 'required|string|max:200',
-                'totalTagihan' => 'required|numeric|min:1',
+                'totalTagihan' => 'required|numeric|min:0',
             ]);
 
             $ids = collect($request->items)->pluck('id')->toArray();
@@ -584,7 +636,7 @@ class PayrollPaymentController extends Controller
             }
 
             // hitung total nominal seluruh payment
-            $totalpembayaran = $request->totalTagihan || 0;
+            $totalpembayaran = $request->totalTagihan ?? 0;
 
             // catat transaksi masal
             $transaksi = Keuangan_transaksi::create([
@@ -689,5 +741,39 @@ class PayrollPaymentController extends Controller
                 'message' => 'server error: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function slip($id)
+    {
+        $payment = PayrollPayment::with(['officer.unit'])->findOrFail($id);
+        $unit_image = Unit::where('id', $payment->unit_id)->value('image');
+        $unit_image_path = $unit_image ? public_path($unit_image) : null;
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',    // [210, 148], = A5
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+            // 'orientation' => 'L',
+        ]);
+
+        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path']))->render();
+
+        $mpdf->WriteHTML($html);
+
+        return $mpdf->Output("slip-{$payment->id}.pdf", 'I');
+    }
+
+    public function detail($id)
+    {
+        $payment = PayrollPayment::with(['officer'])->findOrFail($id);
+
+        return view('pages.penggajian.payroll_payment.detail', compact('payment'));
+
+        // return response()->json([
+        //    'payment' => $payment,
+        // ]);
     }
 }

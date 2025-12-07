@@ -25,6 +25,7 @@ use App\Http\Controllers\TipeunitController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PayrollDeductionsController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\DataRekeningController;
 use App\Http\Controllers\PayrollPaymentController;
@@ -330,6 +331,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/show/{id}', [\App\Http\Controllers\RekeningController::class, 'show'])->name('rekening.show');
     });
 
+    Route::prefix('backup')->middleware('permission:view_backup')->group(function () {
+        Route::get('/', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+        Route::post('/manual', [\App\Http\Controllers\BackupController::class, 'manualBackup'])->middleware('permission:create_backup')->name('backup.manual');
+        Route::post('/schedule/update', [\App\Http\Controllers\BackupController::class, 'updateSchedule'])->middleware('permission:edit_backup')->name('backup.schedule.update');
+        Route::get('/download/{filename}', [\App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+        Route::delete('/delete/{filename}', [\App\Http\Controllers\BackupController::class, 'delete'])->middleware('permission:delete_backup')->name('backup.delete');
+        Route::post('/restore', [\App\Http\Controllers\BackupController::class, 'restore'])->middleware('permission:restore_backup')->name('backup.restore');
+        Route::post('/clean', [\App\Http\Controllers\BackupController::class, 'cleanOldBackups'])->middleware('permission:delete_backup')->name('backup.clean');
+    });
+
     Route::prefix('positions')->middleware('permission:view_positions')->group(function () {
         Route::get('/', [PositionsController::class, 'index'])->name('positions.index');
         Route::get('/create', [PositionsController::class, 'create'])->middleware('permission:create_positions')->name('positions.create');
@@ -431,12 +442,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/getByOfficer/{officerId}', [PayrollPaymentController::class, 'getByOfficer'])->name('payroll-payment.getByOfficer');
         Route::get('/getByUnit/{unitId}', [PayrollPaymentController::class, 'getByUnit'])->name('payroll-payment.getByUnit');
         Route::get('/getOfficerDetail/{officerId}', [PayrollPaymentController::class, 'getOfficerDetail'])->name('payroll-payment.getOfficerDetail');
-        Route::get('/getPayment', [PayrollPaymentController::class, 'getPayment'])->name('payroll-payment.getPayment');
+        Route::post('/payment/{id}', [PayrollPaymentController::class, 'payment'])->name('payroll-payment.payment');
         Route::get('/getPaymentList/{officerId}', [PayrollPaymentController::class, 'getPaymentList'])->name('pyroll-payment.getPaymentList');
         Route::get('/getPaymentData', [PayrollPaymentController::class, 'getPaymentData'])->name('payroll-payment.getPaymentData');
         Route::post('/paymentAll', [PayrollPaymentController::class, 'paymentAll'])->name('payroll-payment.paymentAll');
         Route::get('/getAttendanceData', [PayrollPaymentController::class, 'getAttendanceData'])->name('payroll-payment.getAttendanceData');
         Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
+        Route::get('/detail/{id}', [PayrollPaymentController::class, 'detail'])->name('payroll-payment.detail');
+        Route::get('/slip/{id}', [PayrollPaymentController::class, 'slip'])->name('payroll-payment.slip');
     });
 
 

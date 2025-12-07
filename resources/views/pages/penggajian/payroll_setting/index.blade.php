@@ -23,46 +23,49 @@
                 <div class="table-responsive">
                     <table id="datatable" class="table-bordered table-striped table align-middle">
                         <thead class="table-primary text-center">
-                            <tr>
-                                <th>No</th>
-                                <th>Unit</th>
-                                <th>Nama Guru & Staff</th>
-                                <th>Periode Gaji</th>
-                                <th>Gaji Pokok</th>
-                                <th>Aksi</th>
-                            </tr>
+                        <tr>
+                            <th>No</th>
+                            <th>Unit</th>
+                            <th>Nama Guru & Staff</th>
+                            <th>Periode Gaji</th>
+                            <th>Gaji Pokok</th>
+                            <th>Aksi</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @forelse($settings as $item)
-                                <tr>
-                                    <td class="text-center">{{ $loop->iteration }}</td>
-                                    <td>{{ $item->unit->nama_unit ?? '-' }}</td>
-                                    <td>{{ $item->officer->user->name ?? '-' }}</td>
-                                    <td>{{ $item->billing_period ? "$item->billing_period Bulan" : '-' }}</td>
-                                    <td>Rp {{ number_format($item->salary ?? 0, 0, ',', '.') }}</td>
+                        @forelse($settings as $item)
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td>{{ $item->unit->nama_unit ?? '-' }}</td>
+                                <td>{{ $item->officer->user->name ?? '-' }}</td>
+                                <td>{{ $item->billing_period ? "$item->billing_period Bulan" : '-' }}</td>
+                                <td>Rp {{ number_format($item->salary ?? 0, 0, ',', '.') }}</td>
 
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <a href="{{ route('payroll_settings.show', $item->id) }}"
-                                                class="link-primary text-muted">
-                                                <i class="ri-eye-line fs-20 align-middle"></i> Show
-                                            </a>
-                                            <a href="{{ route('payroll_settings.edit', $item->id) }}"
-                                                class="link-warning text-muted">
-                                                <i class="ri-edit-line fs-20 align-middle"></i> Edit
-                                            </a>
-                                            <a href="{{ route('payroll_settings.destroy', $item->id) }}"
-                                                class="link-danger text-muted">
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('payroll_settings.show', $item->id) }}"
+                                           class="link-primary text-muted">
+                                            <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                        </a>
+                                        <a href="{{ route('payroll_settings.edit', $item->id) }}"
+                                           class="link-warning text-muted">
+                                            <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                        </a>
+                                        <form action="{{ route('payroll_settings.destroy', $item->id) }}" method="post" class="d-inline-block delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="link-danger text-muted border-0 bg-transparent p-0 delete-btn">
                                                 <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-muted text-center">Tidak ada data ditemukan</td>
-                                </tr>
-                            @endforelse
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-muted text-center">Tidak ada data ditemukan</td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -84,7 +87,7 @@
                 });
 
                 // ✅ Konfirmasi hapus data
-                $('.btn-delete').on('click', function(e) {
+                $('.delete-btn').on('click', function(e) {
                     e.preventDefault();
                     const form = $(this).closest('form');
                     Swal.fire({
@@ -102,6 +105,17 @@
                         }
                     });
                 });
+            });
+        </script>
+    @endif
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 2000,
+                showConfirmButton: false
             });
         </script>
     @endif

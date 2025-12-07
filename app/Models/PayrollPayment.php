@@ -22,9 +22,18 @@ class PayrollPayment extends Model
         'total_deductions',
         'net_payment',
         'payment_month',
+        'payment_year',
         'notes',
         'status',
         'type',
+        'salary_note',
+        'details',
+        'teaching_hour_week',
+        'teaching_hour_month',
+        'presence',
+        'presence_count',
+        'absence_count',
+
     ];
 
     /**
@@ -34,6 +43,7 @@ class PayrollPayment extends Model
         'total_earnings' => 'decimal:2',
         'total_deductions' => 'decimal:2',
         'net_payment' => 'decimal:2',
+        'details' => 'array',
         // Jangan cast timestamps jika tidak perlu
     ];
 
