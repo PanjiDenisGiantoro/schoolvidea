@@ -446,6 +446,35 @@ class TabunganController extends Controller
                 'status_verifikasi' => 'pending'
             ]);
 
+            // Query setting_akuns untuk akun data rekening
+            $settingRekening = setting_akun::where('akun_id', $datarekening->akun_id)
+                ->where('status', '1')
+                ->first();
+
+            $positionRekening = $settingRekening ? $settingRekening->debit : 0;
+
+            // Buat jurnal berdasarkan posisi debit/kredit
+            if($positionRekening == 1){
+                // Jika rekening di debit
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $akun_id,
+                    'debit'        => 0,
+                    'kredit'       => $request->jumlah,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+
+                Jurnals::create([
+                    'transaksi_id' => $transaksi->id,
+                    'akun_id'      => $datarekening->akun_id,
+                    'debit'        => $request->jumlah,
+                    'kredit'       => 0,
+                    'keterangan'   => $request->keterangan,
+                    'unit_id'      => Auth::user()->unit_id
+                ]);
+            }else{
+                // Jika rekening di kredit
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
@@ -455,7 +484,6 @@ class TabunganController extends Controller
                     'unit_id'      => Auth::user()->unit_id
                 ]);
 
-                // Jurnal Kredit: Akun kas/bank
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $datarekening->akun_id,
@@ -464,7 +492,7 @@ class TabunganController extends Controller
                     'keterangan'   => $request->keterangan,
                     'unit_id'      => Auth::user()->unit_id
                 ]);
-
+            }
 
             // Jurnal Debit: Akun penarikan tabungan
 
@@ -648,70 +676,32 @@ class TabunganController extends Controller
         // Get filter parameters
         $from = $request->from ?? date('Y-m-01');
         $to = $request->to ?? date('Y-m-t');
-        $unit_id = $request->unit_id;
-        $kelas_id = $request->kelas_id;
-        $search = $request->search;
-        $status = $request->status; // aktif, rendah, kosong
+
+        // Set unit_id based on auth user session
+        if (auth()->user()->unit_id) {
+            $unit_id = auth()->user()->unit_id;
+        } else {
+            $unit_id = $request->unit_id;
+        }
 
         // Get units for filter based on user role
         $unitsQuery = \App\Models\Unit::query();
         if (auth()->user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan unit dari yayasan tersebut
             $unitsQuery->where('yayasan_id', auth()->user()->yayasan_id);
-
         } elseif (auth()->user()->unit_id) {
             // Jika user punya unit_id, tampilkan unit tersebut saja
             $unitsQuery->where('id', auth()->user()->unit_id);
         }
         $units = $unitsQuery->get();
 
-        // Get kelas for filter based on user role and selected unit
-        $kelasQuery = \App\Models\Kelas::query();
-        if (auth()->user()->yayasan_id) {
-            // Jika user punya yayasan_id, tampilkan kelas dari semua unit di yayasan tersebut
-            $kelasQuery->whereHas('unit', function ($q) {
-                $q->where('yayasan_id', auth()->user()->yayasan_id);
-            });
-        } elseif (auth()->user()->unit_id) {
-            // Jika user punya unit_id, tampilkan kelas dari unit tersebut saja
-            $kelasQuery->where('unit_id', auth()->user()->unit_id);
-        } elseif ($request->filled('unit_id')) {
-            // Admin user filtering by unit
-            $kelasQuery->where('unit_id', $request->unit_id);
-        }
-        $kelas = $kelasQuery->get();
-
         // Build query for saldo dengan filter
         $query = Saldo_keuangan::with(['siswa.user', 'siswa.kelas', 'siswa.unit']);
 
-        // Filter by unit
+        // Filter by unit based on auth user or selected unit
         if ($unit_id) {
             $query->whereHas('siswa', function($q) use ($unit_id) {
                 $q->where('unit_id', $unit_id);
-            });
-        }
-
-        // Filter by kelas
-        if ($kelas_id) {
-            $query->whereHas('siswa', function($q) use ($kelas_id) {
-                $q->where('kelas_id', $kelas_id);
-            });
-        }
-
-        // Filter by search (NISN or nama siswa)
-        if ($search) {
-            $query->whereHas('siswa', function($q) use ($search) {
-                $q->where('nisn', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($q2) use ($search) {
-                      $q2->where('name', 'like', '%' . $search . '%');
-                  });
-            });
-        }
-
-        // Filter by auth user unit
-        if (auth()->user()->unit_id) {
-            $query->whereHas('siswa', function($q) {
-                $q->where('unit_id', auth()->user()->unit_id);
             });
         }
 
@@ -735,11 +725,6 @@ class TabunganController extends Controller
             $setoran = $transaksis->where('jenis_transaksi', 'setoran_tabungan')->sum('jumlah');
             $penarikan = $transaksis->where('jenis_transaksi', 'penarikan_tabungan')->sum('jumlah');
             $saldoAkhir = $saldo->saldo_akhir;
-
-            // Filter by status
-            if ($status === 'kosong' && $saldoAkhir > 0) continue;
-            if ($status === 'rendah' && ($saldoAkhir == 0 || $saldoAkhir > 100000)) continue;
-            if ($status === 'aktif' && $saldoAkhir <= 100000) continue;
 
             $rekap[] = [
                 'siswa_id' => $saldo->siswa->id,
@@ -775,11 +760,7 @@ class TabunganController extends Controller
             'from',
             'to',
             'units',
-            'kelas',
-            'unit_id',
-            'kelas_id',
-            'search',
-            'status'
+            'unit_id'
         ));
     }
 

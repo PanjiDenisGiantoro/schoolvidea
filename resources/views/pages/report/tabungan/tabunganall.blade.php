@@ -95,65 +95,39 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('tabungan.report-all') }}" id="filterForm">
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label">Tanggal Dari</label>
-                        <input type="date" name="from" class="form-control" value="{{ $from }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Tanggal Dari</label>
+                        <input type="date" name="from" class="form-control" value="{{ $from }}" required>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Tanggal Sampai</label>
-                        <input type="date" name="to" class="form-control" value="{{ $to }}">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Tanggal Sampai</label>
+                        <input type="date" name="to" class="form-control" value="{{ $to }}" required>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Unit</label>
-                        <select name="unit_id" class="form-select" {{ Auth::user()->unit_id ? 'disabled' : '' }}>
-                            @if(!Auth::user()->unit_id)
-                                <option value="">Semua Unit</option>
-                            @endif
-                            @foreach($units as $unit)
-                                <option value="{{ $unit->id }}" {{ $unit_id == $unit->id || Auth::user()->unit_id == $unit->id ? 'selected' : '' }}>
-                                    {{ $unit->nama_unit }}
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Unit</label>
                         @if(Auth::user()->unit_id)
+                            <input type="text" class="form-control" value="{{ $units->first()->nama_unit ?? '-' }}" disabled>
                             <input type="hidden" name="unit_id" value="{{ Auth::user()->unit_id }}">
+                        @else
+                            <select name="unit_id" class="form-select">
+                                <option value="">Semua Unit</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit->id }}" {{ $unit_id == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->nama_unit }}
+                                    </option>
+                                @endforeach
+                            </select>
                         @endif
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Kelas</label>
-                        <select name="kelas_id" class="form-select">
-                            <option value="">Semua Kelas</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" {{ $kelas_id == $k->id ? 'selected' : '' }}>
-                                    {{ $k->nama_kelas }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Status Saldo</label>
-                        <select name="status" class="form-select">
-                            <option value="">Semua Status</option>
-                            <option value="aktif" {{ $status == 'aktif' ? 'selected' : '' }}>Aktif (> 100rb)</option>
-                            <option value="rendah" {{ $status == 'rendah' ? 'selected' : '' }}>Rendah (< 100rb)</option>
-                            <option value="kosong" {{ $status == 'kosong' ? 'selected' : '' }}>Kosong (0)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label d-block">&nbsp;</label>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bx bx-filter me-1"></i> Filter
                         </button>
                     </div>
-                </div>
-                <div class="row g-3 mt-2">
-                    <div class="col-md-10">
-                        <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan NISN atau nama siswa..." value="{{ $search }}">
-                    </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <a href="{{ route('tabungan.report-all') }}" class="btn btn-secondary w-100">
-                            <i class="bx bx-reset me-1"></i> Reset
+                            <i class="bx bx-reset"></i>
                         </a>
                     </div>
                 </div>
@@ -317,38 +291,6 @@
             ]
         });
         @endif
-
-        // Dynamic kelas filter based on selected unit
-        $('select[name="unit_id"]').on('change', function() {
-            var unitId = $(this).val();
-            var kelasSelect = $('select[name="kelas_id"]');
-
-            if (unitId) {
-                // Fetch kelas for selected unit
-                fetch(`/api/kelas-by-unit/${unitId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        kelasSelect.html('<option value="">Semua Kelas</option>');
-                        data.forEach(kelas => {
-                            kelasSelect.append(`<option value="${kelas.id}">${kelas.nama_kelas}</option>`);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching kelas:', error);
-                    });
-            } else {
-                // Reset to show all kelas based on user role
-                @if(auth()->user()->yayasan_id || auth()->user()->unit_id)
-                    // Reload to get kelas based on user role
-                    location.reload();
-                @else
-                    kelasSelect.html('<option value="">Semua Kelas</option>');
-                    @foreach($kelas as $k)
-                        kelasSelect.append('<option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>');
-                    @endforeach
-                @endif
-            }
-        });
     });
 </script>
 @endpush
