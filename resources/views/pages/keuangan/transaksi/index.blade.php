@@ -258,10 +258,10 @@
 {{--                        </span>--}}
 {{--                        </button>--}}
 {{--                    @endif--}}
-                    <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"
-                       class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">
-                        <i class="bx bx-printer"></i> Cetak Laporan
-                    </a>
+{{--                    <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"--}}
+{{--                       class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">--}}
+{{--                        <i class="bx bx-printer"></i> Cetak Laporan--}}
+{{--                    </a>--}}
                 </div>
 
             </div>

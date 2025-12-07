@@ -689,43 +689,42 @@ class TabunganController extends Controller
         }
         $units = $unitsQuery->get();
 
-        // Build query for saldo dengan filter
-        $query = Saldo_keuangan::with(['siswa.user', 'siswa.kelas', 'siswa.unit']);
+        // Build query dari Siswa dan join dengan saldo
+        $query = Siswa::with(['user', 'kelas', 'unit', 'saldo']);
 
         // Filter by unit berdasarkan pilihan user atau role
         if ($unit_id) {
             // Jika ada unit_id dipilih, filter sesuai unit tersebut
-            $query->whereHas('siswa', function($q) use ($unit_id) {
-                $q->where('unit_id', $unit_id);
-            });
+            $query->where('unit_id', $unit_id);
         } else {
             // Jika "Semua Unit" dipilih, filter berdasarkan role user
             if (auth()->user()->yayasan_id) {
                 // Tampilkan semua unit di yayasan
-                $query->whereHas('siswa.unit', function($q) {
+                $query->whereHas('unit', function($q) {
                     $q->where('yayasan_id', auth()->user()->yayasan_id);
                 });
             } elseif (auth()->user()->unit_id) {
                 // Jika user punya unit_id, tetap filter ke unit mereka
-                $query->whereHas('siswa', function($q) {
-                    $q->where('unit_id', auth()->user()->unit_id);
-                });
+                $query->where('unit_id', auth()->user()->unit_id);
             }
             // Jika super admin (tidak punya yayasan_id dan unit_id), tampilkan semua
         }
 
-        $saldos = $query->get();
+        // Hanya ambil siswa yang punya saldo
+        $query->whereHas('saldo');
+
+        $siswas = $query->get();
 
         $rekap = [];
         $totalSetoran = 0;
         $totalPenarikan = 0;
         $totalSaldo = 0;
 
-        foreach ($saldos as $saldo) {
-            if (!$saldo->siswa) continue;
+        foreach ($siswas as $siswa) {
+            if (!$siswa->user || !$siswa->saldo) continue;
 
             // Get transactions in periode
-            $transaksis = Keuangan_transaksi::where('penerima_id', $saldo->siswa->id)
+            $transaksis = Keuangan_transaksi::where('penerima_id', $siswa->id)
                 ->where('penerima_tipe', Siswa::class)
                 ->where('status_verifikasi', 'approved')
                 ->whereBetween('tanggal_transaksi', [$from, $to])
@@ -733,14 +732,14 @@ class TabunganController extends Controller
 
             $setoran = $transaksis->where('jenis_transaksi', 'setoran_tabungan')->sum('jumlah');
             $penarikan = $transaksis->where('jenis_transaksi', 'penarikan_tabungan')->sum('jumlah');
-            $saldoAkhir = $saldo->saldo_akhir;
+            $saldoAkhir = $siswa->saldo->saldo_akhir ?? 0;
 
             $rekap[] = [
-                'siswa_id' => $saldo->siswa->id,
-                'nisn' => $saldo->siswa->nisn ?? '-',
-                'nama' => $saldo->siswa->user->name ?? '-',
-                'kelas' => $saldo->siswa->kelas->nama_kelas ?? '-',
-                'unit' => $saldo->siswa->unit->nama_unit ?? '-',
+                'siswa_id' => $siswa->id,
+                'nisn' => $siswa->nisn ?? '-',
+                'nama' => $siswa->user->name ?? '-',
+                'kelas' => $siswa->kelas->nama_kelas ?? '-',
+                'unit' => $siswa->unit->nama_unit ?? '-',
                 'setoran' => $setoran,
                 'penarikan' => $penarikan,
                 'saldo_akhir' => $saldoAkhir,
