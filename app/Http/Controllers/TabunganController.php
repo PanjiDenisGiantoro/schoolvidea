@@ -192,7 +192,7 @@ class TabunganController extends Controller
         $request->validate([
             'kelas_id'       => 'required',
             'penerima_id'    => 'required',
-            'jumlah'         => 'required|numeric|min:1',
+            'jumlah'         => 'required|numeric|min:1000',
             'keterangan'     => 'nullable|string',
         ]);
 
@@ -354,7 +354,7 @@ class TabunganController extends Controller
         $request->validate([
             'kelas_id'    => 'required',
             'penerima_id' => 'required',
-            'jumlah'      => 'required|numeric|min:1',
+            'jumlah'      => 'required|numeric|min:1000',
             'keterangan'  => 'nullable|string',
         ]);
 
@@ -653,9 +653,32 @@ class TabunganController extends Controller
         $search = $request->search;
         $status = $request->status; // aktif, rendah, kosong
 
-        // Get units and kelas for filter
-        $units = \App\Models\Unit::all();
-        $kelas = \App\Models\Kelas::all();
+        // Get units for filter based on user role
+        $unitsQuery = \App\Models\Unit::query();
+        if (auth()->user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan unit dari yayasan tersebut
+            $unitsQuery->where('yayasan_id', auth()->user()->yayasan_id);
+        } elseif (auth()->user()->unit_id) {
+            // Jika user punya unit_id, tampilkan unit tersebut saja
+            $unitsQuery->where('id', auth()->user()->unit_id);
+        }
+        $units = $unitsQuery->get();
+
+        // Get kelas for filter based on user role and selected unit
+        $kelasQuery = \App\Models\Kelas::query();
+        if (auth()->user()->yayasan_id) {
+            // Jika user punya yayasan_id, tampilkan kelas dari semua unit di yayasan tersebut
+            $kelasQuery->whereHas('unit', function ($q) {
+                $q->where('yayasan_id', auth()->user()->yayasan_id);
+            });
+        } elseif (auth()->user()->unit_id) {
+            // Jika user punya unit_id, tampilkan kelas dari unit tersebut saja
+            $kelasQuery->where('unit_id', auth()->user()->unit_id);
+        } elseif ($request->filled('unit_id')) {
+            // Admin user filtering by unit
+            $kelasQuery->where('unit_id', $request->unit_id);
+        }
+        $kelas = $kelasQuery->get();
 
         // Build query for saldo dengan filter
         $query = Saldo_keuangan::with(['siswa.user', 'siswa.kelas', 'siswa.unit']);

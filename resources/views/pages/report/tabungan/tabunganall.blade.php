@@ -106,14 +106,19 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Unit</label>
-                        <select name="unit_id" class="form-select">
-                            <option value="">Semua Unit</option>
+                        <select name="unit_id" class="form-select" {{ Auth::user()->unit_id ? 'disabled' : '' }}>
+                            @if(!Auth::user()->unit_id)
+                                <option value="">Semua Unit</option>
+                            @endif
                             @foreach($units as $unit)
-                                <option value="{{ $unit->id }}" {{ $unit_id == $unit->id ? 'selected' : '' }}>
+                                <option value="{{ $unit->id }}" {{ $unit_id == $unit->id || Auth::user()->unit_id == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->nama_unit }}
                                 </option>
                             @endforeach
                         </select>
+                        @if(Auth::user()->unit_id)
+                            <input type="hidden" name="unit_id" value="{{ Auth::user()->unit_id }}">
+                        @endif
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Kelas</label>
@@ -312,6 +317,38 @@
             ]
         });
         @endif
+
+        // Dynamic kelas filter based on selected unit
+        $('select[name="unit_id"]').on('change', function() {
+            var unitId = $(this).val();
+            var kelasSelect = $('select[name="kelas_id"]');
+
+            if (unitId) {
+                // Fetch kelas for selected unit
+                fetch(`/api/kelas-by-unit/${unitId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        kelasSelect.html('<option value="">Semua Kelas</option>');
+                        data.forEach(kelas => {
+                            kelasSelect.append(`<option value="${kelas.id}">${kelas.nama_kelas}</option>`);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching kelas:', error);
+                    });
+            } else {
+                // Reset to show all kelas based on user role
+                @if(auth()->user()->yayasan_id || auth()->user()->unit_id)
+                    // Reload to get kelas based on user role
+                    location.reload();
+                @else
+                    kelasSelect.html('<option value="">Semua Kelas</option>');
+                    @foreach($kelas as $k)
+                        kelasSelect.append('<option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>');
+                    @endforeach
+                @endif
+            }
+        });
     });
 </script>
 @endpush
