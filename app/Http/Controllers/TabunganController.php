@@ -657,8 +657,7 @@ class TabunganController extends Controller
         $unitsQuery = \App\Models\Unit::query();
         if (auth()->user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan unit dari yayasan tersebut
-//            $unitsQuery->where('yayasan_id', auth()->user()->yayasan_id);
-            $unitsQuery->where('id', auth()->user()->unit_id);
+            $unitsQuery->where('yayasan_id', auth()->user()->yayasan_id);
 
         } elseif (auth()->user()->unit_id) {
             // Jika user punya unit_id, tampilkan unit tersebut saja
