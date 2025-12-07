@@ -79,14 +79,14 @@ class TabunganApiController extends Controller
                 throw new \Exception("Setting akun untuk kategori tabungan belum lengkap.");
             }
 
-            // Jurnal Kredit
-            Jurnals::create([
-                'transaksi_id' => $transaksi->id,
-                'akun_id' => $akun_id,
-                'debit' => 0,
-                'kredit' => $request->jumlah,
-                'keterangan' => $request->keterangan,
-            ]);
+//            // Jurnal Kredit
+//            Jurnals::create([
+//                'transaksi_id' => $transaksi->id,
+//                'akun_id' => $akun_id,
+//                'debit' => 0,
+//                'kredit' => $request->jumlah,
+//                'keterangan' => $request->keterangan,
+//            ]);
 
             $saldoSiswa = Saldo_keuangan::firstOrCreate(
                 [

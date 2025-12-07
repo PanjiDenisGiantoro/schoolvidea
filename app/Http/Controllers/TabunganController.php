@@ -399,8 +399,6 @@ class TabunganController extends Controller
             $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
                 ->first();
 
-
-
             if (!$datarekening) {
                 return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
             }
