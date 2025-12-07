@@ -106,19 +106,14 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Unit</label>
-                        @if(Auth::user()->unit_id)
-                            <input type="text" class="form-control" value="{{ $units->first()->nama_unit ?? '-' }}" disabled>
-                            <input type="hidden" name="unit_id" value="{{ Auth::user()->unit_id }}">
-                        @else
-                            <select name="unit_id" class="form-select">
-                                <option value="">Semua Unit</option>
-                                @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}" {{ $unit_id == $unit->id ? 'selected' : '' }}>
-                                        {{ $unit->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @endif
+                        <select name="unit_id" class="form-select">
+                            <option value="">Semua Unit</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit->id }}" {{ $unit_id == $unit->id ? 'selected' : '' }}>
+                                    {{ $unit->nama_unit }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">

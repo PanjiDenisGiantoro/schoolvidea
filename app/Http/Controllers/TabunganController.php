@@ -676,13 +676,7 @@ class TabunganController extends Controller
         // Get filter parameters
         $from = $request->from ?? date('Y-m-01');
         $to = $request->to ?? date('Y-m-t');
-
-        // Set unit_id based on auth user session
-        if (auth()->user()->unit_id) {
-            $unit_id = auth()->user()->unit_id;
-        } else {
-            $unit_id = $request->unit_id;
-        }
+        $unit_id = $request->unit_id; // Ambil dari request, bisa kosong untuk "Semua Unit"
 
         // Get units for filter based on user role
         $unitsQuery = \App\Models\Unit::query();
@@ -698,11 +692,26 @@ class TabunganController extends Controller
         // Build query for saldo dengan filter
         $query = Saldo_keuangan::with(['siswa.user', 'siswa.kelas', 'siswa.unit']);
 
-        // Filter by unit based on auth user or selected unit
+        // Filter by unit berdasarkan pilihan user atau role
         if ($unit_id) {
+            // Jika ada unit_id dipilih, filter sesuai unit tersebut
             $query->whereHas('siswa', function($q) use ($unit_id) {
                 $q->where('unit_id', $unit_id);
             });
+        } else {
+            // Jika "Semua Unit" dipilih, filter berdasarkan role user
+            if (auth()->user()->yayasan_id) {
+                // Tampilkan semua unit di yayasan
+                $query->whereHas('siswa.unit', function($q) {
+                    $q->where('yayasan_id', auth()->user()->yayasan_id);
+                });
+            } elseif (auth()->user()->unit_id) {
+                // Jika user punya unit_id, tetap filter ke unit mereka
+                $query->whereHas('siswa', function($q) {
+                    $q->where('unit_id', auth()->user()->unit_id);
+                });
+            }
+            // Jika super admin (tidak punya yayasan_id dan unit_id), tampilkan semua
         }
 
         $saldos = $query->get();
