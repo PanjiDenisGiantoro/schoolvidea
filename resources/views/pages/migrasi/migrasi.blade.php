@@ -301,7 +301,7 @@
                                             <button type="submit" class="btn btn-danger">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'role') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.roleexport') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>
@@ -331,7 +331,7 @@
                                             <button type="submit" class="btn btn-secondary">
                                                 <i class="bx bx-upload me-1"></i> Import
                                             </button>
-                                            <a href="{{ route('import.template', 'position') }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('export.positionexport') }}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bx bx-download me-1"></i> Download Template
                                             </a>
                                         </div>
