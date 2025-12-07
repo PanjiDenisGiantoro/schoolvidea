@@ -458,19 +458,11 @@ class SiswaController extends Controller
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
-        DB::beginTransaction();
-        try {
-            if ($siswa->user) {
-                $siswa->user->delete();
-            }
-            $siswa->delete();
-            DB::commit();
+        $user = $siswa->user;
+        $user->delete();
+        $siswa->delete();
+        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
 
-            return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('danger', $e->getMessage());
-        }
     }
 
     public function show($id)
