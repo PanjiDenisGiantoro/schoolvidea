@@ -119,7 +119,13 @@
                                                placeholder="0" required>
                                         <input type="hidden" name="jumlah" id="jumlah">
                                     </div>
-                                    <small class="text-muted">Maksimal penarikan sesuai saldo yang tersedia</small>
+                                    <small class="text-muted" id="jumlah_hint">Minimal penarikan Rp 1.000 | Maksimal sesuai saldo tersedia</small>
+                                    <small class="text-danger d-none" id="jumlah_warning_min">
+                                        <i class="bx bx-error-circle me-1"></i>Jumlah penarikan tidak boleh kurang dari Rp 1.000!
+                                    </small>
+                                    <small class="text-danger d-none" id="jumlah_warning_max">
+                                        <i class="bx bx-error-circle me-1"></i>Jumlah penarikan melebihi saldo yang tersedia!
+                                    </small>
                                 </div>
 
                                 <div class="mb-4">
@@ -174,6 +180,24 @@
         .form-control:focus {
             box-shadow: 0 0 0 0.25rem rgba(245, 101, 101, 0.25);
             border-color: #f56565;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        #jumlah_warning_min, #jumlah_warning_max {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
         .student-info .info-item {
             transition: all 0.2s ease;
@@ -230,6 +254,9 @@
         const jumlahHidden = document.getElementById('jumlah');
         const jumlahTransaksi = document.getElementById('jumlah_transaksi');
         const saldoAwalEl = document.getElementById('saldo_awal');
+        const jumlahWarningMin = document.getElementById('jumlah_warning_min');
+        const jumlahWarningMax = document.getElementById('jumlah_warning_max');
+        const jumlahHint = document.getElementById('jumlah_hint');
         let saldoAwal = 0;
         const filterUnit = document.getElementById('filter_unit');
         const filterKelas = document.getElementById('filter_kelas');
