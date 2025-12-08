@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payroll_components', function (Blueprint $table) {
-            $table->integer('unit_id')->nullable();
+        Schema::table('payroll_settings', function (Blueprint $table) {
+            $table->integer('teaching_hours')->nullable()->default(0)->change();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payment_components', function (Blueprint $table) {
-            //
+        Schema::table('payroll_settings', function (Blueprint $table) {
+            $table->bigInteger('teaching_hours')->nullable(false)->default(null)->change();
         });
     }
 };

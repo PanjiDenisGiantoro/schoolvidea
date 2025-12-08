@@ -20,7 +20,8 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-xl-5">
-                <div class="card auth-card shadow">
+                <div class="card auth-card shadow" style="
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);">
                     <div class="card-body">
                         <div class="p-3">
 

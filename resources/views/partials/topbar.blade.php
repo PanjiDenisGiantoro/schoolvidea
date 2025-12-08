@@ -45,7 +45,7 @@
                 <div class="dropdown topbar-item">
                     <button type="button" class="topbar-button" id="page-header-notifications-dropdown"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span class="topbar-badge border-info rounded-pill border border-2">18<span
+                        <span class="topbar-badge border-info rounded-pill border border-2"><i class="ri-notification-3-line"></i><span
                                 class="visually-hidden">unread messages</span></span>
                     </button>
                     <div class="dropdown-menu dropdown-lg dropdown-menu-end pt-0"

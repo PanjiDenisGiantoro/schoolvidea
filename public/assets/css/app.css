@@ -21294,7 +21294,7 @@ body.authentication-bg {
         color-stop(0, #5e5d83),
         to(#597e87)
     );
-    background-image: linear-gradient(to top, #5e5d83 0, #597e87 100%);
+    background-image: linear-gradient(to top, #f0f0f0 0%, #ffffff 50%, #f0f0f0 100%);
 }
 body.authentication-bg .account-pages {
     -webkit-box-align: center;

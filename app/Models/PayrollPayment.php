@@ -33,7 +33,6 @@ class PayrollPayment extends Model
         'presence',
         'presence_count',
         'absence_count',
-
     ];
 
     /**

@@ -75,14 +75,16 @@ class AuthController extends Controller
     public function portal(Request $request)
     {
         $request->validate([
-            'email' => 'required',
-            'password' => 'required',
+            'email' => 'required|string',
+            'password' => 'required|string',
+            
         ]);
         $loginType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         $credentials = [
             $loginType => $request->email,
             'password' => $request->password,
         ];
+        
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
@@ -98,7 +100,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email_username' => 'Email/Username atau password salah',
+            'email' => 'Email/Username atau password salah',
         ]);
     }
 
