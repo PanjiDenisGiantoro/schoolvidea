@@ -594,9 +594,19 @@ class RiwayatApiController extends Controller
                     7 => 'Juli', 8 => 'Agustus', 9 => 'September',
                     10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                 ];
-                $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke - 1 : null;
-                $tahunTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
-                $bulanText = $bulanKe && $tahunTagihan ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahunTagihan : 'N/A';
+                $bulanKeOriginal = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
+                $tahunMulai = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
+
+                // Calculate actual month and year based on bulan_ke
+                if ($bulanKeOriginal && $tahunMulai) {
+                    $yearOffset = floor(($bulanKeOriginal - 1) / 12);
+                    $monthIndex = (($bulanKeOriginal - 1) % 12) + 1;
+                    $tahunTagihan = $tahunMulai + $yearOffset;
+                    $bulanText = ($bulanArray[$monthIndex] ?? $monthIndex) . ' ' . $tahunTagihan;
+                } else {
+                    $tahunTagihan = null;
+                    $bulanText = 'N/A';
+                }
 
                 // Calculate potongan total
                 $totalPotongan = 0;
@@ -653,9 +663,19 @@ class RiwayatApiController extends Controller
                         }
 
                         // Calculate bulan text
-                        $bulanKe = $tagihanSiswa ? $tagihanSiswa->bulan_ke - 1 : null;
-                        $tahun = $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->tahun_mulai : null;
-                        $bulanText = $bulanKe && $tahun ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahun : 'N/A';
+                        $bulanKeOriginal = $tagihanSiswa ? $tagihanSiswa->bulan_ke : null;
+                        $tahunMulai = $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->tahun_mulai : null;
+
+                        // Calculate actual month and year based on bulan_ke
+                        if ($bulanKeOriginal && $tahunMulai) {
+                            $yearOffset = floor(($bulanKeOriginal - 1) / 12);
+                            $monthIndex = (($bulanKeOriginal - 1) % 12) + 1;
+                            $tahun = $tahunMulai + $yearOffset;
+                            $bulanText = ($bulanArray[$monthIndex] ?? $monthIndex) . ' ' . $tahun;
+                        } else {
+                            $tahun = null;
+                            $bulanText = 'N/A';
+                        }
 
                         // Get nominal tagihan
                         $nominalTagihan = $tagihanSiswa && $tagihanSiswa->tagihanItem ? (float)$tagihanSiswa->tagihanItem->nominal : 0;
