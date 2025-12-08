@@ -594,7 +594,7 @@ class RiwayatApiController extends Controller
                     7 => 'Juli', 8 => 'Agustus', 9 => 'September',
                     10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                 ];
-                $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
+                $bulanKe = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke - 1 : null;
                 $tahunTagihan = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
                 $bulanText = $bulanKe && $tahunTagihan ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahunTagihan : 'N/A';
 
@@ -653,7 +653,7 @@ class RiwayatApiController extends Controller
                         }
 
                         // Calculate bulan text
-                        $bulanKe = $tagihanSiswa ? $tagihanSiswa->bulan_ke : null;
+                        $bulanKe = $tagihanSiswa ? $tagihanSiswa->bulan_ke - 1 : null;
                         $tahun = $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->tahun_mulai : null;
                         $bulanText = $bulanKe && $tahun ? ($bulanArray[$bulanKe] ?? $bulanKe) . ' ' . $tahun : 'N/A';
 
@@ -899,6 +899,8 @@ class RiwayatApiController extends Controller
             // ===== MONTHLY STATISTICS (within date range) =====
             // Tabungan Statistics for the period
             $tabunganQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
             if ($siswaId) {
@@ -907,6 +909,8 @@ class RiwayatApiController extends Controller
 
             // Monthly deposits and withdrawals
             $totalSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved')
                 ->where('jenis_transaksi', 'setoran_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -916,6 +920,8 @@ class RiwayatApiController extends Controller
             $totalSetorPerbulan = $totalSetorPerbulan->sum('jumlah');
 
             $totalTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved')
                 ->where('jenis_transaksi', 'penarikan_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -925,6 +931,8 @@ class RiwayatApiController extends Controller
             $totalTarikPerbulan = $totalTarikPerbulan->sum('jumlah');
 
             $countSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved')
                 ->where('jenis_transaksi', 'setoran_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -934,6 +942,8 @@ class RiwayatApiController extends Controller
             $countSetorPerbulan = $countSetorPerbulan->count();
 
             $countTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved')
                 ->where('jenis_transaksi', 'penarikan_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -944,7 +954,9 @@ class RiwayatApiController extends Controller
 
             // ===== OVERALL STATISTICS (all time) =====
             // Total deposits all time
-            $totalSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan');
+            $totalSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved');
 
             if ($siswaId) {
                 $totalSetorKeseluruhan->where('penerima_id', $siswaId);
@@ -952,7 +964,9 @@ class RiwayatApiController extends Controller
             $totalSetorKeseluruhan = $totalSetorKeseluruhan->sum('jumlah');
 
             // Total withdrawals all time
-            $totalTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan');
+            $totalTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved');
 
             if ($siswaId) {
                 $totalTarikKeseluruhan->where('penerima_id', $siswaId);
@@ -960,7 +974,8 @@ class RiwayatApiController extends Controller
             $totalTarikKeseluruhan = $totalTarikKeseluruhan->sum('jumlah');
 
             // Count of deposits all time
-            $jumlahSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan');
+            $jumlahSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')->where('status_verifikasi','approved')
+                ->where('status_approval','approved');
 
             if ($siswaId) {
                 $jumlahSetorKeseluruhan->where('penerima_id', $siswaId);
@@ -968,7 +983,9 @@ class RiwayatApiController extends Controller
             $jumlahSetorKeseluruhan = $jumlahSetorKeseluruhan->count();
 
             // Count of withdrawals all time
-            $jumlahTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan');
+            $jumlahTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+                ->where('status_verifikasi','approved')
+                ->where('status_approval','approved');
 
             if ($siswaId) {
                 $jumlahTarikKeseluruhan->where('penerima_id', $siswaId);
@@ -1017,7 +1034,8 @@ class RiwayatApiController extends Controller
             $totalBelumLunas = $totalBelumLunas->count();
 
             // Pembayaran Statistics
-            $pembayaranQuery = Pembayarantagihan::whereBetween('created_at', [$startDate, $endDate]);
+            $pembayaranQuery = Pembayarantagihan::whereBetween('created_at', [$startDate, $endDate])
+                ->where('status_approval','approved');
 
             if ($siswaId) {
                 $pembayaranQuery->whereHas('tagihanSiswa', function ($q) use ($siswaId) {
