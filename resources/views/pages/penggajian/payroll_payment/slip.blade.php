@@ -73,7 +73,7 @@
             } */
 
             .header {
-                margin-bottom: 10px;
+                margin-bottom: 0px;
                 padding-bottom: 10px;
                 border-bottom: 2px solid #28a745;
             }
@@ -122,7 +122,7 @@
             /* Detail Karyawan */
             .employee-details {
                 width: 100%;
-                margin-bottom: 20px;
+                margin-bottom: 0px;
                 font-size: 9pt;
             }
             .employee-details td {
@@ -142,7 +142,7 @@
                 width: 100%;
                 border-collapse: separate;
                 border-spacing: 0 0px; /* Jarak antar baris dikurangi */
-                margin-bottom: 20px;
+                margin-bottom: 0px;
             }
             .earnings-deductions th,
             .earnings-deductions td {
@@ -172,7 +172,7 @@
                 margin-top: 2px;
                 text-align: left;
                 border-radius: 4px;
-                margin-bottom: 50px;
+                margin-bottom: 0px;
             }
             .net-payment-box strong {
                 display: block;
@@ -190,8 +190,8 @@
             /* Catatan dan Tanda Tangan */
             .notes-section {
                 margin-top: 0px;
-                margin-bottom: 20px;
-                padding: 8px;
+                margin-bottom: 0px;
+                padding: 2px;
                 border-left: 4px solid #ffc107;
                 background-color: #fffbe6;
                 font-size: 8pt;
@@ -292,118 +292,148 @@
             </table>
 
             {{-- Tabel Penerimaan & Potongan --}}
-            <table class="earnings-deductions">
-                <thead>
-                    <tr>
-                        <th colspan="2" style="padding-top: 10px">
-                            <i>Penerimaan</i>
-                        </th>
-                        <th style="padding-top: 10px"><i>Jumlah (IDR)</i></th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    {{-- Gaji pokok --}}
-                    <tr>
-                        <td colspan="2">
-                            Gaji Pokok (Rp
-                            {{ number_format($payment->details["salary"]) }} x
-                            {{ (int) ($payment->teaching_hour_week ?? $payment->teaching_hour_month) }})
-                        </td>
-                        <td class="amount" style="font-weight: 500">
-                            Rp
-                            {{ number_format($payment->details["salary"] * ($payment->teaching_hour_week ?? $payment->teaching_hour_month), 0, ",", ".") }}
-                        </td>
-                    </tr>
+            <table width="100%" style="border-collapse: collapse">
+                <tr>
+                    <!-- ===================== -->
+                    <!--      KIRI (PENERIMAAN) -->
+                    <!-- ===================== -->
+                    <td width="50%" valign="top" style="padding-right: 8px">
+                        <table width="100%" class="earnings-deductions">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="padding-top: 10px">
+                                        <i>Penerimaan</i>
+                                    </th>
+                                    <th><i>Jumlah (IDR)</i></th>
+                                </tr>
+                            </thead>
 
-                    {{-- Komponen / Tunjangan tambahan --}}
-                    @foreach ($payment->details["components"] as $component)
-                        <tr>
-                            <td colspan="2">{{ $component["name"] }}</td>
-                            <td class="amount" style="font-weight: 500">
-                                Rp
-                                {{ number_format($component["pivot"]["value"], 0, ",", ".") }}
-                            </td>
-                        </tr>
-                    @endforeach
+                            <tbody>
+                                {{-- Gaji pokok --}}
+                                <tr>
+                                    <td colspan="2">
+                                        Gaji Pokok (Rp
+                                        {{ number_format($payment->details["salary"]) }}
+                                        x
+                                        {{ (int) ($payment->teaching_hour_week ?? $payment->teaching_hour_month) }})
+                                    </td>
+                                    <td class="amount" style="font-weight: 500">
+                                        Rp
+                                        {{ number_format($payment->details["salary"] * ($payment->teaching_hour_week ?? $payment->teaching_hour_month), 0, ",", ".") }}
+                                    </td>
+                                </tr>
 
-                    <tr>
-                        <td colspan="2">Transport</td>
-                        <td class="amount" style="font-weight: 500">
-                            Rp
-                            {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">Makan</td>
-                        <td class="amount" style="font-weight: 500">
-                            Rp
-                            {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">lainnya</td>
-                        <td class="amount" style="font-weight: 500">
-                            Rp
-                            {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
-                        </td>
-                    </tr>
-                    <tr style="font-weight: bold; background-color: #e6ffed">
-                        <td colspan="2" style="font-weight: bold">
-                            TOTAL PENERIMAAN
-                        </td>
-                        <td class="amount">
-                            Rp
-                            {{ number_format($payment->total_earnings, 0, ",", ".") }}
-                        </td>
-                    </tr>
-                </tbody>
+                                {{-- Komponen / Tunjangan --}}
+                                @foreach ($payment->details["components"] as $component)
+                                    <tr>
+                                        <td colspan="2">
+                                            {{ $component["name"] }}
+                                        </td>
+                                        <td
+                                            class="amount"
+                                            style="font-weight: 500"
+                                        >
+                                            Rp
+                                            {{ number_format($component["pivot"]["value"], 0, ",", ".") }}
+                                        </td>
+                                    </tr>
+                                @endforeach
 
-                {{-- Potongan --}}
-                <thead>
-                    <tr>
-                        <th colspan="2" style="padding-top: 10px">
-                            <i>Potongan</i>
-                        </th>
-                        <th style="padding-top: 10px"><i>Jumlah (IDR)</i></th>
-                    </tr>
-                </thead>
+                                <tr>
+                                    <td colspan="2">Transport</td>
+                                    <td class="amount">
+                                        Rp
+                                        {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Makan</td>
+                                    <td class="amount">
+                                        Rp
+                                        {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Lainnya</td>
+                                    <td class="amount">
+                                        Rp
+                                        {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
+                                    </td>
+                                </tr>
 
-                <tbody>
-                    @foreach ($payment->details["deductions"] as $deduction)
-                        <tr>
-                            <td colspan="2">
-                                {{ $deduction["name"] }}
+                                <tr
+                                    style="
+                                        font-weight: bold;
+                                        background-color: #e6ffed;
+                                    "
+                                >
+                                    <td colspan="2">TOTAL PENERIMAAN</td>
+                                    <td class="amount">
+                                        Rp
+                                        {{ number_format($payment->total_earnings, 0, ",", ".") }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
 
-                                {{-- Tampilkan angka persen bila tipe persen --}}
-                                @if ($deduction["type"] === "persen")
-                                        ({{ $deduction["pivot"]["value"] }}%)
-                                @endif
-                            </td>
+                    <!-- ===================== -->
+                    <!--      KANAN (POTONGAN) -->
+                    <!-- ===================== -->
+                    <td width="50%" valign="top" style="padding-left: 8px">
+                        <table width="100%" class="earnings-deductions">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="padding-top: 10px">
+                                        <i>Potongan</i>
+                                    </th>
+                                    <th><i>Jumlah (IDR)</i></th>
+                                </tr>
+                            </thead>
 
-                            <td class="amount" style="font-weight: 500">
-                                Rp
-                                {{-- Jika nominal --}}
-                                @if ($deduction["type"] === "nominal")
-                                    {{ number_format($deduction["pivot"]["value"], 0, ",", ".") }}
-                                @else
-                                    {{-- Jika persen → nominal POTONGAN sudah dihitung di total_deductions --}}
-                                    {{ number_format(($deduction["pivot"]["value"] / 100) * $payment->total_earnings, 0, ",", ".") }}
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+                            <tbody>
+                                @foreach ($payment->details["deductions"] as $deduction)
+                                    <tr>
+                                        <td colspan="2">
+                                            {{ $deduction["name"] }}
 
-                    <tr style="font-weight: bold; background-color: #fff0f0">
-                        <td colspan="2" style="font-weight: bold">
-                            TOTAL POTONGAN
-                        </td>
-                        <td class="amount">
-                            Rp
-                            {{ number_format($payment->total_deductions, 0, ",", ".") }}
-                        </td>
-                    </tr>
-                </tbody>
+                                            @if ($deduction["type"] === "persen")
+                                                    ({{ $deduction["pivot"]["value"] }}%)
+                                            @endif
+                                        </td>
+
+                                        <td
+                                            class="amount"
+                                            style="font-weight: 500"
+                                        >
+                                            @if ($deduction["type"] === "nominal")
+                                                Rp
+                                                {{ number_format($deduction["pivot"]["value"], 0, ",", ".") }}
+                                            @else
+                                                Rp
+                                                {{ number_format(($deduction["pivot"]["value"] / 100) * $payment->total_earnings, 0, ",", ".") }}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                <tr
+                                    style="
+                                        font-weight: bold;
+                                        background-color: #fff0f0;
+                                    "
+                                >
+                                    <td colspan="2">TOTAL POTONGAN</td>
+                                    <td class="amount">
+                                        Rp
+                                        {{ number_format($payment->total_deductions, 0, ",", ".") }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
             </table>
 
             {{-- Catatan --}}
