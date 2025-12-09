@@ -589,10 +589,8 @@ class RiwayatApiController extends Controller
 
                 // Calculate bulan and tahun info
                 $bulanArray = [
-                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
-                    4 => 'April', 5 => 'Mei', 6 => 'Juni',
-                    7 => 'Juli', 8 => 'Agustus', 9 => 'September',
-                    10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                 ];
                 $bulanKeOriginal = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
                 $tahunMulai = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
@@ -600,9 +598,9 @@ class RiwayatApiController extends Controller
                 // Calculate actual month and year based on bulan_ke
                 if ($bulanKeOriginal && $tahunMulai) {
                     $yearOffset = floor(($bulanKeOriginal - 1) / 12);
-                    $monthIndex = (($bulanKeOriginal - 1) % 12) + 1;
+                    $monthIndex = ($bulanKeOriginal - 1) % 12;
                     $tahunTagihan = $tahunMulai + $yearOffset;
-                    $bulanText = ($bulanArray[$monthIndex] ?? $monthIndex) . ' ' . $tahunTagihan;
+                    $bulanText = ($bulanArray[$monthIndex] ?? 'N/A') . ' ' . $tahunTagihan;
                 } else {
                     $tahunTagihan = null;
                     $bulanText = 'N/A';
@@ -669,9 +667,9 @@ class RiwayatApiController extends Controller
                         // Calculate actual month and year based on bulan_ke
                         if ($bulanKeOriginal && $tahunMulai) {
                             $yearOffset = floor(($bulanKeOriginal - 1) / 12);
-                            $monthIndex = (($bulanKeOriginal - 1) % 12) + 1;
+                            $monthIndex = ($bulanKeOriginal - 1) % 12;
                             $tahun = $tahunMulai + $yearOffset;
-                            $bulanText = ($bulanArray[$monthIndex] ?? $monthIndex) . ' ' . $tahun;
+                            $bulanText = ($bulanArray[$monthIndex] ?? 'N/A') . ' ' . $tahun;
                         } else {
                             $tahun = null;
                             $bulanText = 'N/A';
