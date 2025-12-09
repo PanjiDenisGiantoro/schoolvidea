@@ -587,20 +587,16 @@ class RiwayatApiController extends Controller
                     })->toArray();
                 }
 
-                // Calculate bulan and tahun info
-                $bulanArray = [
-                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                ];
+                // Calculate bulan and tahun info menggunakan Carbon
                 $bulanKeOriginal = $p->tagihanSiswa ? $p->tagihanSiswa->bulan_ke : null;
-                $tahunMulai = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? $p->tagihanSiswa->tagihan->tahun_mulai : null;
+                $bulanMulai = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? (int) $p->tagihanSiswa->tagihan->bulan_mulai : null;
+                $tahunMulai = $p->tagihanSiswa && $p->tagihanSiswa->tagihan ? (int) $p->tagihanSiswa->tagihan->tahun_mulai : null;
 
                 // Calculate actual month and year based on bulan_ke
-                if ($bulanKeOriginal && $tahunMulai) {
-                    $yearOffset = floor(($bulanKeOriginal - 1) / 12);
-                    $monthIndex = ($bulanKeOriginal - 1) % 12;
-                    $tahunTagihan = $tahunMulai + $yearOffset;
-                    $bulanText = ($bulanArray[$monthIndex] ?? 'N/A') . ' ' . $tahunTagihan;
+                if ($bulanKeOriginal && $bulanMulai && $tahunMulai) {
+                    $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKeOriginal - 1);
+                    $bulanText = $date->translatedFormat('F Y');
+                    $tahunTagihan = $date->year;
                 } else {
                     $tahunTagihan = null;
                     $bulanText = 'N/A';
@@ -651,7 +647,7 @@ class RiwayatApiController extends Controller
                         ])
                         ->get();
 
-                    $listTagihan = $detailPembayaran->map(function ($detail) use ($bulanArray) {
+                    $listTagihan = $detailPembayaran->map(function ($detail) {
                         $tagihanSiswa = $detail->tagihanSiswa;
 
                         // Get kategori info
@@ -660,16 +656,16 @@ class RiwayatApiController extends Controller
                             $kategoriNama = $tagihanSiswa->tagihanItem->kategori->nama_kategori;
                         }
 
-                        // Calculate bulan text
+                        // Calculate bulan text menggunakan Carbon
                         $bulanKeOriginal = $tagihanSiswa ? $tagihanSiswa->bulan_ke : null;
-                        $tahunMulai = $tagihanSiswa && $tagihanSiswa->tagihan ? $tagihanSiswa->tagihan->tahun_mulai : null;
+                        $bulanMulai = $tagihanSiswa && $tagihanSiswa->tagihan ? (int) $tagihanSiswa->tagihan->bulan_mulai : null;
+                        $tahunMulai = $tagihanSiswa && $tagihanSiswa->tagihan ? (int) $tagihanSiswa->tagihan->tahun_mulai : null;
 
                         // Calculate actual month and year based on bulan_ke
-                        if ($bulanKeOriginal && $tahunMulai) {
-                            $yearOffset = floor(($bulanKeOriginal - 1) / 12);
-                            $monthIndex = ($bulanKeOriginal - 1) % 12;
-                            $tahun = $tahunMulai + $yearOffset;
-                            $bulanText = ($bulanArray[$monthIndex] ?? 'N/A') . ' ' . $tahun;
+                        if ($bulanKeOriginal && $bulanMulai && $tahunMulai) {
+                            $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)->addMonths($bulanKeOriginal - 1);
+                            $bulanText = $date->translatedFormat('F Y');
+                            $tahun = $date->year;
                         } else {
                             $tahun = null;
                             $bulanText = 'N/A';
