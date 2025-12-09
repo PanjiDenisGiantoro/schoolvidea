@@ -24,65 +24,91 @@ class OfficerImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
+        Log::info('========== OFFICER IMPORT STARTED ==========');
         Log::info('Incoming row data: ' . json_encode($row));
 
         try {
             // ===== 1. Validasi kolom wajib =====
+            Log::info('Step 1: Validating required fields');
+            Log::info('nama_lengkap: ' . ($row['nama_lengkap'] ?? 'EMPTY'));
+            Log::info('email: ' . ($row['email'] ?? 'EMPTY'));
+            Log::info('role: ' . ($row['role'] ?? 'EMPTY'));
+            Log::info('nip: ' . ($row['nip'] ?? 'EMPTY'));
+
             if (
                 empty($row['nama_lengkap']) ||
                 empty($row['email']) ||
                 empty($row['role']) ||
                 empty($row['nip'])
             ) {
-                Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
+                Log::warning('⚠️ Skipping row due to missing required fields: ' . json_encode($row));
                 return null;
             }
+            Log::info('✓ Required fields validated');
 
             // ===== 2. Validasi kolom numeric =====
+            Log::info('Step 2: Validating numeric fields');
             $numericFields = ['no_hp', 'no_rfid', 'nip', 'nuptk', 'nik'];
             foreach ($numericFields as $field) {
                 if (!empty($row[$field]) && !is_numeric($row[$field])) {
-                    Log::warning("Skipping row due to invalid numeric value in $field: " . json_encode($row));
+                    Log::warning("⚠️ Skipping row due to invalid numeric value in $field: " . json_encode($row));
                     return null;
                 }
             }
+            Log::info('✓ Numeric fields validated');
 
             // ===== 3. Konversi tanggal lahir dari DD/MM/YYYY ke YYYY-MM-DD =====
+            Log::info('Step 3: Converting date of birth');
             $tanggalLahir = null;
             if (!empty($row['tanggal_lahir_ddmmyyyy'])) {
+                Log::info('tanggal_lahir_ddmmyyyy raw: ' . $row['tanggal_lahir_ddmmyyyy']);
                 $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
                 if ($date) {
                     $tanggalLahir = $date->format('Y-m-d');
+                    Log::info('✓ Date converted: ' . $tanggalLahir);
+                } else {
+                    Log::warning('⚠️ Failed to convert date: ' . $row['tanggal_lahir_ddmmyyyy']);
                 }
             }
 
             DB::beginTransaction();
+            Log::info('✓ Transaction started');
 
             // ===== 4. Tentukan password =====
+            Log::info('Step 4: Setting password');
             $password = !empty($row['password'])
                 ? bcrypt($row['password'])
                 : bcrypt($row['nip']); // default pakai NIP jika kosong
+            Log::info('✓ Password set (using ' . (!empty($row['password']) ? 'provided password' : 'NIP as default') . ')');
 
             // ===== 5. Ambil status dan akses yayasan =====
+            Log::info('Step 5: Processing status and akses yayasan');
             $status = !empty($row['status_1_aktif_0_tidak_aktif']) ? $row['status_1_aktif_0_tidak_aktif'] : '1';
             $aksesYayasan = !empty($row['akses_yayasan_1_ya_0_tidak']) ? $row['akses_yayasan_1_ya_0_tidak'] : '0';
+            Log::info('Status: ' . $status . ' | Akses Yayasan: ' . $aksesYayasan);
 
             // ===== 6. Jika akses yayasan = 1, ambil yayasan_id dari user lain dengan unit_id yang sama =====
+            Log::info('Step 6: Checking yayasan access');
             $yayasanId = null;
             if ($aksesYayasan == '1') {
+                Log::info('Akses yayasan = 1, searching for yayasan_id...');
                 $userWithYayasan = User::where('unit_id', $this->unit_id)
                     ->whereNotNull('yayasan_id')
                     ->first();
 
                 if ($userWithYayasan) {
                     $yayasanId = $userWithYayasan->yayasan_id;
-                    Log::info("Yayasan ID found: {$yayasanId} for unit_id: {$this->unit_id}");
+                    Log::info("✓ Yayasan ID found: {$yayasanId} for unit_id: {$this->unit_id}");
                 } else {
-                    Log::warning("No yayasan_id found for unit_id: {$this->unit_id}");
+                    Log::warning("⚠️ No yayasan_id found for unit_id: {$this->unit_id}");
                 }
+            } else {
+                Log::info('Akses yayasan = 0, skipping yayasan_id lookup');
             }
 
             // ===== 7. Update atau buat user =====
+            Log::info('Step 7: Creating/Updating User');
+            Log::info('User lookup: email=' . $row['email'] . ', unit_id=' . $this->unit_id);
             $user = User::updateOrCreate(
                 [
                     'email' => $row['email'],
@@ -96,33 +122,47 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'yayasan_id' => $yayasanId,
                 ]
             );
+            Log::info('✓ User created/updated | ID: ' . $user->id);
 
             // ===== 8. Ambil role =====
+            Log::info('Step 8: Finding role');
+            Log::info('Looking for role: ' . $row['role']);
             $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
-                Log::warning("Role not found for role: {$row['role']}");
+                Log::warning("⚠️ Role not found for role: {$row['role']}");
                 DB::rollBack();
                 return null;
             }
+            Log::info('✓ Role found | ID: ' . $rolePetugas->id . ' | Name: ' . $rolePetugas->name);
 
             // ===== 9. Sinkronisasi Spatie Role =====
+            Log::info('Step 9: Syncing Spatie Role');
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
+            Log::info('✓ Spatie role synced: ' . $roleSpatie->name);
 
             if (!$user->hasRole($roleSpatie->name)) {
                 $user->assignRole($roleSpatie->name);
+                Log::info('✓ Role assigned to user');
+            } else {
+                Log::info('User already has this role');
             }
 
             // ===== 10. Konversi jenis kelamin dari format lengkap ke L/P =====
+            Log::info('Step 10: Converting gender');
             $jenisKelamin = null;
             if (!empty($row['jenis_kelamin'])) {
                 $jenisKelamin = $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P';
+                Log::info('✓ Gender converted: ' . $row['jenis_kelamin'] . ' -> ' . $jenisKelamin);
             }
 
             // ===== 11. Update atau buat Officer =====
+            Log::info('Step 11: Creating/Updating Officer');
+            Log::info('Officer lookup: nip=' . $row['nip'] . ', unit_id=' . $this->unit_id . ', tahun_ajaran_id=' . $this->tahun_ajaran_id);
+
             $officer = Officer::updateOrCreate(
                 [
                     'nip' => $row['nip'],
@@ -153,12 +193,20 @@ class OfficerImport implements ToModel, WithHeadingRow
                 ]
             );
 
+            Log::info('✓ Officer created/updated | ID: ' . $officer->id . ' | NIP: ' . $officer->nip);
+
             DB::commit();
+            Log::info('✓ Transaction committed successfully');
+            Log::info('========== OFFICER IMPORT COMPLETED ==========');
+
             return $officer;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error during officer import: ' . $e->getMessage() . ' | Row: ' . json_encode($row));
+            Log::error('❌ ERROR during officer import');
+            Log::error('Error message: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Row data: ' . json_encode($row));
             return null;
         }
     }
