@@ -63,7 +63,26 @@ class OfficerImport implements ToModel, WithHeadingRow
                 ? bcrypt($row['password'])
                 : bcrypt($row['nip']); // default pakai NIP jika kosong
 
-            // ===== 5. Update atau buat user =====
+            // ===== 5. Ambil status dan akses yayasan =====
+            $status = !empty($row['status_1_aktif_0_tidak_aktif']) ? $row['status_1_aktif_0_tidak_aktif'] : '1';
+            $aksesYayasan = !empty($row['akses_yayasan_1_ya_0_tidak']) ? $row['akses_yayasan_1_ya_0_tidak'] : '0';
+
+            // ===== 6. Jika akses yayasan = 1, ambil yayasan_id dari user lain dengan unit_id yang sama =====
+            $yayasanId = null;
+            if ($aksesYayasan == '1') {
+                $userWithYayasan = User::where('unit_id', $this->unit_id)
+                    ->whereNotNull('yayasan_id')
+                    ->first();
+
+                if ($userWithYayasan) {
+                    $yayasanId = $userWithYayasan->yayasan_id;
+                    Log::info("Yayasan ID found: {$yayasanId} for unit_id: {$this->unit_id}");
+                } else {
+                    Log::warning("No yayasan_id found for unit_id: {$this->unit_id}");
+                }
+            }
+
+            // ===== 7. Update atau buat user =====
             $user = User::updateOrCreate(
                 [
                     'email' => $row['email'],
@@ -74,10 +93,11 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'password' => $password,
                     'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
+                    'yayasan_id' => $yayasanId,
                 ]
             );
 
-            // ===== 6. Ambil role =====
+            // ===== 8. Ambil role =====
             $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
@@ -86,7 +106,7 @@ class OfficerImport implements ToModel, WithHeadingRow
                 return null;
             }
 
-            // ===== 7. Sinkronisasi Spatie Role =====
+            // ===== 9. Sinkronisasi Spatie Role =====
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
@@ -96,17 +116,13 @@ class OfficerImport implements ToModel, WithHeadingRow
                 $user->assignRole($roleSpatie->name);
             }
 
-            // ===== 8. Konversi jenis kelamin dari format lengkap ke L/P =====
+            // ===== 10. Konversi jenis kelamin dari format lengkap ke L/P =====
             $jenisKelamin = null;
             if (!empty($row['jenis_kelamin'])) {
                 $jenisKelamin = $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P';
             }
 
-            // ===== 9. Ambil status dan akses yayasan =====
-            $status = !empty($row['status_1_aktif_0_tidak_aktif']) ? $row['status_1_aktif_0_tidak_aktif'] : '1';
-            $aksesYayasan = !empty($row['akses_yayasan_1_ya_0_tidak']) ? $row['akses_yayasan_1_ya_0_tidak'] : '0';
-
-            // ===== 10. Update atau buat Officer =====
+            // ===== 11. Update atau buat Officer =====
             $officer = Officer::updateOrCreate(
                 [
                     'nip' => $row['nip'],
