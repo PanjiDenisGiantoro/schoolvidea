@@ -61,7 +61,7 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
                 $status = ['aktif', 'non_aktif'];
 
                 // Set background color kuning untuk header row pertama
-                $sheet->getStyle('A1:D1')->getFill()
+                $sheet->getStyle('A1:E1')->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFFFF00'); // Kuning
 
@@ -76,7 +76,7 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
                     }, $officerNames);
                     $officerValidationList = implode(',', $officerEscaped);
 
-                    $sheet->getDataValidation('B2:B1000')
+                    $sheet->getDataValidation('C2:C1000')
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $officerValidationList . '"');

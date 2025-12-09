@@ -19,7 +19,7 @@ class RoleImport implements ToModel, WithHeadingRow
 
         try {
             // Header sekarang adalah 'ROLE', bukan 'name'
-            $roleName = $row['nama_roles'] ?? null;
+            $roleName = $row['role'] ?? null;
 
             if (empty($roleName)) {
                 Log::warning('⚠️ Missing required fields (role), skipping...');
