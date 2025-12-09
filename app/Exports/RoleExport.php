@@ -29,7 +29,7 @@ class RoleExport implements FromCollection, WithHeadings, WithEvents
     public function headings(): array
     {
         return [
-            'ROLE'
+            'NAMA ROLES'
         ];
     }
 

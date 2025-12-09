@@ -29,9 +29,9 @@ class OfficerImport implements ToModel, WithHeadingRow
         try {
             // ===== 1. Validasi kolom wajib =====
             if (
-                empty($row['name']) ||
+                empty($row['nama_lengkap']) ||
                 empty($row['email']) ||
-                empty($row['role_id']) ||
+                empty($row['role']) ||
                 empty($row['nip'])
             ) {
                 Log::warning('Skipping row due to missing required fields: ' . json_encode($row));
@@ -39,7 +39,7 @@ class OfficerImport implements ToModel, WithHeadingRow
             }
 
             // ===== 2. Validasi kolom numeric =====
-            $numericFields = ['no_hp', 'rfid_no', 'nip', 'nuptk', 'nik'];
+            $numericFields = ['no_hp', 'no_rfid', 'nip', 'nuptk', 'nik'];
             foreach ($numericFields as $field) {
                 if (!empty($row[$field]) && !is_numeric($row[$field])) {
                     Log::warning("Skipping row due to invalid numeric value in $field: " . json_encode($row));
@@ -47,13 +47,12 @@ class OfficerImport implements ToModel, WithHeadingRow
                 }
             }
 
-            // ===== 3. Konversi tanggal lahir dari Excel ke format tanggal =====
+            // ===== 3. Konversi tanggal lahir dari DD/MM/YYYY ke YYYY-MM-DD =====
             $tanggalLahir = null;
-            if (!empty($row['tanggal_lahir'])) {
-                if (is_numeric($row['tanggal_lahir'])) {
-                    $tanggalLahir = ExcelDate::excelToDateTimeObject($row['tanggal_lahir'])->format('Y-m-d');
-                } else {
-                    $tanggalLahir = date('Y-m-d', strtotime($row['tanggal_lahir']));
+            if (!empty($row['tanggal_lahir_ddmmyyyy'])) {
+                $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
+                if ($date) {
+                    $tanggalLahir = $date->format('Y-m-d');
                 }
             }
 
@@ -71,18 +70,18 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'unit_id' => $this->unit_id,
                 ],
                 [
-                    'name' => $row['name'],
+                    'name' => $row['nama_lengkap'],
                     'password' => $password,
-                    'rfid_no' => $row['rfid_no'] ?? null,
+                    'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]
             );
 
             // ===== 6. Ambil role =====
-            $rolePetugas = Roles_petugas::where('name', $row['role_id'])->first();
+            $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
-                Log::warning("Role not found for role_id: {$row['role_id']}");
+                Log::warning("Role not found for role: {$row['role']}");
                 DB::rollBack();
                 return null;
             }
@@ -97,7 +96,17 @@ class OfficerImport implements ToModel, WithHeadingRow
                 $user->assignRole($roleSpatie->name);
             }
 
-            // ===== 8. Update atau buat Officer =====
+            // ===== 8. Konversi jenis kelamin dari format lengkap ke L/P =====
+            $jenisKelamin = null;
+            if (!empty($row['jenis_kelamin'])) {
+                $jenisKelamin = $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P';
+            }
+
+            // ===== 9. Ambil status dan akses yayasan =====
+            $status = !empty($row['status_1_aktif_0_tidak_aktif']) ? $row['status_1_aktif_0_tidak_aktif'] : '1';
+            $aksesYayasan = !empty($row['akses_yayasan_1_ya_0_tidak']) ? $row['akses_yayasan_1_ya_0_tidak'] : '0';
+
+            // ===== 10. Update atau buat Officer =====
             $officer = Officer::updateOrCreate(
                 [
                     'nip' => $row['nip'],
@@ -105,8 +114,7 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                 ],
                 [
-                    'name' => $row['name'],
-                    'image' => $row['image'] ?? null,
+                    'name' => $row['nama_lengkap'],
                     'tempat_lahir' => $row['tempat_lahir'] ?? null,
                     'no_hp' => $row['no_hp'] ?? null,
                     'unit_id' => $this->unit_id,
@@ -115,16 +123,17 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'role_id' => $rolePetugas->id,
                     'nuptk' => $row['nuptk'] ?? null,
                     'nik' => $row['nik'] ?? null,
-                    'jenis_kelamin' => $row['jenis_kelamin'] ?? null,
+                    'jenis_kelamin' => $jenisKelamin,
                     'agama' => $row['agama'] ?? null,
                     'tanggal_lahir' => $tanggalLahir,
                     'alamat' => $row['alamat'] ?? null,
                     'bank' => $row['bank'] ?? null,
                     'no_rekening' => $row['no_rekening'] ?? null,
-                    'no_kartu_rfid' => $row['no_kartu_rfid'] ?? null,
-                    'qr_code' => $row['qr_code'] ?? null,
-                    'va_guru' => $row['va_guru'] ?? null,
-                    'status' => '1'
+                    'no_kartu_rfid' => $row['no_rfid'] ?? null,
+                    'va_guru' => $row['no_va'] ?? null,
+                    'jabatan' => $row['jabatan'] ?? null,
+                    'akses_yayasan' => $aksesYayasan,
+                    'status' => $status
                 ]
             );
 

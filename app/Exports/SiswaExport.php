@@ -17,23 +17,42 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
     {
         // Return empty collection with 10 empty rows to show dropdown
         return new Collection([
-            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['','', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '','', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '','', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '','', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '','', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '','', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '','', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
         ]);
     }
 
     public function headings(): array
     {
         return [
-           'NIS','NISN', 'Name', 'Email', 'Password', 'RFID No', 'Kelas', 'Status', 'VA Siswa', 'Jenis Kelamin', 'Agama', 'No HP Orang Tua', 'Nama Orang Tua', 'Bank', 'No Rekening'
+            'NISN *',
+            'NIS *',
+            'PASSWORD',
+            'NAMA LENGKAP *',
+            'NIK *',
+            'JENIS KELAMIN *',
+            'TANGGAL LAHIR (DD/MM/YYYY)',
+            'AGAMA *',
+            'NO HP SISWA',
+            'NO HP ORTU *',
+            'EMAIL *',
+            'NAMA ORANG TUA *',
+            'STATUS * ( 1 = Aktif / 0 = Tidak Aktif)',
+            'ALAMAT',
+            'KELAS *',
+            'JURUSAN',
+            'NO RFID',
+            'NO VA',
+            'BANK',
+            'NO REKENING'
         ];
     }
 
@@ -53,7 +72,33 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                 $status = ['1', '0'];
                 $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
 
-                // Dropdown untuk Kelas (Column F)
+                // Set background color kuning untuk header row pertama
+                $sheet->getStyle('A1:T1')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
+
+                // Bold untuk header
+                $sheet->getStyle('A1:T1')->getFont()->setBold(true);
+
+                // Dropdown untuk Jenis Kelamin (Column F - kolom ke-6)
+                $sheet->getDataValidation('F2:F1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
+
+                // Dropdown untuk Agama (Column H - kolom ke-8)
+                $sheet->getDataValidation('H2:H1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $agama) . '"');
+
+                // Dropdown untuk Status (Column M - kolom ke-13)
+                $sheet->getDataValidation('M2:M1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $status) . '"');
+
+                // Dropdown untuk Kelas (Column O - kolom ke-15)
                 if (!empty($kelas)) {
                     // Escape values that contain commas or quotes
                     $kelasEscaped = array_map(function($item) {
@@ -61,35 +106,11 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                     }, $kelas);
                     $kelasValidationList = implode(',', $kelasEscaped);
 
-                    $sheet->getDataValidation('G2:G1000')
+                    $sheet->getDataValidation('O2:O1000')
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $kelasValidationList . '"');
                 }
-
-                $sheet->getStyle('A1:O1')->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                    ->getStartColor()->setARGB('FFFFFF00'); // Kuning
-
-                // Bold untuk header
-                $sheet->getStyle('A1:U1')->getFont()->setBold(true);
-                // Dropdown untuk Status (Column G)
-                $sheet->getDataValidation('G2:G1000')
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $status) . '"');
-
-                // Dropdown untuk Jenis Kelamin (Column I)
-                $sheet->getDataValidation('J2:J1000')
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
-
-                // Dropdown untuk Agama (Column J)
-                $sheet->getDataValidation('K2:K1000')
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $agama) . '"');
             },
         ];
     }

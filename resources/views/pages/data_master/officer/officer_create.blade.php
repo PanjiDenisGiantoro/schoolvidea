@@ -531,7 +531,6 @@
     </script>
 
     @if (!isset($officer))
-        // Hanya saat create
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const emailBottom = document.querySelector('#email_bottom');
