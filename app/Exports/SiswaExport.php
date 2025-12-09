@@ -63,10 +63,10 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
                 $sheet = $event->sheet->getDelegate();
 
                 // Ambil data untuk dropdown
-                $kelas = Kelas::pluck('nama_kelas')
-                    ->when(Auth::user()->unit_id, function ($query) {
+                $kelas = Kelas::when(Auth::user()->unit_id, function ($query) {
                         return $query->where('unit_id', Auth::user()->unit_id);
                     })
+                    ->pluck('nama_kelas')
                     ->toArray();
                 $jenisKelamin = ['Laki-laki', 'Perempuan'];
                 $status = ['1', '0'];
