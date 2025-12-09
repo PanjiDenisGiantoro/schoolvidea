@@ -152,12 +152,13 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                 Log::info('User already has this role');
             }
 
-            // ===== 10. Konversi jenis kelamin dari format lengkap ke L/P =====
-            Log::info('Step 10: Converting gender');
+            // ===== 10. Jenis kelamin - gunakan format asli dari Excel =====
+            Log::info('Step 10: Processing gender');
             $jenisKelamin = null;
             if (!empty($row['jenis_kelamin'])) {
-                $jenisKelamin = $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P';
-                Log::info('✓ Gender converted: ' . $row['jenis_kelamin'] . ' -> ' . $jenisKelamin);
+                // Gunakan format asli dari Excel (Laki-laki / Perempuan)
+                $jenisKelamin = $row['jenis_kelamin'];
+                Log::info('✓ Gender: ' . $jenisKelamin);
             }
 
             // ===== 11. Update atau buat Officer =====
@@ -198,7 +199,8 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                     'no_rekening' => $row['no_rekening'] ?? null,
                     'no_kartu_rfid' => $row['no_rfid'] ?? null,
                     'va_guru' => $row['no_va'] ?? null,
-                    'position_id' => $position->id ?? null
+                    'position_id' => $position->id ?? null,
+                    'status' => $status
                 ]
             );
 
