@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\Positions;
 use App\Models\User;
 use App\Models\Officer;
 use App\Models\Roles_petugas;
@@ -163,6 +164,16 @@ class OfficerImport implements ToModel, WithHeadingRow
             Log::info('Step 11: Creating/Updating Officer');
             Log::info('Officer lookup: nip=' . $row['nip'] . ', unit_id=' . $this->unit_id . ', tahun_ajaran_id=' . $this->tahun_ajaran_id);
 
+
+            $position = Positions::where('positions_name', $row['jabatan'])->first();
+
+            if (!$position) {
+                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
+                DB::rollBack();
+                return null;
+            }
+            Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
+
             $officer = Officer::updateOrCreate(
                 [
                     'nip' => $row['nip'],
@@ -187,7 +198,7 @@ class OfficerImport implements ToModel, WithHeadingRow
                     'no_rekening' => $row['no_rekening'] ?? null,
                     'no_kartu_rfid' => $row['no_rfid'] ?? null,
                     'va_guru' => $row['no_va'] ?? null,
-                    'jabatan' => $row['jabatan'] ?? null,
+                    'position_id' => $position->id ?? null,
                     'akses_yayasan' => $aksesYayasan,
                     'status' => $status
                 ]
