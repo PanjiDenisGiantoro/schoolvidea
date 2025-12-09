@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class OfficerImport implements ToModel, WithHeadingRow
+class OfficerImport1 implements ToModel, WithHeadingRow
 {
     protected $unit_id;
     protected $tahun_ajaran_id;

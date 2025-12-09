@@ -1,7 +1,7 @@
 <?php
 namespace App\Jobs;
 
-use App\Imports\OfficerImport;
+use App\Imports\OfficerImport1;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -41,7 +41,7 @@ class ImportOfficerJob implements ShouldQueue
     {
         try {
             // Mengimpor data menggunakan OfficerImport
-            Excel::import(new OfficerImport($this->unit_id, $this->tahun_ajaran_id), $this->file);
+            Excel::import(new OfficerImport1($this->unit_id, $this->tahun_ajaran_id), $this->file);
             Log::info('Officer import berhasil');
         } catch (\Exception $e) {
             Log::error('Terjadi kesalahan saat mengimpor officer: ' . $e->getMessage());
