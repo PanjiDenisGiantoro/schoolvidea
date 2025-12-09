@@ -53,10 +53,10 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
                     })
                     ->pluck('name')
                     ->toArray();
-                $jurusanNames = Jurusan::pluck('nama_jurusan')
-                    ->when(Auth::user()->unit_id, function ($query) {
+                $jurusanNames = Jurusan::when(Auth::user()->unit_id, function ($query) {
                         return $query->where('unit_id', Auth::user()->unit_id);
                     })
+                    ->pluck('nama_jurusan')
                     ->toArray();
                 $status = ['aktif', 'non_aktif'];
 
