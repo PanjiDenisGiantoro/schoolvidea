@@ -35,20 +35,18 @@ class RoleImport implements ToModel, WithHeadingRow
              */
             Log::info('Processing Role Data');
 
-            $role = Role::updateOrCreate(
-                [
+            $role = Roles::where('name', $roleName)->first();
+            if (!$role) {
+                $role = Roles::create([
                     'name' => $roleName,
-                ],
-                [
                     'guard_name' => 'web',
-                ]
-            );
-
-            // Juga buat di Spatie Permission jika belum ada
-            \Spatie\Permission\Models\Role::firstOrCreate(
-                ['name' => $roleName],
-                ['guard_name' => 'web']
-            );
+                ]);
+            }
+//            // Juga buat di Spatie Permission jika belum ada
+//            \Spatie\Permission\Models\Role::firstOrCreate(
+//                ['name' => $roleName],
+//                ['guard_name' => 'web']
+//            );
 
             Log::info('✓ Role created/updated | ID: ' . $role->id);
 
