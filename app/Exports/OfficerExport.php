@@ -1,6 +1,7 @@
 <?php
 namespace App\Exports;
 
+use App\Models\Positions;
 use App\Models\Roles_petugas;  // Import RolePetugas model for role_id dropdown
 use App\Models\Jurusan;      // Import Jurusan model for jurusan dropdown
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -66,6 +67,7 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                 $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
                 $aksesYayasan = ['1', '0'];
                 $status = ['1', '0'];
+                $jabatan = Positions::pluck('name')->toArray();
 
                 // Set background color kuning untuk header row pertama
                 $sheet->getStyle('A1:T1')->getFill()
@@ -99,6 +101,18 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $roleValidationList . '"');
+                }
+
+                if(!empty($jabatan)){
+                    $jabatanEscaped = array_map(function($item) {
+                        return str_replace('"', '""', $item);
+                    }, $jabatan);
+                    $jabatanValidationList = implode(',', $jabatanEscaped);
+
+                    $sheet->getDataValidation('P2:P1000')
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setFormula1('"' . $jabatanValidationList . '"');
                 }
 
                 // Dropdown untuk Akses Yayasan (Column M - kolom ke-13)
