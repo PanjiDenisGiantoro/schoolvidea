@@ -67,7 +67,7 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                 $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
                 $aksesYayasan = ['1', '0'];
                 $status = ['1', '0'];
-                $jabatan = Positions::pluck('name')->toArray();
+                $jabatan = Positions::pluck('positions_name')->toArray();
 
                 // Set background color kuning untuk header row pertama
                 $sheet->getStyle('A1:T1')->getFill()
