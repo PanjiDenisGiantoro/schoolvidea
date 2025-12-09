@@ -35,7 +35,7 @@ class RoleImport implements ToModel, WithHeadingRow
              */
             Log::info('Processing Role Data');
 
-            $role = Roles::updateOrCreate(
+            $role = Role::updateOrCreate(
                 [
                     'name' => $roleName,
                 ],
