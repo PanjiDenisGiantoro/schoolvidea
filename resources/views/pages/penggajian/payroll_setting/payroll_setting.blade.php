@@ -419,9 +419,11 @@
             const input = document.getElementById(inputId);
             if (toggle.checked) {
                 input.disabled = false;
+                input.readonly = false;
                 input.placeholder = "Nominal";
             } else {
-                input.disabled = true;
+                input.readonly = true;
+                input.disabled = false;
                 input.value = "";
                 input.placeholder = "Nonaktif";
             }

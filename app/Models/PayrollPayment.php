@@ -33,6 +33,7 @@ class PayrollPayment extends Model
         'presence',
         'presence_count',
         'absence_count',
+        'transaksi_id',
     ];
 
     /**
@@ -88,5 +89,10 @@ class PayrollPayment extends Model
     public function payrollType()
     {
         return $this->belongsTo(PayrollSetting::class, 'type');
+    }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(Keuangan_transaksi::class, 'transaksi_id');
     }
 }

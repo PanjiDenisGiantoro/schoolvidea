@@ -308,11 +308,11 @@
                                         Gaji Pokok (Rp
                                         {{ number_format($payment->details["salary"]) }}
                                         x
-                                        {{ (int) ($payment->teaching_hour_week ?? $payment->teaching_hour_month) }})
+                                        {{ (int) ($payment->teaching_hour_week != 0 ? $payment->teaching_hour_week : $payment->teaching_hour_month) }})
                                     </td>
                                     <td class="amount" style="font-weight: 500">
                                         Rp
-                                        {{ number_format($payment->details["salary"] * ($payment->teaching_hour_week ?? $payment->teaching_hour_month), 0, ",", ".") }}
+                                        {{ number_format($payment->details["salary"] * ($payment->teaching_hour_week != 0 ? $payment->teaching_hour_week : $payment->teaching_hour_month), 0, ",", ".") }}
                                     </td>
                                 </tr>
 
@@ -333,24 +333,47 @@
                                 @endforeach
 
                                 <tr>
-                                    <td colspan="2">Transport</td>
+                                    <td colspan="2">
+                                        Kehadiran Staff (Rp
+                                        {{ number_format($payment->details["staff_allowance"] ?? 0, 0, ",", ".") }}
+                                        x {{ $payment->presence }} )
+                                    </td>
                                     <td class="amount" style="font-weight: 500">
                                         Rp
+                                        {{ number_format($payment->details["staff_allowance"] * $payment->presence, 0, ",", ".") }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        Transport (Rp
                                         {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
+                                        x {{ $payment->presence_count }} )
+                                    </td>
+                                    <td class="amount" style="font-weight: 500">
+                                        Rp
+                                        {{ number_format($payment->details["transport_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Makan</td>
-                                    <td class="amount" style="font-weight: 500">
-                                        Rp
+                                    <td colspan="2">
+                                        Makan (Rp
                                         {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
+                                        x {{ $payment->presence_count }} )
+                                    </td>
+                                    <td class="amount" style="font-weight: 500">
+                                        Rp
+                                        {{ number_format($payment->details["meal_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Lainnya</td>
+                                    <td colspan="2">
+                                        Lainnya (Rp
+                                        {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
+                                        x {{ $payment->presence_count }} )
+                                    </td>
                                     <td class="amount" style="font-weight: 500">
                                         Rp
-                                        {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
+                                        {{ number_format($payment->details["other_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                     </td>
                                 </tr>
 

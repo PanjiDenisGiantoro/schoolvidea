@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payroll_payments', function (Blueprint $table) {
-            // $table->jsonb('details')->nullable();
+            $table->unsignedInteger('transaksi_id')->nullable()->after('id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payroll_payments', function (Blueprint $table) {
-            // $table->dropColumn('details');
+            $table->dropColumn('transaksi_id');
         });
     }
 };

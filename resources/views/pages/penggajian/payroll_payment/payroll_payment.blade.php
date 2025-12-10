@@ -249,6 +249,7 @@
                                 <textarea
                                     class="form-control"
                                     id="isiCatatan"
+                                    name="isiCatatan"
                                     rows="4"
                                     placeholder="Tulis keterangan tambahan di sini..."
                                 ></textarea>
@@ -889,6 +890,7 @@
                                 staffCount = attendance.presence || 0;
                             }
                         }
+
                         return `
             <tr data-item='${JSON.stringify(item)}'
                 data-base-earnings="${item.total_earnings || 0}"
@@ -924,10 +926,8 @@
                 </td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ url('payroll-payment/detail/${item.id}') }}" class="btn btn-warning rounded-pill">
-                        Detail</a>
+                        <a href="" class="btn btn-warning rounded-pill btn-detail">Detail</a>
                         <button class="btn btn-success rounded-pill btn-bayar">Bayar</button>
-
                     </div>
                 </td>
             </tr>
@@ -948,6 +948,34 @@
                     if (input) {
                         onPresensiChange.call(input);
                     }
+                });
+
+                document.querySelectorAll('.btn-detail').forEach((btn) => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        const row = this.closest('tr');
+                        const item =
+                            rowDataMap.get(row) ||
+                            JSON.parse(row.dataset.item || '{}');
+
+                        const presence = row.querySelector('.hadir').value || 0;
+                        const absence = row.querySelector('.alpha').value || 0;
+                        const staff = row.querySelector('.staff').value || 0;
+
+                        const url =
+                            `/payroll-payment/detail/${item.id}` +
+                            `?presence=${presence}` +
+                            `&absence=${absence}` +
+                            `&staff=${staff}` +
+                            `&note=${encodeURIComponent(item.text_note || '')}` +
+                            `&salarynote=${encodeURIComponent(item.salary_note || '')}` +
+                            `&net=${item.net_payment}` +
+                            `&ear=${item.total_earnings}` +
+                            `&ded=${item.total_deductions}`;
+
+                        window.location.href = url;
+                    });
                 });
 
                 setupSelectAll('checkAllBelumLunas', 'row-checkbox-belum');
@@ -1005,7 +1033,7 @@
                 </td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ url('payroll-payment/detail/${item.id}') }}" class="btn btn-success rounded-pill">
+                        <a href="{{ url('payroll-payment/show/${item.id}') }}" class="btn btn-success rounded-pill">
                         <i class="ri-eye-line"></i></a>
                         <a href="{{ url('payroll-payment/slip/${item.id}') }}" target="_blank" class="btn btn-warning rounded-pill shadow-sm">
                             <i class="ri-printer-line"></i>
@@ -1024,6 +1052,7 @@
                         searching: false,
                         scrollX: true,
                         retrieve: true,
+                        order: [[3, 'desc']],
                         language: {
                             url: '{{ asset("assets/datatables/id.json") }}',
                         },
@@ -1040,12 +1069,48 @@
                     } catch {}
 
                     const status = selectedRow.dataset.status;
+                    console.log(item);
+                    if (status === 'paid') {
+                        // Jika sudah paid, ambil data dari item dan TAMPILKAN saja (readonly)
+                        const salaryNoteEl =
+                            document.getElementById('salary_note');
+                        const isiCatatanEl =
+                            document.getElementById('isiCatatan');
 
-                    document.getElementById('salary_note').value =
-                        item.salary_note ? formatRupiah(item.salary_note) : '';
-                    document.getElementById('isiCatatan').value =
-                        item.text_note ?? '';
+                        if (salaryNoteEl) {
+                            salaryNoteEl.value = item.salary_note
+                                ? formatRupiah(item.salary_note)
+                                : '';
+                            salaryNoteEl.disabled = true; // disable karena sudah paid
+                        }
 
+                        if (isiCatatanEl) {
+                            isiCatatanEl.value = item.notes ?? '';
+                            isiCatatanEl.disabled = true; // disable karena sudah paid
+                        }
+                    } else {
+                        // Jika pending (belum paid), ambil dari input user
+                        const salaryNoteEl =
+                            document.getElementById('salary_note');
+                        const isiCatatanEl =
+                            document.getElementById('isiCatatan');
+
+                        if (salaryNoteEl) {
+                            salaryNoteEl.disabled = false; // enable untuk edit
+                            // Jika ingin set nilai default dari item
+                            salaryNoteEl.value = item.salary_note
+                                ? formatRupiah(item.salary_note)
+                                : '';
+                            // Atau biarkan user input manual
+                        }
+
+                        if (isiCatatanEl) {
+                            isiCatatanEl.disabled = false; // enable untuk edit
+                            // Jika ingin set nilai default dari item
+                            isiCatatanEl.value = item.text_note ?? '';
+                            // Atau biarkan user input manual
+                        }
+                    }
                     document.getElementById('salary_note').disabled =
                         status === 'paid';
                     document.getElementById('isiCatatan').disabled =
@@ -1081,6 +1146,7 @@
                     let item = {};
                     try {
                         item = JSON.parse(selectedRow.dataset.item || '{}');
+                        console.log('item di note', item);
                     } catch {}
 
                     // simpan salary_note pada item
@@ -1134,6 +1200,7 @@
                             return {};
                         }
                     });
+                    console.log(items);
 
                     // Hitung total
                     const totalTagihan = items.reduce(

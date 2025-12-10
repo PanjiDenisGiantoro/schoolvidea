@@ -285,7 +285,7 @@ class PayrollSettingController extends Controller
 
         try {
             DB::beginTransaction();
-
+            // dd($validated);
             // === 1️⃣ Update payroll setting master ===
             Log::info('Validated update data:', $validated);
             if ($request->teaching_hours_total !== null) {
@@ -297,10 +297,7 @@ class PayrollSettingController extends Controller
             } else {
                 $validated['teaching_hours_total'] = null;
             }
-            // dd([
-            //    'total' => $request->teaching_hours_total,
-            //    'mgg' => $request->teaching_hours,
-            // ]);
+
             $payrollSetting = PayrollSetting::findOrFail($id);
             $payrollSetting->update($validated);
 

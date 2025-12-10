@@ -13,11 +13,11 @@ use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollPaymentController;
-use App\Http\Controllers\PayrollPaymentController as ControllersPayrollPaymentController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PotonganController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SettingAkunController;
 use App\Http\Controllers\SiswaController;
@@ -25,8 +25,6 @@ use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\TagihanController;
 use App\Http\Controllers\TahunajaranController;
 use App\Http\Controllers\TipeunitController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -449,6 +447,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sync-attendance', [PayrollPaymentController::class, 'syncAttendance'])->name('payroll-payment.syncAttendance');
         Route::get('/slip/{id}', [PayrollPaymentController::class, 'slip'])->name('payroll-payment.slip');
         Route::get('/detail/{id}', [PayrollPaymentController::class, 'detail'])->name('payroll-payment.detail');
+        Route::get('/show/{id}', [PayrollPaymentController::class, 'show'])->name('payroll-payment.show');
     });
 });
 // Route::get('/payroll-payment', function () {

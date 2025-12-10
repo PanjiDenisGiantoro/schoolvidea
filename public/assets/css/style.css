@@ -847,3 +847,24 @@ body.dark-theme .pagination-info {
     color: #d1d5db;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+.list-item-rapih {
+    /* Mengaktifkan flexbox dan mengatur jarak di antara item */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 0; /* Memberi jarak atas bawah antar item */
+    /* border-bottom: 1px solid #eee;  */
+}
+
+.list-item-rapih .list-label {
+    /* Menentukan lebar label agar semua label sejajar */
+    width: 170px; /* Coba dengan 100px, sesuaikan jika perlu */
+    min-width: 170px;
+}
+
+.list-item-rapih .list-value {
+    /* Memastikan nilai mengambil sisa ruang dan teks rata kanan */
+    flex-grow: 1; /* Nilai mengambil sisa lebar */
+    text-align: left;
+    font-weight: 500; /* Memberi sedikit penekanan pada nilai */
+}

@@ -166,10 +166,10 @@ class KeuanganTransaksiController extends Controller
         $summaryTransaksis = $summaryQuery->get();
 
         // Calculate various metrics for summary cards (case insensitive check)
-        $total_tunai = $summaryTransaksis->filter(function($t) {
+        $total_tunai = $summaryTransaksis->filter(function ($t) {
             return strtoupper($t->metode) === 'CASH' || strtolower($t->metode) === 'tunai';
         })->sum('jumlah');
-        $total_non_tunai = $summaryTransaksis->filter(function($t) {
+        $total_non_tunai = $summaryTransaksis->filter(function ($t) {
             return strtoupper($t->metode) !== 'CASH' && strtolower($t->metode) !== 'tunai';
         })->sum('jumlah');
         $today = \Carbon\Carbon::today()->toDateString();
@@ -524,7 +524,7 @@ class KeuanganTransaksiController extends Controller
 
                 $settings = $settings->where('status', '1')->first();
 
-                if(!$settings){
+                if (!$settings) {
                     return back()->with('danger', 'Setting akun tabungan belum diatur.');
                 }
                 $akun_id = $settings->akun_id;
@@ -541,16 +541,16 @@ class KeuanganTransaksiController extends Controller
                 }
 
 
-                if($datarekening->allotment == 'Semua Pembayaran'){
+                if ($datarekening->allotment == 'Semua Pembayaran') {
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment','Semua Pembayaran')
+                        ->where('allotment', 'Semua Pembayaran')
                         ->first();
-                }else{
+                } else {
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment','Pembayaran Tagihan')
+                        ->where('allotment', 'Pembayaran Tagihan')
                         ->first();
                 }
-                if($position == 1){
+                if ($position == 1) {
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -568,7 +568,7 @@ class KeuanganTransaksiController extends Controller
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
                     ]);
-                }else{
+                } else {
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -628,7 +628,7 @@ class KeuanganTransaksiController extends Controller
 
                     $settings = $settings->where('status', '1')->first();
 
-                    if(!$settings){
+                    if (!$settings) {
                         return back()->with('danger', 'Setting akun tabungan belum diatur.');
                     }
                     $akun_id = $settings->akun_id;
@@ -646,17 +646,17 @@ class KeuanganTransaksiController extends Controller
                     }
 
 
-                    if($datarekening->allotment == 'Semua Pembayaran'){
+                    if ($datarekening->allotment == 'Semua Pembayaran') {
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment','Semua Pembayaran')
+                            ->where('allotment', 'Semua Pembayaran')
                             ->first();
-                    }else{
+                    } else {
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment','Pembayaran Tabungan')
+                            ->where('allotment', 'Pembayaran Tabungan')
                             ->first();
                     }
 
-                    if($position == 1){
+                    if ($position == 1) {
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -674,7 +674,7 @@ class KeuanganTransaksiController extends Controller
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
                         ]);
-                    }else{
+                    } else {
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -767,7 +767,7 @@ class KeuanganTransaksiController extends Controller
                         ->where('status', '1')
                         ->first();
 
-                    if(!$dataRekeningKredit){
+                    if (!$dataRekeningKredit) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,

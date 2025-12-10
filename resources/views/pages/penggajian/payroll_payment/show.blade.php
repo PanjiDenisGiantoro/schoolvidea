@@ -69,16 +69,16 @@
                                     Kode Transaksi :
                                 </span>
                                 <span class="font-medium">
-                                    {{ $payment->transaction_id ?? "TXN123456" }}
+                                    {{ $transaction->code_pembayaran ?? "TXN123456" }}
                                 </span>
                             </div>
                         @endif
 
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Jumlah Gaji :</span>
+                            <span class="text-gray-600">Total Peneriaman Gaji :</span>
                             <span class="font-medium text-green-600">
                                 Rp
-                                {{ number_format($net ?? 99.99, 0, ",", ".") }}
+                                {{ number_format($payment->net_payment ?? 99.99, 0, ",", ".") }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -106,14 +106,14 @@
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Catatan :</span>
                             <span class="font-medium">
-                                {{ $note }}
+                                {{ $payment->notes }}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Nominal Catatan :</span>
                             <span class="font-medium">
                                 Rp
-                                {{ $salarynote ?? "-" }}
+                                {{ $payment->salary_note ?? "-" }}
                             </span>
                         </div>
                     </div>
@@ -191,56 +191,56 @@
                                         <td colspan="2" class="text-start">
                                             Kehadiran Staff (Rp
                                             {{ number_format($payment->details["staff_allowance"] ?? 0, 0, ",", ".") }}
-                                            x {{ $staff }} )
+                                            x {{ $payment->presence }} )
                                         </td>
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["staff_allowance"] ?? 0 * $staff, 0, ",", ".") }}
+                                            {{ number_format($payment->details["staff_allowance"] * $payment->presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Transport (Rp
                                             {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
-                                            x {{ $presence }} )
+                                            x {{ $payment->presence_count }} )
                                         </td>
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["transport_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["transport_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Makan (Rp
                                             {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
-                                            x {{ $presence }} )
+                                            x {{ $payment->presence_count }} )
                                         </td>
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["meal_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["meal_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Lainnya (Rp
                                             {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
-                                            x {{ $presence }} )
+                                            x {{ $payment->presence_count }} )
                                         </td>
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["other_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["other_allowance"] * $payment->presence_count, 0, ",", ".") }}
                                         </td>
                                     </tr>
 
@@ -255,7 +255,7 @@
                                         </td>
                                         <td class="amount">
                                             Rp
-                                            {{ number_format($net, 0, ",", ".") }}
+                                            {{ number_format($payment->total_earnings, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -311,7 +311,7 @@
                                         </td>
                                         <td class="amount">
                                             Rp
-                                            {{ number_format($ded, 0, ",", ".") }}
+                                            {{ number_format($payment->total_deductions, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -348,136 +348,4 @@
             });
         </script>
     @endif
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        window.onClickBayar = function () {
-            const id = {{ $payment->id }};
-            const netPayment = {{ $net ?? 0 }};
-            const totalEarning = {{ $ear ?? 0 }};
-            const totalDeduction = {{ $ded ?? 0 }};
-            const salaryNote = @json($salarynote ?? 0);
-            const textNote = @json($note ?? '');
-            const hourWeek = {{ $payment->teaching_hour_week ?? 0}};
-            const hourMonth = {{ $payment->teaching_hour_month ?? 0}};
-            const presenceCount = {{ $presence ?? 0 }};
-            const presence = {{ $staff ?? 0 }};
-            const absence = {{ $absence ?? 0 }};
-            console.log('--- Detail Pembayaran Gaji ---');
-    console.log('ID Pembayaran:', {{ $payment->id ?? 'N/A' }});
-    console.log('Net Payment (netPayment):', {{ $net ?? 0 }});
-    console.log('Total Penerimaan (totalEarning):', {{ $ear ?? 0 }});
-    console.log('Total Potongan (totalDeduction):', {{ $ded ?? 0 }});
-    console.log('Nominal Catatan (salaryNote):', @json($salarynote ?? 0));
-    console.log('Teks Catatan (textNote):', @json($note ?? ''));
-    console.log('Jam Mengajar Mingguan (hourWeek):', {{ $payment->teaching_hour_week ?? 0 }});
-    console.log('Jam Mengajar Bulanan (hourMonth):', {{ $payment->teaching_hour_month ?? 0 }});
-    console.log('Jumlah Kehadiran (presenceCount):', {{ $presence ?? 0 }});
-    console.log('Kehadiran Staff (presence):', {{ $staff ?? 0 }});
-    console.log('Ketidakhadiran (absence):', {{ $absence ?? 0 }});
-    console.log('------------------------------');
-
-            Swal.fire({
-                icon: 'warning',
-                title: `Pembayaran {{ $payment->officer->name }}`,
-                html: `
-            <p>Nominal Gaji: <strong class="text-success">{{ number_format($net) }}</strong></p>
-        `,
-                confirmButtonText: 'Bayar',
-                showCancelButton: true,
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'bg-green rounded-pill',
-                    cancelButton: 'bg-red rounded-pill',
-                },
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    processPayment(
-                        id,
-                        netPayment,
-                        totalEarning,
-                        totalDeduction,
-                        textNote,
-                        salaryNote,
-                        hourWeek,
-                        hourMonth,
-                        presenceCount,
-                        presence,
-                        absence,
-                    );
-                }
-            });
-        }
-
-        async function processPayment(
-            id,
-            amount,
-            earning,
-            deduction,
-            notes,
-            salarynote,
-            hourWeek,
-            hourMonth,
-            presenceCount,
-            presence,
-            absence,
-        ) {
-            const csrfToken = document.querySelector(
-                'meta[name="csrf-token"]',
-            ).content;
-
-            try {
-                const response = await fetch(`/payroll-payment/payment/${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        amount,
-                        earning,
-                        deduction,
-                        notes,
-                        salarynote,
-                        hourWeek,
-                        hourMonth,
-                        presenceCount,
-                        presence,
-                        absence,
-                    }),
-                });
-
-                const result = await response.json();
-                console.log('response:', result);
-
-                // ❗ CEK STATUS JSON DARI BACKEND
-                if (!result.status) {
-                    // alert(result.message || "Terjadi error");
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: result.message || 'Terjadi Error',
-                    });
-                    return;
-                }
-                // alert("Pembayaran Berhasil");
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Pembayaran Berhasil!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                window.location.href = '/payroll-payment';
-            } catch (err) {
-                // alert("Gagal terhubung ke server");
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error !!!',
-                    text: 'Gagal Terhubung Ke Server',
-                });
-                console.error(err);
-            }
-        }
-    </script>
-@endpush
+    @endpush
