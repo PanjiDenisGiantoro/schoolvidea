@@ -113,7 +113,7 @@
                             <span class="text-gray-600">Nominal Catatan :</span>
                             <span class="font-medium">
                                 Rp
-                                {{ $salarynote ?? "-" }}
+                                {{ number_format($salarynote ??  0, 0, ',', '.') }}
                             </span>
                         </div>
                     </div>
@@ -198,7 +198,7 @@
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["staff_allowance"] ?? 0 * $staff, 0, ",", ".") }}
+                                            {{ number_format($payment->details["staff_allowance"] * $staff, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -212,7 +212,7 @@
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["transport_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["transport_allowance"] * $presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -226,7 +226,7 @@
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["meal_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["meal_allowance"] * $presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
@@ -240,10 +240,22 @@
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["other_allowance"] ?? 0 * $presence, 0, ",", ".") }}
+                                            {{ number_format($payment->details["other_allowance"] * $presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
 
+                                    <tr>
+                                        <td colspan="2" class="text-start">
+                                            Nominal Catatan
+                                        </td>
+                                        <td
+                                            class="amount"
+                                            style="font-weight: 500"
+                                        >
+                                            Rp
+                                            {{ number_format($salarynote ?? 0, 0, ",", ".") }}
+                                        </td>
+                                    </tr>
                                     <tr
                                         style="
                                             font-weight: bold;
@@ -381,7 +393,7 @@
                 icon: 'warning',
                 title: `Pembayaran {{ $payment->officer->name }}`,
                 html: `
-            <p>Nominal Gaji: <strong class="text-success">{{ number_format($net) }}</strong></p>
+            <p>Nominal Gaji: <strong class="text-success">{{ number_format($net), 0, ',', '.' }}</strong></p>
         `,
                 confirmButtonText: 'Bayar',
                 showCancelButton: true,

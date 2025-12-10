@@ -557,7 +557,7 @@
                             (........................................)
                         </span>
                         <br />
-                        HRD / Manajer
+                        Kepala Sekolah
                     </td>
 
                     <td>
@@ -583,7 +583,6 @@
                             ({{ $payment->officer->name }})
                         </span>
                         <br />
-                        Karyawan
                     </td>
                 </tr>
             </table>
