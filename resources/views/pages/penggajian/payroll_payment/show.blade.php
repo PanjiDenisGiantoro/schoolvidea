@@ -86,7 +86,7 @@
                                 Metode Pembayaran :
                             </span>
                             <span class="font-medium">
-                                {{ $payment->method ?? "Credit Card" }}
+                                {{ $transaction->metode ?? "Credit Card" }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -106,14 +106,14 @@
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Catatan :</span>
                             <span class="font-medium">
-                                {{ $payment->notes }}
+                                {{ $payment->notes ?? "-" }}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Nominal Catatan :</span>
                             <span class="font-medium">
                                 Rp
-                                {{ $payment->salary_note ?? "-" }}
+                                {{ number_format($payment->salary_note ,0,',','.') ?? "-" }}
                             </span>
                         </div>
                     </div>
