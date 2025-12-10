@@ -512,7 +512,7 @@
                         <div>
                             <span
                                 style="
-                                    font-size: 10pt;
+                                    font-size: 8pt;
                                     font-weight: 700;
                                     color: #28a745;
                                 "
@@ -535,7 +535,7 @@
                             </strong>
                         </div>
                         <div>
-                            <span style="font-size: 10pt; font-style: italic">
+                            <span style="font-size: 8pt; font-style: italic">
                                 ({{ ucwords(terbilang($payment->net_payment)) }}
                                 Rupiah)
                             </span>
