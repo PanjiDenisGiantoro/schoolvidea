@@ -3,6 +3,7 @@ namespace App\Exports;
 
 use App\Models\User;
 use App\Models\Jurusan;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -15,26 +16,27 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
     {
         // Return empty collection with 10 empty rows to show dropdown
         return new Collection([
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
-            ['', '', '', ''],
+            ['','',  '', '', ''],
+            ['', '','',  '', ''],
+            ['', '', '','',  ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
+            ['', '', '', '', ''],
         ]);
     }
 
     public function headings(): array
     {
         return [
+            'Kode Kelas',
             'Nama Kelas',
             'Guru / Wali Kelas',
-            'Status',
-            'Jurusan'
+            'Jurusan',
+            'Status'
         ];
     }
 
@@ -46,13 +48,20 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
 
                 // Ambil data untuk dropdown
                 $officerNames = User::whereHas('officer')
+                    ->when(Auth::user()->unit_id, function ($query) {
+                        return $query->where('unit_id', Auth::user()->unit_id);
+                    })
                     ->pluck('name')
                     ->toArray();
-                $jurusanNames = Jurusan::pluck('nama_jurusan')->toArray();
+                $jurusanNames = Jurusan::when(Auth::user()->unit_id, function ($query) {
+                        return $query->where('unit_id', Auth::user()->unit_id);
+                    })
+                    ->pluck('nama_jurusan')
+                    ->toArray();
                 $status = ['aktif', 'non_aktif'];
 
                 // Set background color kuning untuk header row pertama
-                $sheet->getStyle('A1:D1')->getFill()
+                $sheet->getStyle('A1:E1')->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFFFF00'); // Kuning
 
@@ -67,14 +76,14 @@ class KelasExport implements FromCollection, WithHeadings, WithEvents
                     }, $officerNames);
                     $officerValidationList = implode(',', $officerEscaped);
 
-                    $sheet->getDataValidation('B2:B1000')
+                    $sheet->getDataValidation('C2:C1000')
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $officerValidationList . '"');
                 }
 
                 // Dropdown untuk Status (Column C)
-                $sheet->getDataValidation('C2:C1000')
+                $sheet->getDataValidation('E2:E1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
                     ->setFormula1('"' . implode(',', $status) . '"');

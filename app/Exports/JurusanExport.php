@@ -33,8 +33,8 @@ class JurusanExport implements FromCollection, WithHeadings, WithEvents
         return [
             'Nama Jurusan',
             'Kode Jurusan',
-            'Keterangan',
-            'Status'
+            'Status',
+            'Keterangan'
         ];
     }
 
@@ -56,7 +56,7 @@ class JurusanExport implements FromCollection, WithHeadings, WithEvents
                 $sheet->getStyle('A1:D1')->getFont()->setBold(true);
 
                 // Dropdown untuk Status (Column D)
-                $sheet->getDataValidation('D2:D1000')
+                $sheet->getDataValidation('C2:C1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
                     ->setFormula1('"' . implode(',', $status) . '"');

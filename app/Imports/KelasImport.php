@@ -60,6 +60,7 @@ class KelasImport implements ToModel, WithHeadingRow
         if ($kelas) {
             // Jika kelas sudah ada, lakukan update
             $kelas->update([
+                'kode_kelas'      => $row['kode_kelas'],
                 'nama_kelas'      => $row['nama_kelas'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
@@ -71,6 +72,7 @@ class KelasImport implements ToModel, WithHeadingRow
         } else {
             // Jika kelas belum ada, buat kelas baru
             return new Kelas([
+                'kode_kelas'      => $row['kode_kelas'],
                 'nama_kelas'      => $row['nama_kelas'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,

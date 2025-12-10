@@ -26,7 +26,7 @@ class RoleImport implements ToModel, WithHeadingRow
                 return null;
             }
 
-            DB::beginTransaction();
+//            DB::beginTransaction();
             Log::info('✓ Transaction started');
 
             /**
@@ -35,31 +35,29 @@ class RoleImport implements ToModel, WithHeadingRow
              */
             Log::info('Processing Role Data');
 
-            $role = Roles::updateOrCreate(
-                [
+            $role = Roles::where('name', $roleName)->first();
+            if (!$role) {
+                $role = Roles::create([
                     'name' => $roleName,
-                ],
-                [
                     'guard_name' => 'web',
-                ]
-            );
-
-            // Juga buat di Spatie Permission jika belum ada
-            \Spatie\Permission\Models\Role::firstOrCreate(
-                ['name' => $roleName],
-                ['guard_name' => 'web']
-            );
+                ]);
+            }
+//            // Juga buat di Spatie Permission jika belum ada
+//            \Spatie\Permission\Models\Role::firstOrCreate(
+//                ['name' => $roleName],
+//                ['guard_name' => 'web']
+//            );
 
             Log::info('✓ Role created/updated | ID: ' . $role->id);
 
-            DB::commit();
+//            DB::commit();
             Log::info('✓ Transaction committed successfully');
             Log::info('========== ROLE IMPORT COMPLETED ==========');
 
             return $role;
 
         } catch (\Exception $e) {
-            DB::rollBack();
+//            DB::rollBack();
             Log::error('❌ ERROR during role import');
             Log::error($e->getMessage());
             return null;

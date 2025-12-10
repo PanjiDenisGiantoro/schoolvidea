@@ -31,7 +31,8 @@ class SiswaImport implements ToModel, WithHeadingRow
         $row = array_map('strval', $row);
 
         try {
-            if (empty($row['name']) || empty($row['email']) || empty($row['password'])) {
+            // Validasi field required berdasarkan urutan baru
+            if (empty($row['nama_lengkap']) || empty($row['email']) || empty($row['password'])) {
                 Log::warning('⚠️ Missing required fields, skipping...');
                 return null;
             }
@@ -48,18 +49,18 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             if (!$user) {
                 $user = User::create([
-                    'name' => $row['name'],
+                    'name' => $row['nama_lengkap'],
                     'email' => $row['email'],
                     'password' => bcrypt($row['password']),
-                    'rfid_no' => $row['rfid_no'],
+                    'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]);
                 Log::info('✓ New user created: ' . $user->id);
             } else {
                 // update data existing user
                 $user->update([
-                    'name' => $row['name'],
-                    'rfid_no' => $row['rfid_no'],
+                    'name' => $row['nama_lengkap'],
+                    'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]);
                 Log::info('✓ Existing user updated: ' . $user->id);
@@ -105,6 +106,21 @@ class SiswaImport implements ToModel, WithHeadingRow
              */
             Log::info('Step 4: Processing Siswa Data');
 
+            // Konversi status: ambil dari excel atau default '1'
+            $status = '1'; // Default aktif
+            if (isset($row['status_1_aktif_0_tidak_aktif'])) {
+                $status = $row['status_1_aktif_0_tidak_aktif'];
+            }
+
+            // Konversi tanggal lahir dari DD/MM/YYYY ke YYYY-MM-DD jika ada
+            $tanggalLahir = null;
+            if (!empty($row['tanggal_lahir_ddmmyyyy'])) {
+                $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
+                if ($date) {
+                    $tanggalLahir = $date->format('Y-m-d');
+                }
+            }
+
             $siswa = Siswa::updateOrCreate(
                 [
                     'nisn' => $row['nisn'],
@@ -115,15 +131,19 @@ class SiswaImport implements ToModel, WithHeadingRow
                     'nis' => $row['nis'],
                     'kelas_id' => $kelas->id,
                     'user_id' => $user->id,
-                    'rfid_no' => $row['rfid_no'],
-                    'va_siswa' => $row['va_siswa'],
+                    'rfid_no' => $row['no_rfid'] ?? null,
+                    'va_siswa' => $row['no_va'] ?? null,
                     'jenis_kelamin' => $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P',
-                    'agama' => $row['agama'],
-                    'no_hp_ortu' => $row['no_hp_orang_tua'],
-                    'nama_ortu' => $row['nama_orang_tua'],
-                    'bank' => $row['bank'],
-                    'no_rekening' => $row['no_rekening'],
-                    'status' => '1'
+                    'agama' => $row['agama'] ?? null,
+                    'no_hp_ortu' => $row['no_hp_ortu'] ?? null,
+                    'nama_ortu' => $row['nama_orang_tua'] ?? null,
+                    'bank' => $row['bank'] ?? null,
+                    'no_rekening' => $row['no_rekening'] ?? null,
+                    'status' => $status,
+                    'nik' => $row['nik'] ?? null,
+                    'tanggal_lahir' => $tanggalLahir,
+                    'no_hp_siswa' => $row['no_hp_siswa'] ?? null,
+                    'alamat' => $row['alamat'] ?? null,
                 ]
             );
 

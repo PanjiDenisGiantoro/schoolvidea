@@ -1,6 +1,7 @@
 <?php
 namespace App\Exports;
 
+use App\Models\Positions;
 use App\Models\Roles_petugas;  // Import RolePetugas model for role_id dropdown
 use App\Models\Jurusan;      // Import Jurusan model for jurusan dropdown
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -31,26 +32,26 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
     public function headings(): array
     {
         return [
-            'name',
-            'email',
-            'password',
-            'role_id',
-            'image',
-            'tempat_lahir',
-            'no_hp',
-            'rfid_no',
-            'nip',
-            'nuptk',
-            'nik',
-            'jenis_kelamin',
-            'agama',
-            'tanggal_lahir',
-            'alamat',
-            'bank',
-            'no_rekening',
-            'no_kartu_rfid',
-            'qr_code',
-            'va_guru'
+            'NIP *',
+            'NUPTK',
+            'PASSWORD',
+            'NAMA LENGKAP *',
+            'NIK *',
+            'JENIS KELAMIN *',
+            'TEMPAT LAHIR',
+            'TANGGAL LAHIR (DD/MM/YYYY)',
+            'AGAMA *',
+            'NO HP *',
+            'EMAIL *',
+            'ROLE *',
+            'AKSES YAYASAN * ( 1 = Ya/ 0 = Tidak)',
+            'STATUS * ( 1 = Aktif / 0 = Tidak Aktif)',
+            'ALAMAT *',
+            'JABATAN *',
+            'NO RFID',
+            'NO VA',
+            'BANK',
+            'NO REKENING'
         ];
     }
 
@@ -64,6 +65,9 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                 $rolePetugas = Roles_petugas::pluck('name')->toArray();
                 $jenisKelamin = ['Laki-laki', 'Perempuan'];
                 $agama = ['Islam', 'Protestan', 'Katholik', 'Hindu', 'Buddha'];
+                $aksesYayasan = ['1', '0'];
+                $status = ['1', '0'];
+                $jabatan = Positions::pluck('positions_name')->toArray();
 
                 // Set background color kuning untuk header row pertama
                 $sheet->getStyle('A1:T1')->getFill()
@@ -73,7 +77,19 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                 // Bold untuk header
                 $sheet->getStyle('A1:T1')->getFont()->setBold(true);
 
-                // Dropdown untuk Role (Column D)
+                // Dropdown untuk Jenis Kelamin (Column F - kolom ke-6)
+                $sheet->getDataValidation('F2:F1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
+
+                // Dropdown untuk Agama (Column I - kolom ke-9)
+                $sheet->getDataValidation('I2:I1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $agama) . '"');
+
+                // Dropdown untuk Role (Column L - kolom ke-12)
                 if (!empty($rolePetugas)) {
                     // Escape values that contain commas or quotes
                     $roleEscaped = array_map(function($item) {
@@ -81,23 +97,35 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
                     }, $rolePetugas);
                     $roleValidationList = implode(',', $roleEscaped);
 
-                    $sheet->getDataValidation('D2:D1000')
+                    $sheet->getDataValidation('L2:L1000')
                         ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                         ->setAllowBlank(true)
                         ->setFormula1('"' . $roleValidationList . '"');
                 }
 
-                // Dropdown untuk Jenis Kelamin (Column L)
-                $sheet->getDataValidation('L2:L1000')
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $jenisKelamin) . '"');
+                if(!empty($jabatan)){
+                    $jabatanEscaped = array_map(function($item) {
+                        return str_replace('"', '""', $item);
+                    }, $jabatan);
+                    $jabatanValidationList = implode(',', $jabatanEscaped);
 
-                // Dropdown untuk Agama (Column M)
+                    $sheet->getDataValidation('P2:P1000')
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setFormula1('"' . $jabatanValidationList . '"');
+                }
+
+                // Dropdown untuk Akses Yayasan (Column M - kolom ke-13)
                 $sheet->getDataValidation('M2:M1000')
                     ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
                     ->setAllowBlank(true)
-                    ->setFormula1('"' . implode(',', $agama) . '"');
+                    ->setFormula1('"' . implode(',', $aksesYayasan) . '"');
+
+                // Dropdown untuk Status (Column N - kolom ke-14)
+                $sheet->getDataValidation('N2:N1000')
+                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                    ->setAllowBlank(true)
+                    ->setFormula1('"' . implode(',', $status) . '"');
             },
         ];
     }
