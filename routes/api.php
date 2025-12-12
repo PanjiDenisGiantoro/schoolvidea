@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\TipeunitListController;
 use App\Http\Controllers\Api\V1\UnitListController;
 use App\Http\Controllers\Api\V1\YayasanListController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -263,5 +264,9 @@ Route::prefix('v1')->group(function () {
         // Payroll Payment
         Route::get('/payroll-payment/{id}', [\App\Http\Controllers\Api\V1\PayrollPaymentController::class, 'show']);
         Route::get('/payroll-payment/', [\App\Http\Controllers\Api\V1\PayrollPaymentController::class, 'index']);
+        // Log routes
+        Route::prefix("logs")->group(function () {
+            Route::get("/laravel", [LogController::class, "getLaravelLog"]);
+        });
     });
 });
