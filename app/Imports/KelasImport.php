@@ -90,9 +90,9 @@ class KelasImport implements ToModel, WithHeadingRow
                 'nama_kelas'      => $row['nama_kelas'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'officer_id'      => $officer_id,
+                'officer_id'      => $officer_id ?? null,
                 'status'          => $status,
-                'jurusan_id'      => $jurusan_id,
+                'jurusan_id'      => $jurusan_id ?? null,
             ];
 
             Log::info('Kelas data to be saved: ' . json_encode($kelasData));
