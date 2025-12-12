@@ -47,10 +47,6 @@ class KelasImport implements ToModel, WithHeadingRow
             }
         }
 
-        // Skip jika ada field yang kosong
-        if (is_null($officer_id) || is_null($jurusan_id)) {
-            return null; // Skip this row if any of these values are null
-        }
 
         // Cek apakah kelas dengan nama_kelas sudah ada
         $kelas = Kelas::where('nama_kelas', $row['nama_kelas'])
@@ -64,9 +60,9 @@ class KelasImport implements ToModel, WithHeadingRow
                 'nama_kelas'      => $row['nama_kelas'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'officer_id'      => $officer_id,
+                'officer_id'      => $officer_id ?? '',
                 'status'          => $status,
-                'jurusan_id'      => $jurusan_id,
+                'jurusan_id'      => $jurusan_id ?? '',
             ]);
             return $kelas; // Mengembalikan objek yang diupdate
         } else {
@@ -76,9 +72,9 @@ class KelasImport implements ToModel, WithHeadingRow
                 'nama_kelas'      => $row['nama_kelas'],
                 'unit_id'         => $this->unit_id,
                 'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                'officer_id'      => $officer_id,
+                'officer_id'      => $officer_id ?? '',
                 'status'          => $status,
-                'jurusan_id'      => $jurusan_id,
+                'jurusan_id'      => $jurusan_id ?? '',
             ]);
         }
     }
