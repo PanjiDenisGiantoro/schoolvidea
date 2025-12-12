@@ -251,7 +251,7 @@ class PayrollSettingController extends Controller
                 ->route('payroll_settings.index')
                 ->with('success', 'Data Berhasil Disimpan');
         } catch (\Throwable $e) {
-            Log::error('PAYROLL ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL ERROR: '.$e->getMessage());
 
             return back()->with('error', $e->getMessage());
         }
@@ -449,7 +449,7 @@ class PayrollSettingController extends Controller
                 ->with('success', 'Data Berhasil Disimpan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE VALIDATION ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE VALIDATION ERROR: '.$e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -462,7 +462,7 @@ class PayrollSettingController extends Controller
             return back()->withErrors($e->errors())->withInput();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE MODEL NOT FOUND: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE MODEL NOT FOUND: '.$e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -475,7 +475,7 @@ class PayrollSettingController extends Controller
             return back()->with('error', 'Data tidak ditemukan');
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE ERROR: '.$e->getMessage());
 
             // Response JSON untuk error umum
             if ($request->expectsJson() || $request->is('api/*')) {
@@ -547,10 +547,11 @@ class PayrollSettingController extends Controller
 
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
+        $readonly = true;
 
         return view(
             'pages.penggajian.payroll_setting.payroll_setting',
-            compact('setting', 'units', 'components', 'deductions', 'officers'),
+            compact('setting', 'units', 'components', 'deductions', 'officers', 'readonly'),
         );
     }
 
@@ -575,11 +576,11 @@ class PayrollSettingController extends Controller
                 ->route('payroll_settings.index')
                 ->with('success', 'Data payroll berhasil dihapus.');
         } catch (\Throwable $e) {
-            Log::error('Payroll Setting Destroy Error: ' . $e->getMessage());
+            Log::error('Payroll Setting Destroy Error: '.$e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 

@@ -22,13 +22,13 @@
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">
                         Guru & Staff
                     </h2>
-                    <div class="flex items-center mb-4">
+                    <div class="flex items-center jus mb-4">
                         <img
                             src="{{ $payment->officer->image ? asset($payment->officer->image) : "https://via.placeholder.com/100" }}"
                             alt="Profile Picture"
                             class="w-16 h-16 rounded-full mr-4"
                         />
-                        <div>
+                        <div >
                             <h3 class="text-lg font-medium text-gray-900">
                                 {{ strtoupper($payment->officer->name) }}
                             </h3>
@@ -37,23 +37,32 @@
                             </p>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <p>
+                    <div class="space-y-1">
+                        <div class="d-flex justify-between">
                             <strong>NIP:</strong>
-                            {{ $payment->officer->nip }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->nip }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>Unit:</strong>
-                            {{ $payment->officer->unit->nama_unit }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->unit->nama_unit }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>No Telp:</strong>
-                            {{ $payment->officer->no_hp ?? "N/A" }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->no_hp ?? "N/A" }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>Alamat:</strong>
-                            {{ $payment->officer->alamat ?? "N/A" }}
-                        </p>
+                            <p>
+                                {{ $payment->officer->alamat ?? "N/A" }}
+                            </p>
+                        </div>
+
                     </div>
                 </div>
 

@@ -37,23 +37,32 @@
                             </p>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <p>
+                    <div class="space-y-1">
+                        <div class="d-flex justify-between">
                             <strong>NIP:</strong>
-                            {{ $payment->officer->nip }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->nip }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>Unit:</strong>
-                            {{ $payment->officer->unit->nama_unit }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->unit->nama_unit }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>No Telp:</strong>
-                            {{ $payment->officer->no_hp ?? "N/A" }}
-                        </p>
-                        <p>
+                            <p>
+                                {{ $payment->officer->no_hp ?? "N/A" }}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-between">
                             <strong>Alamat:</strong>
-                            {{ $payment->officer->alamat ?? "N/A" }}
-                        </p>
+                            <p>
+                                {{ $payment->officer->alamat ?? "N/A" }}
+                            </p>
+                        </div>
+
                     </div>
                 </div>
 
@@ -86,7 +95,7 @@
                                 Metode Pembayaran :
                             </span>
                             <span class="font-medium">
-                                {{ $payment->method ?? "Credit Card" }}
+                                {{ $payment->method ?? "non-tunai" }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -106,7 +115,7 @@
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Catatan :</span>
                             <span class="font-medium">
-                                {{ $note }}
+                                {{ $note ?? "-"}}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">

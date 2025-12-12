@@ -301,7 +301,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bulan Mulai</label>
-                        <select id="start_month" name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}>
+                        <select id="start_month" name="start_month" class="form-select" {{ $readonly ? 'disabled' : '' }}  >
                             <option value="">-- Pilih Bulan Masuk --</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}"
