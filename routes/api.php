@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\TipeunitListController;
 use App\Http\Controllers\Api\V1\DataRekeningListController;
 use App\Http\Controllers\Api\V1\JurusanListController;
 use App\Http\Controllers\Api\V1\MeDataRekeningController;
+use App\Http\Controllers\Api\V1\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -258,6 +259,11 @@ Route::prefix("v1")->group(function () {
 
             // Audit trail
             Route::get("/audit-trail/{transactionId}", [RiwayatApiController::class, "auditTrail"]);
+        });
+
+        // Log routes
+        Route::prefix("logs")->group(function () {
+            Route::get("/laravel", [LogController::class, "getLaravelLog"]);
         });
     });
 });
