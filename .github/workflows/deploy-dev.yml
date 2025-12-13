@@ -1,0 +1,51 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    name: Deploy to Dev Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Development Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_SERVER_HOST }}
+          username: ${{ secrets.DEV_SERVER_USERNAME }}
+          password: ${{ secrets.DEV_SERVER_PASSWORD }}
+          script: |
+            cd /var/www/html/schoolvideadev
+
+            # Pull latest code
+            git fetch origin develop
+            git reset --hard origin/develop
+
+            # Install/Update dependencies
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            # Clear and cache config
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Cache configurations for better performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Set proper permissions
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
+
+            echo "✅ Development deployment completed successfully!"

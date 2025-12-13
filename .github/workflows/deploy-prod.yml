@@ -1,0 +1,63 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USERNAME }}
+          password: ${{ secrets.PROD_SERVER_PASSWORD }}
+          script: |
+            cd /var/www/html/schoolvidea
+
+            # Backup database before deployment
+            BACKUP_NAME="backup_$(date +%Y%m%d_%H%M%S).sql"
+            php artisan db:backup || echo "⚠️  Database backup skipped"
+
+            # Pull latest code
+            git fetch origin master
+            git reset --hard origin/master
+
+            # Install/Update dependencies
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            # Put application in maintenance mode
+            php artisan down --message="Deploying new version. We'll be back shortly!" --retry=60
+
+            # Clear all caches
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Cache configurations for better performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Set proper permissions
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
+
+            # Bring application back online
+            php artisan up
+
+            echo "✅ Production deployment completed successfully!"
