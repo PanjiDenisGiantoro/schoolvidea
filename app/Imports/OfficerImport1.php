@@ -131,9 +131,8 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
+                $rolePetugas = null;
                 Log::warning("⚠️ Role not found for role: {$row['role']}");
-                DB::rollBack();
-                return null;
             }
             Log::info('✓ Role found | ID: ' . $rolePetugas->id . ' | Name: ' . $rolePetugas->name);
 
@@ -169,9 +168,9 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             $position = Positions::where('positions_name', $row['jabatan'])->first();
 
             if (!$position) {
+                $position = null ;
                 Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
-                DB::rollBack();
-                return null;
+
             }
             Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
 
