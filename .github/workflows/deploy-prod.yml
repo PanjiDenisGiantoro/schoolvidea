@@ -49,7 +49,7 @@ jobs:
             fi
 
             # Install/Update dependencies
-            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            composer install
 
             # Set permissions for Laravel directories
             sudo chmod -R 775 storage bootstrap/cache
