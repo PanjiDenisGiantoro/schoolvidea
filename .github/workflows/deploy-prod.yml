@@ -31,53 +31,48 @@ jobs:
             # Fix directory ownership for current user
             sudo chown -R videa_sps:www-data /var/www/html/schoolvidea
 
-            # Put application in maintenance mode
-            php artisan down --retry=60 || php artisan down || true
-
-            # Backup database before deployment
-            BACKUP_NAME="backup_$(date +%Y%m%d_%H%M%S).sql"
-            php artisan db:backup || echo "⚠️  Database backup skipped"
+            # Set proper permissions before operations
+            sudo chmod -R 775 storage bootstrap/cache vendor
+            sudo chown -R videa_sps:www-data storage bootstrap/cache vendor
 
             # Pull latest code
             git fetch origin master
             git reset --hard origin/master
 
-            # Clean vendor and cache directories
+            # Clean vendor directory if exists
             if [ -d "vendor" ]; then
               sudo rm -rf vendor
             fi
-            sudo rm -f bootstrap/cache/*.php
-
-            # Fix permissions before composer install
-            sudo chmod -R 775 storage bootstrap/cache
-            sudo chown -R videa_sps:www-data storage bootstrap/cache
 
             # Install/Update dependencies
             composer install
 
-            # Fix permissions for Laravel to write logs and cache
+            # Set permissions for Laravel directories
             sudo chmod -R 775 storage bootstrap/cache
-            sudo chown -R videa_sps:www-data storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+
+            # Put application in maintenance mode
+            php artisan down --message="Deploying new version. We'll be back shortly!" --retry=60
 
             # Clear all caches
-            php artisan config:clear || true
-            php artisan cache:clear || true
-            php artisan route:clear || true
-            php artisan view:clear || true
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
 
             # Run migrations
-            php artisan migrate --force || true
+            php artisan migrate --force
 
             # Cache configurations for better performance
-            php artisan config:cache || true
-            php artisan route:cache || true
-            php artisan view:cache || true
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
 
-            # Final permission fix - give to www-data for web server
+            # Final permission fix
             sudo chmod -R 775 storage bootstrap/cache
             sudo chown -R www-data:www-data storage bootstrap/cache
 
             # Bring application back online
-            php artisan up || true
+            php artisan up
 
             echo "✅ Production deployment completed successfully!"
