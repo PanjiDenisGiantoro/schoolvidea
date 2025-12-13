@@ -39,7 +39,7 @@ class OfficerExport implements FromCollection, WithHeadings, WithEvents
             'NIK',
             'JENIS KELAMIN',
             'TEMPAT LAHIR',
-            'TANGGAL LAHIR (DD/MM/YYYY)',
+            'TANGGAL LAHIR',
             'AGAMA *',
             'NO HP *',
             'EMAIL *',
