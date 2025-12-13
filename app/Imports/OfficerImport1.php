@@ -204,7 +204,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             return $officer;
 
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('❌ ERROR during officer import');
             Log::error('Error message: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
