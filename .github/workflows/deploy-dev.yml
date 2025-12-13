@@ -23,14 +23,33 @@ jobs:
           script: |
             cd /var/www/html/schoolvideadev
 
+            # Fix git ownership issue
+            git config --global --add safe.directory /var/www/html/schoolvideadev
+
+            # Fix directory ownership for current user
+            sudo chown -R videa_sps:www-data /var/www/html/schoolvideadev
+
+            # Set proper permissions before operations
+            sudo chmod -R 775 storage bootstrap/cache vendor
+            sudo chown -R videa_sps:www-data storage bootstrap/cache vendor
+
             # Pull latest code
             git fetch origin develop
             git reset --hard origin/develop
 
+            # Clean vendor directory if exists
+            if [ -d "vendor" ]; then
+              sudo rm -rf vendor
+            fi
+
             # Install/Update dependencies
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-            # Clear and cache config
+            # Set permissions for Laravel directories
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+
+            # Clear all caches
             php artisan config:clear
             php artisan cache:clear
             php artisan route:clear
@@ -44,8 +63,8 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            # Set proper permissions
-            chmod -R 775 storage bootstrap/cache
-            chown -R www-data:www-data storage bootstrap/cache
+            # Final permission fix
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
 
             echo "✅ Development deployment completed successfully!"
