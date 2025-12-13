@@ -166,11 +166,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
 
             $position = Positions::where('positions_name', $row['jabatan'])->first();
 
-            if (!$position) {
-                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
-
-            }
-            Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
 
             $officer = Officer::updateOrCreate(
                 [
