@@ -43,7 +43,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                 empty($row['nip'])
             ) {
                 Log::warning('⚠️ Skipping row due to missing required fields: ' . json_encode($row));
-                return null;
             }
             Log::info('✓ Required fields validated');
 
