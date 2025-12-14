@@ -899,23 +899,6 @@ class TabunganController extends Controller
                     }
 
 
-                    // Buat jurnal Debit (Beban Tabungan/Utang Tabungan Siswa)
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $settings->akun_id,
-                        'debit'        => $transaksi->jumlah,
-                        'kredit'       => 0,
-                        'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
-                    ]);
-
-                    Jurnals::create([
-                        'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $datarekening->akun_id,
-                        'debit'        => 0,
-                        'kredit'       => $transaksi->jumlah,
-                        'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
-                    ]);
-
                     // Kurangi saldo siswa
                     $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
                 }

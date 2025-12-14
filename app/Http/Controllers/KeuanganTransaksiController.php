@@ -128,6 +128,7 @@ class KeuanganTransaksiController extends Controller
                 'penerima',
                 'approvedBy',
                 'verifier',
+                'creator',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ]);
 

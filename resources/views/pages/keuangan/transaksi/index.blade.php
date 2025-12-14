@@ -431,7 +431,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $transaksi->approvedBy->name ?? $transaksi->verifier->name ?? '-' }}</td>
+                                <td>{{ $transaksi->approvedBy->name ?? $transaksi->verifier->name ?? $transaksi->creator->name ?? '-' }}</td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-1">
                                         <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
