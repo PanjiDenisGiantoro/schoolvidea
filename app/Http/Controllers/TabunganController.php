@@ -878,9 +878,26 @@ class TabunganController extends Controller
 
                     $settings = $settings->where('status', '1')->first();
 
-                    if (!$settings || !$settings->akun_id) {
-                        throw new \Exception('Setting akun untuk kategori tabungan-tarik belum lengkap.');
+                    $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                        ->first();
+
+
+
+
+
+                    if($datarekening->allotment == 'Semua Pembayaran'){
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Semua Pembayaran')
+                            ->first();
+                    }else{
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Pembayaran Tabungan')
+                            ->first();
                     }
+                    if (!$datarekening) {
+                        return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+                    }
+
 
                     // Buat jurnal Debit (Beban Tabungan/Utang Tabungan Siswa)
                     Jurnals::create([
@@ -891,26 +908,9 @@ class TabunganController extends Controller
                         'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
                     ]);
 
-                    // Buat jurnal Kredit (Kas/Bank yang mengeluarkan uang)
-                    // Ambil akun kas/bank berdasarkan metode pembayaran
-                    $akunKasBank = null;
-                    if ($transaksi->metode === 'CASH') {
-                        $akunKasBank = setting_akun::where('kategori', 'kas')
-                            ->where('status', '1')
-                            ->first();
-                    } elseif ($transaksi->metode === 'TRANSFER') {
-                        $akunKasBank = setting_akun::where('kategori', 'bank')
-                            ->where('status', '1')
-                            ->first();
-                    }
-
-                    if (!$akunKasBank || !$akunKasBank->akun_id) {
-                        throw new \Exception('Setting akun kas/bank untuk metode ' . $transaksi->metode . ' belum lengkap.');
-                    }
-
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
-                        'akun_id'      => $akunKasBank->akun_id,
+                        'akun_id'      => $datarekening->akun_id,
                         'debit'        => 0,
                         'kredit'       => $transaksi->jumlah,
                         'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
