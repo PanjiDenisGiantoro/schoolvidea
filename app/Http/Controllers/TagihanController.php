@@ -798,6 +798,8 @@ class TagihanController extends Controller
             $row = [
                 'no'                => $counter++,
                 'id'                => $ts->id,
+                'tagihan_id'        => $ts->tagihan_id,
+                'siswa_id'          => $ts->siswa_id,
                 'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F'),
                 'tahun'             => $date->year,
@@ -886,6 +888,8 @@ class TagihanController extends Controller
             $row = [
                 'no'                => $index + 1,
                 'id'                => $ts->id,
+                'tagihan_id'        => $ts->tagihan_id,
+                'siswa_id'          => $ts->siswa_id,
                 'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F Y'),
                 'tagihan_kelas'     => $namaKategori, // Nama kategori spesifik

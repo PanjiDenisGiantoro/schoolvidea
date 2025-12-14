@@ -317,10 +317,10 @@ class TabunganApiController extends Controller
         try {
             $transaksi = Keuangan_transaksi::findOrFail($id);
 
-            // Hapus file lama jika ada
-            if ($transaksi->bukti_transfer && file_exists(public_path($transaksi->bukti_transfer))) {
-                unlink(public_path($transaksi->bukti_transfer));
-            }
+//            // Hapus file lama jika ada
+//            if ($transaksi->bukti_transfer && file_exists(public_path($transaksi->bukti_transfer))) {
+//                unlink(public_path($transaksi->bukti_transfer));
+//            }
 
             // Upload file baru
             $file = $request->file('bukti_transfer');
