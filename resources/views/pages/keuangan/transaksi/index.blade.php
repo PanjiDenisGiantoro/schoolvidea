@@ -355,7 +355,7 @@
                                     @php
                                         $badgeColor = match ($transaksi->jenis_transaksi) {
                                             'setoran_tabungan' => 'success',
-                                            'penarikan_tabungan' => 'warning',
+                                            'penarikan_tabungan' => 'danger',
                                             'pembayaran' => 'info',
                                             'tagihan' => 'info',
                                             default => 'secondary',
@@ -431,12 +431,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>
-                                    @php
-                                        $lastLog = $transaksi->logs->sortByDesc('created_at')->first();
-                                    @endphp
-                                    {{ $lastLog?->pelaku?->name ?? '-' }}
-                                </td>
+                                <td>{{ $transaksi->approvedBy->name ?? '-' }}</td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-1">
                                         <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
