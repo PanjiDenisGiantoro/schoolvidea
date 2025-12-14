@@ -322,10 +322,16 @@ class TabunganApiController extends Controller
                 unlink(public_path($transaksi->bukti_transfer));
             }
 
+            // Pastikan direktori ada, buat jika belum ada
+            $uploadPath = public_path('uploads/bukti_transfer');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0775, true);
+            }
+
             // Upload file baru
             $file = $request->file('bukti_transfer');
             $filename = 'bukti_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/bukti_transfer'), $filename);
+            $file->move($uploadPath, $filename);
 
             // Update database
             $transaksi->update([
