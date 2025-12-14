@@ -235,11 +235,11 @@
                         <thead class="table-primary text-center text-nowrap align-middle">
                         <tr>
                             <th><input class="custom-checkbox " type="checkbox" id="checkAll"></th>
-                            <th>No</th>
                             <th>Periode Tagihan</th>
-                            <th>Tagihan Kelas</th>
-                            <th>Rincian Tagihan</th>
-                            <th>Jumlah Potongan</th>
+                            <th>Tagihan Ke</th>
+                            <th>Jenis Tagihan </th>
+                            <th>Rincian</th>
+                            <th>Potongan</th>
                             <th>Jumlah Tagihan</th>
                             <th>Nominal Pembayaran</th>
                             <th>Total Tunggakan</th>
@@ -270,13 +270,13 @@
                     <table class="table-bordered table-hover rounded-3 table overflow-hidden text-center align-middle" style="min-width: 1100px;">
                         <thead class="table-primary text-center text-nowrap align-middle">
                         <tr>
-                            <th>No</th>
                             <th>Periode Tagihan</th>
-                            <th>Tagihan Kelas</th>
-                            <th>Rincian Tagihan</th>
-                            <th>Jml.Potongan</th>
-                            <th>Jml.Tagihan</th>
-                            <th>Jml.Bayar</th>
+                            <th>Tagihan Ke</th>
+                            <th>Jenis Tagihan</th>
+                            <th>Rincian</th>
+                            <th>Potongan</th>
+                            <th>Jumlah Tagihan</th>
+                            <th>Jumlah Bayar</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -728,8 +728,8 @@
                     tabelBelum.innerHTML = data.belum_lunas.map(tagihan => `
             <tr>
                 <td class="text-center"><input type="checkbox" value="${tagihan.id}"></td>
-                <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
+                <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
                 <td class="text-center">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-center text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
@@ -755,8 +755,8 @@
                     const tabelLunas = document.querySelector('#tabelSudahLunas tbody');
                     tabelLunas.innerHTML = data.sudah_lunas.map(tagihan => `
             <tr>
-                <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.periode}</td>
+                <td class="text-center">${tagihan.no}</td>
                 <td class="text-center">${tagihan.tagihan_kelas}</td>
                 <td class="text-end">Rp ${parseInt(tagihan.rincian_tagihan).toLocaleString('id-ID')}</td>
                 <td class="text-end text-danger">Rp ${parseInt(tagihan.jumlah_potongan).toLocaleString('id-ID')}</td>
