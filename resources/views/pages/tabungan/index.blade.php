@@ -72,8 +72,8 @@
                 <div class="card-body position-relative">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Saldo Aktif Siswa</p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp {{ number_format($saldo_aktif_siswa ?? 0, 0, ',', '.') }}</h3>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp {{ number_format($total_setoran + $total_penarikan ?? 0, 0, ',', '.') }}</h3>
                         </div>
                         <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
                             <i class="bx bx-wallet text-info" style="font-size: 24px;"></i>
