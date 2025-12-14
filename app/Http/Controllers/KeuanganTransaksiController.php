@@ -126,7 +126,7 @@ class KeuanganTransaksiController extends Controller
         // List transaksi dengan filtering
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
-                'creator',
+                'approvedBy',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ]);
 
@@ -337,6 +337,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Laporan Transaksi Keuangan');
