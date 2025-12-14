@@ -127,7 +127,7 @@ class KeuanganTransaksiController extends Controller
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
                 'approvedBy',
-                'logs.pelaku',
+                'verifier',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ]);
 
@@ -595,7 +595,8 @@ class KeuanganTransaksiController extends Controller
 
             // === TABUNGAN TARIK: Kurangi saldo saat approve (setelah token diverifikasi) ===
             // Flow: pending -> verified (via API token verify) -> approved (via web, saldo dikurangi disini)
-            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+            // CATATAN: Jika sudah approved via verifyToken, skip pengurangan saldo untuk menghindari double kurang
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class && $transaksi->status_approval !== 'approved') {
                 $siswa = Siswa::findOrFail($transaksi->penerima_id);
                 $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
 

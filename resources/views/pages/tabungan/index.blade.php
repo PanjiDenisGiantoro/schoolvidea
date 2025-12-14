@@ -66,20 +66,20 @@
             </div>
         </div>
 
-        {{-- Total Transaksi Card --}}
+        {{-- Saldo Aktif Siswa Card --}}
         <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
                 <div class="card-body position-relative">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi</p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">{{ number_format($jumlah_transaksi ?? 0, 0, ',', '.') }}</h3>
+                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Saldo Aktif Siswa</p>
+                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp {{ number_format($saldo_aktif_siswa ?? 0, 0, ',', '.') }}</h3>
                         </div>
                         <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-history text-info" style="font-size: 24px;"></i>
+                            <i class="bx bx-wallet text-info" style="font-size: 24px;"></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-list-check text-info"></i> Jumlah total</small>
+                    <small class="text-muted d-block mt-2"><i class="bx bx-trending-up text-info"></i> Total saldo tersedia</small>
                 </div>
             </div>
         </div>

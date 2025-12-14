@@ -131,6 +131,27 @@ class TabunganController extends Controller
             ->tap($baseQuery)
             ->count();
 
+        // Total saldo aktif siswa dari tabel saldo_keuangan
+        $saldo_aktif_siswa = Saldo_keuangan::whereHas('siswa', function ($query) use ($request) {
+                // Filter by unit_id if provided in request
+                if ($request->filled('unit_id') && $request->unit_id != '') {
+                    $query->where('unit_id', $request->unit_id);
+                }
+                // Filter by auth user's unit_id
+                elseif (Auth::user()->unit_id) {
+                    $query->where('unit_id', Auth::user()->unit_id);
+                }
+                // Filter by auth user's yayasan_id
+                elseif (Auth::user()->yayasan_id) {
+                    $query->whereHas('unit', function ($q) {
+                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                    });
+                }
+                // Filter only active students
+                $query->where('status', '1');
+            })
+            ->sum('saldo_akhir');
+
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
@@ -151,6 +172,7 @@ class TabunganController extends Controller
             'total_pending_setoran',
             'total_approved_setoran',
             'total_rejected_setoran',
+            'saldo_aktif_siswa',
             'units'
         ));
     }
@@ -850,14 +872,39 @@ class TabunganController extends Controller
                         throw new \Exception('Setting akun untuk kategori tabungan-tarik belum lengkap.');
                     }
 
-                    // Buat jurnal Debit
-//                    Jurnals::create([
-//                        'transaksi_id' => $transaksi->id,
-//                        'akun_id'      => $settings->akun_id,
-//                        'debit'        => $transaksi->jumlah,
-//                        'kredit'       => 0,
-//                        'keterangan'   => $transaksi->keterangan,
-//                    ]);
+                    // Buat jurnal Debit (Beban Tabungan/Utang Tabungan Siswa)
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $settings->akun_id,
+                        'debit'        => $transaksi->jumlah,
+                        'kredit'       => 0,
+                        'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
+                    ]);
+
+                    // Buat jurnal Kredit (Kas/Bank yang mengeluarkan uang)
+                    // Ambil akun kas/bank berdasarkan metode pembayaran
+                    $akunKasBank = null;
+                    if ($transaksi->metode === 'CASH') {
+                        $akunKasBank = setting_akun::where('kategori', 'kas')
+                            ->where('status', '1')
+                            ->first();
+                    } elseif ($transaksi->metode === 'TRANSFER') {
+                        $akunKasBank = setting_akun::where('kategori', 'bank')
+                            ->where('status', '1')
+                            ->first();
+                    }
+
+                    if (!$akunKasBank || !$akunKasBank->akun_id) {
+                        throw new \Exception('Setting akun kas/bank untuk metode ' . $transaksi->metode . ' belum lengkap.');
+                    }
+
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id'      => $akunKasBank->akun_id,
+                        'debit'        => 0,
+                        'kredit'       => $transaksi->jumlah,
+                        'keterangan'   => $transaksi->keterangan ?? 'Penarikan tabungan siswa',
+                    ]);
 
                     // Kurangi saldo siswa
                     $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
