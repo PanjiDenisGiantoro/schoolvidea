@@ -863,10 +863,20 @@ class TabunganController extends Controller
                         throw new \Exception('Saldo siswa tidak mencukupi untuk penarikan.');
                     }
 
-                    // Ambil setting akun untuk tabungan-tarik
-                    $settings = setting_akun::where('kategori', 'tabungan-tarik')
-                        ->where('status', '1')
-                        ->first();
+                    // Ambil setting akun tabungan-tarik dengan filter unit
+                    $settings = setting_akun::where('kategori', 'tabungan-tarik');
+
+                    if (Auth::user()->yayasan_id) {
+                        $settings->whereHas('unit', function ($q) {
+                            $q->where('yayasan_id', Auth::user()->yayasan_id);
+                        });
+                    } elseif (Auth::user()->unit_id) {
+                        $settings->where('unit_id', Auth::user()->unit_id);
+                    } elseif ($request->filled('unit_id')) {
+                        $settings->where('unit_id', $request->unit_id);
+                    }
+
+                    $settings = $settings->where('status', '1')->first();
 
                     if (!$settings || !$settings->akun_id) {
                         throw new \Exception('Setting akun untuk kategori tabungan-tarik belum lengkap.');
