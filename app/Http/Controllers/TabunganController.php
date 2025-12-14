@@ -1065,6 +1065,7 @@ class TabunganController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Laporan Tabungan Siswa');
@@ -1164,6 +1165,7 @@ class TabunganController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Mutasi Tabungan - ' . $siswa->user->name);
@@ -1245,6 +1247,7 @@ class TabunganController extends Controller
             'margin_bottom' => 5,
             'margin_header' => 0,
             'margin_footer' => 0,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Transaksi Tabungan');

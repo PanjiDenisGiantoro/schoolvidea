@@ -127,6 +127,7 @@ class KeuanganTransaksiController extends Controller
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
                 'approvedBy',
+                'logs.pelaku',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ]);
 
