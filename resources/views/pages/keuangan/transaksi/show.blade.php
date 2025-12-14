@@ -218,14 +218,13 @@
                             $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
                             $tagihan = $tagihanSiswa->tagihan;
                         @endphp
-                        <li><strong>Nama Tagihan:</strong> {{ $tagihan->nama_tagihan ?? '-' }}</li>
-                        <li><strong>Periode:</strong> {{ $tagihan->bulan ?? '-' }} {{ $tagihan->tahun ?? '' }}</li>
+                        <li><strong>Periode:</strong> {{ $tagihan->periode ?? '-' }} {{ $tagihan->tahun ?? '' }}</li>
                         <li><strong>Total Tagihan:</strong> Rp {{ number_format($tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</li>
                         <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
                         <li><strong>Sisa:</strong> Rp {{ number_format($tagihanSiswa->sisa_nominal ?? 0, 0, ',', '.') }}</li>
 
                         @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
-                        <li class="mt-2"><strong>Kategori Tagihan:</strong></li>
+                        <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
                         <ul class="mt-1">
                             @foreach($tagihan->items as $item)
                                 <li>
