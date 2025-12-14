@@ -431,7 +431,13 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $transaksi->approvedBy->name ?? '-' }}</td>
+                                <td>
+                                    @if($transaksi->jenis_transaksi == 'setoran_tabungan')
+                                        {{ $transaksi->creator->name ?? '-' }}
+                                    @else
+                                    {{ $transaksi->approvedBy->name ?? '-' }}</td>
+                                @endif
+
                                 <td>
                                     <div class="d-flex justify-content-center gap-1">
                                         <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"

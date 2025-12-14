@@ -379,6 +379,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Bukti Transaksi - ' . $transaksi->code_pembayaran);
@@ -428,6 +429,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 3,
             'margin_header' => 0,
             'margin_footer' => 0,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Pembayaran - ' . $transaksi->code_pembayaran);
