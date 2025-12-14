@@ -92,7 +92,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-3">
-                                        <a href="{{ url('setting_akun/show' . $item->id) }}"
+                                        <a href="{{ url('setting_akun/show/' . $item->id) }}"
                                             class="link-primary text-muted">
                                             <i class="ri-eye-line fs-20 align-middle"></i> Show
                                         </a>
