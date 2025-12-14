@@ -140,11 +140,23 @@
                                     'November' => 'November',
                                     'Desember' => 'Desember',
                                 ];
+
+                                // Mapping angka ke nama bulan Indonesia
+                                $namaBulan = [
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                ];
+
                                 $periode = $detail->periode ?? '-';
                                 $tahun = $detail->tahun ?? date('Y');
 
-                                // Convert bulan ke bahasa Indonesia jika dalam bahasa Inggris
-                                $periodeIndo = $bulanIndo[$periode] ?? $periode;
+                                // Convert periode: jika angka gunakan mapping angka, jika bahasa Inggris gunakan bulanIndo
+                                if (is_numeric($periode) && isset($namaBulan[(int)$periode])) {
+                                    $periodeIndo = $namaBulan[(int)$periode];
+                                } else {
+                                    $periodeIndo = $bulanIndo[$periode] ?? $periode;
+                                }
                             @endphp
                             <tr>
                                 <td class="fw-bold text-center">
@@ -217,8 +229,18 @@
                         @php
                             $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
                             $tagihan = $tagihanSiswa->tagihan;
+
+                            // Konversi periode (angka bulan) menjadi nama bulan
+                            $namaBulan = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                            $periodeBulan = isset($tagihan->periode) && isset($namaBulan[$tagihan->periode])
+                                ? $namaBulan[$tagihan->periode]
+                                : $tagihan->periode;
                         @endphp
-                        <li><strong>Periode:</strong> {{ $tagihan->periode ?? '-' }} {{ $tagihan->tahun ?? '' }}</li>
+                        <li><strong>Periode:</strong> {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</li>
                         <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
                         @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
                         <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
