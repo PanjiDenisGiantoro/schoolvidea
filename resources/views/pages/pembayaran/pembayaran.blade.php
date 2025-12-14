@@ -770,7 +770,7 @@
                                     <a href="{{ url('keuangan-transaksi/cetak-struk') }}/${tagihan.keuangan_transaksi_id}" class="btn btn-warning btn-sm rounded-pill" title="Cetak Struk" target="_blank">
                                         <i class="ri-printer-line" style="font-size: 16px"></i> Struk
                                     </a>
-                                     <a href="{{ url('tagihan') }}/${tagihan.tagihan_id}/${tagihan.siswa_id}" class="btn btn-primary btn-sm rounded-pill" title="Rekap" target="_blank">
+                                     <a href="{{ url('tagihan/show') }}/${tagihan.tagihan_id}/${tagihan.siswa_id}" class="btn btn-primary btn-sm rounded-pill" title="Rekap" target="_blank">
                                         <i class="ri-eye-line" style="font-size: 16px"></i> Rekap
                                     </a>
                                 </td>
