@@ -317,15 +317,24 @@ class TabunganApiController extends Controller
         try {
             $transaksi = Keuangan_transaksi::findOrFail($id);
 
-//            // Hapus file lama jika ada
-//            if ($transaksi->bukti_transfer && file_exists(public_path($transaksi->bukti_transfer))) {
-//                unlink(public_path($transaksi->bukti_transfer));
-//            }
+            // Pastikan direktori ada dan punya permission yang benar
+            $uploadPath = public_path('uploads/bukti_transfer');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+                chmod($uploadPath, 0777);
+            }
 
             // Upload file baru
             $file = $request->file('bukti_transfer');
             $filename = 'bukti_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/bukti_transfer'), $filename);
+
+            // Pindahkan file dengan error handling
+            if (!$file->move($uploadPath, $filename)) {
+                throw new \Exception('Gagal memindahkan file ke direktori tujuan');
+            }
+
+            // Set permission file yang baru di-upload
+            chmod($uploadPath . '/' . $filename, 0644);
 
             // Update database
             $transaksi->update([

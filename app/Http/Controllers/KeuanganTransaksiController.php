@@ -495,6 +495,27 @@ class KeuanganTransaksiController extends Controller
                 }
             }
 
+            // Validasi bukti transfer untuk tabungan (setoran dan penarikan)
+            if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'penarikan_tabungan'])) {
+                if (empty($transaksi->bukti_transfer)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bukti transfer harus diupload terlebih dahulu sebelum approve transaksi tabungan'
+                    ], 400);
+                }
+            }
+
+            // Validasi file bukti untuk pembayaran tagihan
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $pembayaran = $transaksi->pembayaranTagihan;
+                if (empty($pembayaran->file_bukti)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bukti pembayaran harus diupload terlebih dahulu sebelum approve transaksi tagihan'
+                    ], 400);
+                }
+            }
+
             // Update status verifikasi transaksi di keuangan_transaksis ONLY
             $transaksi->update([
                 'status_verifikasi' => 'approved',
