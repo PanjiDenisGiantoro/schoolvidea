@@ -212,7 +212,7 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                 'no_rekening' => $row['no_rekening'] ?? null,
                 'no_kartu_rfid' => $row['no_rfid'] ?? null,
                 'va_guru' => $row['no_va'] ?? null,
-                'position_id' => $position->id ?? null
+//                'position_id' => $position->id ?? null
             ]));
 
             $officer = Officer::updateOrCreate(
@@ -239,7 +239,7 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                     'no_rekening' => $row['no_rekening'] ?? null,
                     'no_kartu_rfid' => $row['no_rfid'] ?? null,
                     'va_guru' => $row['no_va'] ?? null,
-                    'position_id' => $position->id ?? null
+//                    'position_id' => empty($position->id) ? null : $position->id,
                 ]
             );
 
