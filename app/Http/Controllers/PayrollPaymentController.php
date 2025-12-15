@@ -780,6 +780,7 @@ class PayrollPaymentController extends Controller
             'margin_top' => 5,
             'margin_bottom' => 5,
             // 'orientation' => 'L',
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path']))->render();

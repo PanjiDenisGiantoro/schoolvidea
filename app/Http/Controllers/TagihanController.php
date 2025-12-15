@@ -798,6 +798,8 @@ class TagihanController extends Controller
             $row = [
                 'no'                => $counter++,
                 'id'                => $ts->id,
+                'tagihan_id'        => $ts->tagihan_id,
+                'siswa_id'          => $ts->siswa_id,
                 'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F'),
                 'tahun'             => $date->year,
@@ -886,6 +888,8 @@ class TagihanController extends Controller
             $row = [
                 'no'                => $index + 1,
                 'id'                => $ts->id,
+                'tagihan_id'        => $ts->tagihan_id,
+                'siswa_id'          => $ts->siswa_id,
                 'keuangan_transaksi_id' => $keuanganTransaksiId,
                 'periode'           => $date->translatedFormat('F Y'),
                 'tagihan_kelas'     => $namaKategori, // Nama kategori spesifik
@@ -1124,6 +1128,7 @@ class TagihanController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Laporan Kelola Tagihan');
@@ -1282,6 +1287,7 @@ class TagihanController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Tagihan - ' . $kodeTagihanUnique);
@@ -1457,6 +1463,7 @@ class TagihanController extends Controller
             'margin_bottom' => 15,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Invoice - ' . $kodePembayaran);
@@ -1517,6 +1524,7 @@ class TagihanController extends Controller
             'margin_bottom' => 3,
             'margin_header' => 0,
             'margin_footer' => 0,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Pembayaran - ' . $pembayaran->code_pembayaran);

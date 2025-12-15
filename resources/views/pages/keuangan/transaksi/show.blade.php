@@ -122,18 +122,171 @@
                             tagihan)
                         </h6>
 
-                        @if ($headTagihan)
-                            <div class="alert alert-info mb-3 small">
-                                <strong>
-                                    <i class="bx bx-tag me-1"></i>
-                                    Head Tagihan:
-                                </strong>
-                                <span
-                                    class="font-monospace bg-white px-2 py-1 rounded"
-                                >
-                                    {{ $headTagihan }}
-                                </span>
-                            </div>
+                {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
+                @if($transaksi->jenis_transaksi == 'pembayaran-multiple' && $pembayaranDetail && $pembayaranDetail->count() > 1)
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-list-check"></i> Daftar Tagihan ({{ $pembayaranDetail->count() }} tagihan)
+                </h6>
+
+                @if($headTagihan)
+                <div class="alert alert-info mb-3 small">
+                    <strong><i class="bx bx-tag me-1"></i>Head Tagihan:</strong>
+                    <span class="font-monospace bg-white px-2 py-1 rounded">{{ $headTagihan }}</span>
+                </div>
+                @endif
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 20%;">Nama Tagihan</th>
+                                <th style="width: 15%;">Periode</th>
+                                <th style="width: 15%;">Nominal</th>
+                                <th style="width: 15%;">Potongan</th>
+                                <th style="width: 15%;">Dibayar</th>
+                                <th style="width: 10%;">Siswa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($pembayaranDetail as $detail)
+                            @php
+                                $bulanIndo = [
+                                    'January' => 'Januari',
+                                    'February' => 'Februari',
+                                    'March' => 'Maret',
+                                    'April' => 'April',
+                                    'May' => 'Mei',
+                                    'June' => 'Juni',
+                                    'July' => 'Juli',
+                                    'August' => 'Agustus',
+                                    'September' => 'September',
+                                    'October' => 'Oktober',
+                                    'November' => 'November',
+                                    'December' => 'Desember',
+                                    'Oktober' => 'Oktober',
+                                    'Januari' => 'Januari',
+                                    'Februari' => 'Februari',
+                                    'Maret' => 'Maret',
+                                    'Mei' => 'Mei',
+                                    'Juni' => 'Juni',
+                                    'Juli' => 'Juli',
+                                    'Agustus' => 'Agustus',
+                                    'November' => 'November',
+                                    'Desember' => 'Desember',
+                                ];
+
+                                // Mapping angka ke nama bulan Indonesia
+                                $namaBulan = [
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                ];
+
+                                $periode = $detail->periode ?? '-';
+                                $tahun = $detail->tahun ?? date('Y');
+
+                                // Convert periode: jika angka gunakan mapping angka, jika bahasa Inggris gunakan bulanIndo
+                                if (is_numeric($periode) && isset($namaBulan[(int)$periode])) {
+                                    $periodeIndo = $namaBulan[(int)$periode];
+                                } else {
+                                    $periodeIndo = $bulanIndo[$periode] ?? $periode;
+                                }
+                            @endphp
+                            <tr>
+                                <td class="fw-bold text-center">
+                                    <span class="badge bg-primary rounded-circle">{{ $detail->urutan }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark">{{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ $periodeIndo }} {{ $tahun }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
+                                </td>
+                                <td>
+                                    @php
+                                        $totalPotongan = $detail->tagihanSiswa->potonganSiswa->sum('nominal');
+                                    @endphp
+                                    @if($totalPotongan > 0)
+                                        <span class="text-warning fw-bold">
+                                            <small class="badge bg-warning text-dark">-Rp {{ number_format($totalPotongan, 0, ',', '.') }}</small>
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ substr($detail->tagihanSiswa->siswa->user->name ?? '-', 0, 15) }}</small>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Tidak ada detail tagihan</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="4" class="text-end">Total Pembayaran:</th>
+                                <th>
+                                    @php
+                                        $totalAllPotongan = $pembayaranDetail->sum(function($item) {
+                                            return $item->tagihanSiswa->potonganSiswa->sum('nominal');
+                                        });
+                                    @endphp
+                                    @if($totalAllPotongan > 0)
+                                        <span class="text-warning fw-bold">-Rp {{ number_format($totalAllPotongan, 0, ',', '.') }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </th>
+                                <th colspan="2" class="text-success fw-bold">Rp {{ number_format($pembayaranDetail->sum('jumlah_bayar_detail'), 0, ',', '.') }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <hr>
+
+                {{-- Single Payment Detail --}}
+                @else
+                <h6 class="fw-bold text-primary mb-2">
+                    <i class="bx bx-receipt"></i> Detail Tagihan
+                </h6>
+                <ul class="list-unstyled small">
+                    @if($transaksi->pembayaranTagihan->tagihanSiswa)
+                        @php
+                            $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
+                            $tagihan = $tagihanSiswa->tagihan;
+
+                            // Konversi periode (angka bulan) menjadi nama bulan
+                            $namaBulan = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                            $periodeBulan = isset($tagihan->periode) && isset($namaBulan[$tagihan->periode])
+                                ? $namaBulan[$tagihan->periode]
+                                : $tagihan->periode;
+                        @endphp
+                        <li><strong>Periode:</strong> {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</li>
+                        <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
+                        @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
+                        <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
+                        <ul class="mt-1">
+                            @foreach($tagihan->items as $item)
+                                <li>
+                                    {{ $item->kategori->nama_kategori ?? '-' }}
+                                    - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
+                                </li>
+                            @endforeach
+                        </ul>
                         @endif
 
                         <div class="table-responsive mb-3">

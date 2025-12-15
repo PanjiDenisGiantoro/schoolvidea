@@ -131,6 +131,27 @@ class TabunganController extends Controller
             ->tap($baseQuery)
             ->count();
 
+        // Total saldo aktif siswa dari tabel saldo_keuangan
+        $saldo_aktif_siswa = Saldo_keuangan::whereHas('siswa', function ($query) use ($request) {
+                // Filter by unit_id if provided in request
+                if ($request->filled('unit_id') && $request->unit_id != '') {
+                    $query->where('unit_id', $request->unit_id);
+                }
+                // Filter by auth user's unit_id
+                elseif (Auth::user()->unit_id) {
+                    $query->where('unit_id', Auth::user()->unit_id);
+                }
+                // Filter by auth user's yayasan_id
+                elseif (Auth::user()->yayasan_id) {
+                    $query->whereHas('unit', function ($q) {
+                        $q->where('yayasan_id', Auth::user()->yayasan_id);
+                    });
+                }
+                // Filter only active students
+                $query->where('status', '1');
+            })
+            ->sum('saldo_akhir');
+
         // Get units for filter
         if (Auth::user()->yayasan_id && !Auth::user()->unit_id) {
             $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->orderBy('nama_unit')->get();
@@ -151,6 +172,7 @@ class TabunganController extends Controller
             'total_pending_setoran',
             'total_approved_setoran',
             'total_rejected_setoran',
+            'saldo_aktif_siswa',
             'units'
         ));
     }
@@ -841,23 +863,41 @@ class TabunganController extends Controller
                         throw new \Exception('Saldo siswa tidak mencukupi untuk penarikan.');
                     }
 
-                    // Ambil setting akun untuk tabungan-tarik
-                    $settings = setting_akun::where('kategori', 'tabungan-tarik')
-                        ->where('status', '1')
-                        ->first();
+                    // Ambil setting akun tabungan-tarik dengan filter unit
+                    $settings = setting_akun::where('kategori', 'tabungan-tarik');
 
-                    if (!$settings || !$settings->akun_id) {
-                        throw new \Exception('Setting akun untuk kategori tabungan-tarik belum lengkap.');
+                    if (Auth::user()->yayasan_id) {
+                        $settings->whereHas('unit', function ($q) {
+                            $q->where('yayasan_id', Auth::user()->yayasan_id);
+                        });
+                    } elseif (Auth::user()->unit_id) {
+                        $settings->where('unit_id', Auth::user()->unit_id);
+                    } elseif ($request->filled('unit_id')) {
+                        $settings->where('unit_id', $request->unit_id);
                     }
 
-                    // Buat jurnal Debit
-//                    Jurnals::create([
-//                        'transaksi_id' => $transaksi->id,
-//                        'akun_id'      => $settings->akun_id,
-//                        'debit'        => $transaksi->jumlah,
-//                        'kredit'       => 0,
-//                        'keterangan'   => $transaksi->keterangan,
-//                    ]);
+                    $settings = $settings->where('status', '1')->first();
+
+                    $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                        ->first();
+
+
+
+
+
+                    if($datarekening->allotment == 'Semua Pembayaran'){
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Semua Pembayaran')
+                            ->first();
+                    }else{
+                        $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
+                            ->where('allotment','Pembayaran Tabungan')
+                            ->first();
+                    }
+                    if (!$datarekening) {
+                        return back()->with('danger', 'Rekening tabungan tidak ditemukan.');
+                    }
+
 
                     // Kurangi saldo siswa
                     $saldoSiswa->decrement('saldo_akhir', $transaksi->jumlah);
@@ -1065,6 +1105,7 @@ class TabunganController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Laporan Tabungan Siswa');
@@ -1164,6 +1205,7 @@ class TabunganController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Mutasi Tabungan - ' . $siswa->user->name);
@@ -1245,6 +1287,7 @@ class TabunganController extends Controller
             'margin_bottom' => 5,
             'margin_header' => 0,
             'margin_footer' => 0,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Transaksi Tabungan');

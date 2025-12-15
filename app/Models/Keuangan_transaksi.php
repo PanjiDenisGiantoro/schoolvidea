@@ -50,4 +50,9 @@ class Keuangan_transaksi extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
 }

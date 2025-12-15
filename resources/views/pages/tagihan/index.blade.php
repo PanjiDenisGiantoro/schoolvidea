@@ -301,7 +301,7 @@
             tagihanTable = $('#tagihanTable').DataTable({
                 processing: true,
                 serverSide: true,
-                responsive: true,
+                responsive: false,
                 "scrollX": true,
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
                 pageLength: 25,
