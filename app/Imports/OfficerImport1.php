@@ -181,14 +181,14 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             Log::info('Step 11: Creating/Updating Officer');
             Log::info('Officer lookup: nip=' . $row['nip'] . ', unit_id=' . $this->unit_id . ', tahun_ajaran_id=' . $this->tahun_ajaran_id);
 
-
-            $position = Positions::where('positions_name', $row['jabatan'])->first();
-
-            if (!$position) {
-                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
-            } else {
-                Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
-            }
+//
+//            $position = Positions::where('positions_name', $row['jabatan'])->first();
+//
+//            if (!$position) {
+//                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
+//            } else {
+//                Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
+//            }
 
             // Log query data before execution
             Log::info('Officer updateOrCreate conditions: ' . json_encode([
