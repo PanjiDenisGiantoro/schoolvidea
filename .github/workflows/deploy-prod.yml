@@ -1,0 +1,78 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USERNAME }}
+          password: ${{ secrets.PROD_SERVER_PASSWORD }}
+          script: |
+            cd /var/www/html/schoolvidea
+
+            # Fix git ownership issue
+            git config --global --add safe.directory /var/www/html/schoolvidea
+
+            # Fix directory ownership for current user
+            sudo chown -R videa_sps:www-data /var/www/html/schoolvidea
+
+            # Set proper permissions before operations
+            sudo chmod -R 775 storage bootstrap/cache vendor
+            sudo chown -R videa_sps:www-data storage bootstrap/cache vendor
+
+            # Pull latest code
+            git fetch origin master
+            git reset --hard origin/master
+
+            # Clean vendor directory if exists
+            if [ -d "vendor" ]; then
+              sudo rm -rf vendor
+            fi
+
+            # Install/Update dependencies
+            composer install
+
+            # Set permissions for Laravel directories
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+
+            # Put application in maintenance mode
+            php artisan down --message="Deploying new version. We'll be back shortly!" --retry=60
+
+            # Clear all caches
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Cache configurations for better performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Final permission fix
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+
+            # Bring application back online
+            php artisan up
+
+            echo "✅ Production deployment completed successfully!"

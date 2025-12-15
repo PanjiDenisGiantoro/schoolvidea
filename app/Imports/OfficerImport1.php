@@ -43,7 +43,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
                 empty($row['nip'])
             ) {
                 Log::warning('⚠️ Skipping row due to missing required fields: ' . json_encode($row));
-                return null;
             }
             Log::info('✓ Required fields validated');
 
@@ -131,9 +130,8 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
+                $rolePetugas = null;
                 Log::warning("⚠️ Role not found for role: {$row['role']}");
-                DB::rollBack();
-                return null;
             }
             Log::info('✓ Role found | ID: ' . $rolePetugas->id . ' | Name: ' . $rolePetugas->name);
 
@@ -168,12 +166,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
 
             $position = Positions::where('positions_name', $row['jabatan'])->first();
 
-            if (!$position) {
-                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
-                DB::rollBack();
-                return null;
-            }
-            Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
 
             $officer = Officer::updateOrCreate(
                 [
@@ -212,7 +204,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
             return $officer;
 
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('❌ ERROR during officer import');
             Log::error('Error message: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
