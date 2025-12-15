@@ -9,10 +9,10 @@ use App\Models\Roles_petugas;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class OfficerImport1 implements ToModel, WithStartRow
+class OfficerImport1 implements ToModel, WithHeadingRow
 {
     protected $unit_id;
     protected $tahun_ajaran_id;
@@ -23,11 +23,6 @@ class OfficerImport1 implements ToModel, WithStartRow
         $this->tahun_ajaran_id = $tahun_ajaran_id;
     }
 
-    public function startRow(): int
-    {
-        return 2; // Skip header row
-    }
-
     public function model(array $row)
     {
         Log::info('========== OFFICER IMPORT STARTED ==========');
@@ -36,33 +31,28 @@ class OfficerImport1 implements ToModel, WithStartRow
         try {
             // ===== 1. Validasi kolom wajib =====
             Log::info('Step 1: Validating required fields');
-            Log::info('nama_lengkap: ' . ($row[3] ?? 'EMPTY')); // Index 3: NAMA LENGKAP
-            Log::info('email: ' . ($row[10] ?? 'EMPTY')); // Index 10: EMAIL
-            Log::info('role: ' . ($row[11] ?? 'EMPTY')); // Index 11: ROLE
-            Log::info('nip: ' . ($row[0] ?? 'EMPTY')); // Index 0: NIP
+            Log::info('nama_lengkap: ' . ($row['nama_lengkap'] ?? 'EMPTY'));
+            Log::info('email: ' . ($row['email'] ?? 'EMPTY'));
+            Log::info('role: ' . ($row['role'] ?? 'EMPTY'));
+            Log::info('nip: ' . ($row['nip'] ?? 'EMPTY'));
 
             if (
-                empty($row[3]) || // NAMA LENGKAP
-                empty($row[10]) || // EMAIL
-                empty($row[11]) || // ROLE
-                empty($row[0]) // NIP
+                empty($row['nama_lengkap']) ||
+                empty($row['email']) ||
+                empty($row['role']) ||
+                empty($row['nip'])
             ) {
                 Log::warning('⚠️ Skipping row due to missing required fields: ' . json_encode($row));
+                return null;
             }
             Log::info('✓ Required fields validated');
 
             // ===== 2. Validasi kolom numeric =====
             Log::info('Step 2: Validating numeric fields');
-            $numericFields = [
-                9 => 'no_hp',    // Index 9: NO HP
-                16 => 'no_rfid',  // Index 16: NO RFID
-                0 => 'nip',       // Index 0: NIP
-                1 => 'nuptk',     // Index 1: NUPTK
-                4 => 'nik'        // Index 4: NIK
-            ];
-            foreach ($numericFields as $index => $fieldName) {
-                if (!empty($row[$index]) && !is_numeric($row[$index])) {
-                    Log::warning("⚠️ Skipping row due to invalid numeric value in $fieldName: " . json_encode($row));
+            $numericFields = ['no_hp', 'no_rfid', 'nip', 'nuptk', 'nik'];
+            foreach ($numericFields as $field) {
+                if (!empty($row[$field]) && !is_numeric($row[$field])) {
+                    Log::warning("⚠️ Skipping row due to invalid numeric value in $field: " . json_encode($row));
                     return null;
                 }
             }
@@ -71,14 +61,14 @@ class OfficerImport1 implements ToModel, WithStartRow
             // ===== 3. Konversi tanggal lahir dari DD/MM/YYYY ke YYYY-MM-DD =====
             Log::info('Step 3: Converting date of birth');
             $tanggalLahir = null;
-            if (!empty($row[7])) { // Index 7: TANGGAL LAHIR
-                Log::info('tanggal_lahir raw: ' . $row[7]);
-                $date = \DateTime::createFromFormat('d/m/Y', $row[7]);
+            if (!empty($row['tanggal_lahir_ddmmyyyy'])) {
+                Log::info('tanggal_lahir_ddmmyyyy raw: ' . $row['tanggal_lahir_ddmmyyyy']);
+                $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
                 if ($date) {
                     $tanggalLahir = $date->format('Y-m-d');
                     Log::info('✓ Date converted: ' . $tanggalLahir);
                 } else {
-                    Log::warning('⚠️ Failed to convert date: ' . $row[7]);
+                    Log::warning('⚠️ Failed to convert date: ' . $row['tanggal_lahir_ddmmyyyy']);
                 }
             }
 
@@ -87,14 +77,15 @@ class OfficerImport1 implements ToModel, WithStartRow
 
             // ===== 4. Tentukan password =====
             Log::info('Step 4: Setting password');
-            $password = !empty($row[2]) // Index 2: PASSWORD
-                ? bcrypt($row[2])
-                : bcrypt($row[0]); // default pakai NIP jika kosong (Index 0)
-            Log::info('✓ Password set (using ' . (!empty($row[2]) ? 'provided password' : 'NIP as default') . ')');
+            $password = !empty($row['password'])
+                ? bcrypt($row['password'])
+                : bcrypt($row['nip']); // default pakai NIP jika kosong
+            Log::info('✓ Password set (using ' . (!empty($row['password']) ? 'provided password' : 'NIP as default') . ')');
+
             // ===== 5. Ambil status dan akses yayasan =====
             Log::info('Step 5: Processing status and akses yayasan');
-            $status = !empty($row[13]) ? $row[13] : '1'; // Index 13: STATUS
-            $aksesYayasan = !empty($row[12]) ? $row[12] : '0'; // Index 12: AKSES YAYASAN
+            $status = !empty($row['status_1_aktif_0_tidak_aktif']) ? $row['status_1_aktif_0_tidak_aktif'] : '1';
+            $aksesYayasan = !empty($row['akses_yayasan_1_ya_0_tidak']) ? $row['akses_yayasan_1_ya_0_tidak'] : '0';
             Log::info('Status: ' . $status . ' | Akses Yayasan: ' . $aksesYayasan);
 
             // ===== 6. Jika akses yayasan = 1, ambil yayasan_id dari user lain dengan unit_id yang sama =====
@@ -118,16 +109,16 @@ class OfficerImport1 implements ToModel, WithStartRow
 
             // ===== 7. Update atau buat user =====
             Log::info('Step 7: Creating/Updating User');
-            Log::info('User lookup: email=' . $row[10] . ', unit_id=' . $this->unit_id); // Index 10: EMAIL
+            Log::info('User lookup: email=' . $row['email'] . ', unit_id=' . $this->unit_id);
             $user = User::updateOrCreate(
                 [
-                    'email' => $row[10], // Index 10: EMAIL
+                    'email' => $row['email'],
                     'unit_id' => $this->unit_id,
                 ],
                 [
-                    'name' => $row[3], // Index 3: NAMA LENGKAP
+                    'name' => $row['nama_lengkap'],
                     'password' => $password,
-                    'rfid_no' => $row[16] ?? null, // Index 16: NO RFID
+                    'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                     'yayasan_id' => $yayasanId,
                 ]
@@ -136,12 +127,11 @@ class OfficerImport1 implements ToModel, WithStartRow
 
             // ===== 8. Ambil role =====
             Log::info('Step 8: Finding role');
-            Log::info('Looking for role: ' . $row[11]); // Index 11: ROLE
-            $rolePetugas = Roles_petugas::where('name', $row[11])->first(); // Index 11: ROLE
+            Log::info('Looking for role: ' . $row['role']);
+            $rolePetugas = Roles_petugas::where('name', $row['role'])->first();
 
             if (!$rolePetugas) {
-                $rolePetugas = null;
-                Log::warning("⚠️ Role not found for role: {$row[11]}");
+                Log::warning("⚠️ Role not found for role: {$row['role']}");
             }
             Log::info('✓ Role found | ID: ' . $rolePetugas->id . ' | Name: ' . $rolePetugas->name);
 
@@ -163,44 +153,48 @@ class OfficerImport1 implements ToModel, WithStartRow
             // ===== 10. Jenis kelamin - gunakan format asli dari Excel =====
             Log::info('Step 10: Processing gender');
             $jenisKelamin = null;
-            if (!empty($row[5])) { // Index 5: JENIS KELAMIN
+            if (!empty($row['jenis_kelamin'])) {
                 // Gunakan format asli dari Excel (Laki-laki / Perempuan)
-                $jenisKelamin = $row[5];
+                $jenisKelamin = $row['jenis_kelamin'];
                 Log::info('✓ Gender: ' . $jenisKelamin);
             }
 
             // ===== 11. Update atau buat Officer =====
             Log::info('Step 11: Creating/Updating Officer');
-            Log::info('Officer lookup: nip=' . $row[0] . ', unit_id=' . $this->unit_id . ', tahun_ajaran_id=' . $this->tahun_ajaran_id); // Index 0: NIP
+            Log::info('Officer lookup: nip=' . $row['nip'] . ', unit_id=' . $this->unit_id . ', tahun_ajaran_id=' . $this->tahun_ajaran_id);
 
 
-            $position = Positions::where('positions_name', $row[15])->first(); // Index 15: JABATAN
+            $position = Positions::where('positions_name', $row['jabatan'])->first();
 
+            if (!$position) {
+                Log::warning("⚠️ Position not found for position: {$row['jabatan']}");
+            }
+            Log::info('✓ Position found | ID: ' . $position->id . ' | Name: ' . $position->positions_name);
 
             $officer = Officer::updateOrCreate(
                 [
-                    'nip' => $row[0], // Index 0: NIP
+                    'nip' => $row['nip'],
                     'unit_id' => $this->unit_id,
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                 ],
                 [
-                    'name' => $row[3], // Index 3: NAMA LENGKAP
-                    'tempat_lahir' => $row[6] ?? null, // Index 6: TEMPAT LAHIR
-                    'no_hp' => $row[9] ?? null, // Index 9: NO HP
+                    'name' => $row['nama_lengkap'],
+                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
+                    'no_hp' => $row['no_hp'] ?? null,
                     'unit_id' => $this->unit_id,
                     'tahun_ajaran_id' => $this->tahun_ajaran_id,
                     'user_id' => $user->id,
                     'role_id' => $rolePetugas->id,
-                    'nuptk' => $row[1] ?? null, // Index 1: NUPTK
-                    'nik' => $row[4] ?? null, // Index 4: NIK
+                    'nuptk' => $row['nuptk'] ?? null,
+                    'nik' => $row['nik'] ?? null,
                     'jenis_kelamin' => $jenisKelamin,
-                    'agama' => $row[8] ?? null, // Index 8: AGAMA
+                    'agama' => $row['agama'] ?? null,
                     'tanggal_lahir' => $tanggalLahir,
-                    'alamat' => $row[14] ?? null, // Index 14: ALAMAT
-                    'bank' => $row[18] ?? null, // Index 18: BANK
-                    'no_rekening' => $row[19] ?? null, // Index 19: NO REKENING
-                    'no_kartu_rfid' => $row[16] ?? null, // Index 16: NO RFID
-                    'va_guru' => $row[17] ?? null, // Index 17: NO VA
+                    'alamat' => $row['alamat'] ?? null,
+                    'bank' => $row['bank'] ?? null,
+                    'no_rekening' => $row['no_rekening'] ?? null,
+                    'no_kartu_rfid' => $row['no_rfid'] ?? null,
+                    'va_guru' => $row['no_va'] ?? null,
                     'position_id' => $position->id ?? null
                 ]
             );
@@ -214,6 +208,7 @@ class OfficerImport1 implements ToModel, WithStartRow
             return $officer;
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('❌ ERROR during officer import');
             Log::error('Error message: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
