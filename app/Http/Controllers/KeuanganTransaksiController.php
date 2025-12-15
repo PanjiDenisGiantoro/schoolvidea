@@ -126,6 +126,8 @@ class KeuanganTransaksiController extends Controller
         // List transaksi dengan filtering
         $transaksis = Keuangan_transaksi::with([
                 'penerima',
+                'approvedBy',
+                'verifier',
                 'creator',
                 'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
             ]);
@@ -337,6 +339,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Laporan Transaksi Keuangan');
@@ -378,6 +381,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 10,
             'margin_header' => 5,
             'margin_footer' => 5,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Bukti Transaksi - ' . $transaksi->code_pembayaran);
@@ -427,6 +431,7 @@ class KeuanganTransaksiController extends Controller
             'margin_bottom' => 3,
             'margin_header' => 0,
             'margin_footer' => 0,
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $mpdf->SetTitle('Struk Pembayaran - ' . $transaksi->code_pembayaran);
@@ -486,6 +491,27 @@ class KeuanganTransaksiController extends Controller
                             'required_status' => 'verified or approved',
                             'note' => 'Gunakan endpoint /api/v1/tabungan/verify untuk verifikasi token terlebih dahulu'
                         ]
+                    ], 400);
+                }
+            }
+
+            // Validasi bukti transfer untuk tabungan (setoran dan penarikan)
+            if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'penarikan_tabungan'])) {
+                if (empty($transaksi->bukti_transfer)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bukti transfer harus diupload terlebih dahulu sebelum approve transaksi tabungan'
+                    ], 400);
+                }
+            }
+
+            // Validasi file bukti untuk pembayaran tagihan
+            if (in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan) {
+                $pembayaran = $transaksi->pembayaranTagihan;
+                if (empty($pembayaran->file_bukti)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bukti pembayaran harus diupload terlebih dahulu sebelum approve transaksi tagihan'
                     ], 400);
                 }
             }
@@ -591,7 +617,8 @@ class KeuanganTransaksiController extends Controller
 
             // === TABUNGAN TARIK: Kurangi saldo saat approve (setelah token diverifikasi) ===
             // Flow: pending -> verified (via API token verify) -> approved (via web, saldo dikurangi disini)
-            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class) {
+            // CATATAN: Jika sudah approved via verifyToken, skip pengurangan saldo untuk menghindari double kurang
+            if ($transaksi->jenis_transaksi === 'penarikan_tabungan' && $transaksi->penerima_tipe === Siswa::class && $transaksi->status_approval !== 'approved') {
                 $siswa = Siswa::findOrFail($transaksi->penerima_id);
                 $saldoSiswa = \App\Models\Saldo_keuangan::where('user_id', $siswa->user->id)->first();
 

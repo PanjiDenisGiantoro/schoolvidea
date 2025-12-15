@@ -293,12 +293,12 @@
                                     href="{{ url('report/jurnal') }}">Jurnal</a></li>
                             <li class="sub-menu-item"><a class="sub-menu-link"
                                     href="{{ url('report/buku_besar') }}">Buku Besar</a></li>
-                            <li class="sub-menu-item"><a class="sub-menu-link"
-                                    href="{{ url('report/neraca_saldo') }}">Neraca Saldo</a></li>
-                            <li class="sub-menu-item"><a class="sub-menu-link"
-                                    href="{{ url('report/neraca') }}">Neraca</a></li>
-                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/labarugi') }}">Laba
-                                    Rugi</a></li>
+{{--                            <li class="sub-menu-item"><a class="sub-menu-link"--}}
+{{--                                    href="{{ url('report/neraca_saldo') }}">Neraca Saldo</a></li>--}}
+{{--                            <li class="sub-menu-item"><a class="sub-menu-link"--}}
+{{--                                    href="{{ url('report/neraca') }}">Neraca</a></li>--}}
+{{--                            <li class="sub-menu-item"><a class="sub-menu-link" href="{{ url('report/labarugi') }}">Laba--}}
+{{--                                    Rugi</a></li>--}}
                             <li class="sub-menu-item"><a class="sub-menu-link"
                                     href="{{ url('tabungan/report-all') }}">Tabungan</a></li>
                             <li class="sub-menu-item"><a class="sub-menu-link"
