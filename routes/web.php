@@ -9,6 +9,9 @@ use App\Http\Controllers\KategoritagihanController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KeuanganTransaksiController;
 use App\Http\Controllers\LembagaunitController;
+use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\MerchantTransactionController;
+use App\Http\Controllers\MerchantWithdrawalController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
@@ -449,6 +452,25 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/detail/{id}', [PayrollPaymentController::class, 'detail'])->name('payroll-payment.detail');
         Route::get('/show/{id}', [PayrollPaymentController::class, 'show'])->name('payroll-payment.show');
     });
+    Route::prefix('merchant')->group(function () {
+        Route::get('/', [MerchantController::class, 'index'])->name('merchant.index');
+        Route::get('/create', [MerchantController::class, 'create'])->name('merchant.create');
+        Route::get('/edit/{merchant}', [MerchantController::class, 'edit'])->name('merchant.edit');
+        Route::get('/show/{merchant}', [MerchantController::class, 'show'])->name('merchant.show');
+        Route::get('/datatable', [MerchantController::class, 'datatable'])->name('merchant.datatable');
+        Route::post('/store', [MerchantController::class, 'store'])->name('merchant.store');
+        Route::put('/update/{merchant}', [MerchantController::class, 'update'])->name('merchant.update');
+        Route::delete('/destroy/{id}', [MerchantController::class, 'destroy'])->name('merchant.delete');
+    });
+    Route::prefix('merchant-transaction')->group(function () {
+        Route::get('/', [MerchantTransactionController::class, 'index'])->name('merchant_transaction.index');
+        Route::get('datatable', [MerchantTransactionController::class, 'datatable'])->name('merchant_transaction.datatable');
+    });
+    Route::prefix('merchant-withdrawal')->group(function () {
+        Route::get('/', [MerchantWithdrawalController::class, 'index'])->name('merchant_withdrawal.index');
+        Route::get('/datatable', [MerchantWithdrawalController::class, 'datatable'])->name('merchant_withdrawal.datatable');
+    });
+    Route::view('/login-merchant', 'pages.ekantin.login');
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');
