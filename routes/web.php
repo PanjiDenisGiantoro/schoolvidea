@@ -12,6 +12,7 @@ use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\MerchantTransactionController;
 use App\Http\Controllers\MerchantWithdrawalController;
+use App\Http\Controllers\DashboardMerchantController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
@@ -472,6 +473,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [MerchantController::class, 'store'])->name('merchant.store');
         Route::put('/update/{merchant}', [MerchantController::class, 'update'])->name('merchant.update');
         Route::delete('/destroy/{id}', [MerchantController::class, 'destroy'])->name('merchant.delete');
+        Route::get('/login-merchant', [MerchantController::class, 'showLoginForm'])
+            ->middleware('guest:merchant')
+            ->name('merchant.login');
+        Route::post('/login-merchant', [MerchantController::class, 'login'])
+            ->middleware('guest:merchant');
+        Route::post('/logout-merchant', [MerchantController::class, 'logout'])
+            ->middleware('auth:merchant')->name('merchant.logout');
     });
     Route::prefix('merchant-transaction')->group(function () {
         Route::get('/', [MerchantTransactionController::class, 'index'])->name('merchant_transaction.index');
@@ -481,7 +489,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [MerchantWithdrawalController::class, 'index'])->name('merchant_withdrawal.index');
         Route::get('/datatable', [MerchantWithdrawalController::class, 'datatable'])->name('merchant_withdrawal.datatable');
     });
-    Route::view('/login-merchant', 'pages.ekantin.login');
+    Route::middleware('auth:merchant')->group(function () {
+        Route::get('/merchant/dashboard', [DashboardMerchantController::class, 'dashboard' ])->name('merchant.dashboard');
+        Route::get('/merchant/product', [DashboardMerchantController::class, 'product'])->name('merchant.product');
+    });
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');

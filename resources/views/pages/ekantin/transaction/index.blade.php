@@ -188,7 +188,7 @@
                                 <select
                                     name="unit_id"
                                     id="unit_id"
-                                    class="form-select"
+                                    class="form-select shadow-sm"
                                 >
                                     <option value="">Semua Unit</option>
                                     @foreach ($units as $unit)
@@ -211,7 +211,7 @@
                                     type="text"
                                     name="search"
                                     id="search"
-                                    class="form-control p-3"
+                                    class="form-control p-3 shadow-sm"
                                     style="font-size: 14px"
                                     placeholder="Kode, Nama, Status..."
                                     value="{{ request("search") }}"
@@ -239,7 +239,7 @@
                                     type="date"
                                     name="tanggal"
                                     id="tanggal"
-                                    class="form-control p-3"
+                                    class="form-control p-3 shadow-sm"
                                     style="font-size: 14px"
                                     value="{{ request("tanggal") }}"
                                 />
