@@ -30,7 +30,10 @@
                     {{-- Unit --}}
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="unit_id" class="form-label">Unit</label>
+                            <label for="unit_id" class="form-label">
+                                Unit
+                                <small class="text-danger">*</small>
+                            </label>
                             <select
                                 name="unit_id"
                                 id="unit_id"
@@ -62,7 +65,6 @@
                             value="$kodeMerchant"
                             :value="old('kode_merchant', $merchant->kode_merchant ?? $kodeMerchant ?? '')"
                             required
-                            readonly
                         />
                     </div>
 
@@ -73,7 +75,7 @@
                             name="nama_merchant"
                             label="Nama Merchant"
                             placeholder="Masukkan Nama Merchant"
-                            icon="bx bx-book"
+                            icon="bx bx-store-alt"
                             :value="old('nama_merchant', $merchant->nama_merchant ?? '')"
                             required
                         />
@@ -86,7 +88,7 @@
                             name="jenis"
                             label="Jenis Usaha"
                             placeholder="Masukkan Jenis Usaha"
-                            icon="bxr bx-core"
+                            icon="bx bx-store"
                             :value="old('jenis', $merchant->jenis ?? '')"
                             required
                         />
@@ -106,7 +108,6 @@
                     </div>
 
                     {{-- Password --}}
-
                     <div class="col-md-4">
                         <x-input-field
                             type="password"
@@ -118,7 +119,6 @@
                             : 'Masukkan Password'"
                             icon="bx bx-lock"
                             :disabled="isset($show) && $show"
-                            required
                         />
                     </div>
 
@@ -142,11 +142,60 @@
                         />
                     </div>
 
+                    {{-- bank --}}
+                    <div class="col-md-4">
+                        <x-input-field
+                            type="text"
+                            id="bank"
+                            name="bank"
+                            label="Nama Bank"
+                            placeholder="Masukkan nama bank"
+                            icon="bx bx-bank"
+                            :value="old('rekning', $merchant?->rekning ?? '')"
+                            required
+                        />
+                    </div>
+
+                    {{-- rekening --}}
+                    <div class="col-md-4">
+                        <x-input-field
+                            type="text"
+                            id="rekening"
+                            name="rekening"
+                            label="Nama Rekening"
+                            placeholder="Masukkan nama rekening"
+                            icon="bx bx-credit-card-alt"
+                            :value="old('rekning', $merchant?->rekning ?? '')"
+                            required
+                        />
+                    </div>
+
+                    {{-- no rekening --}}
+                    <div class="col-md-4">
+                        <x-input-field
+                            type="text"
+                            id="no_rekening"
+                            name="no_rekening"
+                            label="No. Rekening"
+                            placeholder="Masukkan nomor rekening"
+                            icon="bx bx-credit-card"
+                            :value="old('no_rekning', $merchant?->no_rekning ?? '')"
+                            onkeypress="
+                                return (
+                                    event.charCode >= 48 && event.charCode <= 57
+                                );
+                            "
+                            maxLength="14"
+                            required
+                        />
+                    </div>
+
                     {{-- Status --}}
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="status" class="form-label">
                                 Status
+                                <small class="text-danger">*</small>
                             </label>
                             <select
                                 name="status"

@@ -6,6 +6,7 @@ use App\Models\Merchants;
 use App\Models\Unit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
@@ -99,7 +100,7 @@ class MerchantController extends Controller
         $merchant->update($validated);
 
         return redirect()
-            ->route('pages.ekantin.merchant.index')
+            ->route('merchant.index')
             ->with('success', 'Merchant berhasil diperbarui');
     }
 
@@ -206,5 +207,57 @@ class MerchantController extends Controller
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ]);
+    }
+
+    // LOGIN
+    public function showLoginForm()
+    {
+        return view('pages.ekantin.dashboard_merchant.login');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'no_hp' => 'required',
+            'password' => 'required',
+        ]);
+
+        if (
+            Auth::guard('merchant')->attempt([
+                'no_hp' => $request->no_hp,
+                'password' => $request->password,
+            ])
+        ) {
+            $request->session()->regenerate();
+
+            $merchant = Auth::guard('merchant')->user();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil masuk',
+                'redirect' => route('merchant.dashboard'),
+                'merchant' => [
+                    'id' => $merchant->id,
+                    'nama_merchant' => $merchant->nama_merchant,
+                    'no_hp' => $merchant->no_hp,
+                    'saldo_aktif' => $merchant->saldo_aktif,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Nomor HP atau Password salah',
+        ], 401);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::guard('merchant')->logout();
+
+        // $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return view('pages.ekantin.dashboard_merchant.login');
     }
 }

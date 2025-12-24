@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Merchants extends Model
+class Merchants extends Authenticatable
 {
     protected $table = 'merchants';
 
@@ -23,7 +23,9 @@ class Merchants extends Model
         'saldo_aktif',
     ];
 
-    protected $guarded = [];
+    protected $hidden = [
+        'password'
+    ];
 
     protected $casts = [
         'saldo_aktif' => 'decimal:2',
@@ -47,5 +49,10 @@ class Merchants extends Model
     public function withdrawal()
     {
         return $this->belongsTo(MerchantWithdrawal::class);
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'no_hp';
     }
 }
