@@ -68,17 +68,17 @@
                     </li>
 
                     @if($transaksi->referensi_tagihan_id)
-                    <li class="mb-2">
-                        <strong>Referensi Tagihan:</strong><br>
-                        {{ $transaksi->referensi_tagihan_id }}
-                    </li>
+                        <li class="mb-2">
+                            <strong>Referensi Tagihan:</strong><br>
+                            {{ $transaksi->referensi_tagihan_id }}
+                        </li>
                     @endif
 
                     @if($transaksi->keterangan)
-                    <li class="mb-2">
-                        <strong>Keterangan:</strong><br>
-                        {{ $transaksi->keterangan }}
-                    </li>
+                        <li class="mb-2">
+                            <strong>Keterangan:</strong><br>
+                            {{ $transaksi->keterangan }}
+                        </li>
                     @endif
                 </ul>
 
@@ -87,192 +87,192 @@
                 {{-- Detail Tagihan untuk Single Payment atau Multiple Payment --}}
                 @if(in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran', 'pembayaran-multiple']) && $transaksi->pembayaranTagihan)
 
-                {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
-                @if($transaksi->jenis_transaksi == 'pembayaran-multiple' && $pembayaranDetail && $pembayaranDetail->count() > 1)
-                <h6 class="fw-bold text-primary mb-2">
-                    <i class="bx bx-list-check"></i> Daftar Tagihan ({{ $pembayaranDetail->count() }} tagihan)
-                </h6>
+                    {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
+                    @if($transaksi->jenis_transaksi == 'pembayaran-multiple' && $pembayaranDetail && $pembayaranDetail->count() > 1)
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bx bx-list-check"></i> Daftar Tagihan ({{ $pembayaranDetail->count() }} tagihan)
+                        </h6>
 
-                @if($headTagihan)
-                <div class="alert alert-info mb-3 small">
-                    <strong><i class="bx bx-tag me-1"></i>Head Tagihan:</strong>
-                    <span class="font-monospace bg-white px-2 py-1 rounded">{{ $headTagihan }}</span>
-                </div>
-                @endif
+                        @if($headTagihan)
+                            <div class="alert alert-info mb-3 small">
+                                <strong><i class="bx bx-tag me-1"></i>Head Tagihan:</strong>
+                                <span class="font-monospace bg-white px-2 py-1 rounded">{{ $headTagihan }}</span>
+                            </div>
+                        @endif
 
-                <div class="table-responsive mb-3">
-                    <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 5%;">#</th>
-                                <th style="width: 20%;">Nama Tagihan</th>
-                                <th style="width: 15%;">Periode</th>
-                                <th style="width: 15%;">Nominal</th>
-                                <th style="width: 15%;">Potongan</th>
-                                <th style="width: 15%;">Dibayar</th>
-                                <th style="width: 10%;">Siswa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pembayaranDetail as $detail)
-                            @php
-                                $bulanIndo = [
-                                    'January' => 'Januari',
-                                    'February' => 'Februari',
-                                    'March' => 'Maret',
-                                    'April' => 'April',
-                                    'May' => 'Mei',
-                                    'June' => 'Juni',
-                                    'July' => 'Juli',
-                                    'August' => 'Agustus',
-                                    'September' => 'September',
-                                    'October' => 'Oktober',
-                                    'November' => 'November',
-                                    'December' => 'Desember',
-                                    'Oktober' => 'Oktober',
-                                    'Januari' => 'Januari',
-                                    'Februari' => 'Februari',
-                                    'Maret' => 'Maret',
-                                    'Mei' => 'Mei',
-                                    'Juni' => 'Juni',
-                                    'Juli' => 'Juli',
-                                    'Agustus' => 'Agustus',
-                                    'November' => 'November',
-                                    'Desember' => 'Desember',
-                                ];
-
-                                // Mapping angka ke nama bulan Indonesia
-                                $namaBulan = [
-                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                                ];
-
-                                $periode = $detail->periode ?? '-';
-                                $tahun = $detail->tahun ?? date('Y');
-
-                                // Convert periode: jika angka gunakan mapping angka, jika bahasa Inggris gunakan bulanIndo
-                                if (is_numeric($periode) && isset($namaBulan[(int)$periode])) {
-                                    $periodeIndo = $namaBulan[(int)$periode];
-                                } else {
-                                    $periodeIndo = $bulanIndo[$periode] ?? $periode;
-                                }
-                            @endphp
-                            <tr>
-                                <td class="fw-bold text-center">
-                                    <span class="badge bg-primary rounded-circle">{{ $detail->urutan }}</span>
-                                </td>
-                                <td>
-                                    <strong class="text-dark">{{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}</strong>
-                                </td>
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ $periodeIndo }} {{ $tahun }}</span>
-                                </td>
-                                <td>
-                                    <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
-                                </td>
-                                <td>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th style="width: 20%;">Nama Tagihan</th>
+                                    <th style="width: 15%;">Periode</th>
+                                    <th style="width: 15%;">Nominal</th>
+                                    <th style="width: 15%;">Potongan</th>
+                                    <th style="width: 15%;">Dibayar</th>
+                                    <th style="width: 10%;">Siswa</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($pembayaranDetail as $detail)
                                     @php
-                                        $totalPotongan = $detail->tagihanSiswa->potonganSiswa->sum('nominal');
+                                        $bulanIndo = [
+                                            'January' => 'Januari',
+                                            'February' => 'Februari',
+                                            'March' => 'Maret',
+                                            'April' => 'April',
+                                            'May' => 'Mei',
+                                            'June' => 'Juni',
+                                            'July' => 'Juli',
+                                            'August' => 'Agustus',
+                                            'September' => 'September',
+                                            'October' => 'Oktober',
+                                            'November' => 'November',
+                                            'December' => 'Desember',
+                                            'Oktober' => 'Oktober',
+                                            'Januari' => 'Januari',
+                                            'Februari' => 'Februari',
+                                            'Maret' => 'Maret',
+                                            'Mei' => 'Mei',
+                                            'Juni' => 'Juni',
+                                            'Juli' => 'Juli',
+                                            'Agustus' => 'Agustus',
+                                            'November' => 'November',
+                                            'Desember' => 'Desember',
+                                        ];
+
+                                        // Mapping angka ke nama bulan Indonesia
+                                        $namaBulan = [
+                                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                        ];
+
+                                        $periode = $detail->periode ?? '-';
+                                        $tahun = $detail->tahun ?? date('Y');
+
+                                        // Convert periode: jika angka gunakan mapping angka, jika bahasa Inggris gunakan bulanIndo
+                                        if (is_numeric($periode) && isset($namaBulan[(int)$periode])) {
+                                            $periodeIndo = $namaBulan[(int)$periode];
+                                        } else {
+                                            $periodeIndo = $bulanIndo[$periode] ?? $periode;
+                                        }
                                     @endphp
-                                    @if($totalPotongan > 0)
-                                        <span class="text-warning fw-bold">
+                                    <tr>
+                                        <td class="fw-bold text-center">
+                                            <span class="badge bg-primary rounded-circle">{{ $detail->urutan }}</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-dark">{{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">{{ $periodeIndo }} {{ $tahun }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
+                                        </td>
+                                        <td>
+                                            @php
+                                                $totalPotongan = $detail->tagihanSiswa->potonganSiswa->sum('nominal');
+                                            @endphp
+                                            @if($totalPotongan > 0)
+                                                <span class="text-warning fw-bold">
                                             <small class="badge bg-warning text-dark">-Rp {{ number_format($totalPotongan, 0, ',', '.') }}</small>
                                         </span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="text-success fw-bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">{{ substr($detail->tagihanSiswa->siswa->user->name ?? '-', 0, 15) }}</small>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">Tidak ada detail tagihan</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                        <tfoot class="table-light">
-                            <tr>
-                                <th colspan="4" class="text-end">Total Pembayaran:</th>
-                                <th>
-                                    @php
-                                        $totalAllPotongan = $pembayaranDetail->sum(function($item) {
-                                            return $item->tagihanSiswa->potonganSiswa->sum('nominal');
-                                        });
-                                    @endphp
-                                    @if($totalAllPotongan > 0)
-                                        <span class="text-warning fw-bold">-Rp {{ number_format($totalAllPotongan, 0, ',', '.') }}</span>
-                                    @else
-                                        -
-                                    @endif
-                                </th>
-                                <th colspan="2" class="text-success fw-bold">Rp {{ number_format($pembayaranDetail->sum('jumlah_bayar_detail'), 0, ',', '.') }}</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="text-success fw-bold">Rp {{ number_format($detail->jumlah_bayar_detail, 0, ',', '.') }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ substr($detail->tagihanSiswa->siswa->user->name ?? '-', 0, 15) }}</small>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Tidak ada detail tagihan</td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                                <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="4" class="text-end">Total Pembayaran:</th>
+                                    <th>
+                                        @php
+                                            $totalAllPotongan = $pembayaranDetail->sum(function($item) {
+                                                return $item->tagihanSiswa->potonganSiswa->sum('nominal');
+                                            });
+                                        @endphp
+                                        @if($totalAllPotongan > 0)
+                                            <span class="text-warning fw-bold">-Rp {{ number_format($totalAllPotongan, 0, ',', '.') }}</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </th>
+                                    <th colspan="2" class="text-success fw-bold">Rp {{ number_format($pembayaranDetail->sum('jumlah_bayar_detail'), 0, ',', '.') }}</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
 
-                <hr>
+                        <hr>
 
-                {{-- Single Payment Detail --}}
-                @else
-                <h6 class="fw-bold text-primary mb-2">
-                    <i class="bx bx-receipt"></i> Detail Tagihan
-                </h6>
-                <ul class="list-unstyled small">
-                    @if($transaksi->pembayaranTagihan->tagihanSiswa)
-                        @php
-                            $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
-                            $tagihan = $tagihanSiswa->tagihan;
-
-                            // Konversi periode (angka bulan) menjadi nama bulan
-                            $namaBulan = [
-                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                            ];
-                            $periodeBulan = isset($tagihan->periode) && isset($namaBulan[$tagihan->periode])
-                                ? $namaBulan[$tagihan->periode]
-                                : $tagihan->periode;
-                        @endphp
-                        <li><strong>Periode:</strong> {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</li>
-                        <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
-                        @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
-                        <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
-                        <ul class="mt-1">
-                            @foreach($tagihan->items as $item)
-                                <li>
-                                    {{ $item->kategori->nama_kategori ?? '-' }}
-                                    - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
-                                </li>
-                            @endforeach
-                        </ul>
-                        @endif
-
-                        @if($tagihanSiswa->potonganSiswa && $tagihanSiswa->potonganSiswa->count() > 0)
-                        <li class="mt-2"><strong>Potongan (Diskon/Beasiswa):</strong></li>
-                        <ul class="mt-1">
-                            @foreach($tagihanSiswa->potonganSiswa as $potongan)
-                                <li>
-                                    <span class="badge bg-warning text-dark">{{ $potongan->potongan->tipe_potongan === 'persentase' ? $potongan->potongan->nilai . '%' : 'Nominal' }}</span>
-                                    {{ $potongan->potongan->keterangan ?? '-' }}
-                                    - Rp {{ number_format($potongan->nominal ?? 0, 0, ',', '.') }}
-                                </li>
-                            @endforeach
-                        </ul>
-                        @endif
+                        {{-- Single Payment Detail --}}
                     @else
-                        <li class="text-muted">Detail tagihan tidak tersedia</li>
-                    @endif
-                </ul>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bx bx-receipt"></i> Detail Tagihan
+                        </h6>
+                        <ul class="list-unstyled small">
+                            @if($transaksi->pembayaranTagihan->tagihanSiswa)
+                                @php
+                                    $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
+                                    $tagihan = $tagihanSiswa->tagihan;
 
-                <hr>
-                @endif
+                                    // Konversi periode (angka bulan) menjadi nama bulan
+                                    $namaBulan = [
+                                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                    ];
+                                    $periodeBulan = isset($tagihan->periode) && isset($namaBulan[$tagihan->periode])
+                                        ? $namaBulan[$tagihan->periode]
+                                        : $tagihan->periode;
+                                @endphp
+                                <li><strong>Periode:</strong> {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</li>
+                                <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
+                                @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
+                                    <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
+                                    <ul class="mt-1">
+                                        @foreach($tagihan->items as $item)
+                                            <li>
+                                                {{ $item->kategori->nama_kategori ?? '-' }}
+                                                - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+
+                                @if($tagihanSiswa->potonganSiswa && $tagihanSiswa->potonganSiswa->count() > 0)
+                                    <li class="mt-2"><strong>Potongan (Diskon/Beasiswa):</strong></li>
+                                    <ul class="mt-1">
+                                        @foreach($tagihanSiswa->potonganSiswa as $potongan)
+                                            <li>
+                                                <span class="badge bg-warning text-dark">{{ $potongan->potongan->tipe_potongan === 'persentase' ? $potongan->potongan->nilai . '%' : 'Nominal' }}</span>
+                                                {{ $potongan->potongan->keterangan ?? '-' }}
+                                                - Rp {{ number_format($potongan->nominal ?? 0, 0, ',', '.') }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            @else
+                                <li class="text-muted">Detail tagihan tidak tersedia</li>
+                            @endif
+                        </ul>
+
+                        <hr>
+                    @endif
 
                 @endif
 
@@ -331,7 +331,7 @@
                         </div>
                     @endif
 
-{{--                    token--}}
+                    {{--                    token--}}
                     @if($transaksi->token)
                         <div class="alert alert-info mt-2 small">
                             <strong>Token:</strong><br>
@@ -358,36 +358,36 @@
                 @endphp
 
                 @if($buktiBayar && $buktiBayarUrl)
-                <hr>
-                <h6 class="fw-bold text-primary mb-2">
-                    <i class="bx bx-image"></i> Bukti Pembayaran
-                </h6>
-                <div class="mb-3">
-                    <a href="{{ $buktiBayarUrl }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                        <i class="bx bx-download me-1"></i>Lihat Bukti Pembayaran
-                    </a>
-                    <div class="mt-2">
-                        @if(Str::endsWith($buktiBayar, ['.pdf', '.PDF']))
-                            <embed src="{{ $buktiBayarUrl }}" type="application/pdf" width="100%" height="400px" class="rounded shadow-sm">
-                        @else
-                            <img src="{{ $buktiBayarUrl }}"
-                                 alt="Bukti Pembayaran"
-                                 class="img-fluid rounded shadow-sm"
-                                 style="max-height: 300px; cursor: pointer;"
-                                 onclick="window.open('{{ $buktiBayarUrl }}', '_blank')">
-                        @endif
+                    <hr>
+                    <h6 class="fw-bold text-primary mb-2">
+                        <i class="bx bx-image"></i> Bukti Pembayaran
+                    </h6>
+                    <div class="mb-3">
+                        <a href="{{ $buktiBayarUrl }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bx bx-download me-1"></i>Lihat Bukti Pembayaran
+                        </a>
+                        <div class="mt-2">
+                            @if(Str::endsWith($buktiBayar, ['.pdf', '.PDF']))
+                                <embed src="{{ $buktiBayarUrl }}" type="application/pdf" width="100%" height="400px" class="rounded shadow-sm">
+                            @else
+                                <img src="{{ $buktiBayarUrl }}"
+                                     alt="Bukti Pembayaran"
+                                     class="img-fluid rounded shadow-sm"
+                                     style="max-height: 300px; cursor: pointer;"
+                                     onclick="window.open('{{ $buktiBayarUrl }}', '_blank')">
+                            @endif
+                        </div>
                     </div>
-                </div>
                 @endif
 
                 {{-- Keterangan dari siswa (untuk pembayaran tagihan) --}}
                 @if(in_array($transaksi->jenis_transaksi, ['pembayaran', 'tagihan']) && $transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->keterangan_siswa)
-                <div class="mb-3">
-                    <div class="alert alert-secondary small">
-                        <strong>Keterangan dari Siswa:</strong><br>
-                        {{ $transaksi->pembayaranTagihan->keterangan_siswa }}
+                    <div class="mb-3">
+                        <div class="alert alert-secondary small">
+                            <strong>Keterangan dari Siswa:</strong><br>
+                            {{ $transaksi->pembayaranTagihan->keterangan_siswa }}
+                        </div>
                     </div>
-                </div>
                 @endif
 
                 <hr>
@@ -396,7 +396,7 @@
                     <li><strong>Dibuat Oleh:</strong> {{ $transaksi->creator->name ?? '-' }}</li>
                     <li><strong>Dibuat Pada:</strong> {{ \Carbon\Carbon::parse($transaksi->created_at)->format('d/m/Y H:i:s') }}</li>
                     @if($transaksi->updated_at != $transaksi->created_at)
-                    <li><strong>Terakhir Update:</strong> {{ \Carbon\Carbon::parse($transaksi->updated_at)->format('d/m/Y H:i:s') }}</li>
+                        <li><strong>Terakhir Update:</strong> {{ \Carbon\Carbon::parse($transaksi->updated_at)->format('d/m/Y H:i:s') }}</li>
                     @endif
                 </ul>
 
@@ -416,7 +416,7 @@
                     @if($transaksi->jenis_transaksi == 'penarikan_tabungan' && $transaksi->status_approval == 'pending')
                         <div class="mt-3">
 
-                        <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap btn-verify w-100 shadow-sm mb-2"
+                            <button type="button" class="btn btn-sm btn-success rounded-pill text-nowrap btn-verify w-100 shadow-sm mb-2"
                                     data-id="{{ $transaksi->id }}"
                                     data-token="{{ $transaksi->token }}"
                                     data-jumlah="{{ $transaksi->jumlah }}"
@@ -479,51 +479,51 @@
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Akun</th>
-                                <th>Debit</th>
-                                <th>Kredit</th>
-                                <th>Keterangan</th>
-                            </tr>
+                        <tr>
+                            <th>#</th>
+                            <th>Akun</th>
+                            <th>Debit</th>
+                            <th>Kredit</th>
+                            <th>Keterangan</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @forelse($transaksi->jurnals as $jurnal)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>
-                                        <strong>{{ $jurnal->akun->kode_akun ?? '-' }}</strong><br>
-                                        <small class="text-muted">{{ $jurnal->akun->nama_akun ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        @if($jurnal->debit > 0)
-                                            <span class="text-success fw-bold">Rp {{ number_format($jurnal->debit, 0, ',', '.') }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($jurnal->kredit > 0)
-                                            <span class="text-danger fw-bold">Rp {{ number_format($jurnal->kredit, 0, ',', '.') }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $jurnal->keterangan ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">Belum ada jurnal</td>
-                                </tr>
-                            @endforelse
+                        @forelse($transaksi->jurnals as $jurnal)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <strong>{{ $jurnal->akun->kode_akun ?? '-' }}</strong><br>
+                                    <small class="text-muted">{{ $jurnal->akun->nama_akun ?? '-' }}</small>
+                                </td>
+                                <td>
+                                    @if($jurnal->debit > 0)
+                                        <span class="text-success fw-bold">Rp {{ number_format($jurnal->debit, 0, ',', '.') }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($jurnal->kredit > 0)
+                                        <span class="text-danger fw-bold">Rp {{ number_format($jurnal->kredit, 0, ',', '.') }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>{{ $jurnal->keterangan ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Belum ada jurnal</td>
+                            </tr>
+                        @endforelse
                         </tbody>
                         <tfoot class="table-light">
-                            <tr>
-                                <th colspan="2" class="text-end">Total:</th>
-                                <th class="text-success">Rp {{ number_format($transaksi->jurnals->sum('debit'), 0, ',', '.') }}</th>
-                                <th class="text-danger">Rp {{ number_format($transaksi->jurnals->sum('kredit'), 0, ',', '.') }}</th>
-                                <th></th>
-                            </tr>
+                        <tr>
+                            <th colspan="2" class="text-end">Total:</th>
+                            <th class="text-success">Rp {{ number_format($transaksi->jurnals->sum('debit'), 0, ',', '.') }}</th>
+                            <th class="text-danger">Rp {{ number_format($transaksi->jurnals->sum('kredit'), 0, ',', '.') }}</th>
+                            <th></th>
+                        </tr>
                         </tfoot>
                     </table>
                 </div>
@@ -531,48 +531,48 @@
 
             {{-- Activity Logs --}}
             @if(isset($logs) && $logs->count() > 0)
-            <div class="card p-4 shadow-sm rounded-4 border-0 mt-4">
-                <h5 class="fw-bold text-primary mb-3">
-                    <i class="bx bx-history"></i> Activity Log
-                </h5>
-                <hr>
+                <div class="card p-4 shadow-sm rounded-4 border-0 mt-4">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="bx bx-history"></i> Activity Log
+                    </h5>
+                    <hr>
 
-                <div class="timeline">
-                    @foreach($logs as $log)
-                        <div class="timeline-item mb-3 ">
-                            <div class="d-flex gap-3">
-                                <div>
-                                    @php
-                                        $iconColor = match($log->aksi) {
-                                            'create' => 'success',
-                                            'update' => 'warning',
-                                            'delete' => 'danger',
-                                            default => 'secondary',
-                                        };
-                                        $iconClass = match($log->aksi) {
-                                            'create' => 'bx-plus-circle',
-                                            'update' => 'bx-edit',
-                                            'delete' => 'bx-trash',
-                                            default => 'bx-info-circle',
-                                        };
-                                    @endphp
-                                    <span class="badge bg-{{ $iconColor }} rounded-circle p-2">
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                            <div class="timeline-item mb-3 ">
+                                <div class="d-flex gap-3">
+                                    <div>
+                                        @php
+                                            $iconColor = match($log->aksi) {
+                                                'create' => 'success',
+                                                'update' => 'warning',
+                                                'delete' => 'danger',
+                                                default => 'secondary',
+                                            };
+                                            $iconClass = match($log->aksi) {
+                                                'create' => 'bx-plus-circle',
+                                                'update' => 'bx-edit',
+                                                'delete' => 'bx-trash',
+                                                default => 'bx-info-circle',
+                                            };
+                                        @endphp
+                                        <span class="badge bg-{{ $iconColor }} rounded-circle p-2">
                                         <i class="bx {{ $iconClass }}"></i>
                                     </span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <strong class="text-capitalize">{{ $log->aksi }}</strong>
-                                    oleh {{ $log->pelaku->name ?? '-' }}
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ \Carbon\Carbon::parse($log->dilakukan_pada)->format('d/m/Y H:i:s') }}
-                                    </small>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <strong class="text-capitalize">{{ $log->aksi }}</strong>
+                                        oleh {{ $log->pelaku->name ?? '-' }}
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ \Carbon\Carbon::parse($log->dilakukan_pada)->format('d/m/Y H:i:s') }}
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
-            </div>
             @endif
         </div>
     </div>
@@ -720,35 +720,35 @@
                 },
                 body: JSON.stringify(body)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        confirmButtonColor: '#48bb78'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            confirmButtonColor: '#48bb78'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: data.message,
+                            confirmButtonColor: '#f56565'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal!',
-                        text: data.message,
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat approve transaksi',
                         confirmButtonColor: '#f56565'
                     });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat approve transaksi',
-                    confirmButtonColor: '#f56565'
                 });
-            });
         }
 
         function processRejection(transaksiId, catatan, isMultiple, headTagihan) {
@@ -787,38 +787,38 @@
                 },
                 body: JSON.stringify(body)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        confirmButtonColor: '#48bb78'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            confirmButtonColor: '#48bb78'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: data.message,
+                            confirmButtonColor: '#f56565'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal!',
-                        text: data.message,
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat reject transaksi',
                         confirmButtonColor: '#f56565'
                     });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat reject transaksi',
-                    confirmButtonColor: '#f56565'
                 });
-            });
         }
     </script>
-<script>
+    <script>
         document.getElementById('btnBatalkan').addEventListener('click', function(e) {
             e.preventDefault(); // Mencegah navigasi link
 
@@ -958,13 +958,13 @@
                     action: action
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        html: `
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            html: `
                             <div class="text-start">
                                 <p>${data.message}</p>
                                 <div class="alert alert-info mt-3">
@@ -976,28 +976,28 @@
                                 </div>
                             </div>
                         `,
-                        confirmButtonColor: '#48bb78'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
+                            confirmButtonColor: '#48bb78'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: data.message,
+                            confirmButtonColor: '#f56565'
+                        });
+                    }
+                })
+                .catch(error => {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal!',
-                        text: data.message,
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat verifikasi token',
                         confirmButtonColor: '#f56565'
                     });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat verifikasi token',
-                    confirmButtonColor: '#f56565'
+                    console.error('Error:', error);
                 });
-                console.error('Error:', error);
-            });
         }
     </script>
 @endpush

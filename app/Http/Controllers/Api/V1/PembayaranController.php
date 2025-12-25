@@ -1055,6 +1055,7 @@ Pembayaran akan dicek:
             'keterangan_siswa' => 'nullable|string|max:1000'
         ]);
 
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -1077,6 +1078,12 @@ Pembayaran akan dicek:
             // Delete old file if exists
             if ($pembayaran->file_bukti && Storage::disk('public')->exists($pembayaran->file_bukti)) {
                 Storage::disk('public')->delete($pembayaran->file_bukti);
+            }
+
+            // Ensure upload directory exists
+            $uploadPath = storage_path('app/public/bukti_pembayaran');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
             }
 
             // Upload new file
@@ -1229,6 +1236,12 @@ Pembayaran akan dicek:
             if ($pembayaran->file_bukti && Storage::disk('public')->exists($pembayaran->file_bukti)) {
                 Storage::disk('public')->delete($pembayaran->file_bukti);
                 Log::info('✓ Old bukti file deleted: ' . $pembayaran->file_bukti);
+            }
+
+            // Ensure upload directory exists
+            $uploadPath = storage_path('app/public/bukti_pembayaran');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
             }
 
             // Upload new file

@@ -41,31 +41,31 @@
                                 <td>{{ $item->billing_period ? "$item->billing_period Bulan" : '-' }}</td>
                                 <td>Rp {{ number_format($item->salary ?? 0, 0, ',', '.') }}</td>
 
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('payroll_settings.show', $item->id) }}"
-                                           class="link-primary text-muted">
-                                            <i class="ri-eye-line fs-20 align-middle"></i> Show
-                                        </a>
-                                        <a href="{{ route('payroll_settings.edit', $item->id) }}"
-                                           class="link-warning text-muted">
-                                            <i class="ri-edit-line fs-20 align-middle"></i> Edit
-                                        </a>
-                                        <form action="{{ route('payroll_settings.destroy', $item->id) }}" method="post" class="d-inline-block delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="link-danger text-muted border-0 bg-transparent p-0 delete-btn">
-                                                <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="text-muted text-center">Tidak ada data ditemukan</td>
-                            </tr>
-                        @endforelse
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="{{ route('payroll_settings.show', $item->id) }}"
+                                                class="link-primary text-muted">
+                                                <i class="ri-eye-line fs-20 align-middle"></i> Show
+                                            </a>
+                                            <a href="{{ route('payroll_settings.edit', $item->id) }}"
+                                                class="link-warning text-muted">
+                                                <i class="ri-edit-line fs-20 align-middle"></i> Edit
+                                            </a>
+                                            <form action="{{ route('payroll_settings.destroy', $item->id) }}" method="post" class="d-inline-block delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="link-danger text-muted border-0 bg-transparent p-0 delete-btn">
+                                                    <i class="ri-delete-bin-5-line fs-20 align-middle"></i> Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-muted text-center">Tidak ada data ditemukan</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -108,7 +108,7 @@
             });
         </script>
     @endif
-    @if (session('success'))
+        @if (session('success'))
         <script>
             Swal.fire({
                 icon: 'success',

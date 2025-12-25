@@ -1,0 +1,212 @@
+/* 1. Tambahkan Reset Global agar padding tidak merusak lebar elemen */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Tambah font agar lebih rapi */
+    overflow: hidden;
+}
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center; /* Menengahkan secara vertikal */
+    align-items: flex-end;   /* Menggeser ke kanan */
+    flex-direction: column;
+    padding-right: 10%;      /* Kurangi sedikit agar tidak terlalu ke tengah di layar kecil */
+
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), url("../images/bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.login-box {
+    width: 350px; /* Sedikit lebih lebar agar nyaman */
+    padding: 40px 30px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px); /* Blur sedikit ditambah agar lebih premium */
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Tambahkan border tipis agar efek glass lebih nyata */
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(255 , 255 , 255,0.5);
+    margin-bottom: 20px; /* Memberi jarak dengan teks footer/copyright */
+}
+
+/* Responsif: Jika di HP, kotak ke tengah */
+@media (max-width: 768px) {
+    .hero {
+        align-items: center;
+        padding-right: 0;
+    }
+    .login-box {
+        width: 90%;
+    }
+}
+
+.login-box h3 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 5px; /* Kurangi margin bawah karena ada <small> error */
+    background: rgba(255,255,255,0.9);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #000;
+    transition: all 0.3s ease;
+    font-weight: 550;
+}
+
+/* Style untuk pesan error <small> */
+.text-danger {
+    display: block;
+    font-size: 11px;
+    margin-bottom: 15px;
+    color: #ffcccb; /* Warna merah terang agar terbaca di background gelap */
+}
+
+.login-box input:focus {
+    border-color: #0c8f84;
+    box-shadow: 0 0 10px rgba(12, 143, 132, 0.5);
+    outline: none;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #0c8f84;
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-box button:hover {
+    background: #0a7068;
+    transform: translateY(-2px); /* Efek angkat saat hover */
+}
+
+.login-box a {
+    display: block;
+    text-align: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    margin-top: 20px;
+    opacity: 0.8;
+}
+
+.login-box a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+
+.dash {
+    height: 100vh;
+    background-color: #0a7068;
+    padding: 1%;
+}
+
+/* Layout Wrapper */
+.dashboard-container {
+    display: flex;
+    background-color: #f8fafc;
+    height: 100%;
+    border-radius: 25px;
+    overflow: hidden; /* ⛔ cegah scroll bocor */
+}
+
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.content-area {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto; /* ✅ scroll di sini */
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 260px;
+    background: white;
+    padding: 24px;
+    border-right: 1px solid #edf2f7;
+    border-radius: 25px 0 0 25px;
+    overflow-y: auto;
+}
+
+
+.menu-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin: 15px 0 10px 15px;
+}
+
+.nav-menu { list-style: none; padding: 0; }
+.nav-item a, .btn-logout-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: 0.2s;
+    border: none; background: none; width: 100%; text-align: left;
+}
+
+.nav-item.active a {
+    background-color: #f1f5f9;
+    color: #0c4f37;
+    font-weight: 600;
+}
+
+/* Topbar Styling */
+.topbar {
+    height: 80px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.search-wrapper {
+    background: #f1f5f9;
+    padding: 10px 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    width: 350px;
+}
+
+.search-wrapper input {
+    background: transparent;
+    border: none;
+    margin-left: 10px;
+    width: 100%;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.user-info { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; }

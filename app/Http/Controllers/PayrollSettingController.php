@@ -111,10 +111,13 @@ class PayrollSettingController extends Controller
 
             if ($request->teaching_hours_total !== null) {
                 $validated['teaching_hours_total'] = $request->teaching_hours_total;
+                $validated['teaching_hours'] = null;
             } elseif ($request->teaching_hours !== null) {
-                $validated['teaching_hours_total'] = $request->teaching_hours * 4;
+                $validated['teaching_hours_total'] = null;
+                $validated['teaching_hours'] = $request->teaching_hours;
             } else {
                 $validated['teaching_hours_total'] = null;
+                $validated['teaching_hours'] = null;
             }
             // === Simpan payroll_settings ===
             $payrollSetting = PayrollSetting::updateOrCreate(
@@ -159,10 +162,10 @@ class PayrollSettingController extends Controller
             //     ($payrollSetting->meal_allowance ?? 0) +
             //     ($payrollSetting->other_allowance ?? 0);
 
-            //$deductions = $payrollSetting->deductions;
-            //$salaryPerUnit = $request->salary ?? 0;
-            //$tht = $validated['teaching_hours_total'] ?? $validated['teaching_hours'];
-            //$baseSalary1 = ($salaryPerUnit * $tht) + ($allowanceTotal ?? 0) + ($totalComponentValue ?? 0);
+            // $deductions = $payrollSetting->deductions;
+            // $salaryPerUnit = $request->salary ?? 0;
+            // $tht = $validated['teaching_hours_total'] ?? $validated['teaching_hours'];
+            // $baseSalary1 = ($salaryPerUnit * $tht) + ($allowanceTotal ?? 0) + ($totalComponentValue ?? 0);
             $totalDeductions = 0;
 
             // if ($deductions->isEmpty()) {
@@ -205,12 +208,7 @@ class PayrollSettingController extends Controller
                 $paymentMonth = sprintf('%02d-%04d', $month, $year);
 
                 // Gaji pokok (per komponen dihitung sama)
-                if (! $request->teaching_hours) {
-                    $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0);
-                } elseif (! $request->teaching_hours_total) {
-                    $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
-                }
-                // $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0);
+                $basicSalary = ($request->teaching_hours ?? $request->teaching_hours_total) * ($request->salary ?? 0);
 
                 // Total pendapatan per komponen
                 $totalEarnings = $basicSalary + $totalComponentValue;
@@ -253,7 +251,7 @@ class PayrollSettingController extends Controller
                 ->route('payroll_settings.index')
                 ->with('success', 'Data Berhasil Disimpan');
         } catch (\Throwable $e) {
-            Log::error('PAYROLL ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL ERROR: '.$e->getMessage());
 
             return back()->with('error', $e->getMessage());
         }
@@ -287,16 +285,19 @@ class PayrollSettingController extends Controller
 
         try {
             DB::beginTransaction();
-
+            // dd($validated);
             // === 1️⃣ Update payroll setting master ===
             Log::info('Validated update data:', $validated);
             if ($request->teaching_hours_total !== null) {
                 $validated['teaching_hours_total'] = $request->teaching_hours_total;
+                $validated['teaching_hours'] = null;
             } elseif ($request->teaching_hours !== null) {
-                $validated['teaching_hours_total'] = $request->teaching_hours * 4;
+                $validated['teaching_hours_total'] = $request->teaching_hours;
+                $validated['teaching_hours'] = null;
             } else {
                 $validated['teaching_hours_total'] = null;
             }
+
             $payrollSetting = PayrollSetting::findOrFail($id);
             $payrollSetting->update($validated);
 
@@ -333,11 +334,9 @@ class PayrollSettingController extends Controller
             //     ($payrollSetting->other_allowance ?? 0);
 
             // === 4️⃣ Hitung gaji SEKALI SAJA di luar loop ===
-            if (! $request->teaching_hours) {
-                $basicSalary = ($request->teaching_hour_total ?? 0) * ($request->salary ?? 0) ;
-            } elseif (! $request->teaching_hours_total) {
-                $basicSalary = ($request->teaching_hours ?? 0) * ($request->salary ?? 0) ;
-            }
+
+            $basicSalary = ($request->teaching_hours ?? $request->teaching_hours_total) * ($request->salary ?? 0);
+
             // $deductions = $payrollSetting->deductions;
             $totalDeductions1 = 0;
 
@@ -450,7 +449,7 @@ class PayrollSettingController extends Controller
                 ->with('success', 'Data Berhasil Disimpan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE VALIDATION ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE VALIDATION ERROR: '.$e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -463,7 +462,7 @@ class PayrollSettingController extends Controller
             return back()->withErrors($e->errors())->withInput();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE MODEL NOT FOUND: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE MODEL NOT FOUND: '.$e->getMessage());
 
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -476,7 +475,7 @@ class PayrollSettingController extends Controller
             return back()->with('error', 'Data tidak ditemukan');
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('PAYROLL UPDATE ERROR: ' . $e->getMessage());
+            Log::error('PAYROLL UPDATE ERROR: '.$e->getMessage());
 
             // Response JSON untuk error umum
             if ($request->expectsJson() || $request->is('api/*')) {
@@ -548,10 +547,11 @@ class PayrollSettingController extends Controller
 
         $components = PayrollComponents::all();
         $deductions = PayrollDeductions::all();
+        $readonly = true;
 
         return view(
             'pages.penggajian.payroll_setting.payroll_setting',
-            compact('setting', 'units', 'components', 'deductions', 'officers'),
+            compact('setting', 'units', 'components', 'deductions', 'officers', 'readonly'),
         );
     }
 
@@ -566,7 +566,7 @@ class PayrollSettingController extends Controller
 
             // Hapus hanya payroll payments dengan status 'pending'
             $setting->payments() // pastikan relasi di model PayrollSetting ada: hasMany(PayrollPayment)
-            ->where('status', 'pending')
+                ->where('status', 'pending')
                 ->delete();
 
             // Hapus setting
@@ -576,11 +576,11 @@ class PayrollSettingController extends Controller
                 ->route('payroll_settings.index')
                 ->with('success', 'Data payroll berhasil dihapus.');
         } catch (\Throwable $e) {
-            Log::error('Payroll Setting Destroy Error: ' . $e->getMessage());
+            Log::error('Payroll Setting Destroy Error: '.$e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 

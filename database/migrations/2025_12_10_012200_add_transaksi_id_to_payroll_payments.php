@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('data_rekenings', function (Blueprint $table) {
-            $table->dropUnique(['allotment']); // hapus unique
-            $table->string('allotment')->nullable()->change(); // ubah jadi nullable
+        Schema::table('payroll_payments', function (Blueprint $table) {
+            $table->unsignedInteger('transaksi_id')->nullable()->after('id');
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('data_rekenings', function (Blueprint $table) {
-            //
+        Schema::table('payroll_payments', function (Blueprint $table) {
+            $table->dropColumn('transaksi_id');
         });
     }
 };

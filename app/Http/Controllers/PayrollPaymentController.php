@@ -456,6 +456,11 @@ class PayrollPaymentController extends Controller
                 'deduction' => 'nullable|numeric|',
                 'notes' => 'nullable|string|max:200',
                 'salarynote' => 'nullable|numeric',
+                'hourWeek' => 'nullable|numeric',
+                'hourMonth' => 'nullable|numeric',
+                'presenceCount' => 'nullable|numeric',
+                'presence' => 'nullable|numeric',
+                'absence' => 'nullable|numeric',
             ]);
 
             $pembayaran = PayrollPayment::where('id', $id)
@@ -490,7 +495,7 @@ class PayrollPaymentController extends Controller
                 'penerima_tipe' => Officer::class,
                 'jenis_transaksi' => 'tagihan-keluar',
                 'jumlah' => $jumlahBayar,
-                'metode' => $request->metode ?? 'CASH',
+                'metode' => $request->metode ?? 'non-tunai',
                 'referensi_tagihan_id' => $pembayaran->id,
                 'tanggal_transaksi' => now(),
                 'keterangan' => $keterangan,
@@ -589,6 +594,10 @@ class PayrollPaymentController extends Controller
                 'net_payment' => $jumlahBayar,
                 'notes' => $notes,
                 'salary_note' => $salaryNote,
+                'presence' => $request->presence,
+                'presence_count' => $request->presenceCount,
+                'absence_count' => $request->absence,
+                'transaksi_id' => $transaksi->id,
             ]);
             DB::commit();
 
@@ -617,7 +626,13 @@ class PayrollPaymentController extends Controller
                 'items. * .net_payment' => 'required|numeric|min:0',
                 'items. * .earning' => 'required|numeric|min:0',
                 'items. * .deduction' => 'required|numeric|min:0',
-                'items. * .text_note' => 'required|string|max:200',
+                'items. * .text_note' => 'nullable|string|max:200',
+                'items. * .salary_note' => 'nullable|numeric|min:0',
+                'items. * .hadir' => 'required|integer|min:0',
+                'items. * .alpha' => 'required|integer|min:0',
+                'items. * .staff' => 'required|integer|min:0',
+                'items. * .hadir_week' => 'nullable|numeric',
+                'items. * .hadir_month' => 'nullable|numeric',
                 'totalTagihan' => 'required|numeric|min:0',
             ]);
 
@@ -635,30 +650,6 @@ class PayrollPaymentController extends Controller
                 ], 400);
             }
 
-            // hitung total nominal seluruh payment
-            $totalpembayaran = $request->totalTagihan ?? 0;
-
-            // catat transaksi masal
-            $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'pg' . date('ymdhis') . rand(1000, 9999),
-                'penerima_id' => null,
-                'penerima_tipe' => 'mass',
-                'jenis_transaksi' => 'tagihan-keluar',
-                'jumlah' => $totalpembayaran,
-                'metode' => $request->metode ?? 'cash',
-                'referensi_tagihan_id' => null,
-                'tanggal_transaksi' => now(),
-                'keterangan' => 'pembayaran gaji masal',
-                'created_by' => Auth::id(),
-                'status_approval' => 'approved',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-                'status_verifikasi' => 'approved',
-                'verified_at' => now(),
-                'verified_by' => Auth::id(),
-            ]);
-
-            // ambil akun & posisi jurnal
             $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
                 ->where(function ($q) {
                     $q->where('allotment', 'Semua Pembayaran')
@@ -675,56 +666,88 @@ class PayrollPaymentController extends Controller
             $akun_id = $settings->akun_id;
             $position = $settings->debit;
 
-            if ($position == 1) {
-                // kredit pendapatan, debit kas
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id' => $akun_id,
-                    'debit' => 0,
-                    'kredit' => $totalpembayaran,
-                    'keterangan' => 'pembayaran gaji masal',
-                    'unit_id' => auth::user()->unit_id,
-                ]);
-
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id' => $datarekening->akun_id,
-                    'debit' => $totalpembayaran,
-                    'kredit' => 0,
-                    'keterangan' => 'pembayaran gaji masal',
-                    'unit_id' => auth::user()->unit_id,
-                ]);
-            } else {
-                // kebalikan posisi
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id' => $akun_id,
-                    'debit' => $totalpembayaran,
-                    'kredit' => 0,
-                    'keterangan' => 'pembayaran gaji masal',
-                    'unit_id' => auth::user()->unit_id,
-                ]);
-
-                Jurnals::create([
-                    'transaksi_id' => $transaksi->id,
-                    'akun_id' => $datarekening->akun_id,
-                    'kredit' => $totalpembayaran,
-                    'debit' => 0,
-                    'keterangan' => 'pembayaran gaji masal',
-                    'unit_id' => auth::user()->unit_id,
-                ]);
+            if (! $datarekening) {
+                throw new \Exception('Data rekening tidak ditemukan untuk unit ini');
             }
 
+            // hitung nominal payment
             foreach ($request->items as $item) {
-                PayrollPayment::where('id', $item['id'])
-                    ->where('status', 'pending')
-                    ->update([
-                        'status' => 'paid',
-                        'notes' => $item['text_note'],
-                        'total_earnings' => $item['earning'],
-                        'total_deductions' => $item['deduction'],
-                        'net_payment' => $item['net_payment'],
+                $payment = PayrollPayment::findOrFail($item['id']);
+                $officer = Officer::findOrFail($payment->officer_id);
+                $keterangan = "Pembayaran gaji bulan {$payment->payment_month}/{$payment->payment_year} untuk " . $officer->user->name;
+
+                $transaksi = Keuangan_transaksi::create([
+                    'code_pembayaran' => 'PG' . date('ymdhis') . rand(1000, 9999),
+                    'penerima_id' => $officer->id,
+                    'penerima_tipe' => Officer::class,
+                    'jenis_transaksi' => 'tagihan-keluar',
+                    'jumlah' => $item['net_payment'],
+                    'metode' => $request->metode ?? 'non-tunai',
+                    'referensi_tagihan_id' => null,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => $keterangan,
+                    'created_by' => Auth::id(),
+                    'status_approval' => 'approved',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                    'status_verifikasi' => 'approved',
+                    'verified_at' => now(),
+                    'verified_by' => Auth::id(),
+                ]);
+
+                if ($position == 1) {
+                    // kredit pendapatan, debit kas
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => $akun_id,
+                        'debit' => 0,
+                        'kredit' => $item['net_payment'],
+                        'keterangan' => $keterangan,
+                        'unit_id' => auth::user()->unit_id,
                     ]);
+
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => $datarekening->akun_id,
+                        'debit' => $item['net_payment'],
+                        'kredit' => 0,
+                        'keterangan' => $keterangan,
+                        'unit_id' => auth::user()->unit_id,
+                    ]);
+                } else {
+                    // kebalikan posisi
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => $akun_id,
+                        'debit' => $item['net_payment'],
+                        'kredit' => 0,
+                        'keterangan' => $keterangan,
+                        'unit_id' => auth::user()->unit_id,
+                    ]);
+
+                    Jurnals::create([
+                        'transaksi_id' => $transaksi->id,
+                        'akun_id' => $datarekening->akun_id,
+                        'kredit' => $item['net_payment'],
+                        'debit' => 0,
+                        'keterangan' => $keterangan,
+                        'unit_id' => auth::user()->unit_id,
+                    ]);
+                }
+                $payment->update([
+                    'status' => 'paid',
+                    'notes' => $item['text_note'],
+                    'total_earnings' => $item['earning'],
+                    'total_deductions' => $item['deduction'],
+                    'net_payment' => $item['net_payment'],
+                    'salary_note' => $item['salary_note'],
+                    'presence' => $item['staff'],
+                    'presence_count' => $item['hadir'],
+                    'absence_count' => $item['alpha'],
+                    'teaching_hour_week' => $item['hadir_week'],
+                    'teaching_hour_month' => $item['hadir_month'],
+                    'transaksi_id' => $transaksi->id,
+                ]);
             }
 
             DB::commit();
@@ -751,7 +774,7 @@ class PayrollPaymentController extends Controller
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
-            'format' => 'A4',    // [210, 148], = A5
+            'format' => [210, 148],    // [210, 148], = A5
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 5,
@@ -767,14 +790,50 @@ class PayrollPaymentController extends Controller
         return $mpdf->Output("slip-{$payment->id}.pdf", 'I');
     }
 
-    public function detail($id)
+    public function detail($id, Request $request)
     {
         $payment = PayrollPayment::with(['officer'])->findOrFail($id);
+        $presence = $request->presence;
+        $absence = $request->absence;
+        $staff = $request->staff;
+        $note = $request->note;
+        $salarynote = $request->salarynote;
+        $net = $request->net;
+        $ded = $request->ded;
+        $ear = $request->ear;
 
-        return view('pages.penggajian.payroll_payment.detail', compact('payment'));
+        return view('pages.penggajian.payroll_payment.detail', compact(
+            'payment',
+            'presence',
+            'absence',
+            'staff',
+            'note',
+            'salarynote',
+            'net',
+            'ear',
+            'ded'
+        ));
 
         // return response()->json([
         //    'payment' => $payment,
+        //    'presence' => $presence,
+        //    'absence' => $absence,
+        //    'staff' => $staff,
+        //    'net' => $net,
+        //    'note' => $note,
+        //    'salarynote' => $salarynote,
+        // ]);
+    }
+
+    public function show($id)
+    {
+        $payment = PayrollPayment::with(['officer'])->findOrFail($id);
+        $transaction = Keuangan_transaksi::findOrFail($payment->transaksi_id);
+
+        return view('pages.penggajian.payroll_payment.show', compact(['payment', 'transaction']));
+        // return response()->json([
+        //    'payment' => $payment,
+        //   'transaction' => $transaction,
         // ]);
     }
 }

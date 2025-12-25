@@ -66,10 +66,10 @@
                                             <i class="ri-eye-line fs-20 align-middle"></i>
                                             Show
                                         </a>
-                                        <button type="button" class="link-danger text-muted"
+                                        <a href="#"  class="link-danger text-muted"
                                                 onclick="deletePotongan({{ $potongan->id }})">
                                             <i class="ri-delete-bin-5-line fs-20 align-middle"></i>Hapus
-                                        </button>
+                                        </a>
 
                                     </div>
                                 </td>
@@ -91,6 +91,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Initialize DataTable hanya jika ada data
         $(document).ready(function() {
@@ -105,9 +106,23 @@
         });
 
         function deletePotongan(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus potongan ini?')) {
-                window.location.href = `{{ route('potongan.destroy', ':id') }}`.replace(':id', id);
-            }
+            Swal.fire({
+                title: 'Apakah Anda Yakin??',
+                text: 'Yakin Ingin Menghapus Potongan Ini??',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+            }).then((result) => {
+                    if (result.isConfirmed){
+                        window.location.href = `{{ route('potongan.destroy', ':id') }}`.replace(':id', id);
+
+                    }
+            });
         }
+
+
     </script>
 @endpush
