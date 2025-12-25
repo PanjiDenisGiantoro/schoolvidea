@@ -114,6 +114,6 @@ class SiswaImport implements ToModel
 
     public function chunkSize(): int
     {
-        return 100;
+        return 1000;
     }
 }
