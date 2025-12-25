@@ -22,14 +22,13 @@
 
                                 <div class="auth-logo mx-auto mb-5 text-center">
                                     <a href="{{ url('/') }}" class="logo-dark">
-                                        <img src="{{ asset('assets/images/videa.png') }}" height="100"
-                                            alt="logo dark">
+                                        <img src="{{ $logoUrl ?? asset('assets/images/videa.png') }}" height="100" alt="logo dark">
                                     </a>
 
                                     <a href="{{ url('/') }}" class="logo-light">
-                                        <img src="{{ asset('assets/images/videa.png') }}" height="100"
-                                            alt="logo light">
+                                        <img src="{{ $logoUrl ?? asset('assets/images/videa.png') }}" height="100" alt="logo light">
                                     </a>
+
                                 </div>
 
                                 {{-- Heading --}}

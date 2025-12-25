@@ -1,14 +1,34 @@
 <header class="topbar d-flex">
     <!-- Sidebar Logo -->
     <div class="logo-box d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo-dark">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo dark">
+        <a href="{{ url('dashboard') }}" class="logo-dark">
+            @php
+                $logoUrl = asset('assets/images/videa.png'); // Default logo
+
+                if(auth()->user()->unit_id) {
+                    $unit = \App\Models\Unit::find(auth()->user()->unit_id);
+                    if($unit && $unit->image) {
+                        $logoUrl = asset('storage/' . $unit->image);
+                    }
+                }
+            @endphp
+            <img src="{{ $logoUrl }}" alt="Logo" class="img-fluid">
+
         </a>
 
-        <a href="index.html" class="logo-light">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo light">
+        <a href="{{ url('dashboard') }}" class="logo-light">
+            @php
+                $logoUrl = asset('assets/images/videa.png'); // Default logo
+
+                if(auth()->user()->unit_id) {
+                    $unit = \App\Models\Unit::find(auth()->user()->unit_id);
+                    if($unit && $unit->image) {
+                        $logoUrl = asset('storage/' . $unit->image);
+                    }
+                }
+            @endphp
+            <img src="{{ $logoUrl }}" alt="Logo" class="img-fluid">
+
         </a>
     </div>
 
