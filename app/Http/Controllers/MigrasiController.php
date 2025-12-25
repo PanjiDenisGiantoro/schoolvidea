@@ -86,6 +86,9 @@ class MigrasiController extends Controller
 
     public function importSiswa(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls',
@@ -98,13 +101,9 @@ class MigrasiController extends Controller
 
         try {
             $file = $request->file('file');
-//            $filePath = $file->store('temp');
+            $filePath = $file->store('temp');
             // Mengantri job untuk diproses di background
-            Excel::import(
-                new SiswaImport($unit_id, $tahun_ajaran_id),
-                $file
-            );
-//            dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
+            dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
         } catch (\Exception $e) {
             return back()->with('danger', 'Gagal import data siswa: ' . $e->getMessage());
         }
@@ -116,6 +115,9 @@ class MigrasiController extends Controller
 
     public function importKelas(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls',
@@ -137,6 +139,9 @@ class MigrasiController extends Controller
 
     public function importOfficer(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
@@ -159,6 +164,9 @@ class MigrasiController extends Controller
 
     public function importJurusan(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls'
         ]);
