@@ -98,9 +98,13 @@ class MigrasiController extends Controller
 
         try {
             $file = $request->file('file');
-            $filePath = $file->store('temp');
+//            $filePath = $file->store('temp');
             // Mengantri job untuk diproses di background
-            dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
+            Excel::import(
+                new SiswaImport($unit_id, $tahun_ajaran_id),
+                $file
+            );
+//            dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
         } catch (\Exception $e) {
             return back()->with('danger', 'Gagal import data siswa: ' . $e->getMessage());
         }
