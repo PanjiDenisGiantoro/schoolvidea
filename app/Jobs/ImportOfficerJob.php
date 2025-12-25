@@ -12,7 +12,9 @@ use Illuminate\Queue\SerializesModels;
 class ImportOfficerJob implements ShouldQueue
 {
     use Queueable, InteractsWithQueue, SerializesModels;
-
+    public $timeout = 600; // 10 menit (sesuaikan kebutuhan)
+    public $tries = 1; // Jangan retry kalau timeout
+    public $maxExceptions = 1;
     protected $unit_id;
     protected $tahun_ajaran_id;
     protected $file;
@@ -40,6 +42,9 @@ class ImportOfficerJob implements ShouldQueue
     public function handle()
     {
         try {
+
+            set_time_limit(0);
+            ini_set('max_execution_time', 0);
             // Mengimpor data menggunakan OfficerImport
             Excel::import(new OfficerImport1($this->unit_id, $this->tahun_ajaran_id), $this->file);
             Log::info('Officer import berhasil');

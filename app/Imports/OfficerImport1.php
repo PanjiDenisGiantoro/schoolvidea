@@ -272,6 +272,6 @@ class OfficerImport1 implements ToModel, WithHeadingRow
 
     public function chunkSize(): int
     {
-        return 100;
+        return 1000;
     }
 }
