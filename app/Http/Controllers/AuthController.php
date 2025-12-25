@@ -63,7 +63,19 @@ class AuthController extends Controller
     // Halaman login
     public function portalcentral()
     {
-        return view("pages.login");
+        if (!session()->has("lembaga_id")) {
+            return redirect()
+                ->route("login.form")
+                ->with("error", "Masukkan kode sekolah terlebih dahulu");
+        }
+
+        // Ambil data unit berdasarkan lembaga_id di session
+        $unit = \App\Models\Unit::where('code',session('lembaga_id'))->first();
+        $logoUrl = $unit && $unit->image
+            ? asset($unit->image)
+            : asset('assets/images/videa.png');
+
+        return view("pages.login", compact('logoUrl'));
     }
     public function loginunit()
     {
@@ -77,14 +89,14 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|string',
             'password' => 'required|string',
-            
+
         ]);
         $loginType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         $credentials = [
             $loginType => $request->email,
             'password' => $request->password,
         ];
-        
+
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
