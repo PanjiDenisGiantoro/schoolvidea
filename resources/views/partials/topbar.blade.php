@@ -8,7 +8,7 @@
                 if(auth()->user()->unit_id) {
                     $unit = \App\Models\Unit::find(auth()->user()->unit_id);
                     if($unit && $unit->image) {
-                        $logoUrl = asset('storage/' . $unit->image);
+                        $logoUrl = asset($unit->image);
                     }
                 }
             @endphp
@@ -23,7 +23,7 @@
                 if(auth()->user()->unit_id) {
                     $unit = \App\Models\Unit::find(auth()->user()->unit_id);
                     if($unit && $unit->image) {
-                        $logoUrl = asset('storage/' . $unit->image);
+                        $logoUrl = asset($unit->image);
                     }
                 }
             @endphp
