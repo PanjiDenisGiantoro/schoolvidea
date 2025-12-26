@@ -22,7 +22,7 @@
 
                 <!-- Search and Filter Form -->
                 <div class="col-lg-12 mb-3">
-                    <form method="GET" action="{{ route('siswa.index') }}" class="row g-3">
+                    <form method="GET" action="{{ route('siswa.index') }}" id="filterForm" class="row g-3">
                         @if (auth()->user()->unit_id === null)
                             <!-- Unit Filter for Admin -->
                             <div class="col-md-3">
@@ -51,7 +51,25 @@
                     </form>
                 </div>
 
-                <table id="datatable" class="table-bordered table-striped table">
+                <!-- Entries per page selector -->
+                <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <label class="me-2">Tampilkan</label>
+                        <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
+                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                        <label class="ms-2">entri</label>
+                    </div>
+                    <div class="text-muted">
+                        Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
+                    </div>
+                </div>
+
+                <table class="table-bordered table-striped table">
                     <thead class="table-primary">
                         <tr>
                             @foreach ($headers as $header)
@@ -102,6 +120,17 @@
                     </tbody>
                 </table>
 
+                <!-- Pagination -->
+                <div class="col-lg-12 mt-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
+                        </div>
+                        <div>
+                            {{ $siswa->links() }}
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -113,6 +142,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
+            // Handle per page dropdown change
+            $('#perPageSelect').on('change', function() {
+                var perPage = $(this).val();
+                var url = new URL(window.location.href);
+                url.searchParams.set('per_page', perPage);
+                url.searchParams.delete('page'); // Reset to page 1 when changing per_page
+                window.location.href = url.toString();
+            });
+
             // SweetAlert2 untuk hapus
             $('.link-danger').on('click', function(e) {
                 e.preventDefault(); // cegah link langsung ke href
@@ -145,40 +183,6 @@
                 text: "{{ session('success') }}",
                 timer: 2000,
                 showConfirmButton: false
-            });
-        </script>
-    @endif
-    @if ($siswa->isNotEmpty())
-        <script>
-            $(document).ready(function() {
-                $('#datatable').DataTable({
-                    responsive: true,
-                    pageLength: 10,
-                    searching: false,
-                    language: {
-                        url: '{{ asset('assets/datatables/id.json') }}'
-                    }
-                });
-
-                // ✅ Konfirmasi hapus data
-                $('.btn-delete').on('click', function(e) {
-                    e.preventDefault();
-                    const form = $(this).closest('form');
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: "Data penggajian ini akan dihapus permanen!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
             });
         </script>
     @endif
