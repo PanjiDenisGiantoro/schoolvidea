@@ -58,16 +58,6 @@ class AuthController extends Controller
                 ->with("error", "Masukkan kode sekolah terlebih dahulu");
         }
 
-        return view("pages.login");
-    }
-    // Halaman login
-    public function portalcentral()
-    {
-        if (!session()->has("lembaga_id")) {
-            return redirect()
-                ->route("login.form")
-                ->with("error", "Masukkan kode sekolah terlebih dahulu");
-        }
 
         // Ambil data unit berdasarkan lembaga_id di session
         $unit = \App\Models\Unit::where('code',session('lembaga_id'))->first();
@@ -76,6 +66,12 @@ class AuthController extends Controller
             : asset('assets/images/videa.png');
 
         return view("pages.login", compact('logoUrl'));
+    }
+    // Halaman login
+    public function portalcentral()
+    {
+
+        return view("pages.login");
     }
     public function loginunit()
     {
