@@ -459,12 +459,16 @@
                 </table>
             </div>
             {{-- Pagination --}}
-            <div class=" d-flex justify-content-between align-items-center mt-3">
-                <div class="text-muted">
-                    Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
-                </div>
-                <div>
-                    {{ $transaksis->appends(request()->query())->links() }}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                        <div class="text-muted">
+                            Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
+                        </div>
+                        <div>
+                            {{ $transaksis->appends(request()->query())->links() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
