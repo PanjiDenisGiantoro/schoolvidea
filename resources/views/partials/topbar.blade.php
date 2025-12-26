@@ -12,7 +12,7 @@
                     }
                 }
             @endphp
-            <img src="{{ $logoUrl }}" alt="Logo" class="img-fluid">
+            <img src="{{ $logoUrl }}" alt="Logo" width="150" height="50" style="object-fit: contain;">
 
         </a>
 
@@ -27,7 +27,7 @@
                     }
                 }
             @endphp
-            <img src="{{ $logoUrl }}" alt="Logo" class="img-fluid">
+            <img src="{{ $logoUrl }}" alt="Logo" width="150" height="50" style="object-fit: contain;">
 
         </a>
     </div>
