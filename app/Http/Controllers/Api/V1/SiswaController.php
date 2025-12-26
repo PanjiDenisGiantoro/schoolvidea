@@ -64,10 +64,11 @@ class SiswaController extends Controller
         $query = Siswa::with(['kelas', 'unit', 'jurusan']);
 
         if ($search) {
+            $search = strtoupper($search);
             $query->where(function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                $q->whereRaw('UPPER(nama) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(nis) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(nisn) like ?', ["%{$search}%"]);
             });
         }
 
