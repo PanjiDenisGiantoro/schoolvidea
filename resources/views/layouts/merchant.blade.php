@@ -16,6 +16,11 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
         />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.css"
+        />
+
         @stack("styles")
     </head>
     <body>
@@ -33,6 +38,7 @@
             </div>
         </div>
 
-        @stack("script")
+        <script src="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.js"></script>
+        @stack("scripts")
     </body>
 </html>

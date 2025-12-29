@@ -59,8 +59,7 @@
                                 Total Produk
                             </p>
                             <h3 class="fw-bold text-success mb-0 text-absolute">
-                                Rp
-                                {{ number_format($total_setoran ?? 0, 0, ",", ".") }}
+                                {{ $productTotal }}
                             </h3>
                         </div>
                         <div

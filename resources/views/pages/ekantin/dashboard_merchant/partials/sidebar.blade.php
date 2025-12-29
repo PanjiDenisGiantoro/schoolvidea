@@ -24,13 +24,13 @@
         </li>
         <li class="nav-item">
             <a href="#">
-                <i class="fas fa-calendar"></i>
+                <i class="fas fa-arrow-trend-up me-2"></i>
                 Informasi Transaksi
             </a>
         </li>
         <li class="nav-item">
             <a href="#">
-                <i class="fas fa-users"></i>
+                <i class="fas fa-wallet me-2"></i>
                 Informasi Saldo
             </a>
         </li>
@@ -54,7 +54,7 @@
             <form action="{{ route("merchant.logout") }}" method="POST">
                 @csrf
                 <button type="submit" class="btn-logout-link">
-                    <i class="fas fa-sign-out-alt"></i>
+                    <i class="fas fa-sign-out-alt me-2"></i>
                     Logout
                 </button>
             </form>

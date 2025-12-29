@@ -13,6 +13,7 @@ use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\MerchantTransactionController;
 use App\Http\Controllers\MerchantWithdrawalController;
 use App\Http\Controllers\DashboardMerchantController;
+use App\Http\Controllers\MerchantProductController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
@@ -480,7 +481,15 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::middleware('auth:merchant')->group(function () {
         Route::get('/merchant/dashboard', [DashboardMerchantController::class, 'dashboard' ])->name('merchant.dashboard');
-        Route::get('/merchant/product', [DashboardMerchantController::class, 'product'])->name('merchant.product');
+        Route::get('/merchant/product', [MerchantProductController::class, 'index'])->name('merchant.product.index');
+        Route::get('/merchant/product/datatable', [MerchantProductController::class, 'datatable'])->name('merchant.product.datatable');
+        Route::get('/merchant/product/create', [MerchantProductController::class, 'create'])->name('merchant.product.create');
+        Route::post('/merchant/product/store', [MerchantProductController::class, 'store'])->name('merchant.product.store');
+        Route::get('/merchant/product/edit/{id}', [MerchantProductController::class, 'edit'])->name('merchant.product.edit');
+        Route::put('/merchant/product/update/{id}', [MerchantProductController::class, 'update'])->name('merchant.product.update');
+        Route::delete('/merchant/product/delete/{id}', [MerchantProductController::class, 'destroy'])->name('merchant.product.destroy');
+        Route::get('/merchant/product/show/{id}', [MerchantProductController::class, 'show'])->name('merchant.product.show');
+        Route::post('/merchant/product/upload', [MerchantProductController::class, 'upload'])->name('merchant.product.upload');
     });
 });
 // Route::get('/payroll-payment', function () {
