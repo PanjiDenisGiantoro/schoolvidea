@@ -61,6 +61,9 @@ class MerchantController extends Controller
             'no_hp' => 'required|string|max:14',
             'status' => 'required|in:0,1',
             'password' => 'required|min:6',
+            'bank_name' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:30',
         ]);
 
         $validated['password'] = bcrypt($request->password);
@@ -89,6 +92,9 @@ class MerchantController extends Controller
             'no_hp' => 'required|string|max:14',
             'status' => 'required|in:0,1',
             'password' => 'nullable|min:6',
+            'bank_name' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:30',
         ]);
 
         if ($request->filled('password')) {

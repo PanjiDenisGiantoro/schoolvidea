@@ -21,10 +21,13 @@ class Merchants extends Authenticatable
         'jenis',
         'pemilik',
         'saldo_aktif',
+        'bank_name',
+        'account_name',
+        'account_number',
     ];
 
     protected $hidden = [
-        'password'
+        'password',
     ];
 
     protected $casts = [

@@ -6,7 +6,7 @@
     <div
         class="welcome-section d-flex justify-content-between align-items-center mb-4"
     >
-        <h1>Produk</h1>
+        <h3>Produk</h3>
         <a href="{{ url("merchant/product/create") }}" class="btn btn-primary">
             <i class="bi bi-download me-1"></i>
             Tambah Data

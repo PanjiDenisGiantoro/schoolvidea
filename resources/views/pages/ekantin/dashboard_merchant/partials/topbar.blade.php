@@ -1,9 +1,11 @@
 <header class="topbar">
-    <div class="search-wrapper">
+    <div class="search-wrapper" hidden>
         <i class="fas fa-search"></i>
         <input type="text" placeholder="Search Task..." />
         <span class="search-shortcut">⌘ F</span>
     </div>
+
+    <div></div>
 
     <div class="topbar-right">
         <div class="icon-btns">

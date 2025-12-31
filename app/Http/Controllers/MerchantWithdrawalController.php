@@ -93,4 +93,69 @@ class MerchantWithdrawalController extends Controller
             'data' => $data,
         ]);
     }
+
+    // Dashboard Merchant
+    public function balance()
+    {
+        $merchantId = auth('merchant')->id();
+        $query = MerchantWithdrawal::where('merchant_id', $merchantId);
+        $balance = $query->get();
+
+        return view('pages.ekantin.dashboard_merchant.balance.index', compact('balance'));
+    }
+
+    public function datatableBalance(Request $request)
+    {
+        $merchantId = auth('merchant')->id();
+        $query = MerchantWithdrawal::where('merchant_id', $merchantId);
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->tanggal) {
+            $query->whereDate('requested_at', $request->tanggal);
+        }
+
+        if (! empty($request->search['value'])) {
+            $search = $request->search['value'];
+            $query->whereHas('merchant', function ($q) use ($search) {
+                $q->where('kode_merchant', 'like', "%{$search}%")
+                    ->orWhere('nama_merchant', 'like', "%{$search}%");
+            });
+        }
+
+        $recordsFiltered = $query->count();
+        $recordsTotal = MerchantWithdrawal::count();
+
+        $rows = $query
+            ->orderBy('requested_at', 'desc')
+            ->offset($request->start)
+            ->limit($request->length)
+            ->get();
+
+        $data = [];
+        $no = $request->start + 1;
+
+        foreach ($rows as $wd) {
+            $data[] = [
+                'no' => $no++,
+                'kode_merchant' => $wd->merchant->kode_merchant,
+                'nama_merchant' => $wd->merchant->nama_merchant,
+                'no_telp' => $wd->merchant->no_hp,
+                'jml' => 'Rp ' . number_format($wd->amount, 0, ',', '.'),
+                'metode' => 'Debit',
+                'status' => ucfirst($wd->status),
+                'waktu_penarikan' => $wd->requested_at->format('d-m-Y H:i'),
+                'action' => view('pages.ekantin.withdrawal.action', compact('wd'))->render(),
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
+    }
 }

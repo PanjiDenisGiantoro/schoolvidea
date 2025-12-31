@@ -679,6 +679,12 @@
             const nisnInput = document.querySelector('input[name="nisn"]');
             const vaInput = document.querySelector('input[name="va_siswa"]');
 
+            @if (isset($siswa))
+                return;
+            @endif
+
+            if(!nisInput||!nisnInput||!vaInput) return;
+
             // Jika user mengetik manual, kita tandai agar tidak auto-overwrite
             let manualVA = false;
 

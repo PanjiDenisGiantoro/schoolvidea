@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class SiswaImport implements ToModel, WithHeadingRow
+class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
 {
     protected $unit_id;
     protected $tahun_ajaran_id;
@@ -30,8 +32,15 @@ class SiswaImport implements ToModel, WithHeadingRow
         // Pastikan semua data string
         $row = array_map('strval', $row);
 
+        // Force kolom besar menjadi string
+        $row['nik'] = isset($row['nik']) ? trim($row['nik']) : null;
+        $row['no_va'] = isset($row['no_va']) ? trim($row['no_va']) : null;
+        $row['no_rekening'] = isset($row['no_rekening']) ? trim($row['no_rekening']) : null;
+        $row['nisn'] = isset($row['nisn']) ? trim($row['nisn']) : null;
+        $row['nis'] = isset($row['nis']) ? trim($row['nis']) : null;
+
         try {
-            // Validasi field required berdasarkan urutan baru
+            // Validasi field required
             if (empty($row['nama_lengkap']) || empty($row['email']) || empty($row['password'])) {
                 Log::warning('⚠️ Missing required fields, skipping...');
                 return null;
@@ -40,13 +49,8 @@ class SiswaImport implements ToModel, WithHeadingRow
             DB::beginTransaction();
             Log::info('✓ Transaction started');
 
-            /**
-             * 1. Cek atau buat user berdasarkan email saja
-             */
-            Log::info('Step 1: Processing User Data');
-
+            // Step 1: User
             $user = User::where('email', $row['email'])->first();
-
             if (!$user) {
                 $user = User::create([
                     'name' => $row['nama_lengkap'],
@@ -57,7 +61,6 @@ class SiswaImport implements ToModel, WithHeadingRow
                 ]);
                 Log::info('✓ New user created: ' . $user->id);
             } else {
-                // update data existing user
                 $user->update([
                     'name' => $row['nama_lengkap'],
                     'rfid_no' => $row['no_rfid'] ?? null,
@@ -66,61 +69,48 @@ class SiswaImport implements ToModel, WithHeadingRow
                 Log::info('✓ Existing user updated: ' . $user->id);
             }
 
-            /**
-             * 2. Role assignment
-             */
-            Log::info('Step 2: Assigning Role');
+            // Step 2: Role
             $rolePetugas = Roles::where('name', 'siswa')->first();
             if (!$rolePetugas) {
                 Log::warning('⚠️ Role "siswa" not found');
                 DB::rollBack();
                 return null;
             }
-
             $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
-
             if (!$user->hasRole($roleSpatie->name)) {
                 $user->assignRole($roleSpatie->name);
                 Log::info('✓ Role assigned: ' . $roleSpatie->name);
-            } else {
-                Log::info('Role already assigned to user');
             }
 
-            /**
-             * 3. Kelas lookup
-             */
-            Log::info('Step 3: Finding Kelas');
+            // Step 3: Kelas
             $kelas = Kelas::where('nama_kelas', $row['kelas'])->first();
-
             if (!$kelas) {
                 Log::warning('⚠️ Kelas not found: "' . $row['kelas'] . '"');
                 DB::rollBack();
                 return null;
             }
 
-            /**
-             * 4. Update/Create Siswa
-             */
-            Log::info('Step 4: Processing Siswa Data');
-
-            // Konversi status: ambil dari excel atau default '1'
-            $status = '1'; // Default aktif
-            if (isset($row['status_1_aktif_0_tidak_aktif'])) {
-                $status = $row['status_1_aktif_0_tidak_aktif'];
-            }
-
-            // Konversi tanggal lahir dari DD/MM/YYYY ke YYYY-MM-DD jika ada
+            // Step 4: Convert tanggal lahir
             $tanggalLahir = null;
             if (!empty($row['tanggal_lahir_ddmmyyyy'])) {
-                $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
-                if ($date) {
-                    $tanggalLahir = $date->format('Y-m-d');
+                if (is_numeric($row['tanggal_lahir_ddmmyyyy'])) {
+                    // Excel serial number
+                    $tanggalLahir = Date::excelToDateTimeObject($row['tanggal_lahir_ddmmyyyy'])->format('Y-m-d');
+                } else {
+                    $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
+                    if ($date) {
+                        $tanggalLahir = $date->format('Y-m-d');
+                    }
                 }
             }
 
+            // Status default 1
+            $status = $row['status_1_aktif_0_tidak_aktif'] ?? '1';
+
+            // Step 5: Update or create siswa
             $siswa = Siswa::updateOrCreate(
                 [
                     'nisn' => $row['nisn'],
@@ -149,19 +139,10 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
 
-            /**
-             * 5. Create or check Saldo_keuangan
-             */
-            Log::info('Step 5: Processing Saldo_keuangan');
-
+            // Step 6: Saldo
             $saldo = Saldo_keuangan::firstOrCreate(
-                [
-                    'user_id' => $user->id,
-                ],
-                [
-                    'saldo_akhir' => 0,
-                    'status' => 0,
-                ]
+                ['user_id' => $user->id],
+                ['saldo_akhir' => 0, 'status' => 0]
             );
 
             DB::commit();

@@ -57,7 +57,7 @@
                             type="text"
                             name="product_unit"
                             label="Satuan Produk"
-                            placeholder="Masikkan Satuan Produk"
+                            placeholder="Masukkan Satuan Produk"
                             icon="bx bx-user"
                             :value="old('product_unit', $product->product_unit ?? '')"
                         />

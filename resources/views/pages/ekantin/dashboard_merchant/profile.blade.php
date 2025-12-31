@@ -1,24 +1,59 @@
-@extends("layouts.app")
-@section("title", isset($merchant) ? (isset($show) && $show ? "Lihat Merchant" : "Edit Merchant") : "Tambah Merchant")
+@extends("layouts.merchant")
+@section("title", "Profile Merchant")
 
 @section("content")
-    @include(
-        "partials.page-title",
-        [
-            "title" => isset($merchant)
-                ? (isset($show) && $show
-                    ? "Lihat Data"
-                    : "Edit Data")
-                : "Tambah Data",
-            "subTitle" => "Merchant",
-        ]
-    )
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h4 class="card-title">Profile Merchant</h4>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#imageModal"
+                    >
+                        Ubah Foto
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <div
+                                    class="d-flex flex-column align-items-center text-center"
+                                >
+                                    <img
+                                        src="{{ $merchant->image ? asset("storage/" . $merchant->image) : asset("images/default.png") }}"
+                                        alt="Foto Merchant"
+                                        class="img-fluid rounded-circle mb-3"
+                                        style="
+                                            width: 150px;
+                                            height: 150px;
+                                            object-fit: cover;
+                                        "
+                                    />
 
+                                    <h5 class="mb-1">
+                                        {{ $merchant->pemilik ?? "User" }}
+                                    </h5>
+
+                                    <p class="mb-0">
+                                        {{ $merchant->kode_merchant }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="card">
         <div class="card-body">
             <form
                 id="merchantForm"
-                action="{{ isset($merchant) ? route("merchant.update", $merchant->id) : route("merchant.store") }}"
+                action="{{ route("merchant.update.profile") }}"
                 method="POST"
             >
                 @csrf
@@ -27,33 +62,6 @@
                 @endif
 
                 <div class="row g-3">
-                    {{-- Unit --}}
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="unit_id" class="form-label">
-                                Unit
-                                <small class="text-danger">*</small>
-                            </label>
-                            <select
-                                name="unit_id"
-                                id="unit_id"
-                                class="form-select"
-                                required
-                            >
-                                <option>-- Pilih Unit --</option>
-                                @foreach ($units as $u)
-                                    <option
-                                        value="{{ $u->id }}"
-                                        data-logo="{{ $u->image ? asset($u->image) : asset("images/default-logo.png") }}"
-                                        {{ old("unit_id", $merchant->unit_id ?? "") == $u->id ? "selected" : "" }}
-                                    >
-                                        {{ $u->nama_unit }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
                     {{-- Kode Merchant --}}
                     <div class="col-md-4">
                         <x-input-field
@@ -64,7 +72,6 @@
                             icon="bx bx-barcode"
                             value="$kodeMerchant"
                             :value="old('kode_merchant', $merchant->kode_merchant ?? $kodeMerchant ?? '')"
-                            required
                         />
                     </div>
 
@@ -77,7 +84,6 @@
                             placeholder="Masukkan Nama Merchant"
                             icon="bx bx-store-alt"
                             :value="old('nama_merchant', $merchant->nama_merchant ?? '')"
-                            required
                         />
                     </div>
 
@@ -90,7 +96,6 @@
                             placeholder="Masukkan Jenis Usaha"
                             icon="bx bx-store"
                             :value="old('jenis', $merchant->jenis ?? '')"
-                            required
                         />
                     </div>
 
@@ -103,7 +108,6 @@
                             placeholder="Masikkan Nama Pemilik"
                             icon="bx bx-user"
                             :value="old('pemilik', $merchant->pemilik ?? '')"
-                            required
                         />
                     </div>
 
@@ -138,7 +142,6 @@
                                 );
                             "
                             maxLength="14"
-                            required
                         />
                     </div>
 
@@ -152,7 +155,6 @@
                             placeholder="Masukkan nama bank"
                             icon="bx bx-bank"
                             :value="old('bank_name', $merchant?->bank_name ?? '')"
-                            required
                         />
                     </div>
 
@@ -166,7 +168,6 @@
                             placeholder="Masukkan nama rekening"
                             icon="bx bx-credit-card-alt"
                             :value="old('account_name', $merchant?->account_name ?? '')"
-                            required
                         />
                     </div>
 
@@ -186,7 +187,6 @@
                                 );
                             "
                             maxLength="14"
-                            required
                         />
                     </div>
 
@@ -195,7 +195,6 @@
                         <div class="mb-3">
                             <label for="status" class="form-label">
                                 Status
-                                <small class="text-danger">*</small>
                             </label>
                             <select
                                 name="status"
@@ -232,9 +231,6 @@
                     <button type="submit" class="btn btn-success">
                         {{ isset($merchant) ? "Update" : "Simpan" }}
                     </button>
-                    <a href="{{ url("merchant/") }}" class="btn btn-secondary">
-                        Batal
-                    </a>
                 </div>
             </form>
         </div>
@@ -274,7 +270,7 @@
                     <input type="hidden" id="qrcode-text" name="qrcode_text" />
 
                     <small class="text-muted">
-                        QR akan berubah otomatis sesuai kode merchant & unit
+                        QR akan berubah otomatis sesuai kode merchant
                     </small>
                 </div>
 
@@ -296,6 +292,76 @@
                         Download QR
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal lihat & ubah foto -->
+    <div
+        class="modal fade"
+        id="imageModal"
+        tabindex="-1"
+        aria-labelledby="imageModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form
+                    action="{{ route("merchant.update.photo") }}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
+                    @csrf
+                    @method("PATCH")
+                    <div class="modal-header">
+                        <h5 class="modal-title">Foto Profile Merchant</h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <!-- Tampilkan foto saat ini -->
+                        <img
+                            id="previewImage"
+                            src="{{ $merchant->image ? asset("storage/" . $merchant->image) : asset("images/default.png") }}"
+                            alt="Foto Merchant"
+                            class="img-fluid rounded mb-3"
+                            style="max-width: 250px"
+                        />
+
+                        <!-- Input untuk ganti foto -->
+                        <div class="mb-3">
+                            <label for="image" class="form-label">
+                                Pilih Foto Baru
+                            </label>
+                            <input
+                                type="file"
+                                name="image"
+                                id="image"
+                                class="form-control"
+                                accept="image/*"
+                            />
+                        </div>
+                        <small class="text-muted">
+                            Format: JPG/PNG, maksimal 2MB.
+                        </small>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Tutup
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Simpan Foto
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -325,7 +391,7 @@
             const form = document.getElementById('merchantForm');
 
             form.addEventListener('submit', function (e) {
-                e.preventDefault();
+                e.preventDefault(); // cegah submit langsung
 
                 Swal.fire({
                     title: 'Apakah data sudah benar?',
@@ -365,28 +431,27 @@
                 'input[name="kode_merchant"]',
             );
             const qrContainer = document.getElementById('qrcode');
-            const unitSelect = document.getElementById('unit_id');
             const downloadBtn = document.getElementById('downloadQrBtn');
             const qrModal = document.getElementById('qrModal');
-            qrModal.addEventListener('shown.bs.modal', function () {
-                console.log('MODAL SHOWN');
-            });
 
-            let defaultLogo = '{{ asset("images/default-logo.png") }}';
             let qrCode = null;
+
+            // LOGO UNIT dari database merchant (AMAN)
+            const logo = @json(
+                $merchant->unit && $merchant->unit->image
+                    ? asset("" . $merchant->unit->image)
+                    : asset("images/default-logo.png")
+            );
+
+            console.log('QR LOGO:', logo);
 
             qrModal.addEventListener('shown.bs.modal', function () {
                 qrContainer.innerHTML = '';
 
-                const selectedOption =
-                    unitSelect.options[unitSelect.selectedIndex];
-                const logo =
-                    selectedOption?.getAttribute('data-logo') || defaultLogo;
-
                 qrCode = new QRCodeStyling({
                     width: 200,
                     height: 200,
-                    data: vaInput.value || ' ',
+                    data: vaInput.value || '-',
                     image: logo,
                     dotsOptions: {
                         color: '#000',
@@ -405,34 +470,15 @@
                 });
 
                 qrCode.append(qrContainer);
-
-                downloadBtn.style.display = selectedOption?.value
-                    ? 'inline-block'
-                    : 'none';
+                downloadBtn.style.display = 'inline-block';
             });
 
-            unitSelect.addEventListener('change', function () {
-                if (!qrCode) return;
-
-                const selectedOption =
-                    unitSelect.options[unitSelect.selectedIndex];
-                const logo =
-                    selectedOption?.getAttribute('data-logo') || defaultLogo;
-
-                qrCode.update({ image: logo });
-
-                downloadBtn.style.display = selectedOption?.value
-                    ? 'inline-block'
-                    : 'none';
-            });
-
-            // tombol download
+            // Download QR
             downloadBtn.addEventListener('click', function () {
                 if (!qrCode) return;
 
-                const fileName = 'qr-' + (vaInput.value || 'merchant') + '.png';
                 qrCode.download({
-                    name: fileName,
+                    name: 'qr-' + (vaInput.value || 'merchant'),
                     extension: 'png',
                 });
             });
@@ -468,4 +514,17 @@
                         });
         </script>
     @endif
+
+    <script>
+        // Preview image sebelum upload
+        const profileInput = document.getElementById('image');
+        const previewImage = document.getElementById('previewImage');
+
+        profileInput.addEventListener('change', function (e) {
+            const [file] = e.target.files;
+            if (file) {
+                previewImage.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
 @endpush

@@ -62,7 +62,7 @@
                     <tbody>
                         @forelse($siswa as $index => $item)
                             <tr>
-                                <td>{{ $siswa->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $item->nisn }}</td>
                                 <td>{{ $item->kelas->nama_kelas ?? '-' }}</td>

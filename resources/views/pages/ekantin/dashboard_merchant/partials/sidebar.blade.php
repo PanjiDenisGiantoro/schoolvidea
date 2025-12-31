@@ -1,6 +1,7 @@
 <aside class="sidebar">
     <div>
         <h3 class="text-primary">
+            <i class="fas fa-store me-2"></i>
             {{ auth("merchant")->user()->nama_merchant }}
         </h3>
     </div>
@@ -22,14 +23,18 @@
                 Produk
             </a>
         </li>
-        <li class="nav-item">
-            <a href="#">
+        <li
+            class="nav-item {{ request()->is("merchant/transaction") ? "active" : "" }}"
+        >
+            <a href="/merchant/transaction">
                 <i class="fas fa-arrow-trend-up me-2"></i>
                 Informasi Transaksi
             </a>
         </li>
-        <li class="nav-item">
-            <a href="#">
+        <li
+            class="nav-item {{ request()->is("merchant/balance") ? "active" : "" }}"
+        >
+            <a href="/merchant/balance">
                 <i class="fas fa-wallet me-2"></i>
                 Informasi Saldo
             </a>
@@ -38,20 +43,20 @@
 
     <div class="menu-label text-success" style="margin-top: 20px">GENERAL</div>
     <ul class="nav-menu">
-        <li class="nav-item">
-            <a href="#">
-                <i class="fas fa-cog"></i>
+        <li
+            class="nav-item {{ request()->is("merchant/profile") ? "active" : "" }}"
+        >
+            <a href="/merchant/profile">
+                <i class="fas fa-cog me-2"></i>
                 Profil
             </a>
         </li>
         <li class="nav-item">
-            <a href="#">
-                <i class="fas fa-question-circle"></i>
-                Kontak
-            </a>
-        </li>
-        <li class="nav-item">
-            <form action="{{ route("merchant.logout") }}" method="POST">
+            <form
+                id="logoutForm"
+                action="{{ route("merchant.logout") }}"
+                method="POST"
+            >
                 @csrf
                 <button type="submit" class="btn-logout-link">
                     <i class="fas fa-sign-out-alt me-2"></i>

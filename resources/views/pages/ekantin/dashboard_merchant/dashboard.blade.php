@@ -1,10 +1,10 @@
 @extends("layouts.merchant")
 
-@section("title", "Dashboard")
+@section("title", "Dashboard-Merchant")
 
 @section("content")
     <div class="welcome-section">
-        <h1>Dashboard</h1>
+        <h3>Dashboard</h3>
     </div>
     <div class="row g-3 mb-4 mt-4">
         <div class="col-lg-4 col-md-6 col-sm-12">
@@ -20,7 +20,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Saldo
+                                Saldo Aktif
                             </p>
                             <h3 class="fw-bold text-success mb-0 text-absolute">
                                 Rp
@@ -66,7 +66,7 @@
                             class="stat-icon bg-success bg-opacity-10 rounded-3 p-3"
                         >
                             <i
-                                class="bx bx-wallet-alt text-success"
+                                class="bx bx-store-alt text-success"
                                 style="font-size: 24px"
                             ></i>
                         </div>
@@ -102,14 +102,14 @@
                             class="stat-icon bg-success bg-opacity-10 rounded-3 p-3"
                         >
                             <i
-                                class="bx bx-wallet-alt text-success"
+                                class="bx bx-receipt text-success"
                                 style="font-size: 24px"
                             ></i>
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">
                         <i class="bx bx-up-arrow-alt text-success"></i>
-                        Tabungan masuk
+                        Transaksi Keluar Masuk
                     </small>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                     ></div>
                     <input type="hidden" id="qrcode-text" name="qrcode_text" />
                     <small class="text-muted d-block mb-3">
-                        QR akan berubah otomatis sesuai kode merchant & unit
+                        QR Code untuk pembayaran siswa
                     </small>
                     <button
                         type="button"

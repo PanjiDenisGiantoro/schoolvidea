@@ -42,7 +42,7 @@ class AkunUserController extends Controller
             });
         }
 
-        $user = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $user = $query->get();
 
         $headers = [
             'No',

@@ -1,5 +1,5 @@
-@extends('layouts.app') 
-@section('title', 'Data Akun User')  
+@extends('layouts.app')
+@section('title', 'Data Akun User')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 @endpush
@@ -54,7 +54,7 @@
                 <tbody>
                     @forelse($user as $index => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $user->firstItem() + $index }}</td>
+                            <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $item->units->nama_unit ?? '-' }}</td>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->email }}</td>

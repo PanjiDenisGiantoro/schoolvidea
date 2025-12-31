@@ -39,6 +39,34 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const logoutForm = document.getElementById('logoutForm');
+
+                logoutForm.addEventListener('submit', function (e) {
+                    e.preventDefault(); // cegah logout langsung
+
+                    Swal.fire({
+                        title: 'Yakin ingin logout?',
+                        text: 'Sesi Anda akan diakhiri.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Logout',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            logoutForm.submit();
+                        }
+                    });
+                });
+            });
+        </script>
         @stack("scripts")
     </body>
 </html>
