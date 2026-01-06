@@ -32,7 +32,7 @@
                                 Total Nominal
                             </p>
                             <h3 class="fw-bold text-success mb-0 text-absolute">
-                                Rp.
+                                Rp
                                 {{ number_format($summary["total_nominal"] ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
@@ -74,8 +74,8 @@
                                 Sedang Diproses
                             </p>
                             <h3 class="fw-bold text-warning mb-0 text-absolute">
-                                Rp.
-                                {{ $summary['total_pending'] ?? 0, 0, ',', '.' }}
+                                Rp
+                                {{ number_format($summary["total_pending"] ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
                         <div
@@ -116,8 +116,8 @@
                                 Berhasil
                             </p>
                             <h3 class="fw-bold text-info mb-0 text-absolute">
-                                Rp.
-                                {{ $summary['total_approved'] ?? 0, 0, ',', '.' }}
+                                Rp
+                                {{ number_format($summary["total_approved"] ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
                         <div
@@ -158,7 +158,7 @@
                                 Dibatalkan
                             </p>
                             <h3 class="fw-bold text-danger mb-0 text-absolute">
-                                Rp.
+                                Rp
                                 {{ number_format($summary["total_rejected"] ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
@@ -396,8 +396,9 @@
                     type: 'GET',
                     data: function (d) {
                         d.unit_id = $('#unit_id').val();
-                        d.status_penarikan = $('#status').val();
+                        d.status = $('#status').val();
                         d.tanggal = $('#tanggal').val();
+                        d.custom_search = $('#search').val();
                     },
                 },
                 columns: [
@@ -406,8 +407,8 @@
                     { data: 'nama_merchant' },
                     { data: 'no_telp' },
                     { data: 'jml' },
-                    { data: 'metode' },
-                    { data: 'status' },
+                    { data: 'metode', className: 'text-center' },
+                    { data: 'status', className: 'text-center' },
                     { data: 'waktu_penarikan', className: 'text-center' },
                     {
                         data: 'action',
@@ -416,12 +417,12 @@
                         searchable: false,
                     },
                 ],
-                order: [[1, 'desc']],
+                order: [[7, 'desc']],
             });
         });
     </script>
     <script>
-        $('#status, #tanggal, #unit_id').on('change', function () {
+        $('#status, #tanggal, #unit_id, #search').on('change', function () {
             merchantTable.ajax.reload();
         });
     </script>

@@ -67,7 +67,7 @@
                             class="stat-icon bg-info bg-opacity-10 rounded-3 p-3"
                         >
                             <i
-                                class="ri-money-dollar-circle-fill text-info"
+                                class="fa-solid fa-arrow-right-arrow-left text-info"
                                 style="font-size: 24px"
                             ></i>
                         </div>
@@ -101,7 +101,7 @@
                             class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3"
                         >
                             <i
-                                class="ri-money-dollar-circle-line text-warning"
+                                class="fa-solid fa-money-bill text-warning"
                                 style="font-size: 24px"
                             ></i>
                         </div>

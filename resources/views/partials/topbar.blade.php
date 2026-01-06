@@ -99,8 +99,19 @@
                     <a type="button" class="topbar-button p-0" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center gap-2">
-                            <img class="rounded-circle" width="32"
-                                src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="user-image">
+<img
+    class="rounded-circle"
+    style="
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+    "
+    src="{{ optional(Auth::user()->officers)->image 
+            ? asset(Auth::user()->officers->image)
+            : asset('assets/images/users/avatar-1.jpeg') }}"
+    alt="user-image">
+
+
                             <span class="d-lg-flex flex-column d-none gap-1">
                                 <h5 class="fs-13 text-uppercase text-reset fw-bold my-0">
                                     {{ \Illuminate\Support\Facades\Auth::user()->name ?? '' }}</h5>

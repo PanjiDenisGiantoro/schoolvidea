@@ -29,7 +29,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Total Pemasukan
+                                Pemasukan Bulan ini
                             </p>
                             <h3 class="fw-bold text-success mb-0 text-absolute">
                                 Rp
@@ -46,12 +46,8 @@
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">
-                        <i class="bx bx-down-arrow-alt text-success"></i>
-                        Tabungan Masuk
-                    </small>
-                    <small class="text-muted d-block mt-2">
-                        <i class="bx bx-down-arrow-alt text-success"></i>
-                        Tagihan Masuk
+                        <i class="bx bx-up-arrow-alt text-success"></i>
+                        Periode {{ Carbon\Carbon::now()->translatedFormat('F Y') }}
                     </small>
                 </div>
             </div>
@@ -69,7 +65,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Total Pengeluaran
+                                Pengeluaran Bulan Ini
                             </p>
                             <h3 class="fw-bold text-danger mb-0 text-absolute">
                                 Rp
@@ -86,12 +82,8 @@
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">
-                        <i class="bx bx-up-arrow-alt text-danger"></i>
-                        Tabungan Keluar
-                    </small>
-                    <small class="text-muted d-block mt-2">
-                        <i class="bx bx-up-arrow-alt text-danger"></i>
-                        Tagihan Keluar
+                        <i class="bx bx-down-arrow-alt text-danger"></i>
+                        Periode {{ Carbon\Carbon::now()->translatedFormat('F Y') }}
                     </small>
                 </div>
             </div>
@@ -109,7 +101,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Total Data Transaksi
+                                Data Transaksi
                             </p>
                             <h3 class="fw-bold text-primary mb-0 text-absolute">
                                 {{ number_format($summary["total_data_transaksi"] ?? 0, 0, ",", ".") }}
@@ -126,7 +118,7 @@
                     </div>
                     <small class="text-muted d-block mt-2">
                         <i class="bx bx-transfer text-primary"></i>
-                        Akumulasi Data Ttransaksi
+                        Data Transaksi Keseluruhan
                     </small>
                 </div>
             </div>
@@ -146,7 +138,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Total Transaksi Keseluruhan
+                                Transaksi Keseluruhan
                             </p>
                             <h3 class="fw-bold text-primary mb-0 text-absolute">
                                 Rp
@@ -182,7 +174,7 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Total Hari Ini
+                                Hari Ini
                             </p>
                             <h3 class="fw-bold text-info mb-0 text-absolute">
                                 Rp
@@ -348,6 +340,12 @@
                                 {{ request("jenis_transaksi") == "tagihan" ? "selected" : "" }}
                             >
                                 Pembayaran Tagihan
+                            </option>
+                            <option
+                                value="tagihan-keluar"
+                                {{ request("jenis_transaksi") == "tagihan-keluar" ? "selected" : "" }}
+                            >
+                                Pembayaran Gaji
                             </option>
                         </select>
                     </div>

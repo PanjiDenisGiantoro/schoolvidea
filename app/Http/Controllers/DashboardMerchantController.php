@@ -14,7 +14,7 @@ class DashboardMerchantController extends Controller
     public function dashboard()
     {
         $merchantId = auth('merchant')->id();
-        $id = Merchants::where('no_hp', $merchantId)->value('id');
+        $id = Merchants::where('id', $merchantId)->value('id');
 
         $start = Carbon::now()->startOfMonth();
         $end = Carbon::now()->endOfMonth();

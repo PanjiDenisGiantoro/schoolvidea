@@ -1,0 +1,116 @@
+.authentication-bg {
+    min-height: 100vh;
+    background: #f5f7fb;
+}
+
+/* MAIN WRAPPER */
+.auth-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* LEFT SIDE */
+.auth-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fb;
+}
+
+.auth-left img {
+    max-width: 80%;
+
+}
+
+/* RIGHT SIDE */
+.auth-right {
+    flex: 1;
+    background: #0f766e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
+
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.199);
+    /* overflow: hidden; */
+}
+
+/* FORM CONTAINER */
+.auth-form-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+/* CARD */
+.auth-card {
+    border-radius: 40px;
+    padding: 10px;
+    border: none;
+
+    /* Shadow utama */
+    box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.25),
+        0 0 40px rgba(255, 255, 255, 0.25); /* glow putih */
+
+    background: #ffffff;
+
+    /* animasi */
+    animation: floatCard 4s ease-in-out infinite;
+}
+
+.auth-card:hover {
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.3),
+        0 0 55px rgba(255, 255, 255, 0.35);
+    transition: box-shadow 0.4s ease;
+}
+
+/* INPUT */
+.authentication-form .form-control {
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+/* BUTTON */
+.authentication-form .btn-primary {
+    border-radius: 8px;
+    padding: 10px;
+}
+
+
+
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .auth-wrapper {
+        flex-direction: column;
+    }
+
+    .auth-left {
+        display: none;
+    }
+
+    .auth-right {
+        background: #f5f7fb;
+    }
+    .auth-card {
+        animation: none;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+}
+
+@keyframes floatCard {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}

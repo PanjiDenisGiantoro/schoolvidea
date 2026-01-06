@@ -28,6 +28,7 @@
                         <li class="list-item-rapih">
                             <strong class="list-label">Kode Transaksi</strong>
                             <div class="list-value">
+                                <span>:</span>
                                 <span class="badge bg-secondary rounded-pill ">
                                     {{ $transaksi->code_pembayaran }}
                                 </span>
@@ -50,6 +51,7 @@
                             };
                         @endphp
                         <div class="list-value">
+                            <span>:</span>
                             <span class="badge rounded-pill bg-{{ $badgeColor }}">
                                 {{ $jenisText }}
                             </span>
@@ -57,14 +59,14 @@
                     </li>
 
                     <li class="list-item-rapih">
-                        <strong class="list-label">Jumlah:</strong>
+                        <strong class="list-label">Jumlah</strong>
                         @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan"]))
-                            <span class="text-success fw-bold fs-5 list-value">
+                            <span class="text-success fw-bold fs-8 list-value">
                                 : Rp
                                 {{ number_format($transaksi->jumlah, 0, ",", ".") }}
                             </span>
                         @else
-                            <span class="text-danger fw-bold fs-5 list-value">
+                            <span class="text-danger fw-bold fs-8 list-value">
                                 : Rp
                                 {{ number_format($transaksi->jumlah, 0, ",", ".") }}
                             </span>
@@ -83,6 +85,7 @@
                         @endphp
 
                         <div class="list-value">
+                            <span>:</span>
                             <span class="badge rounded-pill bg-{{ $metodeBadge }}">
                             {{ $transaksi->metode }}</span>
                         </div>
@@ -91,7 +94,7 @@
                     <li class="list-item-rapih">
                         <strong class="list-label">Tanggal Transaksi</strong>
                         <span class="list-value">
-                        : {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format("d F Y") }}
+                        : {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->translatedFormat("d F Y") }}
                         </span>
                     </li>
 
@@ -114,13 +117,7 @@
 
                 {{-- Detail Tagihan untuk Single Payment atau Multiple Payment --}}
                 @if (in_array($transaksi->jenis_transaksi, ["tagihan", "pembayaran", "pembayaran-multiple"]) && $transaksi->pembayaranTagihan)
-                    {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
-                    @if ($transaksi->jenis_transaksi == "pembayaran-multiple" && $pembayaranDetail && $pembayaranDetail->count() > 1)
-                        <h6 class="fw-bold text-primary mb-2">
-                            <i class="bx bx-list-check"></i>
-                            Daftar Tagihan ({{ $pembayaranDetail->count() }}
-                            tagihan)
-                        </h6>
+
 
                 {{-- Jika ini Multi-Tagihan (pembayaran-multiple), tampilkan list tagihan --}}
                 @if($transaksi->jenis_transaksi == 'pembayaran-multiple' && $pembayaranDetail && $pembayaranDetail->count() > 1)
@@ -130,7 +127,7 @@
 
                 @if($headTagihan)
                 <div class="alert alert-info mb-3 small">
-                    <strong><i class="bx bx-tag me-1"></i>Head Tagihan:</strong>
+                    <strong><i class="bx bx-tag me-1"></i>Kode Tagihan : </strong>
                     <span class="font-monospace bg-white px-2 py-1 rounded">{{ $headTagihan }}</span>
                 </div>
                 @endif
@@ -201,7 +198,7 @@
                                     <strong class="text-dark">{{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? 'Tagihan' }}</strong>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark">{{ $periodeIndo }} {{ $tahun }}</span>
+                                    <span class="badge bg-light text-dark">{{ $periodeIndo }}</span>
                                 </td>
                                 <td>
                                     <span class="text-muted">Rp {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ',', '.') }}</span>
@@ -253,7 +250,6 @@
                 </div>
 
                 <hr>
-
                 {{-- Single Payment Detail --}}
                 @else
                 <h6 class="fw-bold text-primary mb-2">
@@ -275,18 +271,24 @@
                                 ? $namaBulan[$tagihan->periode]
                                 : $tagihan->periode;
                         @endphp
-                        <li><strong>Periode:</strong> {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</li>
-                        <li><strong>Dibayar:</strong> Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</li>
+                        <li class="list-item-rapih">
+                            <strong class="list-label">Periode</strong>
+                            <span class="list-value">: {{ $periodeBulan }} {{ $tagihan->tahun ?? '' }}</span>
+                        </li>
+                        <li class="list-item-rapih">
+                            <strong class="list-label">Dibayar</strong>
+                            <span class="list-value">: Rp {{ number_format($transaksi->pembayaranTagihan->jumlah_bayar ?? 0, 0, ',', '.') }}</span>
+                        </li>
                         @if($tagihan && $tagihan->items && $tagihan->items->count() > 0)
-                        <li class="mt-2"><strong>Jenis Tagihan:</strong></li>
-                        <ul class="mt-1">
-                            @foreach($tagihan->items as $item)
-                                <li>
-                                    {{ $item->kategori->nama_kategori ?? '-' }}
-                                    - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
-                                </li>
-                            @endforeach
-                        </ul>
+                        <li class="list-item-rapih">
+                            <strong class="list-label">Jenis Tagihan</strong>
+                            <span class="list-value">
+                                @foreach($tagihan->items as $item)
+                                        : {{ $item->kategori->nama_kategori ?? '-' }}
+                                        - Rp {{ number_format($item->nominal ?? 0, 0, ',', '.') }}
+                            @endforeach</span>
+                        </li>
+
                         @endif
 
                         <div class="table-responsive mb-3">
@@ -356,7 +358,6 @@
                                                     class="badge bg-light text-dark"
                                                 >
                                                     {{ $periodeIndo }}
-                                                    {{ $tahun }}
                                                 </span>
                                             </td>
                                             <td>
@@ -533,6 +534,7 @@
                         <hr style="margin-bottom: 0px" />
                     @endif
                 @endif
+            @endif
 
                 <h6 class="fw-bold text-primary mb-0">
                     <i class="bx bx-user"></i>

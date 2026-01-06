@@ -22,9 +22,11 @@ class MerchantController extends Controller
 
         $merchants = $query;
         $merCount = $merchants->count();
-        $merActive = $merchants->with('status', '1')->count();
+        $merActive = $merchants->where('status', '1')->count();
+        $merNonActive = $merchants->where('status', '0')->count();
+        $saldoAktif = $merchants->sum('saldo_aktif');
 
-        return view('pages.ekantin.merchant.index', compact('units', 'merchants', 'merCount', 'merActive'));
+        return view('pages.ekantin.merchant.index', compact('units', 'merchants', 'merCount', 'merActive', 'merNonActive', 'saldoAktif'));
     }
 
     public function create()
@@ -264,6 +266,6 @@ class MerchantController extends Controller
         // $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return view('pages.ekantin.dashboard_merchant.login');
+        return redirect()->route('merchant.login');
     }
 }

@@ -100,7 +100,7 @@
                                 Merchant Non-aktif
                             </p>
                             <h3 class="fw-bold text-danger mb-0 text-absolute">
-                                -
+                                {{$merNonActive ?? 0}}
                             </h3>
                         </div>
                         <div
@@ -137,7 +137,7 @@
                                 class="fw-bold text-warning mb-0 text-absolute"
                                 style="font-size: 18px"
                             >
-                                Rp 1.000.000.000
+                                {{ number_format($saldoAktif ?? 0,0,',','.') }}
                             </h3>
                         </div>
                         <div

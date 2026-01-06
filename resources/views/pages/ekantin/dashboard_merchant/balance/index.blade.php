@@ -72,14 +72,14 @@
                             </p>
                             <h3 class="fw-bold text-success mb-0 text-absolute">
                                 Rp
-                                {{ number_format(auth("merchant")->user()->saldo_aktif ?? 0, 0, ",", ".") }}
+                                {{ number_format($totalWithdraw ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
                         <div
                             class="stat-icon bg-success bg-opacity-10 rounded-3 p-3"
                         >
                             <i
-                                class="fas fa-money-check-dollar text-success"
+                                class="fa-duotone fa-solid fa-rupiah-sign text-success"
                                 style="font-size: 24px"
                             ></i>
                         </div>
@@ -109,8 +109,8 @@
                                 Sedang Diproses
                             </p>
                             <h3 class="fw-bold text-warning mb-0 text-absolute">
-                                Rp.
-                                {{ $summary['total_pending'] ?? 0, 0, ',', '.' }}
+                                Rp
+                                {{ number_format($pendingToday ?? 0, 0, ',', '.') }}
                             </h3>
                         </div>
                         <div
@@ -137,6 +137,48 @@
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
             <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all"
+            >
+                <div class="card-body position-relative">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
+                        <div>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                DIBATALKAN
+                            </p>
+                            <h3 class="fw-bold text-danger mb-0 text-absolute">
+                                Rp
+                                {{ number_format($rejectedToday ?? 0, 0, ",", ".") }}
+                            </h3>
+                        </div>
+                        <div
+                            class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-x-circle text-danger"
+                                style="font-size: 24px"
+                            ></i>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-down-arrow-alt text-danger"></i>
+                        Total yang dibatalkan
+                    </small>
+                                        <small class="text-muted d-block mt-2">
+                        <i class="bx bx-down-arrow-alt text-danger"></i>
+                        <span>
+                            {{ \Carbon\Carbon::now()->translatedFormat("d F Y") }}
+                        </span>
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div
                 class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all"
             >
                 <div class="card-body position-relative">
@@ -151,8 +193,8 @@
                                 Berhasil
                             </p>
                             <h3 class="fw-bold text-info mb-0 text-absolute">
-                                Rp.
-                                {{ $summary['total_approved'] ?? 0, 0, ',', '.' }}
+                                Rp
+                                {{ number_format($successToday ?? 0, 0, ',', '.') }}
                             </h3>
                         </div>
                         <div
@@ -177,42 +219,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <div
-                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all"
-            >
-                <div class="card-body position-relative">
-                    <div
-                        class="d-flex justify-content-between align-items-start"
-                    >
-                        <div>
-                            <p
-                                class="text-muted fw-500 mb-1 text-uppercase"
-                                style="font-size: 12px; letter-spacing: 0.5px"
-                            >
-                                DIBATALKAN
-                            </p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">
-                                Rp
-                                {{ number_format(auth("merchant")->user()->saldo_aktif ?? 0, 0, ",", ".") }}
-                            </h3>
-                        </div>
-                        <div
-                            class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3"
-                        >
-                            <i
-                                class="bx bx-x-circle text-danger"
-                                style="font-size: 24px"
-                            ></i>
-                        </div>
-                    </div>
-                    <small class="text-muted d-block mt-2">
-                        <i class="bx bx-down-arrow-alt text-danger"></i>
-                        Total yang dibatalkan
-                    </small>
-                </div>
-            </div>
-        </div>
+
 
         {{-- Tabel --}}
         <div class="card rounded-3 border-0 shadow-sm">
@@ -230,9 +237,7 @@
                         <thead class="table-primary text-center align-middle">
                             <tr>
                                 <th class="text-center" style="width: 4%">#</th>
-                                <th style="width: 8%">Kode Merchant</th>
-                                <th style="width: 14%">Nama Merchant</th>
-                                <th style="width: 8%">Nomor Telepon</th>
+                                <th style="width: 8%">Kode Penarikan</th>
                                 <th style="width: 8%">JML Penarikan</th>
                                 <th style="width: 14%">Metode Penarikan</th>
                                 <th style="width: 8%">Status Penarikan</th>
@@ -270,7 +275,7 @@
                 </div>
 
                 <form
-                    action="{{ route("merchant.balance.index") }}"
+                    action="{{ route("merchant.balance.reqWithdraw") }}"
                     method="POST"
                 >
                     @csrf
@@ -285,7 +290,9 @@
                                 id="amount_display"
                                 oninput="formatCurrencyInput(this)"
                                 inputmode="numeric"
+                                data-target="amount"
                                 placeholder="10.000"
+                                required
                             />
 
                             <input type="hidden" id="amount" name="amount" />
@@ -326,7 +333,7 @@
                             Batal
                         </button>
 
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" onclick="return document.getElementById('amount').value !== ''">
                             Tarik Saldo
                         </button>
                     </div>
@@ -368,26 +375,34 @@
                     type: 'GET',
                     data: function (d) {
                         d.unit_id = $('#unit_id').val();
-                        d.status_penarikan = $('#status').val();
+                        d.status = $('#status').val();
                         d.tanggal = $('#tanggal').val();
                     },
                 },
-                columns: [
-                    { data: 'no', className: 'text-center' },
-                    { data: 'kode_merchant' },
-                    { data: 'nama_merchant' },
-                    { data: 'no_telp' },
-                    { data: 'jml' },
-                    { data: 'metode' },
-                    { data: 'status' },
-                    { data: 'waktu_penarikan', className: 'text-center' },
-                    {
-                        data: 'action',
-                        className: 'text-center',
-                        orderable: false,
-                        searchable: false,
-                    },
-                ],
+columns: [
+    { data: 'no', className: 'text-center' },
+    { data: 'kode_withdrawal' },
+    { data: 'jml' },
+    { data: 'metode' },
+    {
+        data: 'status',
+        render: function (data) {
+            return data; // render HTML badge
+        },
+        className: 'text-center',
+    },
+    { data: 'waktu_penarikan', className: 'text-center' },
+    {
+        data: 'action',
+        className: 'text-center',
+        orderable: false,
+        searchable: false,
+        render: function (data) {
+            return data; // render button HTML
+        }
+    }
+],
+
                 order: [[1, 'desc']],
             });
         });
@@ -400,15 +415,55 @@
     <script>
         function formatCurrencyInput(input) {
             let raw = input.value.replace(/\D/g, '');
+            const targetId = input.dataset.target;
+            const targetInput = document.getElementById(targetId);
+
+            if(!targetInput) {
+                console.error('Target input tidak ditemukan', targetId);
+                return;
+            }
 
             if (!raw) {
                 input.value = '';
-                document.getElementById(input.dataset.target).value = '';
+                targetInput.value = '';
                 return;
             }
 
             input.value = new Intl.NumberFormat('id-ID').format(raw);
-            document.getElementById(input.dataset.target).value = raw;
+            targetInput.value = raw;
         }
     </script>
+
+    @if (@session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'Oke'
+            });
+        </script>
+    @endif
+    @if (@session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: '{{ session('error') }}',
+                confirmButtonText: 'Oke'
+            });
+        </script>
+    @endif
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validasi Gagal',
+                html: `{!!
+            implode('<br>', $errors->all())
+        !!}`,
+                confirmButtonText: 'Oke'
+            });
+        </script>
+    @endif
 @endpush

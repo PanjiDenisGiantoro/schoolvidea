@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Mpdf\Mpdf;
+use Carbon\Carbon;
 
 class KeuanganTransaksiController extends Controller
 {
@@ -122,6 +123,8 @@ class KeuanganTransaksiController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);
+        $startMonth = Carbon::now()->startOfMonth();
+        $endMonth = Carbon::now()->endOfMonth();
 
         // List transaksi dengan filtering
         $transaksis = Keuangan_transaksi::with([
@@ -142,14 +145,14 @@ class KeuanganTransaksiController extends Controller
 
         // Total Pemasukan - hanya yang sudah verified/approved
         $totalPemasukanQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
-            ->where('status_verifikasi', 'approved');
+            ->where('status_verifikasi', 'approved')->whereBetween('tanggal_transaksi', [$startMonth, $endMonth]);
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
         $total_pemasukan = $totalPemasukanQuery->sum('jumlah');
 
         // Total Pengeluaran - hanya yang sudah verified/approved
-        $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan'])
-            ->where('status_verifikasi', 'approved');
+        $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
+            ->where('status_verifikasi', 'approved')->whereBetween('tanggal_transaksi', [$startMonth, $endMonth]);
         $totalPengeluaranQuery = $this->applyBaseFilters($totalPengeluaranQuery, $request);
         $totalPengeluaranQuery = $this->applyCommonFilters($totalPengeluaranQuery, $request);
         $total_pengeluaran = $totalPengeluaranQuery->sum('jumlah');
