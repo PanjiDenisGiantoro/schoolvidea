@@ -138,12 +138,12 @@ class MerchantWithdrawalController extends Controller
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
-            'format' => 'A4',
+            'format' => [58, 125],
             'orientation' => 'P',
-            'margin_top' => 10,
-            'margin_bottom' => 10,
-            'margin_left' => 10,
-            'margin_right' => 10,
+            'margin_top' => 3,
+            'margin_bottom' => 3,
+            'margin_left' => 3,
+            'margin_right' => 3,
         ]);
 
         $mpdf->WriteHTML($html);

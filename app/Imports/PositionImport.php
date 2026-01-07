@@ -5,9 +5,8 @@ use App\Models\Positions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class PositionImport implements ToModel, WithHeadingRow
+class PositionImport implements ToModel
 {
     public function model(array $row)
     {
@@ -18,46 +17,39 @@ class PositionImport implements ToModel, WithHeadingRow
         $row = array_map('strval', $row);
 
         try {
-            if (empty($row['positions_name'])) {
-                Log::warning('⚠️ Missing required fields (positions_name), skipping...');
+            // ===== 1. Validasi wajib =====
+            if (empty($row[0])) { // positions_name wajib
+                Log::warning('⚠️ positions_name kosong, skip baris');
                 return null;
             }
 
-            DB::beginTransaction();
-            Log::info('✓ Transaction started');
-
-            /**
-             * Konversi status: 'aktif' -> '1', 'non_aktif' -> '0'
-             */
-            $status = '1'; // Default aktif
-            if (isset($row['status'])) {
-                if (strtolower($row['status']) == 'aktif') {
+            // ===== 2. Status =====
+            $status = '1'; // default aktif
+            if (!empty($row[1])) {
+                if (strtolower($row[1]) === 'aktif') {
                     $status = '1';
-                } elseif (strtolower($row['status']) == 'non_aktif') {
+                } elseif (strtolower($row[1]) === 'non_aktif') {
                     $status = '0';
                 } else {
-                    $status = $row['status']; // Jika sudah angka, gunakan langsung
+                    $status = $row[1];
                 }
             }
 
-            /**
-             * Update atau Create Position
-             */
-            Log::info('Processing Position Data');
+            DB::beginTransaction();
 
+            // ===== 3. Update / Create Position =====
             $position = Positions::updateOrCreate(
                 [
-                    'positions_name' => $row['positions_name'],
+                    'positions_name' => $row[0],
                 ],
                 [
                     'status' => $status,
                 ]
             );
 
-            Log::info('✓ Position created/updated | ID: ' . $position->id);
-
             DB::commit();
-            Log::info('✓ Transaction committed successfully');
+
+            Log::info('✓ Position import success | ID: ' . $position->id);
             Log::info('========== POSITION IMPORT COMPLETED ==========');
 
             return $position;
@@ -66,6 +58,7 @@ class PositionImport implements ToModel, WithHeadingRow
             DB::rollBack();
             Log::error('❌ ERROR during position import');
             Log::error($e->getMessage());
+            Log::error('Row data: ' . json_encode($row));
             return null;
         }
     }

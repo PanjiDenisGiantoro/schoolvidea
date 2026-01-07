@@ -299,47 +299,93 @@
                             class="list-unstyled small mb-0 px-4"
                             style="font-size: 14px"
                         >
-                            <li class="mb-2">
-                                <i
-                                    class="ri-building-line text-primary me-2"
-                                ></i>
-                                <strong>Unit :</strong>
-                                <span id="detail_unit" class="float-end">
+                            <li class="mb-2 info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-building-line text-primary me-2"
+                                    ></i>
+                                    <strong>Unit</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_unit"
+                                    class="float-end info-value"
+                                >
                                     -
                                 </span>
                             </li>
-                            <li class="mb-2">
-                                <i class="ri-book-line text-success me-2"></i>
-                                <strong>Kelas :</strong>
-                                <span id="detail_kelas" class="float-end">
+                            <li class="mb-2 info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-book-line text-success me-2"
+                                    ></i>
+                                    <strong>Kelas</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_kelas"
+                                    class="float-end info-value"
+                                >
                                     -
                                 </span>
                             </li>
-                            <li class="mb-2">
-                                <i
-                                    class="ri-calendar-line text-warning me-2"
-                                ></i>
-                                <strong>No VA :</strong>
-                                <span id="detail_va" class="float-end">-</span>
-                            </li>
-                            <li class="mb-2">
-                                <i class="ri-user-line text-secondary me-2"></i>
-                                <strong>Bank :</strong>
-                                <span id="detail_bank" class="float-end">
+                            <li class="mb-2 info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-calendar-line text-warning me-2"
+                                    ></i>
+                                    <strong>No VA</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_va"
+                                    class="float-end info-value"
+                                >
                                     -
                                 </span>
                             </li>
-                            <li class="mb-2">
-                                <i class="ri-map-pin-line text-danger me-2"></i>
-                                <strong>No Rekening :</strong>
-                                <span id="detail_norek" class="float-end">
+                            <li class="mb-2 info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-user-line text-secondary me-2"
+                                    ></i>
+                                    <strong>Bank</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_bank"
+                                    class="float-end info-value"
+                                >
                                     -
                                 </span>
                             </li>
-                            <li>
-                                <i class="ri-phone-line text-success me-2"></i>
-                                <strong>Telepon :</strong>
-                                <span id="detail_telp" class="float-end">
+                            <li class="mb-2 info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-map-pin-line text-danger me-2"
+                                    ></i>
+                                    <strong>No Rekening</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_norek"
+                                    class="float-end info-value"
+                                >
+                                    -
+                                </span>
+                            </li>
+                            <li class="info-row">
+                                <span class="info-label">
+                                    <i
+                                        class="ri-phone-line text-success me-2"
+                                    ></i>
+                                    <strong>Telepon</strong>
+                                </span>
+                                <span class="info-sep"><strong>:</strong></span>
+                                <span
+                                    id="detail_telp"
+                                    class="float-end info-value"
+                                >
                                     -
                                 </span>
                             </li>

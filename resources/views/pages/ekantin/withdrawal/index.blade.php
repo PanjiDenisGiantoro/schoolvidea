@@ -31,7 +31,9 @@
                             >
                                 Total Nominal
                             </p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-success mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_nominal"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -73,7 +75,9 @@
                             >
                                 Sedang Diproses
                             </p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-warning mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_pending"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -115,7 +119,9 @@
                             >
                                 Berhasil
                             </p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-info mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_approved"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -157,7 +163,9 @@
                             >
                                 Dibatalkan
                             </p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-danger mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_rejected"] ?? 0, 0, ",", ".") }}
                             </h3>

@@ -45,6 +45,16 @@ Route::prefix('landing')->group(function () {
         return view('pages.notif.notif_register_success');
     })->name('landing.successregister');
 });
+// Serve file bukti pembayaran jika symlink tidak berfungsi
+Route::get('/storage/bukti_pembayaran/{filename}', function ($filename) {
+    $path = storage_path('app/public/bukti_pembayaran/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404, 'File not found');
+    }
+
+    return response()->file($path);
+})->name('storage.bukti_pembayaran');
 Route::get('/', [AuthController::class, 'portalCode']);
 Route::get('/login', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');

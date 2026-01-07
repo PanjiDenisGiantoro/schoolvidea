@@ -1,14 +1,34 @@
 <header class="topbar d-flex">
     <!-- Sidebar Logo -->
     <div class="logo-box d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo-dark">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo dark">
+        <a href="{{ url('dashboard') }}" class="logo-dark">
+            @php
+                $logoUrl = asset('assets/images/videa.png'); // Default logo
+
+                if(auth()->user()->unit_id) {
+                    $unit = \App\Models\Unit::find(auth()->user()->unit_id);
+                    if($unit && $unit->image) {
+                        $logoUrl = asset($unit->image);
+                    }
+                }
+            @endphp
+            <img src="{{ $logoUrl }}" alt="Logo" width="150" height="50" style="object-fit: contain;">
+
         </a>
 
-        <a href="index.html" class="logo-light">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-sm" alt="logo sm">
-            <img src="{{ asset('assets/images/videa.png') }}" class="logo-lg" alt="logo light">
+        <a href="{{ url('dashboard') }}" class="logo-light">
+            @php
+                $logoUrl = asset('assets/images/videa.png'); // Default logo
+
+                if(auth()->user()->unit_id) {
+                    $unit = \App\Models\Unit::find(auth()->user()->unit_id);
+                    if($unit && $unit->image) {
+                        $logoUrl = asset($unit->image);
+                    }
+                }
+            @endphp
+            <img src="{{ $logoUrl }}" alt="Logo" width="150" height="50" style="object-fit: contain;">
+
         </a>
     </div>
 
@@ -53,12 +73,12 @@
                         <div class="border-top-0 border-start-0 border-end-0 border border-dashed p-3">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h6 class="fs-16 fw-semibold m-0"> Notifications</h6>
+                                    <h6 class="fs-16 fw-semibold m-0"> Notifikasi</h6>
                                 </div>
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;">
-                            <!-- Item -->
+                            {{-- <!-- Item -->
                             <a href="javascript:void(0);" class="dropdown-item border-bottom text-wrap py-3">
                                 <p class="mb-0"><span class="fw-medium">Olivia Bennett</span> mentioned you in a
                                     comment <span>"This update really improves the user experience! 🚀"</span></p>
@@ -88,7 +108,7 @@
                                 <p class="mb-0 text-wrap">
                                     Uploaded the latest marketing report for your review.
                                 </p>
-                            </a>
+                            </a> --}}
 
                         </div>
                     </div>

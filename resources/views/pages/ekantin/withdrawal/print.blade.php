@@ -5,90 +5,105 @@
     <title>Struk Penarikan</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
+            font-family: DejaVu Sans, monospace;
+            font-size: 10px;
+            margin: 0;
+            padding: 0;
         }
-        .container {
-            width: 100%;
+
+        .receipt {
+            width: 58mm;
+            padding: 6px;
         }
-        .title {
+
+        .center {
             text-align: center;
-            font-size: 16px;
+        }
+
+        .bold {
             font-weight: bold;
-            margin-bottom: 10px;
         }
+
+        .line {
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+
         .row {
-            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
         }
-        .label {
-            display: inline-block;
-            width: 140px;
-        }
-        hr {
-            margin: 10px 0;
-        }
+
         .footer {
             text-align: center;
-            margin-top: 20px;
-            font-size: 11px;
+            font-size: 9px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">STRUK PENARIKAN DANA</div>
-        <hr>
-
-        <div class="row">
-            <span class="label">Reference ID</span> :
-            {{ $withdrawal->reference_id }}
+    <div class="receipt">
+        <div class="center bold">
+            STRUK PENARIKAN
         </div>
-        <div class="row">
-            <span class="label">Tanggal</span> :
-            {{ $withdrawal->requested_at->format('d-m-Y H:i') }}
+        <div class="center">
+            {{ config('app.name') }}
         </div>
 
-        <hr>
+        <div class="line"></div>
 
         <div class="row">
-            <span class="label">Kode Merchant</span> :
-            {{ $withdrawal->merchant->kode_merchant }}
+            <span>Ref</span>
+            <span>{{ $withdrawal->reference_id }}</span>
         </div>
         <div class="row">
-            <span class="label">Nama Merchant</span> :
+            <span>Tgl</span>
+            <span>{{ $withdrawal->requested_at->format('d/m/Y H:i') }}</span>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="row">
+            <span>Merchant</span>
+            <span>{{ $withdrawal->merchant->kode_merchant }}</span>
+        </div>
+        <div>
             {{ $withdrawal->merchant->nama_merchant }}
         </div>
 
-        <hr>
+        <div class="line"></div>
+
+        <div class="row bold">
+            <span>Penarikan</span>
+            <span>Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</span>
+        </div>
 
         <div class="row">
-            <span class="label">Jumlah Penarikan</span> :
-            <strong>
-                Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}
-            </strong>
+            <span>Bank</span>
+            <span>{{ $withdrawal->bank_name }}</span>
         </div>
         <div class="row">
-            <span class="label">Bank</span> :
-            {{ $withdrawal->bank_name }}
+            <span>No Rek</span>
+            <span>{{ $withdrawal->account_number }}</span>
         </div>
         <div class="row">
-            <span class="label">No Rekening</span> :
-            {{ $withdrawal->account_number }}
-        </div>
-        <div class="row">
-            <span class="label">Atas Nama</span> :
-            {{ $withdrawal->account_name }}
+            <span>Nama</span>
+            <span>{{ $withdrawal->account_name }}</span>
         </div>
 
-        <hr>
+        <div class="line"></div>
 
-        <div class="row">
-            <span class="label">Status</span> :
-            <strong>{{ strtoupper($withdrawal->status) }}</strong>
+        <div class="row bold">
+            <span>Status</span>
+            <span>{{ strtoupper($withdrawal->status) }}</span>
         </div>
+
+        <div class="line"></div>
 
         <div class="footer">
-            Dokumen ini dicetak secara otomatis oleh sistem
+            *** TERIMA KASIH *** <br>
+            Dicetak oleh sistem
         </div>
     </div>
 </body>

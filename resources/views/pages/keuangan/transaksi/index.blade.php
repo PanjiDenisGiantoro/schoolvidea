@@ -47,7 +47,8 @@
                     </div>
                     <small class="text-muted d-block mt-2">
                         <i class="bx bx-up-arrow-alt text-success"></i>
-                        Periode {{ Carbon\Carbon::now()->translatedFormat('F Y') }}
+                        Periode
+                        {{ Carbon\Carbon::now()->translatedFormat("F Y") }}
                     </small>
                 </div>
             </div>
@@ -83,7 +84,8 @@
                     </div>
                     <small class="text-muted d-block mt-2">
                         <i class="bx bx-down-arrow-alt text-danger"></i>
-                        Periode {{ Carbon\Carbon::now()->translatedFormat('F Y') }}
+                        Periode
+                        {{ Carbon\Carbon::now()->translatedFormat("F Y") }}
                     </small>
                 </div>
             </div>
@@ -140,7 +142,9 @@
                             >
                                 Transaksi Keseluruhan
                             </p>
-                            <h3 class="fw-bold text-primary mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-primary mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_transaksi"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -176,7 +180,9 @@
                             >
                                 Hari Ini
                             </p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-info mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_harian"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -210,9 +216,13 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Transaksi Non-Tunai
+                                Transaksi
+                                <br />
+                                Non-Tunai
                             </p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-success mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_non_tunai"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -246,9 +256,13 @@
                                 class="text-muted fw-500 mb-1 text-uppercase"
                                 style="font-size: 12px; letter-spacing: 0.5px"
                             >
-                                Transaksi Tunai
+                                Transaksi
+                                <br />
+                                Tunai
                             </p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-warning mb-0 text-absolute"
+                            >
                                 Rp
                                 {{ number_format($summary["total_tunai"] ?? 0, 0, ",", ".") }}
                             </h3>
@@ -558,14 +572,19 @@
                                         $isMulitple = true;
                                     }
                                 }
+
+                                $badgeClass = "bg-secondary";
+                                if ($transaksi->jenis_transaksi === "tagihan-keluar") {
+                                    $badgeClass = "bg-warning";
+                                } elseif ($isMulitple) {
+                                    $badgeClass = "bg-info";
+                                }
                             @endphp
 
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    <span
-                                        class="badge @if($isMulitple) bg-info @else bg-secondary @endif"
-                                    >
+                                    <span class="badge {{ $badgeClass }}">
                                         @if ($isMulitple)
                                             <i class="bx bx-link-alt me-1"></i>
                                             {{ $displayCode }}
@@ -597,6 +616,7 @@
                                             "penarikan_tabungan" => "danger",
                                             "pembayaran" => "info",
                                             "tagihan" => "info",
+                                            "tagihan-keluar" => "warning",
                                             default => "secondary",
                                         };
                                         $jenisText = match ($transaksi->jenis_transaksi) {
@@ -604,6 +624,7 @@
                                             "penarikan_tabungan" => "Penarikan Tabungan",
                                             "pembayaran" => "Pembayaran",
                                             "tagihan" => "Pembayaran Tagihan",
+                                            "tagihan-keluar" => "Penggajian Guru",
                                             default => ucwords(str_replace("_", " ", $transaksi->jenis_transaksi)),
                                         };
                                     @endphp
@@ -712,14 +733,24 @@
                                         >
                                             <i class="bx bx-show"></i>
                                         </button>
-                                        <button
+                                        {{-- <button
                                             type="button"
                                             class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
                                             data-id="{{ $transaksi->id }}"
                                             title="Cetak Struk"
                                         >
                                             <i class="bx bx-printer"></i>
-                                        </button>
+                                        </button> --}}
+                                        <button
+    type="button"
+    class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
+    data-id="{{ $transaksi->id }}"
+    data-penerima="{{ class_basename($transaksi->penerima) }}"
+    title="Cetak Struk"
+>
+    <i class="bx bx-printer"></i>
+</button>
+
                                         {{-- @if ($transaksi->status_verifikasi == 'pending') --}}
                                         {{-- <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}
                                         {{-- data-id="{{ $transaksi->id }}" --}}
@@ -1112,15 +1143,38 @@
             });
 
             // Handle cetak struk button click
-            document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
-                button.addEventListener('click', function () {
-                    const transaksiId = this.dataset.id;
-                    window.open(
-                        `{{ url("keuangan-transaksi/cetak-struk") }}/${transaksiId}`,
-                        '_blank',
-                    );
-                });
-            });
+            // document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
+            //     button.addEventListener('click', function () {
+            //         const transaksiId = this.dataset.id;
+            //         window.open(
+            //             `{{ url("keuangan-transaksi/cetak-struk") }}/${transaksiId}`,
+            //             '_blank',
+            //         );
+            //     });
+            // });
+
+document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
+    button.addEventListener('click', function () {
+        const transaksiId = this.dataset.id;
+        const penerima = this.dataset.penerima;
+        console.log( penerima, transaksiId );
+        
+
+        let url = '';
+
+        if (penerima === 'Siswa') {
+            url = `{{ url("keuangan-transaksi/cetak-struk") }}/${transaksiId}`;
+        } else if (penerima === 'Officer') {
+            url = `{{ url("payroll-payment/slip") }}/${transaksiId}`;
+        } else {
+            alert('Tipe penerima tidak dikenali');
+            return;
+        }
+
+        window.open(url, '_blank');
+    });
+});
+
 
             // Handle approve button click
             document.querySelectorAll('.btn-approve-trx').forEach((button) => {

@@ -31,7 +31,9 @@
                             >
                                 Total Transaksi
                             </p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-success mb-0 text-absolute"
+                            >
                                 {{ $trxCount ?? 0 }}
                             </h3>
                         </div>
@@ -66,7 +68,9 @@
                             >
                                 Transaksi Kredit
                             </p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-info mb-0 text-absolute"
+                            >
                                 {{ $trxCredit ?? 0 }}
                             </h3>
                         </div>
@@ -100,7 +104,9 @@
                             >
                                 Transaksi Debit
                             </p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-warning mb-0 text-absolute"
+                            >
                                 {{ $trxDebit ?? 0 }}
                             </h3>
                         </div>
@@ -135,7 +141,9 @@
                             >
                                 Total Hari Ini
                             </p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-danger mb-0 text-absolute"
+                            >
                                 Rp.
                                 {{ number_format($totalToday ?? 0, 0, ",", ".") }}
                             </h3>

@@ -86,6 +86,9 @@ class MigrasiController extends Controller
 
     public function importSiswa(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls',
@@ -111,6 +114,9 @@ class MigrasiController extends Controller
 
     public function importKelas(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls',
@@ -132,6 +138,9 @@ class MigrasiController extends Controller
 
     public function importOfficer(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         // Validasi file yang di-upload
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
@@ -154,6 +163,9 @@ class MigrasiController extends Controller
 
     public function importJurusan(Request $request)
     {
+        ini_set('max_execution_time', 0);
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls'
         ]);

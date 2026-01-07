@@ -30,7 +30,10 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
         Log::info('Incoming row data: ' . json_encode($row));
 
         // Pastikan semua data string
-        $row = array_map('strval', $row);
+$row = array_map(function ($value) {
+    return is_string($value) ? trim($value) : $value;
+}, $row);
+
 
         // Force kolom besar menjadi string
         $row['nik'] = isset($row['nik']) ? trim($row['nik']) : null;
@@ -41,14 +44,19 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
 
         try {
             // Validasi field required
-            if (empty($row['nama_lengkap']) || empty($row['email']) || empty($row['password'])) {
-                Log::warning('⚠️ Missing required fields, skipping...');
-                return null;
-            }
+if (
+    empty($row['nama_lengkap']) ||
+    empty($row['email']) ||
+    empty($row['password']) ||
+    empty($row['nisn']) ||
+    empty($row['nis']) ||
+    empty($row['kelas'])
+) {
+    Log::warning('⚠️ Missing required fields, skipping...');
+    return null;
+}
 
             DB::beginTransaction();
-            Log::info('✓ Transaction started');
-
             // Step 1: User
             $user = User::where('email', $row['email'])->first();
             if (!$user) {
@@ -59,20 +67,17 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
                     'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]);
-                Log::info('✓ New user created: ' . $user->id);
             } else {
                 $user->update([
                     'name' => $row['nama_lengkap'],
                     'rfid_no' => $row['no_rfid'] ?? null,
                     'unit_id' => $this->unit_id,
                 ]);
-                Log::info('✓ Existing user updated: ' . $user->id);
             }
 
             // Step 2: Role
             $rolePetugas = Roles::where('name', 'siswa')->first();
             if (!$rolePetugas) {
-                Log::warning('⚠️ Role "siswa" not found');
                 DB::rollBack();
                 return null;
             }
@@ -82,13 +87,11 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
             );
             if (!$user->hasRole($roleSpatie->name)) {
                 $user->assignRole($roleSpatie->name);
-                Log::info('✓ Role assigned: ' . $roleSpatie->name);
             }
 
             // Step 3: Kelas
             $kelas = Kelas::where('nama_kelas', $row['kelas'])->first();
             if (!$kelas) {
-                Log::warning('⚠️ Kelas not found: "' . $row['kelas'] . '"');
                 DB::rollBack();
                 return null;
             }
@@ -108,34 +111,49 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
             }
 
             // Status default 1
-            $status = $row['status_1_aktif_0_tidak_aktif'] ?? '1';
+$status = isset($row['status']) && in_array($row['status'], ['0', '1'])
+    ? (int) $row['status']
+    : 1;
+
+$jenisKelamin = null;
+if (!empty($row['jenis_kelamin'])) {
+    $jk = strtolower(trim($row['jenis_kelamin']));
+    if (in_array($jk, ['l', 'laki-laki', 'laki laki'])) {
+        $jenisKelamin = 'L';
+    } elseif (in_array($jk, ['p', 'perempuan'])) {
+        $jenisKelamin = 'P';
+    }
+}
+
 
             // Step 5: Update or create siswa
-            $siswa = Siswa::updateOrCreate(
-                [
-                    'nisn' => $row['nisn'],
-                    'unit_id' => $this->unit_id,
-                    'tahun_ajaran_id' => $this->tahun_ajaran_id,
-                ],
-                [
-                    'nis' => $row['nis'],
-                    'kelas_id' => $kelas->id,
-                    'user_id' => $user->id,
-                    'rfid_no' => $row['no_rfid'] ?? null,
-                    'va_siswa' => $row['no_va'] ?? null,
-                    'jenis_kelamin' => $row['jenis_kelamin'] === 'Laki-laki' ? 'L' : 'P',
-                    'agama' => $row['agama'] ?? null,
-                    'no_hp_ortu' => $row['no_hp_ortu'] ?? null,
-                    'nama_ortu' => $row['nama_orang_tua'] ?? null,
-                    'bank' => $row['bank'] ?? null,
-                    'no_rekening' => $row['no_rekening'] ?? null,
-                    'status' => $status,
-                    'nik' => $row['nik'] ?? null,
-                    'tanggal_lahir' => $tanggalLahir,
-                    'no_hp_siswa' => $row['no_hp_siswa'] ?? null,
-                    'alamat' => $row['alamat'] ?? null,
-                ]
-            );
+$siswa = Siswa::updateOrCreate(
+    [
+        'nisn' => $row['nisn'],
+        'unit_id' => $this->unit_id,
+        'tahun_ajaran_id' => $this->tahun_ajaran_id,
+    ],
+    [
+        'nis' => $row['nis'],
+        'kelas_id' => $kelas->id,
+        'user_id' => $user->id,
+        'rfid_no' => $row['no_rfid'] ?? null,
+        'va_siswa' => $row['no_va'] ?? null,
+        'jenis_kelamin' => $jenisKelamin,
+        'agama' => $row['agama'] ?? null,
+        'tempat_lahir' => $row['tempat_lahir'] ?? null,
+        'tanggal_lahir' => $tanggalLahir,
+        'no_hp_siswa' => $row['no_hp_siswa'] ?? null,
+        'no_hp_ortu' => $row['no_hp_ortu'] ?? null,
+        'nama_ortu' => $row['nama_orang_tua'] ?? null,
+        'alamat' => $row['alamat'] ?? null,
+        'bank' => $row['bank'] ?? null,
+        'no_rekening' => $row['no_rekening'] ?? null,
+        'nik' => $row['nik'] ?? null,
+        'status' => $status,
+    ]
+);
+
 
             Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
 
@@ -147,7 +165,6 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
 
             DB::commit();
             Log::info('✓ Transaction committed successfully');
-            Log::info('========== SISWA IMPORT COMPLETED ==========');
 
             return $siswa;
 

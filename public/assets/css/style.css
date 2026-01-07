@@ -868,3 +868,22 @@ body.dark-theme .pagination-info {
     text-align: left;
     font-weight: 500; /* Memberi sedikit penekanan pada nilai */
 }
+
+.info-row {
+    display: grid;
+    grid-template-columns: 130px 10px 1fr;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.info-label {
+    font-weight: 600;
+}
+
+.info-sep {
+    text-align: center;
+}
+
+.info-value {
+    text-align: right;
+}

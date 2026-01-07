@@ -39,6 +39,7 @@ class SiswaExport implements FromCollection, WithHeadings, WithEvents
             'NAMA LENGKAP *',
             'NIK *',
             'JENIS KELAMIN *',
+            'TEMPAT LAHIR',
             'TANGGAL LAHIR (DD/MM/YYYY)',
             'AGAMA *',
             'NO HP SISWA',

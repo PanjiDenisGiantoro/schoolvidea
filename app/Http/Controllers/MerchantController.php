@@ -21,10 +21,10 @@ class MerchantController extends Controller
         }
 
         $merchants = $query;
-        $merCount = $merchants->count();
-        $merActive = $merchants->where('status', '1')->count();
-        $merNonActive = $merchants->where('status', '0')->count();
-        $saldoAktif = $merchants->sum('saldo_aktif');
+        $merCount = (clone $merchants)->count();
+        $merActive = (clone $merchants)->where('status', '1')->count();
+        $merNonActive = (clone $merchants)->where('status', '0')->count();
+        $saldoAktif = (clone $merchants)->sum('saldo_aktif');
 
         return view('pages.ekantin.merchant.index', compact('units', 'merchants', 'merCount', 'merActive', 'merNonActive', 'saldoAktif'));
     }

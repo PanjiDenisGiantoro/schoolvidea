@@ -495,7 +495,7 @@ class PayrollPaymentController extends Controller
                 'penerima_tipe' => Officer::class,
                 'jenis_transaksi' => 'tagihan-keluar',
                 'jumlah' => $jumlahBayar,
-                'metode' => $request->metode ?? 'non-tunai',
+                'metode' => $request->metode ?? 'NON-TUNAI',
                 'referensi_tagihan_id' => $pembayaran->id,
                 'tanggal_transaksi' => now(),
                 'keterangan' => $keterangan,

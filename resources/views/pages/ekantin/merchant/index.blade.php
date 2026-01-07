@@ -31,7 +31,9 @@
                             >
                                 Jumlah Merchant
                             </p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-success mb-0 text-absolute"
+                            >
                                 {{ $merCount ?? 0 }}
                             </h3>
                         </div>
@@ -65,7 +67,9 @@
                             >
                                 Merchant Aktif
                             </p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">
+                            <h3
+                                class="fw-bold fs-4 text-info mb-0 text-absolute"
+                            >
                                 {{ $merActive ?? 0 }}
                             </h3>
                         </div>
@@ -99,8 +103,10 @@
                             >
                                 Merchant Non-aktif
                             </p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">
-                                {{$merNonActive ?? 0}}
+                            <h3
+                                class="fw-bold fs-4 text-danger mb-0 text-absolute"
+                            >
+                                {{ $merNonActive ?? 0 }}
                             </h3>
                         </div>
                         <div
@@ -134,10 +140,9 @@
                                 Saldo Merchant
                             </p>
                             <h3
-                                class="fw-bold text-warning mb-0 text-absolute"
-                                style="font-size: 18px"
+                                class="fw-bold fs-4 text-warning mb-0 text-absolute"
                             >
-                                {{ number_format($saldoAktif ?? 0,0,',','.') }}
+                                Rp {{ number_format($saldoAktif ?? 0, 0, ",", ".") }}
                             </h3>
                         </div>
                         <div

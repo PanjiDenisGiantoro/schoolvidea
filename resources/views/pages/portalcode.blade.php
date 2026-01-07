@@ -11,8 +11,6 @@
 
 <body class="authentication-bg">
 
-<body class="authentication-bg">
-
 <div class="auth-wrapper">
 
     <!-- LEFT - ILLUSTRATION -->
@@ -48,10 +46,10 @@
                     <!-- Heading -->
                     <div class="text-center mb-4">
                         <h3 class="fw-bold text-dark fs-20">
-                            Masukkan Kode Sekolah
+                            Masukkan Kode Lembaga
                         </h3>
                         <p class="text-muted">
-                            Silakan input kode sekolah Anda untuk melanjutkan
+                            Silakan input kode lembaga Anda untuk melanjutkan
                         </p>
                     </div>
 
@@ -61,11 +59,11 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label class="form-label">Kode Sekolah</label>
+                            <label class="form-label">Kode Lembaga</label>
                             <input type="text"
                                    name="kode_sekolah"
                                    class="form-control"
-                                   placeholder="Masukkan kode sekolah"
+                                   placeholder="Masukkan kode lembaga"
                                    required>
                         </div>
 

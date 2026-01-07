@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class RoleImport implements ToModel, WithHeadingRow
+class RoleImport implements ToModel
 {
     public function model(array $row)
     {
@@ -18,46 +18,31 @@ class RoleImport implements ToModel, WithHeadingRow
         $row = array_map('strval', $row);
 
         try {
-            // Header sekarang adalah 'ROLE', bukan 'name'
-            $roleName = $row['role'] ?? null;
+            // ===== 1. Ambil role dari index 0 =====
+            $roleName = $row[0] ?? null;
 
             if (empty($roleName)) {
-                Log::warning('⚠️ Missing required fields (role), skipping...');
+                Log::warning('⚠️ Role kosong, skip baris');
                 return null;
             }
 
-//            DB::beginTransaction();
-            Log::info('✓ Transaction started');
+            Log::info('Processing Role: ' . $roleName);
 
             /**
-             * Update atau Create Role
-             * guard_name statis = 'web'
+             * 2. Update atau Create Role
+             * guard_name = web
              */
-            Log::info('Processing Role Data');
+            $role = Roles::firstOrCreate(
+                ['name' => $roleName],
+                ['guard_name' => 'web']
+            );
 
-            $role = Roles::where('name', $roleName)->first();
-            if (!$role) {
-                $role = Roles::create([
-                    'name' => $roleName,
-                    'guard_name' => 'web',
-                ]);
-            }
-//            // Juga buat di Spatie Permission jika belum ada
-//            \Spatie\Permission\Models\Role::firstOrCreate(
-//                ['name' => $roleName],
-//                ['guard_name' => 'web']
-//            );
-
-            Log::info('✓ Role created/updated | ID: ' . $role->id);
-
-//            DB::commit();
-            Log::info('✓ Transaction committed successfully');
+            Log::info('✓ Role created/exists | ID: ' . $role->id);
             Log::info('========== ROLE IMPORT COMPLETED ==========');
 
             return $role;
 
         } catch (\Exception $e) {
-//            DB::rollBack();
             Log::error('❌ ERROR during role import');
             Log::error($e->getMessage());
             return null;

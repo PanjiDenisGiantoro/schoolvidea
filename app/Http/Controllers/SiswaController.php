@@ -43,30 +43,30 @@ class SiswaController extends Controller
             $query->where('unit_id', $request->unit_id);
         }
 
-        // Search functionality across all columns
+        // Search functionality across all columns (case-insensitive)
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = strtoupper($request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('nisn', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('va_siswa', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")
-                  ->orWhere('no_hp', 'like', "%{$search}%")
-                  ->orWhere('tempat_lahir', 'like', "%{$search}%")
-                  ->orWhere('nama_ortu', 'like', "%{$search}%")
+                $q->whereRaw('UPPER(nisn) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(nis) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(name) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(va_siswa) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(nik) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(no_hp) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(tempat_lahir) like ?', ["%{$search}%"])
+                  ->orWhereRaw('UPPER(nama_ortu) like ?', ["%{$search}%"])
                   ->orWhereHas('user', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                      $q->whereRaw('UPPER(name) like ?', ["%{$search}%"])
+                        ->orWhereRaw('UPPER(email) like ?', ["%{$search}%"]);
                   })
                   ->orWhereHas('kelas', function ($q) use ($search) {
-                      $q->where('nama_kelas', 'like', "%{$search}%");
+                      $q->whereRaw('UPPER(nama_kelas) like ?', ["%{$search}%"]);
                   })
                   ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
+                      $q->whereRaw('UPPER(nama_unit) like ?', ["%{$search}%"]);
                   })
                   ->orWhereHas('jurusan', function ($q) use ($search) {
-                      $q->where('nama_jurusan', 'like', "%{$search}%");
+                      $q->whereRaw('UPPER(nama_jurusan) like ?', ["%{$search}%"]);
                   });
             });
         }

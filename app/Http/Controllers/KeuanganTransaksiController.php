@@ -123,17 +123,17 @@ class KeuanganTransaksiController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);
-        $startMonth = Carbon::now()->startOfMonth();
-        $endMonth = Carbon::now()->endOfMonth();
+        // $startMonth = Carbon::now()->startOfMonth();
+        // $endMonth = Carbon::now()->endOfMonth();
 
         // List transaksi dengan filtering
         $transaksis = Keuangan_transaksi::with([
-                'penerima',
-                'approvedBy',
-                'verifier',
-                'creator',
-                'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-            ]);
+            'penerima',
+            'approvedBy',
+            'verifier',
+            'creator',
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+        ]);
 
         $transaksis = $this->applyBaseFilters($transaksis, $request);
         $transaksis = $this->applyCommonFilters($transaksis, $request);
@@ -145,14 +145,14 @@ class KeuanganTransaksiController extends Controller
 
         // Total Pemasukan - hanya yang sudah verified/approved
         $totalPemasukanQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
-            ->where('status_verifikasi', 'approved')->whereBetween('tanggal_transaksi', [$startMonth, $endMonth]);
+            ->where('status_verifikasi', 'approved');
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
         $total_pemasukan = $totalPemasukanQuery->sum('jumlah');
 
         // Total Pengeluaran - hanya yang sudah verified/approved
         $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
-            ->where('status_verifikasi', 'approved')->whereBetween('tanggal_transaksi', [$startMonth, $endMonth]);
+            ->where('status_verifikasi', 'approved');
         $totalPengeluaranQuery = $this->applyBaseFilters($totalPengeluaranQuery, $request);
         $totalPengeluaranQuery = $this->applyCommonFilters($totalPengeluaranQuery, $request);
         $total_pengeluaran = $totalPengeluaranQuery->sum('jumlah');
@@ -171,10 +171,10 @@ class KeuanganTransaksiController extends Controller
         $summaryTransaksis = $summaryQuery->get();
 
         // Calculate various metrics for summary cards (case insensitive check)
-        $total_tunai = $summaryTransaksis->filter(function ($t) {
+        $total_tunai = $summaryTransaksis->filter(function($t) {
             return strtoupper($t->metode) === 'CASH' || strtolower($t->metode) === 'tunai';
         })->sum('jumlah');
-        $total_non_tunai = $summaryTransaksis->filter(function ($t) {
+        $total_non_tunai = $summaryTransaksis->filter(function($t) {
             return strtoupper($t->metode) !== 'CASH' && strtolower($t->metode) !== 'tunai';
         })->sum('jumlah');
         $today = \Carbon\Carbon::today()->toDateString();
@@ -245,8 +245,10 @@ class KeuanganTransaksiController extends Controller
         $transaksi = Keuangan_transaksi::with([
             'penerima',
             'creator',
+            'verifier',
             'jurnals.akun',
-            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori',
+            'pembayaranTagihan.tagihanSiswa.potonganSiswa.potongan'
         ])->findOrFail($id);
 
         // Ambil logs aktivitas
@@ -270,6 +272,7 @@ class KeuanganTransaksiController extends Controller
                     ->with([
                         'tagihanSiswa.siswa.user',
                         'tagihanSiswa.tagihan',
+                        'tagihanSiswa.potonganSiswa.potongan'
                     ])
                     ->orderBy('urutan')
                     ->get();
@@ -285,10 +288,10 @@ class KeuanganTransaksiController extends Controller
     public function printLaporan(Request $request)
     {
         $transaksis = Keuangan_transaksi::with([
-                'penerima',
-                'creator',
-                'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-            ])
+            'penerima',
+            'creator',
+            'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
+        ])
             ->when(Auth::user()->yayasan_id, function ($query) {
                 $query->whereHasMorph('penerima', [Siswa::class], function ($q) {
                     $q->whereHas('unit', function ($q2) {
@@ -553,7 +556,7 @@ class KeuanganTransaksiController extends Controller
 
                 $settings = $settings->where('status', '1')->first();
 
-                if (!$settings) {
+                if(!$settings){
                     return back()->with('danger', 'Setting akun tabungan belum diatur.');
                 }
                 $akun_id = $settings->akun_id;
@@ -570,16 +573,16 @@ class KeuanganTransaksiController extends Controller
                 }
 
 
-                if ($datarekening->allotment == 'Semua Pembayaran') {
+                if($datarekening->allotment == 'Semua Pembayaran'){
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment', 'Semua Pembayaran')
+                        ->where('allotment','Semua Pembayaran')
                         ->first();
-                } else {
+                }else{
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment', 'Pembayaran Tagihan')
+                        ->where('allotment','Pembayaran Tagihan')
                         ->first();
                 }
-                if ($position == 1) {
+                if($position == 1){
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -597,7 +600,7 @@ class KeuanganTransaksiController extends Controller
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
                     ]);
-                } else {
+                }else{
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -658,7 +661,7 @@ class KeuanganTransaksiController extends Controller
 
                     $settings = $settings->where('status', '1')->first();
 
-                    if (!$settings) {
+                    if(!$settings){
                         return back()->with('danger', 'Setting akun tabungan belum diatur.');
                     }
                     $akun_id = $settings->akun_id;
@@ -676,17 +679,17 @@ class KeuanganTransaksiController extends Controller
                     }
 
 
-                    if ($datarekening->allotment == 'Semua Pembayaran') {
+                    if($datarekening->allotment == 'Semua Pembayaran'){
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment', 'Semua Pembayaran')
+                            ->where('allotment','Semua Pembayaran')
                             ->first();
-                    } else {
+                    }else{
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment', 'Pembayaran Tabungan')
+                            ->where('allotment','Pembayaran Tabungan')
                             ->first();
                     }
 
-                    if ($position == 1) {
+                    if($position == 1){
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -704,7 +707,7 @@ class KeuanganTransaksiController extends Controller
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
                         ]);
-                    } else {
+                    }else{
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -797,7 +800,7 @@ class KeuanganTransaksiController extends Controller
                         ->where('status', '1')
                         ->first();
 
-                    if (!$dataRekeningKredit) {
+                    if(!$dataRekeningKredit){
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -1096,12 +1099,12 @@ class KeuanganTransaksiController extends Controller
         if (!empty($searchValue)) {
             $query->where(function ($q) use ($searchValue) {
                 $q->where('code_pembayaran', 'LIKE', "%{$searchValue}%")
-                  ->orWhereHas('penerima.user', function ($q2) use ($searchValue) {
-                      $q2->where('name', 'LIKE', "%{$searchValue}%");
-                  })
-                  ->orWhere('metode', 'LIKE', "%{$searchValue}%")
-                  ->orWhere('jenis_transaksi', 'LIKE', "%{$searchValue}%")
-                  ->orWhere('status_verifikasi', 'LIKE', "%{$searchValue}%");
+                    ->orWhereHas('penerima.user', function ($q2) use ($searchValue) {
+                        $q2->where('name', 'LIKE', "%{$searchValue}%");
+                    })
+                    ->orWhere('metode', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('jenis_transaksi', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('status_verifikasi', 'LIKE', "%{$searchValue}%");
             });
         }
 
@@ -1110,10 +1113,10 @@ class KeuanganTransaksiController extends Controller
 
         // Apply ordering dan pagination
         $results = $query->orderBy('tanggal_transaksi', 'desc')
-                        ->orderBy('id', 'desc')
-                        ->skip($start)
-                        ->take($length)
-                        ->get();
+            ->orderBy('id', 'desc')
+            ->skip($start)
+            ->take($length)
+            ->get();
 
         // Format data - PASTIKAN ACTION ADA
         $data = [];
@@ -1691,8 +1694,8 @@ class KeuanganTransaksiController extends Controller
                 'penerima',
                 'creator'
             ])
-            ->where('status_approval', 'pending')
-            ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan']);
+                ->where('status_approval', 'pending')
+                ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan']);
 
             // Apply base filters (unit, yayasan)
             $query = $this->applyBaseFilters($query, $request);
@@ -1751,8 +1754,8 @@ class KeuanganTransaksiController extends Controller
                 'creator',
                 'pembayaranTagihan.tagihanSiswa.tagihan'
             ])
-            ->where('status_approval', 'pending')
-            ->whereIn('jenis_transaksi', ['pembayaran_tagihan', 'tagihan', 'pembayaran']);
+                ->where('status_approval', 'pending')
+                ->whereIn('jenis_transaksi', ['pembayaran_tagihan', 'tagihan', 'pembayaran']);
 
             // Apply base filters (unit, yayasan)
             $query = $this->applyBaseFilters($query, $request);
