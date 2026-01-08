@@ -207,7 +207,7 @@
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["staff_allowance"] * $staff, 0, ",", ".") }}
+                                            {{ number_format($payment->details["staff_allowance"] ?? 0 * $staff, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>

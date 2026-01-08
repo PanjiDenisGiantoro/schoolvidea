@@ -8,18 +8,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Excel as ExcelExcel;
 
 class ImportSiswaJob implements ShouldQueue
 {
     use Queueable, InteractsWithQueue, SerializesModels;
 
-    public $timeout = 600; // 10 menit (sesuaikan kebutuhan)
-    public $tries = 1; // Jangan retry kalau timeout
-    public $maxExceptions = 1;
-
     protected $unit_id;
     protected $tahun_ajaran_id;
-    protected $file;
+    protected $filePath;
 
     /**
      * Create a new job instance.
@@ -29,11 +27,11 @@ class ImportSiswaJob implements ShouldQueue
      * @param \Illuminate\Http\UploadedFile $file
      * @return void
      */
-    public function __construct($unit_id, $tahun_ajaran_id, $file)
+    public function __construct($unit_id, $tahun_ajaran_id, $filePath)
     {
         $this->unit_id = $unit_id;
         $this->tahun_ajaran_id = $tahun_ajaran_id;
-        $this->file = $file;
+        $this->filePath = $filePath;
     }
 
     /**
@@ -41,18 +39,29 @@ class ImportSiswaJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
-    {
+public function handle()
+{
+    try {
+        // Path full file di storage/app/private/temp/...
+        $fullPath = Storage::disk('local')->path($this->filePath);
 
-        try {
-
-            set_time_limit(0);
-            ini_set('max_execution_time', 0);
-            // Mengimpor data menggunakan SiswaImport
-            Excel::import(new SiswaImport($this->unit_id, $this->tahun_ajaran_id), $this->file);
-            Log::info('Siswa import berhasil');
-        } catch (\Exception $e) {
-            Log::error('Terjadi kesalahan saat mengimpor siswa: ' . $e->getMessage());
+        if (!file_exists($fullPath)) {
+            Log::error('FILE TIDAK DITEMUKAN', ['filePath' => $fullPath]);
+            return;
         }
+
+        // Import Excel
+        Excel::import(
+            new SiswaImport($this->unit_id, $this->tahun_ajaran_id),
+            $fullPath,
+            null, // tidak perlu disk, karena pakai full path
+            ExcelExcel::XLSX
+        );
+
+        Log::info('IMPORT SISWA BERHASIL');
+    } catch (\Exception $e) {
+        Log::error('Import siswa gagal', ['error' => $e->getMessage()]);
     }
+}
+
 }

@@ -100,8 +100,7 @@ class MigrasiController extends Controller
         $tahun_ajaran_id = $request->input('tahun_ajaran_id');
 
         try {
-            $file = $request->file('file');
-            $filePath = $file->store('temp');
+            $filePath = $file->store('temp', 'local');
             // Mengantri job untuk diproses di background
             dispatch(new ImportSiswaJob($unit_id, $tahun_ajaran_id, $filePath));
         } catch (\Exception $e) {

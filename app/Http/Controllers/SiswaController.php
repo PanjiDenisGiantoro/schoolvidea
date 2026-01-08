@@ -71,9 +71,8 @@ class SiswaController extends Controller
             });
         }
 
-        // Paginate results with dynamic per_page parameter
-        $perPage = $request->get('per_page', 15);
-        $siswa = $query->paginate($perPage)->appends($request->except('page'));
+        // Paginate results
+        $siswa = $query->get();
 
         $headers = [
             'No',
@@ -386,6 +385,7 @@ class SiswaController extends Controller
                 'status' => $request->status,
                 'rfid_no' => $request->rfid_no,
                 'va_siswa' => $request->va_siswa,
+                'qrcode' => $request->va_siswa,
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ];
 

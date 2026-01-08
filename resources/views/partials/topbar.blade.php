@@ -73,12 +73,12 @@
                         <div class="border-top-0 border-start-0 border-end-0 border border-dashed p-3">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h6 class="fs-16 fw-semibold m-0"> Notifications</h6>
+                                    <h6 class="fs-16 fw-semibold m-0"> Notifikasi</h6>
                                 </div>
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;">
-                            <!-- Item -->
+                            {{-- <!-- Item -->
                             <a href="javascript:void(0);" class="dropdown-item border-bottom text-wrap py-3">
                                 <p class="mb-0"><span class="fw-medium">Olivia Bennett</span> mentioned you in a
                                     comment <span>"This update really improves the user experience! 🚀"</span></p>
@@ -108,7 +108,7 @@
                                 <p class="mb-0 text-wrap">
                                     Uploaded the latest marketing report for your review.
                                 </p>
-                            </a>
+                            </a> --}}
 
                         </div>
                     </div>
@@ -119,8 +119,19 @@
                     <a type="button" class="topbar-button p-0" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center gap-2">
-                            <img class="rounded-circle" width="32"
-                                src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="user-image">
+<img
+    class="rounded-circle"
+    style="
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+    "
+    src="{{ optional(Auth::user()->officers)->image 
+            ? asset(Auth::user()->officers->image)
+            : asset('assets/images/users/avatar-1.jpeg') }}"
+    alt="user-image">
+
+
                             <span class="d-lg-flex flex-column d-none gap-1">
                                 <h5 class="fs-13 text-uppercase text-reset fw-bold my-0">
                                     {{ \Illuminate\Support\Facades\Auth::user()->name ?? '' }}</h5>

@@ -1,159 +1,325 @@
-@extends('layouts.app')
-@section('title', 'Transaksi Keuangan')
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/tabungan.css') }}">
+@extends("layouts.app")
+@section("title", "Transaksi Keuangan")
+@push("styles")
+    <link rel="stylesheet" href="{{ asset("assets/css/style.css") }}" />
+    <link rel="stylesheet" href="{{ asset("assets/css/tabungan.css") }}" />
 @endpush
-@section('content')
-    @include('partials.page-title', [
-        'title' => 'Transaksi Keuangan',
-        'subTitle' => 'Kelola semua transaksi keuangan',
-    ])
+
+@section("content")
+    @include(
+        "partials.page-title",
+        [
+            "title" => "Transaksi Keuangan",
+            "subTitle" => "Kelola semua transaksi keuangan",
+        ]
+    )
 
     {{-- Summary Cards --}}
     <div class="row g-3 mb-3">
-
         <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pemasukan</p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['total_pemasukan'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Pemasukan Bulan ini
+                            </p>
+                            <h3 class="fw-bold text-success mb-0 text-absolute">
+                                Rp
+                                {{ number_format($summary["total_pemasukan"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-trending-up text-success" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-success bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-trending-up text-success"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tabungan Masuk</small>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-down-arrow-alt text-success"></i> Tagihan Masuk</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-up-arrow-alt text-success"></i>
+                        Periode
+                        {{ Carbon\Carbon::now()->translatedFormat("F Y") }}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-red shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Pengeluaran</p>
-                            <h3 class="fw-bold text-danger mb-0 text-absolute">Rp {{ number_format($summary['total_pengeluaran'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Pengeluaran Bulan Ini
+                            </p>
+                            <h3 class="fw-bold text-danger mb-0 text-absolute">
+                                Rp
+                                {{ number_format($summary["total_pengeluaran"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-trending-down text-danger" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-danger bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-trending-down text-danger"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tabungan Keluar</small>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-up-arrow-alt text-danger"></i> Tagihan Keluar</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-down-arrow-alt text-danger"></i>
+                        Periode
+                        {{ Carbon\Carbon::now()->translatedFormat("F Y") }}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Data Transaksi</p>
-                            <h3 class="fw-bold text-primary mb-0 text-absolute">{{ number_format($summary['total_data_transaksi'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Data Transaksi
+                            </p>
+                            <h3 class="fw-bold text-primary mb-0 text-absolute">
+                                {{ number_format($summary["total_data_transaksi"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-transfer text-primary" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-info bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-transfer text-primary"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-transfer text-primary"></i> Akumulasi Data Ttransaksi</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-transfer text-primary"></i>
+                        Data Transaksi Keseluruhan
+                    </small>
                 </div>
             </div>
         </div>
     </div>
-        <div class="row mt-0 mb-3">
+    <div class="row mt-0 mb-3">
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-blue shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Transaksi Keseluruhan</p>
-                            <h3 class="fw-bold text-primary mb-0 text-absolute">Rp {{ number_format($summary['total_transaksi'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Transaksi Keseluruhan
+                            </p>
+                            <h3
+                                class="fw-bold fs-4 text-primary mb-0 text-absolute"
+                            >
+                                Rp
+                                {{ number_format($summary["total_transaksi"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-bar-chart text-primary" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-info bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-bar-chart text-primary"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-bar-chart text-primary"></i> Total Keseluruhan Transaksi</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-bar-chart text-primary"></i>
+                        Total Keseluruhan Transaksi
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-purple shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Total Hari Ini</p>
-                            <h3 class="fw-bold text-info mb-0 text-absolute">Rp {{ number_format($summary['total_harian'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Hari Ini
+                            </p>
+                            <h3
+                                class="fw-bold fs-4 text-info mb-0 text-absolute"
+                            >
+                                Rp
+                                {{ number_format($summary["total_harian"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-calendar text-info" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-info bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-calendar text-info"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-calendar text-primary"></i> {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-calendar text-primary"></i>
+                        {{ \Carbon\Carbon::now()->translatedFormat("d F Y") }}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-green shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Non-Tunai</p>
-                            <h3 class="fw-bold text-success mb-0 text-absolute">Rp {{ number_format($summary['total_non_tunai'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Transaksi
+                                <br />
+                                Non-Tunai
+                            </p>
+                            <h3
+                                class="fw-bold fs-4 text-success mb-0 text-absolute"
+                            >
+                                Rp
+                                {{ number_format($summary["total_non_tunai"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-credit-card text-success" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-success bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-credit-card text-success"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-credit-card text-success"></i> Transfer, E Wallet</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-credit-card text-success"></i>
+                        Transfer, E Wallet
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all">
+            <div
+                class="card border-0 rounded-4 overflow-hidden stat-card stat-card-yellow shadow-sm h-100 transition-all"
+            >
                 <div class="card-body position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div
+                        class="d-flex justify-content-between align-items-start"
+                    >
                         <div>
-                            <p class="text-muted fw-500 mb-1 text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Transaksi Tunai</p>
-                            <h3 class="fw-bold text-warning mb-0 text-absolute">Rp {{ number_format($summary['total_tunai'] ?? 0, 0, ',', '.') }}</h3>
+                            <p
+                                class="text-muted fw-500 mb-1 text-uppercase"
+                                style="font-size: 12px; letter-spacing: 0.5px"
+                            >
+                                Transaksi
+                                <br />
+                                Tunai
+                            </p>
+                            <h3
+                                class="fw-bold fs-4 text-warning mb-0 text-absolute"
+                            >
+                                Rp
+                                {{ number_format($summary["total_tunai"] ?? 0, 0, ",", ".") }}
+                            </h3>
                         </div>
-                        <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
-                            <i class="bx bx-money text-warning" style="font-size: 24px;"></i>
+                        <div
+                            class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3"
+                        >
+                            <i
+                                class="bx bx-money text-warning"
+                                style="font-size: 24px"
+                            ></i>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2"><i class="bx bx-money text-warning"></i> Kas Langsung</small>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bx bx-money text-warning"></i>
+                        Kas Langsung
+                    </small>
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 
     {{-- Filter Card --}}
     <div class="card rounded-3 mb-4 border-0 shadow-sm">
         <div class="card-body">
-            <div class=" justify-content-between align-items-center d-flex gap-3"
+            <div
+                class="justify-content-between align-items-center d-flex gap-3"
                 data-bs-toggle="collapse"
                 data-bs-target="#filterCollapse"
-                style="cursor: pointer;">
-                <h5 class="fw-bold text-primary mt-3 ">
-                    <span> <i class="bx bx-filter"></i> Filter Transaksi</span>
+                style="cursor: pointer"
+            >
+                <h5 class="fw-bold text-primary mt-3">
+                    <span>
+                        <i class="bx bx-filter"></i>
+                        Filter Transaksi
+                    </span>
                 </h5>
-                <h5 class="fw-bold text-primary"  style="font-size: 26px;"><i class="bx bx-chevron-down"></i></h5>
-
+                <h5 class="fw-bold text-primary" style="font-size: 26px">
+                    <i class="bx bx-chevron-down"></i>
+                </h5>
             </div>
 
-            <form action="{{ route('keuangan_transaksi.index') }}" method="GET">
-                <div class="row g-3 collapse" id="filterCollapse" >
+            <form
+                action="{{ route("keuangan_transaksi.index") }}"
+                method="GET"
+            >
+                <div class="row g-3 collapse" id="filterCollapse">
                     {{-- Filter Unit --}}
                     <div class="col-md-3">
                         <label for="unit_id" class="form-label">Unit</label>
                         <select name="unit_id" id="unit_id" class="form-select">
                             <option value="">Pilih Unit</option>
                             @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                <option
+                                    value="{{ $unit->id }}"
+                                    {{ request("unit_id") == $unit->id ? "selected" : "" }}
+                                >
                                     {{ $unit->nama_unit }}
                                 </option>
                             @endforeach
@@ -162,38 +328,69 @@
 
                     {{-- Filter Jenis Transaksi --}}
                     <div class="col-md-3">
-                        <label for="jenis_transaksi" class="form-label">Jenis Transaksi</label>
-                        <select name="jenis_transaksi" id="jenis_transaksi" class="form-select">
+                        <label for="jenis_transaksi" class="form-label">
+                            Jenis Transaksi
+                        </label>
+                        <select
+                            name="jenis_transaksi"
+                            id="jenis_transaksi"
+                            class="form-select"
+                        >
                             <option value="">Semua Jenis</option>
-                            <option value="setoran_tabungan"
-                                {{ request('jenis_transaksi') == 'setoran_tabungan' ? 'selected' : '' }}>
+                            <option
+                                value="setoran_tabungan"
+                                {{ request("jenis_transaksi") == "setoran_tabungan" ? "selected" : "" }}
+                            >
                                 Setoran Tabungan
                             </option>
-                            <option value="penarikan_tabungan"
-                                {{ request('jenis_transaksi') == 'penarikan_tabungan' ? 'selected' : '' }}>
+                            <option
+                                value="penarikan_tabungan"
+                                {{ request("jenis_transaksi") == "penarikan_tabungan" ? "selected" : "" }}
+                            >
                                 Penarikan Tabungan
                             </option>
-                            <option value="tagihan" {{ request('jenis_transaksi') == 'tagihan' ? 'selected' : '' }}>
+                            <option
+                                value="tagihan"
+                                {{ request("jenis_transaksi") == "tagihan" ? "selected" : "" }}
+                            >
                                 Pembayaran Tagihan
+                            </option>
+                            <option
+                                value="tagihan-keluar"
+                                {{ request("jenis_transaksi") == "tagihan-keluar" ? "selected" : "" }}
+                            >
+                                Pembayaran Gaji
                             </option>
                         </select>
                     </div>
 
                     {{-- Filter Status --}}
                     <div class="col-md-3">
-                        <label for="status_verifikasi" class="form-label">Status Verifikasi</label>
-                        <select name="status_verifikasi" id="status_verifikasi" class="form-select">
+                        <label for="status_verifikasi" class="form-label">
+                            Status Verifikasi
+                        </label>
+                        <select
+                            name="status_verifikasi"
+                            id="status_verifikasi"
+                            class="form-select"
+                        >
                             <option value="">Semua Status</option>
-                            <option value="pending"
-                                {{ request('status_verifikasi') == 'pending' ? 'selected' : '' }}>
+                            <option
+                                value="pending"
+                                {{ request("status_verifikasi") == "pending" ? "selected" : "" }}
+                            >
                                 Pending
                             </option>
-                            <option value="approved"
-                                {{ request('status_verifikasi') == 'approved' ? 'selected' : '' }}>
+                            <option
+                                value="approved"
+                                {{ request("status_verifikasi") == "approved" ? "selected" : "" }}
+                            >
                                 Approved
                             </option>
-                            <option value="rejected"
-                                {{ request('status_verifikasi') == 'rejected' ? 'selected' : '' }}>
+                            <option
+                                value="rejected"
+                                {{ request("status_verifikasi") == "rejected" ? "selected" : "" }}
+                            >
                                 Rejected
                             </option>
                         </select>
@@ -201,41 +398,76 @@
 
                     {{-- Filter Kode Pembayaran --}}
                     <div class="col-md-3">
-                        <label for="kode_pembayaran" class="form-label">Kode Pembayaran</label>
-                        <input type="text" name="kode_pembayaran" id="kode_pembayaran" class="form-control p-3"
-                            placeholder="Cari kode pembayaran" value="{{ request('kode_pembayaran') }}">
+                        <label for="kode_pembayaran" class="form-label">
+                            Kode Pembayaran
+                        </label>
+                        <input
+                            type="text"
+                            name="kode_pembayaran"
+                            id="kode_pembayaran"
+                            class="form-control p-3"
+                            placeholder="Cari kode pembayaran"
+                            value="{{ request("kode_pembayaran") }}"
+                        />
                     </div>
 
                     {{-- Filter Nama Siswa --}}
                     <div class="col-md-3">
-                        <label for="nama_siswa" class="form-label">Nama/NISN Siswa</label>
-                        <input type="text" name="nama_siswa" id="nama_siswa" class="form-control p-3"
-                            placeholder="Cari nama atau NISN" value="{{ request('nama_siswa') }}">
+                        <label for="nama_siswa" class="form-label">
+                            Nama/NISN Siswa
+                        </label>
+                        <input
+                            type="text"
+                            name="nama_siswa"
+                            id="nama_siswa"
+                            class="form-control p-3"
+                            placeholder="Cari nama atau NISN"
+                            value="{{ request("nama_siswa") }}"
+                        />
                     </div>
 
                     {{-- Filter Tanggal Dari --}}
                     <div class="col-md-3">
-                        <label for="dari_tanggal" class="form-label">Dari Tanggal</label>
-                        <input type="text" name="dari_tanggal" id="dari_tanggal" class="form-control datepicker p-3"
+                        <label for="dari_tanggal" class="form-label">
+                            Dari Tanggal
+                        </label>
+                        <input
+                            type="text"
+                            name="dari_tanggal"
+                            id="dari_tanggal"
+                            class="form-control datepicker p-3"
                             placeholder="DD/MM/YYYY"
-                            value="{{ request('dari_tanggal') }}">
+                            value="{{ request("dari_tanggal") }}"
+                        />
                     </div>
 
                     {{-- Filter Tanggal Sampai --}}
                     <div class="col-md-3">
-                        <label for="sampai_tanggal" class="form-label">Sampai Tanggal</label>
-                        <input type="text" name="sampai_tanggal" id="sampai_tanggal" class="form-control datepicker p-3"
+                        <label for="sampai_tanggal" class="form-label">
+                            Sampai Tanggal
+                        </label>
+                        <input
+                            type="text"
+                            name="sampai_tanggal"
+                            id="sampai_tanggal"
+                            class="form-control datepicker p-3"
                             placeholder="DD/MM/YYYY"
-                            value="{{ request('sampai_tanggal') }}">
+                            value="{{ request("sampai_tanggal") }}"
+                        />
                     </div>
 
                     {{-- Tombol Filter --}}
                     <div class="col-md-6 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bx bx-search"></i> Filter
+                            <i class="bx bx-search"></i>
+                            Filter
                         </button>
-                        <a href="{{ route('keuangan_transaksi.index') }}" class="btn btn-secondary">
-                            <i class="bx bx-refresh"></i> Reset
+                        <a
+                            href="{{ route("keuangan_transaksi.index") }}"
+                            class="btn btn-secondary"
+                        >
+                            <i class="bx bx-refresh"></i>
+                            Reset
                         </a>
                     </div>
                 </div>
@@ -248,56 +480,71 @@
         <div class="card-body">
             {{-- Action Buttons & Pagination Control --}}
             <div class="d-flex justify-content-end mb-3 flex-wrap gap-2">
-
                 <div class="d-flex justify-content-between gap-3">
                     @php
-                        $pendingTabungan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
-                            ->whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                            ->when(Auth::user()->unit_id, function($q) {
-                                $q->whereHas('penerima', function($sq) {
-                                    $sq->where('unit_id', Auth::user()->unit_id);
+                        $pendingTabungan = \App\Models\Keuangan_transaksi::where("status_approval", "pending")
+                            ->whereIn("jenis_transaksi", ["setoran_tabungan", "penarikan_tabungan"])
+                            ->when(Auth::user()->unit_id, function ($q) {
+                                $q->whereHas("penerima", function ($sq) {
+                                    $sq->where("unit_id", Auth::user()->unit_id);
                                 });
                             })
                             ->count();
-                        $pendingTagihan = \App\Models\Keuangan_transaksi::where('status_approval', 'pending')
-                            ->where('jenis_transaksi', 'tagihan')
-                            ->when(Auth::user()->unit_id, function($q) {
-                                $q->whereHas('penerima', function($sq) {
-                                    $sq->where('unit_id', Auth::user()->unit_id);
+                        $pendingTagihan = \App\Models\Keuangan_transaksi::where("status_approval", "pending")
+                            ->where("jenis_transaksi", "tagihan")
+                            ->when(Auth::user()->unit_id, function ($q) {
+                                $q->whereHas("penerima", function ($sq) {
+                                    $sq->where("unit_id", Auth::user()->unit_id);
                                 });
                             })
                             ->count();
                     @endphp
 
-                    @if($pendingTabungan > 0)
-                        <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tabungan')">
-                            <i class="bx bx-time-five"></i> Pending Tabungan
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @if ($pendingTabungan > 0)
+                        <button
+                            type="button"
+                            class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative"
+                            onclick="showPendingTransactions('tabungan')"
+                        >
+                            <i class="bx bx-time-five"></i>
+                            Pending Tabungan
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            >
                                 {{ $pendingTabungan }}
                             </span>
                         </button>
                     @endif
 
-                    @if($pendingTagihan > 0)
-                        <button type="button" class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative" onclick="showPendingTransactions('tagihan')">
-                            <i class="bx bx-receipt"></i> Pending Tagihan
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @if ($pendingTagihan > 0)
+                        <button
+                            type="button"
+                            class="btn btn-warning rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm position-relative"
+                            onclick="showPendingTransactions('tagihan')"
+                        >
+                            <i class="bx bx-receipt"></i>
+                            Pending Tagihan
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            >
                                 {{ $pendingTagihan }}
                             </span>
                         </button>
                     @endif
 
-{{--                    <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank"--}}
-{{--                       class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm">--}}
-{{--                        <i class="bx bx-printer"></i> Cetak Laporan--}}
-{{--                    </a>--}}
+                    {{-- <a href="{{ route('keuangan_transaksi.print_laporan') }}" target="_blank" --}}
+                    {{-- class="btn btn-outline-primary rounded-pill d-flex align-items-center animate-btn gap-1 shadow-sm"> --}}
+                    {{-- <i class="bx bx-printer"></i> Cetak Laporan --}}
+                    {{-- </a> --}}
                 </div>
-
             </div>
 
             {{-- Tabel --}}
             <div class="table-responsive">
-                <table id="datatable" class="table-bordered table-hover table overflow-hidden text-nowrap text-center align-middle">
+                <table
+                    id="datatable"
+                    class="table-bordered table-hover table overflow-hidden text-nowrap text-center align-middle"
+                >
                     <thead class="table-primary">
                         <tr>
                             <th>#</th>
@@ -313,25 +560,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($transaksis as $transaksi)
+                        @forelse ($transaksis as $transaksi)
                             @php
                                 // Determine which code to display based on payment type
                                 $displayCode = $transaksi->code_pembayaran;
                                 $isMulitple = false;
 
-                                if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan) {
+                                if (in_array($transaksi->jenis_transaksi, ["tagihan", "pembayaran"]) && $transaksi->pembayaranTagihan) {
                                     if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
                                         $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
                                         $isMulitple = true;
                                     }
                                 }
+
+                                $badgeClass = "bg-secondary";
+                                if ($transaksi->jenis_transaksi === "tagihan-keluar") {
+                                    $badgeClass = "bg-warning";
+                                } elseif ($isMulitple) {
+                                    $badgeClass = "bg-info";
+                                }
                             @endphp
+
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    <span class="badge @if($isMulitple) bg-info @else bg-secondary @endif">
-                                        @if($isMulitple)
-                                            <i class="bx bx-link-alt me-1"></i>{{ $displayCode }}
+                                    <span class="badge {{ $badgeClass }}">
+                                        @if ($isMulitple)
+                                            <i class="bx bx-link-alt me-1"></i>
+                                            {{ $displayCode }}
                                         @else
                                             {{ $displayCode }}
                                         @endif
@@ -339,13 +595,15 @@
                                 </td>
                                 <td>
                                     @if ($transaksi->penerima)
-                                        @if ($transaksi->penerima_tipe === 'App\Models\Siswa')
-                                            {{ $transaksi->penerima->user->name ?? '-' }}
-                                            <br>
-                                            <small class="text-muted">NISN:
-                                                {{ $transaksi->penerima->nisn ?? '-' }}</small>
+                                        @if ($transaksi->penerima_tipe === "App\Models\Siswa")
+                                            {{ $transaksi->penerima->user->name ?? "-" }}
+                                            <br />
+                                            <small class="text-muted">
+                                                NISN:
+                                                {{ $transaksi->penerima->nisn ?? "-" }}
+                                            </small>
                                         @else
-                                            {{ $transaksi->penerima->name ?? '-' }}
+                                            {{ $transaksi->penerima->name ?? "-" }}
                                         @endif
                                     @else
                                         <span class="text-muted">-</span>
@@ -354,39 +612,48 @@
                                 <td>
                                     @php
                                         $badgeColor = match ($transaksi->jenis_transaksi) {
-                                            'setoran_tabungan' => 'success',
-                                            'penarikan_tabungan' => 'danger',
-                                            'pembayaran' => 'info',
-                                            'tagihan' => 'info',
-                                            default => 'secondary',
+                                            "setoran_tabungan" => "success",
+                                            "penarikan_tabungan" => "danger",
+                                            "pembayaran" => "info",
+                                            "tagihan" => "info",
+                                            "tagihan-keluar" => "warning",
+                                            default => "secondary",
                                         };
                                         $jenisText = match ($transaksi->jenis_transaksi) {
-                                            'setoran_tabungan' => 'Setoran Tabungan',
-                                            'penarikan_tabungan' => 'Penarikan Tabungan',
-                                            'pembayaran' => 'Pembayaran',
-                                            'tagihan' => 'Pembayaran Tagihan',
-                                            default => ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)),
+                                            "setoran_tabungan" => "Setoran Tabungan",
+                                            "penarikan_tabungan" => "Penarikan Tabungan",
+                                            "pembayaran" => "Pembayaran",
+                                            "tagihan" => "Pembayaran Tagihan",
+                                            "tagihan-keluar" => "Penggajian Guru",
+                                            default => ucwords(str_replace("_", " ", $transaksi->jenis_transaksi)),
                                         };
                                     @endphp
-                                    <span class="badge rounded-pill bg-{{ $badgeColor }}">
+
+                                    <span
+                                        class="badge rounded-pill bg-{{ $badgeColor }}"
+                                    >
                                         {{ $jenisText }}
                                     </span>
-                                    @if (in_array($transaksi->jenis_transaksi, ['tagihan', 'pembayaran']) && $transaksi->pembayaranTagihan)
-                                        <br>
+                                    @if (in_array($transaksi->jenis_transaksi, ["tagihan", "pembayaran"]) && $transaksi->pembayaranTagihan)
+                                        <br />
                                         <small class="text-muted">
                                             @if ($transaksi->pembayaranTagihan->tagihanSiswa && $transaksi->pembayaranTagihan->tagihanSiswa->tagihan)
-                                                {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-' }}
+                                                {{ $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? "-" }}
                                             @endif
                                         </small>
                                         @if (
+
                                             $transaksi->pembayaranTagihan->tagihanSiswa &&
-                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan &&
-                                                $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0)
-                                            <br>
+                                            $transaksi->pembayaranTagihan->tagihanSiswa->tagihan &&
+                                            $transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items->count() > 0                                        )
+                                            <br />
                                             <small class="text-muted">
                                                 @foreach ($transaksi->pembayaranTagihan->tagihanSiswa->tagihan->items as $item)
                                                     <span
-                                                        class="badge badge-sm bg-light text-dark">{{ $item->kategori->nama_kategori ?? '-' }}</span>
+                                                        class="badge badge-sm bg-light text-dark"
+                                                    >
+                                                        {{ $item->kategori->nama_kategori ?? "-" }}
+                                                    </span>
                                                 @endforeach
                                             </small>
                                         @endif
@@ -394,84 +661,126 @@
                                 </td>
 
                                 <td>
-                                    @if (in_array($transaksi->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan']))
-                                        <span class="text-success fw-bold">+ Rp
-                                            {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                                    @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan"]))
+                                        <span class="text-success fw-bold">
+                                            + Rp
+                                            {{ number_format($transaksi->jumlah, 0, ",", ".") }}
+                                        </span>
                                     @else
-                                        <span class="text-danger fw-bold">- Rp
-                                            {{ number_format($transaksi->jumlah, 0, ',', '.') }}</span>
+                                        <span class="text-danger fw-bold">
+                                            - Rp
+                                            {{ number_format($transaksi->jumlah, 0, ",", ".") }}
+                                        </span>
                                     @endif
                                 </td>
                                 <td>
                                     @php
                                         $metodeBadge = match ($transaksi->metode) {
-                                            'TUNAI' => 'primary',
-                                            'CASH' => 'primary',
-                                            'TRANSFER' => 'info',
-                                            'NONTUNAI' => 'info',
-                                            'SALDO_TABUNGAN' => 'warning',
-                                            default => 'secondary',
+                                            "TUNAI" => "primary",
+                                            "CASH" => "primary",
+                                            "TRANSFER" => "info",
+                                            "NONTUNAI" => "info",
+                                            "SALDO_TABUNGAN" => "warning",
+                                            default => "secondary",
                                         };
                                     @endphp
-                                    <span class="badge bg-{{ $metodeBadge }}">{{ $transaksi->metode }}</span>
+
+                                    <span class="badge bg-{{ $metodeBadge }}">
+                                        {{ $transaksi->metode }}
+                                    </span>
                                 </td>
-                                <td>{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format('d/m/Y') }}</td>
                                 <td>
-                                    @if ($transaksi->status_verifikasi == 'approved')
-                                        <span class="badge bg-success rounded-pill">
-                                            <i class="bx bx-check-circle me-1"></i>Approved
+                                    {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format("d/m/Y") }}
+                                </td>
+                                <td>
+                                    @if ($transaksi->status_verifikasi == "approved")
+                                        <span
+                                            class="badge bg-success rounded-pill"
+                                        >
+                                            <i
+                                                class="bx bx-check-circle me-1"
+                                            ></i>
+                                            Approved
                                         </span>
-                                    @elseif($transaksi->status_verifikasi == 'rejected')
-                                        <span class="badge bg-danger rounded-pill">
-                                            <i class="bx bx-x-circle me-1"></i>Rejected
+                                    @elseif ($transaksi->status_verifikasi == "rejected")
+                                        <span
+                                            class="badge bg-danger rounded-pill"
+                                        >
+                                            <i class="bx bx-x-circle me-1"></i>
+                                            Rejected
                                         </span>
                                     @else
-                                        <span class="badge bg-warning rounded-pill">
-                                            <i class="bx bx-time-five me-1"></i>Pending
+                                        <span
+                                            class="badge bg-warning rounded-pill"
+                                        >
+                                            <i class="bx bx-time-five me-1"></i>
+                                            Pending
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $transaksi->approvedBy->name ?? $transaksi->verifier->name ?? $transaksi->creator->name ?? '-' }}</td>
                                 <td>
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <button type="button" class="btn btn-sm btn-success rounded-pill btn-detail-trx"
-                                            data-id="{{ $transaksi->id }}" title="Lihat Detail">
+                                    {{ $transaksi->approvedBy->name ?? ($transaksi->verifier->name ?? ($transaksi->creator->name ?? "-")) }}
+                                </td>
+                                <td>
+                                    <div
+                                        class="d-flex justify-content-center gap-1"
+                                    >
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-success rounded-pill btn-detail-trx"
+                                            data-id="{{ $transaksi->id }}"
+                                            title="Lihat Detail"
+                                        >
                                             <i class="bx bx-show"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
-                                            data-id="{{ $transaksi->id }}" title="Cetak Struk">
+                                        {{-- <button
+                                            type="button"
+                                            class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
+                                            data-id="{{ $transaksi->id }}"
+                                            title="Cetak Struk"
+                                        >
                                             <i class="bx bx-printer"></i>
-                                        </button>
-                                        {{--                                        @if ($transaksi->status_verifikasi == 'pending') --}}
-                                        {{--                                            <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}
-                                        {{--                                                    data-id="{{ $transaksi->id }}" --}}
-                                        {{--                                                    title="Approve"> --}}
-                                        {{--                                                <i class="bx bx-check"></i> --}}
-                                        {{--                                            </button> --}}
-                                        {{--                                            <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx" --}}
-                                        {{--                                                    data-id="{{ $transaksi->id }}" --}}
-                                        {{--                                                    title="Reject"> --}}
-                                        {{--                                                <i class="bx bx-x"></i> --}}
-                                        {{--                                            </button> --}}
-                                        {{--                                        @endif --}}
+                                        </button> --}}
+                                        <button
+    type="button"
+    class="btn btn-sm btn-warning rounded-pill btn-cetak-trx"
+    data-id="{{ $transaksi->id }}"
+    data-penerima="{{ class_basename($transaksi->penerima) }}"
+    title="Cetak Struk"
+>
+    <i class="bx bx-printer"></i>
+</button>
+
+                                        {{-- @if ($transaksi->status_verifikasi == 'pending') --}}
+                                        {{-- <button type="button" class="btn btn-sm btn-success rounded-pill btn-approve-trx" --}}
+                                        {{-- data-id="{{ $transaksi->id }}" --}}
+                                        {{-- title="Approve"> --}}
+                                        {{-- <i class="bx bx-check"></i> --}}
+                                        {{-- </button> --}}
+                                        {{-- <button type="button" class="btn btn-sm btn-danger rounded-pill btn-reject-trx" --}}
+                                        {{-- data-id="{{ $transaksi->id }}" --}}
+                                        {{-- title="Reject"> --}}
+                                        {{-- <i class="bx bx-x"></i> --}}
+                                        {{-- </button> --}}
+                                        {{-- @endif --}}
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center">Belum ada data transaksi</td>
+                                <td colspan="10" class="text-center">
+                                    Belum ada data transaksi
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-
         </div>
     </div>
 @endsection
 
-@push('styles')
+@push("styles")
     <style>
         .animate-btn {
             transition: all 0.3s ease-in-out;
@@ -514,8 +823,11 @@
     </style>
 @endpush
 
-@push('scripts')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+@push("scripts")
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         function changePerPage(perPage) {
@@ -525,19 +837,19 @@
             window.location.href = url.toString();
         }
 
-    function showPendingTransactions(type = 'tabungan') {
-        // Tentukan judul dan URL berdasarkan tipe
-        const titles = {
-            'tabungan': 'Transaksi Pending Tabungan',
-            'tagihan': 'Transaksi Pending Tagihan/Pembayaran'
-        };
-        const icons = {
-            'tabungan': 'bx-time-five',
-            'tagihan': 'bx-receipt'
-        };
+        function showPendingTransactions(type = 'tabungan') {
+            // Tentukan judul dan URL berdasarkan tipe
+            const titles = {
+                tabungan: 'Transaksi Pending Tabungan',
+                tagihan: 'Transaksi Pending Tagihan/Pembayaran',
+            };
+            const icons = {
+                tabungan: 'bx-time-five',
+                tagihan: 'bx-receipt',
+            };
 
-        // Template modal
-        const modalHtml = `
+            // Template modal
+            const modalHtml = `
             <div class="modal fade" id="pendingModal" tabindex="-1" aria-labelledby="pendingModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-xl modal-dialog-scrollable">
                     <div class="modal-content">
@@ -560,72 +872,94 @@
             </div>
         `;
 
-        const existingModal = document.getElementById('pendingModal');
-        if (existingModal) existingModal.remove();
+            const existingModal = document.getElementById('pendingModal');
+            if (existingModal) existingModal.remove();
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-        const modal = new bootstrap.Modal(document.getElementById('pendingModal'));
-        modal.show();
+            const modal = new bootstrap.Modal(
+                document.getElementById('pendingModal'),
+            );
+            modal.show();
 
-        // URL berbeda berdasarkan tipe
-        const url = type === 'tagihan'
-            ? '/keuangan-transaksi/pending-tagihan'
-            : '/keuangan-transaksi/pending-tabungan';
+            // URL berbeda berdasarkan tipe
+            const url =
+                type === 'tagihan'
+                    ? '/keuangan-transaksi/pending-tagihan'
+                    : '/keuangan-transaksi/pending-tabungan';
 
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const modalBody = document.querySelector('#pendingModal .modal-body');
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const modalBody = document.querySelector(
+                        '#pendingModal .modal-body',
+                    );
 
-            if (data.success && data.data?.length > 0) {
-                let tableRows = '';
+                    if (data.success && data.data?.length > 0) {
+                        let tableRows = '';
 
-                data.data.forEach((trx, index) => {
-                    // Determine badge based on transaction type
-                    let jenisClass, jenisIcon, jenisText;
+                        data.data.forEach((trx, index) => {
+                            // Determine badge based on transaction type
+                            let jenisClass, jenisIcon, jenisText;
 
-                    if (type === 'tagihan') {
-                        jenisClass = 'info';
-                        jenisIcon = 'receipt';
-                        jenisText = 'Pembayaran Tagihan';
-                    } else {
-                        jenisClass = trx.jenis_transaksi === 'setoran_tabungan' ? 'success' : 'danger';
-                        jenisIcon = trx.jenis_transaksi === 'setoran_tabungan' ? 'plus-circle' : 'minus-circle';
-                        jenisText = trx.jenis_transaksi === 'setoran_tabungan' ? 'Setoran' : 'Penarikan';
-                    }
+                            if (type === 'tagihan') {
+                                jenisClass = 'info';
+                                jenisIcon = 'receipt';
+                                jenisText = 'Pembayaran Tagihan';
+                            } else {
+                                jenisClass =
+                                    trx.jenis_transaksi === 'setoran_tabungan'
+                                        ? 'success'
+                                        : 'danger';
+                                jenisIcon =
+                                    trx.jenis_transaksi === 'setoran_tabungan'
+                                        ? 'plus-circle'
+                                        : 'minus-circle';
+                                jenisText =
+                                    trx.jenis_transaksi === 'setoran_tabungan'
+                                        ? 'Setoran'
+                                        : 'Penarikan';
+                            }
 
-                    const tanggal = new Date(trx.tanggal_transaksi).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                            const tanggal = new Date(
+                                trx.tanggal_transaksi,
+                            ).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            });
 
-                    let statusBadge = '';
-                    if (type === 'tagihan') {
-                        statusBadge = '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Menunggu Verifikasi</span>';
-                    } else if (trx.jenis_transaksi === 'penarikan_tabungan') {
-                        statusBadge = trx.status_approval === 'pending'
-                            ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
-                            : '';
-                    } else {
-                        statusBadge = '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
-                    }
+                            let statusBadge = '';
+                            if (type === 'tagihan') {
+                                statusBadge =
+                                    '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Menunggu Verifikasi</span>';
+                            } else if (
+                                trx.jenis_transaksi === 'penarikan_tabungan'
+                            ) {
+                                statusBadge =
+                                    trx.status_approval === 'pending'
+                                        ? '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Belum Verify Token</span>'
+                                        : '';
+                            } else {
+                                statusBadge =
+                                    '<span class="badge bg-info"><i class="bx bx-info-circle me-1"></i>Menunggu Verifikasi</span>';
+                            }
 
-                    // Additional info for tagihan
-                    const additionalInfo = type === 'tagihan' && trx.nama_tagihan
-                        ? `<br><small class="text-muted">${trx.nama_tagihan}</small>`
-                        : '';
+                            // Additional info for tagihan
+                            const additionalInfo =
+                                type === 'tagihan' && trx.nama_tagihan
+                                    ? `<br><small class="text-muted">${trx.nama_tagihan}</small>`
+                                    : '';
 
-                    tableRows += `
+                            tableRows += `
                         <tr class="align-middle">
                             <td class="text-center">${index + 1}</td>
                             <td class="text-center">
@@ -646,9 +980,9 @@
                             </td>
                         </tr>
                     `;
-                });
+                        });
 
-                modalBody.innerHTML = `
+                        modalBody.innerHTML = `
                     <div class="alert alert-warning border-0 shadow-sm mb-3">
                         <div class="d-flex align-items-center">
                             <i class="bx bx-info-circle fs-4 me-3"></i>
@@ -676,20 +1010,22 @@
                         </table>
                     </div>
                 `;
-            } else {
-                modalBody.innerHTML = `
+                    } else {
+                        modalBody.innerHTML = `
                     <div class="text-center py-5">
                         <i class="bx bx-check-circle text-success" style="font-size:80px;"></i>
                         <h4 class="mt-3">Tidak Ada Transaksi Pending</h4>
                         <p class="text-muted">Semua transaksi sudah diproses</p>
                     </div>
                 `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            const modalBody = document.querySelector('#pendingModal .modal-body');
-            modalBody.innerHTML = `
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    const modalBody = document.querySelector(
+                        '#pendingModal .modal-body',
+                    );
+                    modalBody.innerHTML = `
                 <div class="text-center py-5">
                     <i class="bx bx-error-circle text-danger" style="font-size:80px;"></i>
                     <h4 class="mt-3">Gagal Memuat Data</h4>
@@ -699,55 +1035,59 @@
                     </button>
                 </div>
             `;
-        });
-    }
+                });
+        }
 
+        function viewDetailPending(transaksiId) {
+            const pendingModal = bootstrap.Modal.getInstance(
+                document.getElementById('pendingModal'),
+            );
+            if (pendingModal) pendingModal.hide();
+            window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
+        }
 
-    function viewDetailPending(transaksiId) {
-        const pendingModal = bootstrap.Modal.getInstance(document.getElementById('pendingModal'));
-        if (pendingModal) pendingModal.hide();
-        window.location.href = `/keuangan-transaksi/show/${transaksiId}`;
-    }
+        function showDetailTransaksi(transaksiId) {
+            Swal.fire({
+                title: 'Memuat...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            });
 
-
-    function showDetailTransaksi(transaksiId) {
-        Swal.fire({
-            title: 'Memuat...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
-        fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer {{ auth()->user()->api_token ?? "" }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const trx = data.data;
-                const statusBadge = getStatusBadge(trx.status_pembayaran);
-                const buktiHtml = trx.bukti_transfer
-                    ? `<div class="mb-3">
+            fetch(`/api/v1/tabungan/${transaksiId}/detail`, {
+                method: 'GET',
+                headers: {
+                    Authorization:
+                        'Bearer {{ auth()->user()->api_token ?? "" }}',
+                    Accept: 'application/json',
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        const trx = data.data;
+                        const statusBadge = getStatusBadge(
+                            trx.status_pembayaran,
+                        );
+                        const buktiHtml = trx.bukti_transfer
+                            ? `<div class="mb-3">
                         <strong>Bukti Transfer:</strong><br>
                         <a href="${trx.bukti_transfer}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="bx bx-image me-1"></i>Lihat Bukti Transfer
                         </a>
                     </div>`
-                    : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
+                            : '<div class="alert alert-warning"><i class="bx bx-info-circle me-1"></i>Bukti transfer belum diupload</div>';
 
-                const catatanHtml = trx.catatan_verifikasi
-                    ? `<div class="alert alert-info">
+                        const catatanHtml = trx.catatan_verifikasi
+                            ? `<div class="alert alert-info">
                         <strong>Catatan Verifikasi:</strong><br>
                         ${trx.catatan_verifikasi}<br>
                         <small class="text-muted">Oleh: ${trx.verified_by || '-'} pada ${trx.verified_at || '-'}</small>
                     </div>`
-                    : '';
+                            : '';
 
-                const actionButtons = trx.status_pembayaran === 'pending'
-                    ? `<div class="mt-4 d-flex gap-2 justify-content-center">
+                        const actionButtons =
+                            trx.status_pembayaran === 'pending'
+                                ? `<div class="mt-4 d-flex gap-2 justify-content-center">
                         <button class="btn btn-success" onclick="approveTransaksi(${transaksiId})">
                             <i class="bx bx-check-circle me-1"></i>Approve
                         </button>
@@ -755,11 +1095,11 @@
                             <i class="bx bx-x-circle me-1"></i>Reject
                         </button>
                     </div>`
-                    : '';
+                                : '';
 
-                Swal.fire({
-                    title: 'Detail Transaksi',
-                    html: `
+                        Swal.fire({
+                            title: 'Detail Transaksi',
+                            html: `
                         <div class="text-start">
                             <div class="mb-3">
                                 <strong>Nomor Transaksi:</strong><br>
@@ -777,50 +1117,76 @@
                             ${actionButtons}
                         </div>
                     `,
-                    width: '600px',
-                    showCloseButton: true,
-                    showConfirmButton: false
+                            width: '600px',
+                            showCloseButton: true,
+                            showConfirmButton: false,
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Gagal memuat detail transaksi',
+                        confirmButtonColor: '#f56565',
+                    });
                 });
-            }
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Gagal memuat detail transaksi',
-                confirmButtonColor: '#f56565'
-            });
-        });
-    }
+        }
 
         // Handle detail button click
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-detail-trx').forEach(button => {
-                button.addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.btn-detail-trx').forEach((button) => {
+                button.addEventListener('click', function () {
                     const transaksiId = this.dataset.id;
-                    window.location.href = `{{ url('keuangan-transaksi/show') }}/${transaksiId}`;
+                    window.location.href = `{{ url("keuangan-transaksi/show") }}/${transaksiId}`;
                 });
             });
 
             // Handle cetak struk button click
-            document.querySelectorAll('.btn-cetak-trx').forEach(button => {
-                button.addEventListener('click', function() {
-                    const transaksiId = this.dataset.id;
-                    window.open(`{{ url('keuangan-transaksi/cetak-struk') }}/${transaksiId}`, '_blank');
-                });
-            });
+            // document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
+            //     button.addEventListener('click', function () {
+            //         const transaksiId = this.dataset.id;
+            //         window.open(
+            //             `{{ url("keuangan-transaksi/cetak-struk") }}/${transaksiId}`,
+            //             '_blank',
+            //         );
+            //     });
+            // });
+
+document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
+    button.addEventListener('click', function () {
+        const transaksiId = this.dataset.id;
+        const penerima = this.dataset.penerima;
+        console.log( penerima, transaksiId );
+        
+
+        let url = '';
+
+        if (penerima === 'Siswa') {
+            url = `{{ url("keuangan-transaksi/cetak-struk") }}/${transaksiId}`;
+        } else if (penerima === 'Officer') {
+            url = `{{ url("payroll-payment/slip") }}/${transaksiId}`;
+        } else {
+            alert('Tipe penerima tidak dikenali');
+            return;
+        }
+
+        window.open(url, '_blank');
+    });
+});
+
 
             // Handle approve button click
-            document.querySelectorAll('.btn-approve-trx').forEach(button => {
-                button.addEventListener('click', function() {
+            document.querySelectorAll('.btn-approve-trx').forEach((button) => {
+                button.addEventListener('click', function () {
                     const transaksiId = this.dataset.id;
                     approveTransaksi(transaksiId);
                 });
             });
 
             // Handle reject button click
-            document.querySelectorAll('.btn-reject-trx').forEach(button => {
-                button.addEventListener('click', function() {
+            document.querySelectorAll('.btn-reject-trx').forEach((button) => {
+                button.addEventListener('click', function () {
                     const transaksiId = this.dataset.id;
                     rejectTransaksi(transaksiId);
                 });
@@ -844,7 +1210,8 @@
                 cancelButtonText: 'Batal',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const catatan = document.getElementById('catatan-approve').value;
+                    const catatan =
+                        document.getElementById('catatan-approve').value;
                     processApproval(transaksiId, catatan);
                 }
             });
@@ -866,13 +1233,14 @@
                 confirmButtonText: '<i class="bx bx-x me-1"></i> Reject',
                 cancelButtonText: 'Batal',
                 preConfirm: () => {
-                    const catatan = document.getElementById('catatan-reject').value;
+                    const catatan =
+                        document.getElementById('catatan-reject').value;
                     if (!catatan) {
                         Swal.showValidationMessage('Alasan reject harus diisi');
                         return false;
                     }
                     return catatan;
-                }
+                },
             }).then((result) => {
                 if (result.isConfirmed) {
                     processRejection(transaksiId, result.value);
@@ -886,28 +1254,28 @@
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
-                }
+                },
             });
 
-            fetch(`{{ url('keuangan-transaksi/approve') }}/${transaksiId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        catatan_verifikasi: catatan
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
+            fetch(`{{ url("keuangan-transaksi/approve") }}/${transaksiId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
                             text: data.message,
-                            confirmButtonColor: '#48bb78'
+                            confirmButtonColor: '#48bb78',
                         }).then(() => {
                             window.location.reload();
                         });
@@ -916,17 +1284,17 @@
                             icon: 'error',
                             title: 'Gagal!',
                             text: data.message,
-                            confirmButtonColor: '#f56565'
+                            confirmButtonColor: '#f56565',
                         });
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'Terjadi kesalahan saat approve transaksi',
-                        confirmButtonColor: '#f56565'
+                        confirmButtonColor: '#f56565',
                     });
                 });
         }
@@ -937,28 +1305,28 @@
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
-                }
+                },
             });
 
-            fetch(`{{ url('keuangan-transaksi/reject') }}/${transaksiId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        catatan_verifikasi: catatan
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
+            fetch(`{{ url("keuangan-transaksi/reject") }}/${transaksiId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({
+                    catatan_verifikasi: catatan,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
                             text: data.message,
-                            confirmButtonColor: '#48bb78'
+                            confirmButtonColor: '#48bb78',
                         }).then(() => {
                             window.location.reload();
                         });
@@ -967,104 +1335,118 @@
                             icon: 'error',
                             title: 'Gagal!',
                             text: data.message,
-                            confirmButtonColor: '#f56565'
+                            confirmButtonColor: '#f56565',
                         });
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'Terjadi kesalahan saat reject transaksi',
-                        confirmButtonColor: '#f56565'
+                        confirmButtonColor: '#f56565',
                     });
                 });
         }
 
         // Initialize datepicker dengan format DD/MM/YYYY
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             flatpickr('.datepicker', {
                 dateFormat: 'd/m/Y',
                 allowInput: true,
-                onChange: function(selectedDates, dateStr, instance) {
+                onChange: function (selectedDates, dateStr, instance) {
                     // Convert DD/MM/YYYY to YYYY-MM-DD for backend
                     if (selectedDates.length > 0) {
                         const date = selectedDates[0];
                         const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(
+                            2,
+                            '0',
+                        );
                         const day = String(date.getDate()).padStart(2, '0');
                         const formattedDate = `${year}-${month}-${day}`;
 
                         // Set the actual input value to backend format
                         if (instance.element.id === 'dari_tanggal') {
-                            instance.element.setAttribute('data-value', formattedDate);
+                            instance.element.setAttribute(
+                                'data-value',
+                                formattedDate,
+                            );
                         } else if (instance.element.id === 'sampai_tanggal') {
-                            instance.element.setAttribute('data-value', formattedDate);
+                            instance.element.setAttribute(
+                                'data-value',
+                                formattedDate,
+                            );
                         }
                     }
-                }
+                },
             });
 
             // Convert dates before form submission
-            document.querySelector('form').addEventListener('submit', function(e) {
-                const dariTanggal = document.getElementById('dari_tanggal');
-                const sampaiTanggal = document.getElementById('sampai_tanggal');
+            document
+                .querySelector('form')
+                .addEventListener('submit', function (e) {
+                    const dariTanggal = document.getElementById('dari_tanggal');
+                    const sampaiTanggal =
+                        document.getElementById('sampai_tanggal');
 
-                // Convert dari_tanggal
-                if (dariTanggal.value) {
-                    const dataValue = dariTanggal.getAttribute('data-value');
-                    if (dataValue) {
-                        dariTanggal.value = dataValue;
-                    } else {
-                        const parts = dariTanggal.value.split('/');
-                        if (parts.length === 3) {
-                            dariTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    // Convert dari_tanggal
+                    if (dariTanggal.value) {
+                        const dataValue =
+                            dariTanggal.getAttribute('data-value');
+                        if (dataValue) {
+                            dariTanggal.value = dataValue;
+                        } else {
+                            const parts = dariTanggal.value.split('/');
+                            if (parts.length === 3) {
+                                dariTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            }
                         }
                     }
-                }
 
-                // Convert sampai_tanggal
-                if (sampaiTanggal.value) {
-                    const dataValue = sampaiTanggal.getAttribute('data-value');
-                    if (dataValue) {
-                        sampaiTanggal.value = dataValue;
-                    } else {
-                        const parts = sampaiTanggal.value.split('/');
-                        if (parts.length === 3) {
-                            sampaiTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    // Convert sampai_tanggal
+                    if (sampaiTanggal.value) {
+                        const dataValue =
+                            sampaiTanggal.getAttribute('data-value');
+                        if (dataValue) {
+                            sampaiTanggal.value = dataValue;
+                        } else {
+                            const parts = sampaiTanggal.value.split('/');
+                            if (parts.length === 3) {
+                                sampaiTanggal.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            }
                         }
                     }
-                }
-            });
+                });
         });
     </script>
     @if ($transaksis->isNotEmpty())
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 $('#datatable').DataTable({
                     responsive: true,
                     pageLength: 10,
                     searching: false,
                     scrollX: true,
                     language: {
-                        url: '{{ asset('assets/datatables/id.json') }}'
-                    }
+                        url: '{{ asset("assets/datatables/id.json") }}',
+                    },
                 });
 
                 // ✅ Konfirmasi hapus data
-                $('.btn-delete').on('click', function(e) {
+                $('.btn-delete').on('click', function (e) {
                     e.preventDefault();
                     const form = $(this).closest('form');
                     Swal.fire({
                         title: 'Apakah Anda yakin?',
-                        text: "Data penggajian ini akan dihapus permanen!",
+                        text: 'Data penggajian ini akan dihapus permanen!',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
+                        cancelButtonText: 'Batal',
                     }).then((result) => {
                         if (result.isConfirmed) {
                             form.submit();

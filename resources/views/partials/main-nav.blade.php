@@ -473,7 +473,7 @@
                         <li class="sub-menu-item">
                             <a
                                 class="sub-menu-link"
-                                href="{{ url("merchant/login-merchant") }}"
+                                href="{{ url("merchant/login") }}"
                             >
                                 Akses Halaman
                             </a>

@@ -52,7 +52,7 @@
                 </div>
 
                 <!-- Entries per page selector -->
-                <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center">
+                {{-- <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <label class="me-2">Tampilkan</label>
                         <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
@@ -67,9 +67,9 @@
                     <div class="text-muted">
                         Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
                     </div>
-                </div>
+                </div> --}}
 
-                <table class="table-bordered table-striped table">
+                <table class="table-bordered table-striped table" id="datatable">
                     <thead class="table-primary">
                         <tr>
                             @foreach ($headers as $header)
@@ -80,7 +80,7 @@
                     <tbody>
                         @forelse($siswa as $index => $item)
                             <tr>
-                                <td>{{ $siswa->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $item->nisn }}</td>
                                 <td>{{ $item->kelas->nama_kelas ?? '-' }}</td>
@@ -121,7 +121,7 @@
                 </table>
 
                 <!-- Pagination -->
-                <div class="col-lg-12 mt-3">
+                {{-- <div class="col-lg-12 mt-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted">
                             Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
@@ -130,7 +130,7 @@
                             {{ $siswa->links() }}
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
             </div>
         </div>
@@ -140,7 +140,7 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+    {{-- <script>
         $(document).ready(function() {
             // Handle per page dropdown change
             $('#perPageSelect').on('change', function() {
@@ -173,7 +173,7 @@
                 });
             });
         });
-    </script>
+    </script> --}}
 
     @if (session('success'))
         <script>
@@ -183,6 +183,42 @@
                 text: "{{ session('success') }}",
                 timer: 2000,
                 showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if ($siswa->isNotEmpty())
+        <script>
+            $(document).ready(function () {
+                $('#datatable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    searching: false,
+                    scrollX: true,
+                    language: {
+                        url: '{{ asset("assets/datatables/id.json") }}',
+                    },
+                });
+
+                // ✅ Konfirmasi hapus data
+                $('.link-danger').on('click', function (e) {
+                    e.preventDefault();
+                    const form = $(this).closest('form');
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: 'Data penggajian ini akan dihapus permanen!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
             });
         </script>
     @endif

@@ -353,6 +353,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <label for="per_page" class="mb-0 text-primary">Tampilkan:</label>
                     <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                        <option value="5" {{ request('per_page', 5) == 5 ? 'selected' : '' }}>5</option>
                         <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                         <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
@@ -383,12 +384,15 @@
                 <div class="custom-card-header rounded-top-3">
                     <div class="col-md-4">
                         <span class="fw-bold text-primary me-3" style="font-size: 14px">Daftar Tabungan</span>
+                        <div class="d-flex justify-content-start gap-1">
                         <button type="button" id="btnAktifkan" class="btn btn-sm btn-success gap-2">
                             <i class="bx bx-check-circle me-1"></i>Aktifkan
                         </button>
                         <button type="button" id="btnNonAktifkan" class="btn btn-sm btn-danger gap-2">
                             <i class="bx bx-x-circle me-1"></i>Non-Aktifkan
                         </button>
+                        </div>
+
                     </div>
                     <div>
                         <label for="filter" class="form-label text-primary fw-bold">Filter Data Status</label>
@@ -425,7 +429,7 @@
                             <tr data-status="{{ $saldo ? $saldo->status : '0' }}">
                                 <td><input type="checkbox" name="checkbox" id="checkbox" class=""
                                         data-id="{{ $saldo->id ?? '' }}"></td>
-                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $transaksis->firstItem() + $loop->index }}</td>
                                 <td>{{ $siswa->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $siswa->nisn ?? '-' }}</td>
                                 <td>{{ $siswa->user->name ?? '-' }}</td>
@@ -458,35 +462,66 @@
                     </tbody>
                 </table>
             </div>
-            {{-- Pagination --}}
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                        <div class="text-muted">
-                            Menampilkan {{ $transaksis->firstItem() ?? 0 }} sampai {{ $transaksis->lastItem() ?? 0 }} dari {{ $transaksis->total() }} data
-                        </div>
-                        <div>
-                            {{ $transaksis->appends(request()->query())->links() }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+@if ($transaksis->hasPages())
+<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+
+    {{-- Info --}}
+    <div class="dataTables_info text-muted">
+        Showing {{ $transaksis->firstItem() ?? 0 }}
+        to {{ $transaksis->lastItem() ?? 0 }}
+        of {{ $transaksis->total() }} entries
+    </div>
+
+    {{-- Pagination --}}
+    <div class="dataTables_paginate paging_simple_numbers">
+        <ul class="pagination mb-0">
+
+            {{-- Previous --}}
+            <li class="paginate_button page-item {{ $transaksis->onFirstPage() ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ $transaksis->previousPageUrl() }}">Sebelumnya</a>
+            </li>
+
+            @php
+                $start = max($transaksis->currentPage() - 2, 1);
+                $end   = min($start + 4, $transaksis->lastPage());
+            @endphp
+
+            {{-- Page Numbers --}}
+            @for ($page = $start; $page <= $end; $page++)
+                <li class="paginate_button page-item {{ $page == $transaksis->currentPage() ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $transaksis->url($page) }}">{{ $page }}</a>
+                </li>
+            @endfor
+
+            {{-- Next --}}
+            <li class="paginate_button page-item {{ $transaksis->hasMorePages() ? '' : 'disabled' }}">
+                <a class="page-link" href="{{ $transaksis->nextPageUrl() }}">Selanjutnya</a>
+            </li>
+
+        </ul>
+    </div>
+</div>
+@endif
+
+
+
         </div>
     </div>
 @endsection
 
 
 @push('scripts')
+
+
+
+
 <script>
-
-    function changePerPage(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.delete('page'); // Reset ke halaman 1
-        window.location.href = url.toString();
-    }
-
-
+    function changePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page'); // reset ke halaman 1
+    window.location.href = url.toString();
+}
     function showPendingTransactions(type = 'tabungan') {
         // Tentukan judul dan URL berdasarkan tipe
         const titles = {

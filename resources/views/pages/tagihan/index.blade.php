@@ -306,7 +306,7 @@
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
                 pageLength: 25,
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                    url: '{{ asset('assets/datatables/id.json') }}'
                 },
                 ajax: {
                     url: '{{ route("tagihan.datatable") }}',

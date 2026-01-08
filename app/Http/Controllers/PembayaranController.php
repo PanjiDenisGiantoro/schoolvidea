@@ -39,7 +39,7 @@ class PembayaranController extends Controller
             })->get();
 
             // Get pembayaran data for summary
-            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan.unit', function($q) {
+            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan.unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -51,7 +51,7 @@ class PembayaranController extends Controller
             $kelas = Kelas::where('unit_id', Auth::user()->unit_id)->get();
 
             // Get pembayaran data for summary
-            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan', function($q) {
+            $pembayaranQuery = PembayaranTagihan::whereHas('tagihanSiswa.tagihan', function ($q) {
                 $q->where('unit_id', Auth::user()->unit_id);
             });
         } else {
@@ -84,12 +84,12 @@ class PembayaranController extends Controller
         $totalPembayaran = $allPembayaran->sum('jumlah_bayar');
 
         // Total pembayaran tunai (case insensitive)
-        $totalTunai = $allPembayaran->filter(function($p) {
+        $totalTunai = $allPembayaran->filter(function ($p) {
             return strtolower($p->metode_bayar) === 'tunai' || strtolower($p->metode_bayar) === 'cash';
         })->sum('jumlah_bayar');
 
         // Total pembayaran non-tunai
-        $totalNonTunai = $allPembayaran->filter(function($p) {
+        $totalNonTunai = $allPembayaran->filter(function ($p) {
             return strtolower($p->metode_bayar) !== 'tunai' && strtolower($p->metode_bayar) !== 'cash';
         })->sum('jumlah_bayar');
 
@@ -100,7 +100,7 @@ class PembayaranController extends Controller
             'total_nontunai' => $totalNonTunai,
         ];
 
-        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList','kelas','units', 'summary'));
+        return view('pages.pembayaran.pembayaran', compact('siswaList', 'tagihanList', 'akunList', 'kelas', 'units', 'summary'));
 
     }
     public function bayar(Request $request)
@@ -136,11 +136,13 @@ class PembayaranController extends Controller
             if ($sisaSetelahBayar == '0') {
                 $statusTagihan = '1'; // Lunas
                 $sisaSetelahBayar = 0; // jaga-jaga jangan negatif
-                $keterangan = "Lunas tagihan bulan {$request->bulan} {$request->tahun} sebesar Rp " . number_format($nominal, 0, ',', '.');
+                $keterangan = "Lunas tagihan bulan {$request->bulan} sebesar Rp " . number_format($nominal, 0, ',', '.');
+                //$keterangan = "Lunas tagihan bulan {$request->bulan} {$request->tahun} sebesar Rp " . number_format($nominal, 0, ',', '.');
                 $tanggalBayar = now();
             } else {
                 $statusTagihan = '2'; // Cicilan
                 $keterangan = "Cicilan tagihan bulan {$request->bulan} {$request->tahun} bayar Rp " . number_format($jumlahBayar, 0, ',', '.') . " dari Rp " . number_format($nominal, 0, ',', '.');
+                //$keterangan = "Cicilan tagihan bulan {$request->bulan} {$request->tahun} bayar Rp " . number_format($jumlahBayar, 0, ',', '.') . " dari Rp " . number_format($nominal, 0, ',', '.');
                 $tanggalBayar = null;
             }
 
@@ -226,13 +228,13 @@ class PembayaranController extends Controller
             }
 
 
-            if($datarekening->allotment == 'Semua Pembayaran'){
+            if ($datarekening->allotment == 'Semua Pembayaran') {
                 $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                    ->where('allotment','Semua Pembayaran')
+                    ->where('allotment', 'Semua Pembayaran')
                     ->first();
-            }else{
+            } else {
                 $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                    ->where('allotment','Pembayaran Tagihan')
+                    ->where('allotment', 'Pembayaran Tagihan')
                     ->first();
             }
 
@@ -261,7 +263,7 @@ class PembayaranController extends Controller
             }
 
 
-            if($position == 1){
+            if ($position == 1) {
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
@@ -275,11 +277,11 @@ class PembayaranController extends Controller
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $datarekening->akun_id,
                     'kredit'        => 0,
-                    'debit'       =>$jumlahBayar,
+                    'debit'       => $jumlahBayar,
                     'keterangan'   => $keterangan,
                     'unit_id' => Auth::user()->unit_id
                 ]);
-            }else{
+            } else {
                 Jurnals::create([
                     'transaksi_id' => $transaksi->id,
                     'akun_id'      => $akun_id,
@@ -298,26 +300,26 @@ class PembayaranController extends Controller
                     'unit_id' => Auth::user()->unit_id
                 ]);
             }
-//
-//
-//
-//            // jurnal debit
-//            Jurnals::create([
-//                'transaksi_id' => $transaksi->id,
-//                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
-//                'debit'        => $jumlahBayar,
-//                'kredit'       => 0,
-//                'keterangan'   => $keterangan,
-//            ]);
-//
-//            // jurnal kredit
-//            Jurnals::create([
-//                'transaksi_id' => $transaksi->id,
-//                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
-//                'debit'        => 0,
-//                'kredit'       => $jumlahBayar,
-//                'keterangan'   => $keterangan,
-//            ]);
+            //
+            //
+            //
+            //            // jurnal debit
+            //            Jurnals::create([
+            //                'transaksi_id' => $transaksi->id,
+            //                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('debit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
+            //                'debit'        => $jumlahBayar,
+            //                'kredit'       => 0,
+            //                'keterangan'   => $keterangan,
+            //            ]);
+            //
+            //            // jurnal kredit
+            //            Jurnals::create([
+            //                'transaksi_id' => $transaksi->id,
+            //                'akun_id'      => setting_akun::where('kategori', 'tagihan-keluar')->where('kredit', 1)->where('unit_id',Auth::user()->id)->first()?->akun_id,
+            //                'debit'        => 0,
+            //                'kredit'       => $jumlahBayar,
+            //                'keterangan'   => $keterangan,
+            //            ]);
 
             DB::commit();
 
@@ -555,7 +557,7 @@ class PembayaranController extends Controller
 
             // Validasi: semua tagihan harus milik siswa yang sama
             $firstSiswaId = $tagihanSiswaList->first()?->siswa_id;
-            $allSameSiswa = $tagihanSiswaList->every(fn($ts) => $ts->siswa_id === $firstSiswaId);
+            $allSameSiswa = $tagihanSiswaList->every(fn ($ts) => $ts->siswa_id === $firstSiswaId);
 
             if (!$allSameSiswa) {
                 return response()->json([
@@ -874,7 +876,7 @@ class PembayaranController extends Controller
 
             // 2. Validasi: semua tagihan harus milik siswa yang sama
             $firstSiswaId = $tagihanSiswaList->first()?->siswa_id;
-            $allSameSiswa = $tagihanSiswaList->every(fn($ts) => $ts->siswa_id === $firstSiswaId);
+            $allSameSiswa = $tagihanSiswaList->every(fn ($ts) => $ts->siswa_id === $firstSiswaId);
 
             if (!$allSameSiswa) {
                 DB::rollBack();
@@ -1090,7 +1092,7 @@ class PembayaranController extends Controller
                 'data' => [
                     'head_tagihan' => $headTagihan,
                     'pembayaran_master' => $pembayaranMaster,
-                    'details' => $details->map(function($detail) {
+                    'details' => $details->map(function ($detail) {
                         return [
                             'urutan' => $detail->urutan,
                             'siswa_nama' => $detail->tagihanSiswa->siswa->user->name ?? '-',

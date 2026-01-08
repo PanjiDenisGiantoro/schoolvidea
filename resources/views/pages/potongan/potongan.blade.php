@@ -100,7 +100,10 @@
                     paging: true,
                     searching: true,
                     ordering: true,
-                    responsive: true
+                    responsive: true,
+                    language: {
+                        url: '{{ asset('assets/datatables/id.json') }}'
+                    }
                 });
             @endif
         });

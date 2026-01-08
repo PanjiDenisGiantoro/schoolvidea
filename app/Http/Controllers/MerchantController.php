@@ -21,10 +21,12 @@ class MerchantController extends Controller
         }
 
         $merchants = $query;
-        $merCount = $merchants->count();
-        $merActive = $merchants->with('status', '1')->count();
+        $merCount = (clone $merchants)->count();
+        $merActive = (clone $merchants)->where('status', '1')->count();
+        $merNonActive = (clone $merchants)->where('status', '0')->count();
+        $saldoAktif = (clone $merchants)->sum('saldo_aktif');
 
-        return view('pages.ekantin.merchant.index', compact('units', 'merchants', 'merCount', 'merActive'));
+        return view('pages.ekantin.merchant.index', compact('units', 'merchants', 'merCount', 'merActive', 'merNonActive', 'saldoAktif'));
     }
 
     public function create()
@@ -61,6 +63,9 @@ class MerchantController extends Controller
             'no_hp' => 'required|string|max:14',
             'status' => 'required|in:0,1',
             'password' => 'required|min:6',
+            'bank_name' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:30',
         ]);
 
         $validated['password'] = bcrypt($request->password);
@@ -89,6 +94,9 @@ class MerchantController extends Controller
             'no_hp' => 'required|string|max:14',
             'status' => 'required|in:0,1',
             'password' => 'nullable|min:6',
+            'bank_name' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:30',
         ]);
 
         if ($request->filled('password')) {
@@ -258,6 +266,6 @@ class MerchantController extends Controller
         // $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return view('pages.ekantin.dashboard_merchant.login');
+        return redirect()->route('merchant.login');
     }
 }

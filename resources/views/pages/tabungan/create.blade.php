@@ -15,7 +15,7 @@
                     <div class="col-md-4">
                         <label for="filter_unit" class="form-label fw-semibold">Filter Unit</label>
                         <select id="filter_unit" class="form-control rounded-pill shadow-sm">
-                            <option value="">-- Pilih Unit --</option>
+                            <option  value="">-- Pilih Unit --</option>
                             @foreach ($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                             @endforeach

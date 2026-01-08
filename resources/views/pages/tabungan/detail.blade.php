@@ -85,7 +85,15 @@
                         <a href="{{ url('tabungan/') }}" class="btn btn-secondary"><i class='bx  bx-chevron-left'></i> </a>
                         <a href="{{ route('tabungan.create', ['siswa_id' => $siswa->id, 'unit_id' => $siswa->unit_id, 'kelas_id' => $siswa->kelas_id]) }}" class="btn btn-success"><i class="bx bx-plus-circle me-1"></i> Setor</a>
                         <a href="{{ route('tabungan.tarik', ['siswa_id' => $siswa->id, 'unit_id' => $siswa->unit_id, 'kelas_id' => $siswa->kelas_id]) }}" class="btn btn-danger"><i class="bx bx-minus-circle me-1"></i>Tarik</a>
-                        <a href="{{ url('keuangan-transaksi?siswa_id=' . $siswa->nisn) }}" class="btn btn-info" title="Lihat detail keuangan siswa"><i class="bx bx-qr" style="font-size: 20px"></i></a>
+                        <button
+                        type="button"
+                        class="btn btn-info"
+                        data-bs-toggle="modal"
+                        data-bs-target="#qrModal"
+                    >
+                        <i class="bx bx-qr"></i>
+                        QR
+                    </button>
                         <a href="{{ route('tabungan.print_mutasi', $siswa->id) }}" class="btn btn-warning" target="_blank"><i class="bx bx-printer" style="font-size: 20px"></i></a>
                     </div>
                 </div>
@@ -299,6 +307,68 @@
             </div>
         </div>
     </div>
+
+
+        {{-- Modal --}}
+    <div
+        class="modal fade"
+        id="qrModal"
+        tabindex="-1"
+        aria-labelledby="qrModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrModalLabel">
+                        <i class="bx bx-qr"></i>
+                        QR Code Merchant
+                    </h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <!-- QR Code -->
+                    <div
+                        id="qrcode"
+                        class="mb-3 p-3 d-flex justify-content-center"
+                        style="border: 1px solid #000"
+                    ></div>
+
+                    <!-- hidden input untuk simpan data QR -->
+                    <input type="hidden" id="qrcode-text" name="qrcode_text" />
+
+                    <small class="text-muted">
+                        QR siswa
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Tutup
+                    </button>
+                    <button
+                        type="button"
+                        id="downloadQrBtn"
+                        class="btn btn-primary"
+                        style="display: none"
+                    >
+                        <i class="bx bx-download"></i>
+                        Download QR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('styles')
@@ -352,6 +422,70 @@
 @endpush
 
 @push('scripts')
+
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+    {{-- QR --}}
+    <script>
+        console.log('QR SCRIPT LOADED');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const vaInput = @json($siswa->va_siswa);
+            const qrContainer = document.getElementById('qrcode');
+            const downloadBtn = document.getElementById('downloadQrBtn');
+            const qrModal = document.getElementById('qrModal');
+
+            let qrCode = null;
+
+            // LOGO UNIT dari database merchant (AMAN)
+            const logo = @json(
+                $siswa->unit && $siswa->unit->image
+                    ? asset("" . $siswa->unit->image)
+                    : asset("images/default-logo.png")
+            );
+
+            console.log('QR LOGO:', logo);
+
+            qrModal.addEventListener('shown.bs.modal', function () {
+                qrContainer.innerHTML = '';
+
+                qrCode = new QRCodeStyling({
+                    width: 200,
+                    height: 200,
+                    data: vaInput || '-',
+                    image: logo,
+                    dotsOptions: {
+                        color: '#000',
+                        type: 'rounded',
+                    },
+                    backgroundOptions: {
+                        color: '#fff',
+                    },
+                    imageOptions: {
+                        crossOrigin: 'anonymous',
+                        margin: 4,
+                        imageSize: 0.4,
+                        hideBackgroundDots: true,
+                        imageCornerRadius: 100,
+                    },
+                });
+
+                qrCode.append(qrContainer);
+                downloadBtn.style.display = 'inline-block';
+            });
+
+            // Download QR
+            downloadBtn.addEventListener('click', function () {
+                if (!qrCode) return;
+
+                qrCode.download({
+                    name: 'qr-' + (vaInput || '-'),
+                    extension: 'png',
+                });
+            });
+        });
+    </script>
+
+
     <script>
         // Handle detail button click
         document.querySelectorAll('.btn-detail').forEach(button => {

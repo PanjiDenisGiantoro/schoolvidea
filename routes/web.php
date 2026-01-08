@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AkunUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardMerchantController;
 use App\Http\Controllers\DataRekeningController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\JurusanController;
@@ -10,9 +11,9 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KeuanganTransaksiController;
 use App\Http\Controllers\LembagaunitController;
 use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\MerchantProductController;
 use App\Http\Controllers\MerchantTransactionController;
 use App\Http\Controllers\MerchantWithdrawalController;
-use App\Http\Controllers\DashboardMerchantController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PayrollComponentsController;
 use App\Http\Controllers\PayrollDeductionsController;
@@ -54,7 +55,7 @@ Route::get('/storage/bukti_pembayaran/{filename}', function ($filename) {
 
     return response()->file($path);
 })->name('storage.bukti_pembayaran');
-
+Route::get('/', [AuthController::class, 'portalCode']);
 Route::get('/login', [AuthController::class, 'portalCode'])->name('login');
 Route::post('/portalpost', [AuthController::class, 'checkPortalCode'])->name('portal.check');
 Route::get('/login-central', [AuthController::class, 'portalcentral'])->name('logincentral.form');
@@ -192,7 +193,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-jurusan/{unitId}', [SiswaController::class, 'getJurusanByUnit'])->name('getJurusanByUnit');
         Route::get('/kelas-by-unit/{unitId}', [SiswaController::class, 'getKelasByUnit']);
         // routes/web.php
-        Route::post('/check-unique', [SiswaController::class, 'checkUnique'])->name('siswa.checkUnique');
+        Route::match(['post', 'put'], '/check-unique', [SiswaController::class, 'checkUnique'])->name('siswa.checkUnique');
         Route::get('/jurusan-by-unit/{unitId}', [SiswaController::class, 'getJurusanByUnit']);
     });
 
@@ -473,13 +474,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [MerchantController::class, 'store'])->name('merchant.store');
         Route::put('/update/{merchant}', [MerchantController::class, 'update'])->name('merchant.update');
         Route::delete('/destroy/{id}', [MerchantController::class, 'destroy'])->name('merchant.delete');
-        Route::get('/login-merchant', [MerchantController::class, 'showLoginForm'])
-            ->middleware('guest:merchant')
-            ->name('merchant.login');
-        Route::post('/login-merchant', [MerchantController::class, 'login'])
-            ->middleware('guest:merchant');
-        Route::post('/logout-merchant', [MerchantController::class, 'logout'])
-            ->middleware('auth:merchant')->name('merchant.logout');
     });
     Route::prefix('merchant-transaction')->group(function () {
         Route::get('/', [MerchantTransactionController::class, 'index'])->name('merchant_transaction.index');
@@ -488,11 +482,47 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('merchant-withdrawal')->group(function () {
         Route::get('/', [MerchantWithdrawalController::class, 'index'])->name('merchant_withdrawal.index');
         Route::get('/datatable', [MerchantWithdrawalController::class, 'datatable'])->name('merchant_withdrawal.datatable');
+        Route::get('/show/{id}', [MerchantWithdrawalController::class, 'show'])->name('merchant_withdrawal.show');
+        Route::get('/print/{id}', [MerchantWithdrawalController::class, 'print'])->name('merchant_withdrawal.print');
+        Route::put('/reject/{id}', [MerchantWithdrawalController::class, 'reject'])->name('merchant_withdrawal.reject');
+        Route::put('/approve', [MerchantWithdrawalController::class, 'withdraw'])->name('merchant_withdrawal.approve');
     });
-    Route::middleware('auth:merchant')->group(function () {
-        Route::get('/merchant/dashboard', [DashboardMerchantController::class, 'dashboard' ])->name('merchant.dashboard');
-        Route::get('/merchant/product', [DashboardMerchantController::class, 'product'])->name('merchant.product');
-    });
+
+});
+
+Route::prefix('merchant')->group(function () {
+    Route::get('/login', [MerchantController::class, 'showLoginForm'])
+        ->middleware('guest:merchant')
+        ->name('merchant.login');
+    Route::post('/login', [MerchantController::class, 'login'])
+        ->middleware('guest:merchant');
+    Route::post('/logout', [MerchantController::class, 'logout'])
+        ->middleware('auth:merchant')->name('merchant.logout');
+});
+Route::middleware('auth:merchant')->group(function () {
+    Route::get('/merchant/dashboard', [DashboardMerchantController::class, 'dashboard'])->name('merchant.dashboard');
+    Route::get('/merchant/profile', [DashboardMerchantController::class, 'profile'])->name('merchant.profile');
+    Route::put('/merchant/profile/update/', [DashboardMerchantController::class, 'updateProfile'])->name('merchant.update.profile');
+    Route::patch('/merchant/profile/photo/', [DashboardMerchantController::class, 'updatePhoto'])->name('merchant.update.photo');
+    Route::get('/merchant/product', [MerchantProductController::class, 'index'])->name('merchant.product.index');
+    Route::get('/merchant/product/datatable', [MerchantProductController::class, 'datatable'])->name('merchant.product.datatable');
+    Route::get('/merchant/product/create', [MerchantProductController::class, 'create'])->name('merchant.product.create');
+    Route::post('/merchant/product/store', [MerchantProductController::class, 'store'])->name('merchant.product.store');
+    Route::get('/merchant/product/edit/{id}', [MerchantProductController::class, 'edit'])->name('merchant.product.edit');
+    Route::put('/merchant/product/update/{id}', [MerchantProductController::class, 'update'])->name('merchant.product.update');
+    Route::delete('/merchant/product/delete/{id}', [MerchantProductController::class, 'destroy'])->name('merchant.product.destroy');
+    Route::get('/merchant/product/show/{id}', [MerchantProductController::class, 'show'])->name('merchant.product.show');
+    Route::post('/merchant/product/upload', [MerchantProductController::class, 'upload'])->name('merchant.product.upload');
+
+    Route::get('/merchant/balance', [MerchantWithdrawalController::class, 'balance'])->name('merchant.balance.index');
+    Route::get('/merchant/balance/datatable', [MerchantWithdrawalController::class, 'datatableBalance'])->name('merchant.balance.datatable');
+    Route::post('/merchant/balance/withdrawal', [MerchantWithdrawalController::class, 'withdraw'])->name('merchant.balance.withdraw');
+    Route::post('/merchant/balance/request-withdrawal', [MerchantWithdrawalController::class, 'requestWithdraw'])->name('merchant.balance.reqWithdraw');
+    Route::get('/merchant/balance/show/{id}', [MerchantWithdrawalController::class, 'showBalance'])->name('merchant.balance.show');
+    Route::get('/merchant/balance/print/{id}', [MerchantWithdrawalController::class, 'printBalance'])->name('merchant.balance.print');
+
+    Route::get('/merchant/transaction', [MerchantTransactionController::class, 'dashboardTransaction'])->name('merchant.transaction.index');
+    Route::get('/merchant/transaction/datatable', [MerchantTransactionController::class, 'datatableTransaction'])->name('merchant.transaction.datatable');
 });
 // Route::get('/payroll-payment', function () {
 //     return view('pages.penggajian.payroll_payment.payroll_payment');

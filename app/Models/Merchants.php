@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Merchants extends Authenticatable
 {
     protected $table = 'merchants';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'nama_merchant',
@@ -21,10 +22,11 @@ class Merchants extends Authenticatable
         'jenis',
         'pemilik',
         'saldo_aktif',
+        'bank_name',
     ];
 
     protected $hidden = [
-        'password'
+        'password',
     ];
 
     protected $casts = [
@@ -51,8 +53,8 @@ class Merchants extends Authenticatable
         return $this->belongsTo(MerchantWithdrawal::class);
     }
 
-    public function getAuthIdentifierName()
-    {
-        return 'no_hp';
-    }
+    // public function getAuthIdentifierName()
+    // {
+    //     return 'no_hp';
+    // }
 }
