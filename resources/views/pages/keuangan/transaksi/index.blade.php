@@ -661,7 +661,7 @@
                                 </td>
 
                                 <td>
-                                    @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan"]))
+                                    @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan", "pembayaran-multiple"]))
                                         <span class="text-success fw-bold">
                                             + Rp
                                             {{ number_format($transaksi->jumlah, 0, ",", ".") }}
@@ -683,10 +683,17 @@
                                             "SALDO_TABUNGAN" => "warning",
                                             default => "secondary",
                                         };
+                                        $metodeText = match ($transaksi->metode) {
+                                            "TUNAI" => "TUNAI",
+                                            "CASH" => "TUNAI",
+                                            "TRANSFER" => "NON-TUNAI",
+                                            "NONTUNAI" => "NON-TUNAI",
+                                            default => "NON-TUNAI",
+                                        }
                                     @endphp
 
                                     <span class="badge bg-{{ $metodeBadge }}">
-                                        {{ $transaksi->metode }}
+                                        {{ $metodeText }}
                                     </span>
                                 </td>
                                 <td>
@@ -993,17 +1000,17 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover table-bordered align-middle">
+                        <table class="table table-hover table-bordered text-white align-middle">
                             <thead class="table-warning text-white">
                                 <tr>
-                                    <th class="text-center" style="width:50px;">#</th>
-                                    <th class="text-center" style="width:120px;">Jenis</th>
-                                    <th style="width:150px;">Nomor Transaksi</th>
-                                    <th style="width:200px;">Nama Siswa</th>
-                                    <th class="text-end" style="width:130px;">Jumlah</th>
-                                    <th class="text-center" style="width:150px;">Tanggal</th>
-                                    <th class="text-center" style="width:150px;">Status</th>
-                                    <th class="text-center" style="width:100px;">Aksi</th>
+                                    <th class="text-center text-white" style="width:50px;">#</th>
+                                    <th class="text-center text-white" style="width:120px;">Jenis</th>
+                                    <th class="text-white" style="width:150px;">Nomor Transaksi</th>
+                                    <th class="text-white" style="width:200px;">Nama Siswa</th>
+                                    <th class="text-end text-white" style="width:130px;">Jumlah</th>
+                                    <th class="text-center text-white" style="width:150px;">Tanggal</th>
+                                    <th class="text-center text-white" style="width:150px;">Status</th>
+                                    <th class="text-center text-white" style="width:100px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>

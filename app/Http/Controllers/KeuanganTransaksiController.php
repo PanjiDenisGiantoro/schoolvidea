@@ -144,7 +144,7 @@ class KeuanganTransaksiController extends Controller
             ->appends($request->except('page'));
 
         // Total Pemasukan - hanya yang sudah verified/approved
-        $totalPemasukanQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
+        $totalPemasukanQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan', 'pembayaran-multiple'])
             ->where('status_verifikasi', 'approved');
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
