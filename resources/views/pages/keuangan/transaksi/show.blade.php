@@ -366,7 +366,7 @@
 
                                 <li>
                                     <strong>Periode:</strong>
-                                    {{ $detailPembayaran->periode }}
+                                    {{ $pembayaranDetail->periode }}
                                     {{ $tagihan->tahun_mulai ?? "" }}
                                 </li>
                                 <li>
