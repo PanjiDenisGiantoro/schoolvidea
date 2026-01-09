@@ -231,7 +231,6 @@
                                                     {{ $detail->tagihanSiswa->tagihanItem->kategori->nama_kategori ?? "Tagihan" }}
                                                 </strong>
                                             </td>
-
                                             <td>
                                                 <span
                                                     class="badge bg-light text-dark"
@@ -339,9 +338,7 @@
                         <ul class="list-unstyled small">
                             @if ($transaksi->pembayaranTagihan->tagihanSiswa)
                                 @php
-                            
                                     $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
-
                                     $tagihan = $tagihanSiswa->tagihan;
 
                                     // Konversi periode (angka bulan) menjadi nama bulan
@@ -360,17 +357,15 @@
                                         12 => "Desember",
                                     ];
                                     $periodeBulan =
-                                        isset($tagihanSiswa->bulan_ke) && isset($namaBulan[$tagihanSiswa->bulan_ke])
-                                            ? $namaBulan[$tagihanSiswa->bulan_ke]
-                                            : $tagihanSiswa->bulan_ke;
+                                        isset($tagihan->periode) && isset($namaBulan[$tagihan->periode])
+                                            ? $namaBulan[$tagihan->periode]
+                                            : $tagihan->periode;
                                 @endphp
-
-<li>
-    <strong>Periode:</strong>
-    {{ optional($pembayaranDetail->first())->periode ?? '' }}
-    {{ $tagihan->tahun_mulai ?? '' }}
-</li>
-
+                                <li>
+                                    <strong>Periode:</strong>
+                                    {{ $periodeBulan }}
+                                    {{ $tagihan->tahun_mulai ?? "" }}
+                                </li>
                                 <li>
                                     <strong>Dibayar:</strong>
                                     Rp
