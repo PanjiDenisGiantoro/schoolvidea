@@ -103,7 +103,7 @@
             @if($pendingTabungan->isNotEmpty())
                 <div class="px-2 py-1 text-muted fw-bold">Pending Tabungan</div>
                 @foreach($pendingTabungan as $trx)
-                    <a href="{{ route('keuangan.transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
+                    <a href="{{ route('keuangan_transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
                         <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}
                         <br><small class="text-muted">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->translatedFormat('d F Y') }}</small>
                     </a>
@@ -114,7 +114,7 @@
             @if($pendingTagihan->isNotEmpty())
                 <div class="px-2 py-1 text-muted fw-bold">Pending Tagihan</div>
                 @foreach($pendingTagihan as $trx)
-                    <a href="{{ route('keuangan.transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
+                    <a href="{{ route('keuangan_transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
                         <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}
                         <br><small class="text-muted">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->translatedFormat('d F Y') }}</small>
                     </a>
