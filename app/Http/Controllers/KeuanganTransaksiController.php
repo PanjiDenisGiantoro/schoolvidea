@@ -248,7 +248,7 @@ class KeuanganTransaksiController extends Controller
             'verifier',
             'jurnals.akun',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori',
-            'pembayaranTagihan.tagihanSiswa.potonganSiswa.potongan'
+            'pembayaranTagihan.tagihanSiswa.potonganSiswa.potongan',
         ])->findOrFail($id);
 
         // Ambil logs aktivitas
