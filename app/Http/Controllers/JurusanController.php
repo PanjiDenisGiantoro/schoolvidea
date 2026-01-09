@@ -39,16 +39,17 @@ class JurusanController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_jurusan', 'like', "%{$search}%")
-                  ->orWhere('kode_jurusan', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('kode_jurusan', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $jurusan = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        // $jurusan = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $jurusan = $query->orderBy('created_at', 'desc')->get();
 
         $headers = [
             'No',
@@ -57,11 +58,12 @@ class JurusanController extends Controller
             'Keterangan',
             'Unit',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         return view('pages.data_master.jurusan.jurusan', compact('jurusan', 'headers', 'units'));
     }
+
     public function create()
     {
         // Filter yayasan dan units berdasarkan user access
@@ -91,24 +93,25 @@ class JurusanController extends Controller
 
         return view('pages.data_master.jurusan.jurusan_create', compact('yayasan', 'units', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
+
     public function store(Request $request)
     {
         $request->validate([
-            'nama_jurusan'    => 'required|string|max:255',
-            'kode_jurusan'    => 'required|string|max:100|unique:jurusans,kode_jurusan',
-            'keterangan'      => 'nullable|string',
-            'unit_id'         => 'required|exists:units,id',
+            'nama_jurusan' => 'required|string|max:255',
+            'kode_jurusan' => 'required|string|max:100|unique:jurusans,kode_jurusan',
+            'keterangan' => 'nullable|string',
+            'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
-            'status'          => 'required|in:0,1',
+            'status' => 'required|in:0,1',
         ]);
 
         Jurusan::create([
-            'nama_jurusan'    => $request->nama_jurusan,
-            'kode_jurusan'    => $request->kode_jurusan,
-            'keterangan'      => $request->keterangan,
-            'unit_id'         => $request->unit_id,
+            'nama_jurusan' => $request->nama_jurusan,
+            'kode_jurusan' => $request->kode_jurusan,
+            'keterangan' => $request->keterangan,
+            'unit_id' => $request->unit_id,
             'tahun_ajaran_id' => $request->tahun_ajaran_id,
-            'status'          => $request->status,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('jurusan.index')
@@ -149,12 +152,12 @@ class JurusanController extends Controller
         $jurusan = Jurusan::findOrFail($id);
 
         $request->validate([
-            'nama_jurusan'    => 'required|string|max:255',
-            'kode_jurusan'    => 'required|string|max:100|unique:jurusans,kode_jurusan,' . $jurusan->id,
-            'keterangan'      => 'nullable|string',
-            'unit_id'         => 'required|exists:units,id',
+            'nama_jurusan' => 'required|string|max:255',
+            'kode_jurusan' => 'required|string|max:100|unique:jurusans,kode_jurusan,' . $jurusan->id,
+            'keterangan' => 'nullable|string',
+            'unit_id' => 'required|exists:units,id',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
-            'status'          => 'required|in:0,1',
+            'status' => 'required|in:0,1',
         ]);
         $jurusan->update($request->only([
             'nama_jurusan',
@@ -162,7 +165,7 @@ class JurusanController extends Controller
             'keterangan',
             'unit_id',
             'tahun_ajaran_id',
-            'status'
+            'status',
         ]));
 
         return redirect()->route('jurusan.index')
@@ -206,5 +209,4 @@ class JurusanController extends Controller
             'tahun_ajaran_selected'
         ));
     }
-
 }

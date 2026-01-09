@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Tahun_ajaran;
 use App\Models\Yayasan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class TahunajaranController extends Controller
 {
@@ -17,17 +16,17 @@ class TahunajaranController extends Controller
         // Search functionality across all columns
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('tahun_ajaran', 'like', "%{$search}%")
-                  ->orWhere('tanggal_mulai', 'like', "%{$search}%")
-                  ->orWhere('tanggal_selesai', 'like', "%{$search}%")
-                  ->orWhere('semester', 'like', "%{$search}%");
+                    ->orWhere('tanggal_mulai', 'like', "%{$search}%")
+                    ->orWhere('tanggal_selesai', 'like', "%{$search}%")
+                    ->orWhere('semester', 'like', "%{$search}%");
             });
         }
 
         // Paginate results
-        $tahun_ajaran = $query->paginate(15)->appends($request->except('page'));
-
+        //$tahun_ajaran = $query->paginate(15)->appends($request->except('page'));
+        $tahun_ajaran = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
             'Tahun Ajaran',
@@ -35,17 +34,20 @@ class TahunajaranController extends Controller
             'Selesai Bulan Ajaran',
             'Semester',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         // Note: Tahun ajaran doesn't have unit_id, so no unit filter needed
         return view('pages.data_master.tahun_ajaran.tahun_ajaran', compact('tahun_ajaran', 'headers'));
     }
+
     public function create()
     {
         $yayasan = Yayasan::active()->get();
+
         return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('yayasan'));
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -72,17 +74,20 @@ class TahunajaranController extends Controller
         return redirect()->route('tahun_ajaran.index')
             ->with('success', 'Data berhasil ditambahkan dengan Tahun Ajaran' . $request->tahun_ajaran);
     }
+
     public function edit($id)
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
+
         return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran'));
     }
+
     public function update(Request $request, $id)
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $data = $request->all();
 
-        $data['tanggal_mulai']   = $request->tanggal_mulai ?: null;
+        $data['tanggal_mulai'] = $request->tanggal_mulai ?: null;
         $data['tanggal_selesai'] = $request->tanggal_selesai ?: null;
 
         if ($request->status == '1') {
@@ -91,20 +96,25 @@ class TahunajaranController extends Controller
                 ->update(['status' => '0']);
         }
         $tahun_ajaran->update($data);
+
         return redirect()->route('tahun_ajaran.index')
             ->with('success', 'Data berhasil diupdate');
     }
+
     public function destroy($id)
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $tahun_ajaran->delete();
+
         return redirect()->route('tahun_ajaran.index')
             ->with('success', 'Data berhasil dihapus');
     }
+
     public function show($id)
     {
         $tahun_ajaran = Tahun_ajaran::findOrFail($id);
         $show = true;
+
         return view('pages.data_master.tahun_ajaran.tahun_ajaran_create', compact('tahun_ajaran', 'show'));
     }
 }

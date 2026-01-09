@@ -14,11 +14,11 @@ use App\Models\Yayasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Facades\Log;
 
 class SiswaController extends Controller
 {
@@ -48,31 +48,31 @@ class SiswaController extends Controller
             $search = strtoupper($request->search);
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('UPPER(nisn) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(nis) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(name) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(va_siswa) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(nik) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(no_hp) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(tempat_lahir) like ?', ["%{$search}%"])
-                  ->orWhereRaw('UPPER(nama_ortu) like ?', ["%{$search}%"])
-                  ->orWhereHas('user', function ($q) use ($search) {
-                      $q->whereRaw('UPPER(name) like ?', ["%{$search}%"])
-                        ->orWhereRaw('UPPER(email) like ?', ["%{$search}%"]);
-                  })
-                  ->orWhereHas('kelas', function ($q) use ($search) {
-                      $q->whereRaw('UPPER(nama_kelas) like ?', ["%{$search}%"]);
-                  })
-                  ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->whereRaw('UPPER(nama_unit) like ?', ["%{$search}%"]);
-                  })
-                  ->orWhereHas('jurusan', function ($q) use ($search) {
-                      $q->whereRaw('UPPER(nama_jurusan) like ?', ["%{$search}%"]);
-                  });
+                    ->orWhereRaw('UPPER(nis) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(name) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(va_siswa) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(nik) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(no_hp) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(tempat_lahir) like ?', ["%{$search}%"])
+                    ->orWhereRaw('UPPER(nama_ortu) like ?', ["%{$search}%"])
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->whereRaw('UPPER(name) like ?', ["%{$search}%"])
+                            ->orWhereRaw('UPPER(email) like ?', ["%{$search}%"]);
+                    })
+                    ->orWhereHas('kelas', function ($q) use ($search) {
+                        $q->whereRaw('UPPER(nama_kelas) like ?', ["%{$search}%"]);
+                    })
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->whereRaw('UPPER(nama_unit) like ?', ["%{$search}%"]);
+                    })
+                    ->orWhereHas('jurusan', function ($q) use ($search) {
+                        $q->whereRaw('UPPER(nama_jurusan) like ?', ["%{$search}%"]);
+                    });
             });
         }
 
         // Paginate results
-        $siswa = $query->get();
+        $siswa = $query->orderBy('created_at')->get();
 
         $headers = [
             'No',
@@ -82,13 +82,14 @@ class SiswaController extends Controller
             'Nama',
             'VA Siswa',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         $logoUnit = $units->first()->image ?? null;
 
         return view('pages.data_master.siswa.siswa', compact('siswa', 'headers', 'logoUnit', 'units'));
     }
+
     public function create()
     {
         // Filter berdasarkan user access
@@ -139,6 +140,7 @@ class SiswaController extends Controller
             'tahunajaran',
         ));
     }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -163,7 +165,7 @@ class SiswaController extends Controller
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'no_hp' => 'nullable|string|digits_between:0,14',
-            'tahun_ajaran_id' => 'required'
+            'tahun_ajaran_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -174,12 +176,12 @@ class SiswaController extends Controller
         try {
             // Buat user baru
             $user = User::create([
-                'name'       => $request->name,
-                'username'   => $request->nisn,
-                'email'      => $request->email,
-                'password'   => bcrypt($request->nisn),
-                'rfid_no'    => $request->rfid_no,
-                'unit_id'    => $request->unit_id,
+                'name' => $request->name,
+                'username' => $request->nisn,
+                'email' => $request->email,
+                'password' => bcrypt($request->nisn),
+                'rfid_no' => $request->rfid_no,
+                'unit_id' => $request->unit_id,
                 'yayasan_id' => Auth::user()->yayasan_id,
             ]);
 
@@ -193,33 +195,33 @@ class SiswaController extends Controller
 
             // Buat siswa
             $siswa = Siswa::create([
-                'nisn'            => $request->nisn,
-                'tempat_lahir'    => $request->tempat_lahir,
-                'tanggal_lahir'   => $request->tanggal_lahir,
-                'no_hp'           => $request->no_hp,
-                'image'           => $request->image ?? null,
-                'user_id'         => $user->id,
-                'unit_id'         => $request->unit_id,
-                'kelas_id'        => $request->kelas_id,
-                'status'          => $request->status,
-                'rfid_no'         => $request->rfid_no,
-                'va_siswa'        => $request->va_siswa,
-                'nis'             => $request->nis,
-                'nik'             => $request->nik,
-                'jenis_kelamin'   => $request->jenis_kelamin,
-                'agama'           => $request->agama,
-                'no_hp_ortu'      => $request->no_hp_ortu,
-                'nama_ortu'       => $request->nama_ortu,
-                'bank'            => $request->bank,
-                'jurusan_id'      => $request->jurusan_id,
-                'no_rekening'     => $request->no_rekening,
-                'alamat'          => $request->alamat,
-                'name'            => $request->name,
+                'nisn' => $request->nisn,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'no_hp' => $request->no_hp,
+                'image' => $request->image ?? null,
+                'user_id' => $user->id,
+                'unit_id' => $request->unit_id,
+                'kelas_id' => $request->kelas_id,
+                'status' => $request->status,
+                'rfid_no' => $request->rfid_no,
+                'va_siswa' => $request->va_siswa,
+                'nis' => $request->nis,
+                'nik' => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'agama' => $request->agama,
+                'no_hp_ortu' => $request->no_hp_ortu,
+                'nama_ortu' => $request->nama_ortu,
+                'bank' => $request->bank,
+                'jurusan_id' => $request->jurusan_id,
+                'no_rekening' => $request->no_rekening,
+                'alamat' => $request->alamat,
+                'name' => $request->name,
                 'tahun_ajaran_id' => $request->tahun_ajaran_id,
             ]);
             // Jika VA belum diisi, generate otomatis dari NIS + NISN
             if (empty($request->va_siswa)) {
-                $nis  = str_pad(substr($request->nis ?? '', 0, 8), 8, '0', STR_PAD_RIGHT);
+                $nis = str_pad(substr($request->nis ?? '', 0, 8), 8, '0', STR_PAD_RIGHT);
 
                 $nisn_raw = $request->nisn ?? '';
                 // Jika NISN diawali 0, ambil mulai dari digit ke-2
@@ -229,7 +231,7 @@ class SiswaController extends Controller
                 $nisn = str_pad(substr($nisn_raw, 0, 8), 8, '0', STR_PAD_RIGHT);
 
                 // Gabungkan jadi 16 digit
-                $va_siswa = $nis . $nisn;
+                $va_siswa = $nis.$nisn;
             } else {
                 $va_siswa = $request->va_siswa;
             }
@@ -246,9 +248,9 @@ class SiswaController extends Controller
             }
 
             // Generate QR Code
-            $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
-            $fileName = $siswa->nis . '.png';
-            $path = 'qrcodes/' . $fileName;
+            $qrcodeValue = $siswa->nisn.'-'.$siswa->nis;
+            $fileName = $siswa->nis.'.png';
+            $path = 'qrcodes/'.$fileName;
             //
             //            Storage::disk('local')->put($path, QrCode::format('png')->size(300)->generate($qrcodeValue));
             //
@@ -265,9 +267,11 @@ class SiswaController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('danger', $e->getMessage());
         }
     }
@@ -295,39 +299,39 @@ class SiswaController extends Controller
     public function update(Request $request, $id)
     {
         Log::info('=== UPDATE SISWA START ===');
-        Log::info('Siswa ID: ' . $id);
+        Log::info('Siswa ID: '.$id);
 
         $siswa = Siswa::findOrFail($id);
         $user = $siswa->user;
 
-        Log::info('Found Siswa: ' . $siswa->nisn);
-        Log::info('Found User: ' . $user->email);
+        Log::info('Found Siswa: '.$siswa->nisn);
+        Log::info('Found User: '.$user->email);
 
         // Validator dengan exclude current records
         $validator = Validator::make($request->all(), [
-            'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
+            'nisn' => 'required|unique:siswas,nisn,'.$siswa->id,
             'name' => 'required|string|max:255',
-            'username' => 'required|string|unique:users,username,' . $user->id,
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'username' => 'required|string|unique:users,username,'.$user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'kelas_id' => 'required',
             'unit_id' => 'required',
-            'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no,' . $siswa->id,
-            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa,' . $siswa->id,
-            'nis' => 'nullable|string|max:20|unique:siswas,nis,' . $siswa->id,
-            'nik' => 'nullable|string|max:20|unique:siswas,nik,' . $siswa->id,
+            'rfid_no' => 'nullable|string|max:255|unique:siswas,rfid_no,'.$siswa->id,
+            'va_siswa' => 'nullable|string|max:255|unique:siswas,va_siswa,'.$siswa->id,
+            'nis' => 'nullable|string|max:20|unique:siswas,nis,'.$siswa->id,
+            'nik' => 'nullable|string|max:20|unique:siswas,nik,'.$siswa->id,
             'jenis_kelamin' => 'nullable|in:L,P',
             'agama' => 'nullable|string|max:50',
             'no_hp_ortu' => 'nullable|string|max:20',
             'nama_ortu' => 'nullable|string|max:100',
             'bank' => 'nullable|string|max:100',
-            'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening,' . $siswa->id,
+            'no_rekening' => 'nullable|string|max:50|unique:siswas,no_rekening,'.$siswa->id,
             'jurusan_id' => 'nullable|exists:jurusans,id',
             'alamat' => 'nullable|string',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|digits_between:0,14|unique:siswas,no_hp,' . $siswa->id,
+            'no_hp' => 'nullable|string|digits_between:0,14|unique:siswas,no_hp,'.$siswa->id,
             'password' => 'nullable|string|min:6',
-            'tahun_ajaran_id' => 'required'
+            'tahun_ajaran_id' => 'required',
         ], [
             'email.unique' => 'Email sudah digunakan oleh user lain.',
             'username.unique' => 'Username sudah digunakan oleh user lain.',
@@ -336,6 +340,7 @@ class SiswaController extends Controller
 
         if ($validator->fails()) {
             Log::error('Validation Errors: ', $validator->errors()->toArray());
+
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
@@ -348,10 +353,10 @@ class SiswaController extends Controller
 
             // Update User data
             $userData = [
-                'name'       => $request->name,
-                'username'   => $request->username,
-                'email'      => $request->email,
-                'unit_id'    => $request->unit_id,
+                'name' => $request->name,
+                'username' => $request->username,
+                'email' => $request->email,
+                'unit_id' => $request->unit_id,
                 'yayasan_id' => Auth::user()->yayasan_id,
             ];
 
@@ -362,7 +367,7 @@ class SiswaController extends Controller
             }
 
             $user->update($userData);
-            Log::info('User updated: ' . $user->id);
+            Log::info('User updated: '.$user->id);
 
             // Update Siswa data
             $siswaData = [
@@ -396,17 +401,17 @@ class SiswaController extends Controller
             }
 
             $siswa->update($siswaData);
-            Log::info('Siswa updated: ' . $siswa->id);
+            Log::info('Siswa updated: '.$siswa->id);
 
             // QR Code generation (optional, bisa skip jika error)
             try {
                 if ($siswa->nis && $siswa->nisn) {
-                    $qrcodeValue = $siswa->nisn . '-' . $siswa->nis;
-                    $fileName = $siswa->nis . '.png';
-                    $path = 'qrcodes/' . $fileName;
+                    $qrcodeValue = $siswa->nisn.'-'.$siswa->nis;
+                    $fileName = $siswa->nis.'.png';
+                    $path = 'qrcodes/'.$fileName;
 
                     // Create directory if not exists
-                    if (!Storage::exists('qrcodes')) {
+                    if (! Storage::exists('qrcodes')) {
                         Storage::makeDirectory('qrcodes');
                     }
 
@@ -423,7 +428,7 @@ class SiswaController extends Controller
                     Log::info('QR Code generated');
                 }
             } catch (\Exception $qrException) {
-                Log::warning('QR Code generation skipped: ' . $qrException->getMessage());
+                Log::warning('QR Code generation skipped: '.$qrException->getMessage());
             }
 
             //            DB::commit();
@@ -434,12 +439,12 @@ class SiswaController extends Controller
         } catch (\Exception $e) {
             //            DB::rollBack();
             dd($e->getMessage());
-            Log::error('UPDATE FAILED: ' . $e->getMessage());
-            Log::error('File: ' . $e->getFile());
-            Log::error('Line: ' . $e->getLine());
+            Log::error('UPDATE FAILED: '.$e->getMessage());
+            Log::error('File: '.$e->getFile());
+            Log::error('Line: '.$e->getLine());
 
             return redirect()->back()
-                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage())
+                ->with('error', 'Gagal memperbarui data: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -447,9 +452,9 @@ class SiswaController extends Controller
     public function showQr($id)
     {
         $siswa = Siswa::findOrFail($id);
-        $filePath = storage_path('app/' . $siswa->qrcode_image);
+        $filePath = storage_path('app/'.$siswa->qrcode_image);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             abort(404, 'QR code tidak ditemukan');
         }
 
@@ -462,6 +467,7 @@ class SiswaController extends Controller
         $user = $siswa->user;
         $user->delete();
         $siswa->delete();
+
         return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
 
     }
@@ -488,13 +494,16 @@ class SiswaController extends Controller
             'tahunajaran'
         ))->with('show', true);
     }
+
     public function getByKelas($kelasId)
     {
         $siswas = \App\Models\Siswa::with('user')
-            ->where('status','1')
+            ->where('status', '1')
             ->where('kelas_id', $kelasId)->get();
+
         return response()->json($siswas);
     }
+
     public function showdetail($id)
     {
         $siswa = \App\Models\Siswa::with([
@@ -504,21 +513,21 @@ class SiswaController extends Controller
         ])->findOrFail($id);
 
         return response()->json([
-            'nama_lengkap'  => $siswa->user->name ?? '-',
-            'nisn'           => $siswa->nisn ?? '-',
-            'unit'           => $siswa->unit->nama_unit ?? '-',
-            'kelas'          => $siswa->kelas->nama_kelas ?? '-',
-            'va'        => $siswa->va_siswa ?? '-',
-            'bank'   => $siswa->bank ?? '-',
-            'norek'  => $siswa->no_rekening ?? '-',
-            'no_hp'          => $siswa->no_hp ?? '-',
-            'foto'           => $siswa->image
+            'nama_lengkap' => $siswa->user->name ?? '-',
+            'nisn' => $siswa->nisn ?? '-',
+            'unit' => $siswa->unit->nama_unit ?? '-',
+            'kelas' => $siswa->kelas->nama_kelas ?? '-',
+            'va' => $siswa->va_siswa ?? '-',
+            'bank' => $siswa->bank ?? '-',
+            'norek' => $siswa->no_rekening ?? '-',
+            'no_hp' => $siswa->no_hp ?? '-',
+            'foto' => $siswa->image
                 ? asset($siswa->image)
                 : asset('assets/images/default-avatar.png'),
-            'qrcode'         => $siswa->qrcode_image
-                ? asset('storage/' . $siswa->qrcode_image)
+            'qrcode' => $siswa->qrcode_image
+                ? asset('storage/'.$siswa->qrcode_image)
                 : null,
-            'saldo_akhir'    => $siswa->user->saldo->saldo_akhir ?? 0,
+            'saldo_akhir' => $siswa->user->saldo->saldo_akhir ?? 0,
         ]);
     }
 
@@ -529,12 +538,12 @@ class SiswaController extends Controller
         ]);
 
         $file = $request->file('file');
-        $filename = Str::random(15) . '.' . $file->getClientOriginalExtension();
+        $filename = Str::random(15).'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('uploads/siswa', $filename, 'public');
 
         return response()->json([
             'success' => true,
-            'filepath' => 'storage/' . $path
+            'filepath' => 'storage/'.$path,
         ]);
     }
 
@@ -543,6 +552,7 @@ class SiswaController extends Controller
         $jurusans = Jurusan::where('unit_id', $unitId)
             ->where('status', '1')
             ->get();
+
         return response()->json($jurusans);
     }
 
@@ -551,8 +561,10 @@ class SiswaController extends Controller
         $kelas = Kelas::where('unit_id', $unitId)
             ->where('status', '1')
             ->get();
+
         return response()->json($kelas);
     }
+
     public function checkUnique(Request $request)
     {
         $nisn = $request->nisn;
@@ -574,7 +586,7 @@ class SiswaController extends Controller
             'va_siswa' => 'Virtual Account Siswa',
             'no_rekening' => 'Nomor Rekening',
             'no_hp' => 'Nomor HP',
-            'email' => 'Email'
+            'email' => 'Email',
         ];
 
         $duplicateDetails = [];
@@ -592,7 +604,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['nisn'],
                     'value' => $nisn,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "NISN '{$nisn}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "NISN '{$nisn}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'nisn';
             }
@@ -611,7 +623,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['nis'],
                     'value' => $nis,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "NIS '{$nis}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "NIS '{$nis}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'nis';
             }
@@ -630,7 +642,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['nik'],
                     'value' => $nik,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "NIK '{$nik}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "NIK '{$nik}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'nik';
             }
@@ -649,7 +661,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['rfid_no'],
                     'value' => $rfid_no,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "Nomor RFID '{$rfid_no}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "Nomor RFID '{$rfid_no}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'rfid_no';
             }
@@ -668,7 +680,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['va_siswa'],
                     'value' => $va_siswa,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "Virtual Account '{$va_siswa}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "Virtual Account '{$va_siswa}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'va_siswa';
             }
@@ -687,7 +699,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['no_rekening'],
                     'value' => $no_rekening,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "Nomor Rekening '{$no_rekening}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "Nomor Rekening '{$no_rekening}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'no_rekening';
             }
@@ -706,7 +718,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['no_hp'],
                     'value' => $no_hp,
                     'existingName' => $existing->user->name ?? 'Siswa',
-                    'message' => "Nomor HP '{$no_hp}' sudah terdaftar atas nama " . ($existing->user->name ?? 'Siswa')
+                    'message' => "Nomor HP '{$no_hp}' sudah terdaftar atas nama ".($existing->user->name ?? 'Siswa'),
                 ];
                 $duplicates[] = 'no_hp';
             }
@@ -732,7 +744,7 @@ class SiswaController extends Controller
                     'label' => $fieldLabels['email'],
                     'value' => $email,
                     'existingName' => $siswaName,
-                    'message' => "Email '{$email}' sudah terdaftar atas nama " . $siswaName
+                    'message' => "Email '{$email}' sudah terdaftar atas nama ".$siswaName,
                 ];
                 $duplicates[] = 'email';
             }
@@ -742,7 +754,8 @@ class SiswaController extends Controller
             'exists' => count($duplicates) > 0,
             'duplicates' => $duplicates,
             'details' => $duplicateDetails,
-            'count' => count($duplicates)
+            'count' => count($duplicates),
         ]);
     }
 }
+

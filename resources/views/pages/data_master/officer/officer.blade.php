@@ -66,7 +66,7 @@
                     <tbody>
                         @forelse($officer as $index => $item)
                             <tr>
-                                <td>{{ $officer->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->officer->unit->nama_unit ?? '-' }}</td>
                                 <td>{{ $item->name ?? '-' }}</td>
                                 <td>{{ $item->roles->pluck('name')->join(', ') ?: '-' }}</td>

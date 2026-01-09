@@ -41,22 +41,22 @@ class KelasController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_kelas', 'like', "%{$search}%")
-                  ->orWhere('kode_kelas', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('officer.user', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('jurusan', function ($q) use ($search) {
-                      $q->where('nama_jurusan', 'like', "%{$search}%");
-                  });
+                    ->orWhere('kode_kelas', 'like', "%{$search}%")
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('officer.user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('jurusan', function ($q) use ($search) {
+                        $q->where('nama_jurusan', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $kelas = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
-
+        //$kelas = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $kelas = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
             'Nama Unit',
@@ -64,11 +64,12 @@ class KelasController extends Controller
             'Wali Kelas',
             'Jurusan',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         return view('pages.data_master.kelas.kelas', compact('kelas', 'headers', 'units'));
     }
+
     public function create()
     {
         // Filter berdasarkan user access
@@ -112,16 +113,17 @@ class KelasController extends Controller
 
         return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'yayasan', 'units', 'wali', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_kelas'      => 'required|string|max:255',
-            'kode_kelas'      => 'required',
+            'nama_kelas' => 'required|string|max:255',
+            'kode_kelas' => 'required',
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
-            'unit_id'         => 'required|exists:units,id',
-            'officer_id'      => 'nullable',
-            'status'          => 'required|in:0,1',
-            'jurusan_id'      => 'nullable',
+            'unit_id' => 'required|exists:units,id',
+            'officer_id' => 'nullable',
+            'status' => 'required|in:0,1',
+            'jurusan_id' => 'nullable',
         ]);
 
         try {
@@ -130,7 +132,6 @@ class KelasController extends Controller
             return redirect()->route('kelas.index')
                 ->with('success', 'Data kelas berhasil ditambahkan: ' . $validated['nama_kelas']);
             dd($request->all());
-
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -172,16 +173,17 @@ class KelasController extends Controller
 
         return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'tahun_ajaran', 'kelas', 'yayasan', 'units', 'wali', 'tahun_ajaran_selected'));
     }
+
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_kelas'      => 'required|string|max:255',
+            'nama_kelas' => 'required|string|max:255',
             'tahun_ajaran_id' => 'required',
             'kode_kelas' => 'required',
-            'unit_id'         => 'required',
-            'officer_id'      => 'nullable',
-            'status'          => 'required|in:0,1',
-            'jurusan_id'      => 'nullable',
+            'unit_id' => 'required',
+            'officer_id' => 'nullable',
+            'status' => 'required|in:0,1',
+            'jurusan_id' => 'nullable',
         ]);
         $data = $request->all();
         $kelas = Kelas::findOrFail($id);
@@ -190,13 +192,16 @@ class KelasController extends Controller
         return redirect()->route('kelas.index')
             ->with('success', 'Data berhasil diupdate');
     }
+
     public function destroy($id)
     {
         $kelas = Kelas::findOrFail($id);
         $kelas->delete();
+
         return redirect()->route('kelas.index')
             ->with('success', 'Data berhasil dihapus');
     }
+
     public function show($id)
     {
         $kelas = Kelas::findOrFail($id);
@@ -232,12 +237,13 @@ class KelasController extends Controller
 
         return view('pages.data_master.kelas.kelas_create', compact('jurusan', 'kelas', 'show', 'yayasan', 'units', 'wali', 'tahun_ajaran', 'tahun_ajaran_selected'));
     }
+
     public function getSiswa($id)
     {
         $siswa = Siswa::where('kelas_id', $id)
             ->where('status', '1')
             ->with('user:id,name') // ambil nama dari relasi user
-            ->get(['id','user_id','kelas_id','nisn']);
+            ->get(['id', 'user_id', 'kelas_id', 'nisn']);
 
         return response()->json($siswa);
     }
@@ -269,5 +275,4 @@ class KelasController extends Controller
 
         return response()->json($kelas);
     }
-
 }

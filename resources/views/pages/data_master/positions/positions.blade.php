@@ -48,7 +48,7 @@
                     <tbody>
                         @forelse($positions as $index => $item)
                             <tr>
-                                <td>{{ $positions->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->positions_name ?? '-' }}</td>
                                 <td>
                                     <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">

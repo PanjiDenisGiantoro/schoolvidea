@@ -9,9 +9,6 @@ use App\Models\setting_akun;
 use App\Models\Tipeunit;
 use App\Models\Unit;
 use App\Models\Yayasan;
-use Database\Seeders\AkunSeeder;
-use Database\Seeders\KategoritagihanSeeder;
-use Database\Seeders\SettingAkunSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -50,24 +47,25 @@ class UnitController extends Controller
         }
 
         // Paginate results
-        $unit = $query->paginate(15)->appends($request->except('page'));
+        $unit = $query->get();
 
         $headers = [
             'No',
-            'Nama Yayasan',
+            'Yayasan',
             'Tipe Unit',
             'Nama Unit',
-            'Code Unit',
+            'Kode Unit',
             'No Telp',
             'Email',
             'Alamat',
             'Website',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         return view('pages.data_master.unit.unit', compact('unit', 'headers', 'units'));
     }
+
     public function create()
     {
         $unit = Unit::where('id', Auth::user()->unit_id)->first();
@@ -87,8 +85,10 @@ class UnitController extends Controller
         }
 
         $tipeunit = Tipeunit::where('status', '1')->get();
+
         return view('pages.data_master.unit.unit_create', compact('yayasan', 'tipeunit'));
     }
+
     public function store(Request $request)
     {
 
@@ -105,16 +105,14 @@ class UnitController extends Controller
             'code' => 'nullable|string|max:10|unique:units,code',
         ]);
 
-
-
         $centralCode = $request->code;
         if (empty($centralCode)) {
-            $centralCode = 'U' . strtoupper(Str::random(7));
+            $centralCode = strtoupper(Str::random(7));
         }
 
         $unit = Unit::create([
             'nama_unit' => $request->nama_unit,
-            'code' => 'U'.$centralCode,
+            'code' => $centralCode,
             'image' => $request->image,
             'no_hp' => $request->no_hp,
             'email' => $request->email,
@@ -136,8 +134,9 @@ class UnitController extends Controller
         $this->seedKategoritagihanForUnit($unit->id);
 
         return redirect()->route('unit.index')
-            ->with('success', 'Data berhasil ditambahkan dengan Central Code: ' . $centralCode . '. Akun template, setting akun, dan kategori tagihan telah otomatis ditambahkan.');
+            ->with('success', 'Data berhasil ditambahkan dengan Central Code: '.$centralCode.'. Akun template, setting akun, dan kategori tagihan telah otomatis ditambahkan.');
     }
+
     public function edit($id)
     {
         $unit = Unit::findOrFail($id);
@@ -160,11 +159,12 @@ class UnitController extends Controller
 
         return view('pages.data_master.unit.unit_create', compact('unit', 'yayasan', 'tipeunit'));
     }
+
     public function update(Request $request, $id)
     {
         $unit = Unit::findOrFail($id);
         $request->validate([
-            'nama_unit' => 'required|string|max:255|unique:units,nama_unit,' . $id,
+            'nama_unit' => 'required|string|max:255|unique:units,nama_unit,'.$id,
             'image' => 'nullable|string',
             'no_hp' => 'nullable|string|max:20',
             'email' => 'nullable|email',
@@ -173,7 +173,7 @@ class UnitController extends Controller
             'status' => 'required|in:0,1',
             'tipe_unit_id' => 'nullable',
             'nama_pimpinan_unit' => 'nullable|string',
-            'code' => 'nullable|string|max:10|unique:units,code,' . $id,
+            'code' => 'nullable|string|max:10|unique:units,code,'.$id,
         ]);
 
         $unit->update($request->only([
@@ -192,13 +192,16 @@ class UnitController extends Controller
         return redirect()->route('unit.index')
             ->with('success', 'Data berhasil diupdate');
     }
+
     public function destroy($id)
     {
         $unit = Unit::findOrFail($id);
         $unit->delete();
+
         return redirect()->route('unit.index')
             ->with('success', 'Data berhasil dihapus');
     }
+
     public function show($id)
     {
         $unit = Unit::findOrFail($id);
@@ -225,6 +228,7 @@ class UnitController extends Controller
 
         return view('pages.data_master.unit.unit_create', compact('unit', 'show', 'yayasan', 'tipeunit'));
     }
+
     public function upload(Request $request)
     {
         $request->validate([
@@ -232,20 +236,22 @@ class UnitController extends Controller
         ]);
 
         $file = $request->file('file');
-        $filename = Str::random(15) . '.' . $file->getClientOriginalExtension();
+        $filename = Str::random(15).'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('uploads/unit', $filename, 'public');
 
         return response()->json([
             'success' => true,
-            'filepath' => 'storage/' . $path
+            'filepath' => 'storage/'.$path,
         ]);
     }
 
     public function listkelas($id)
     {
         $kelas = Kelas::where('unit_id', $id)->where('status', '1')->get();
+
         return response()->json($kelas);
     }
+
     public function getKelasByUnit($unitId)
     {
         $kelas = \App\Models\Kelas::where('unit_id', $unitId)
@@ -271,10 +277,10 @@ class UnitController extends Controller
                 ->where('unit_id', $unitId)
                 ->first();
 
-            if (!$existingAkun) {
+            if (! $existingAkun) {
                 // Find parent_id based on parent_kode if exists
                 $parentId = null;
-                if (!empty($row['parent_kode'])) {
+                if (! empty($row['parent_kode'])) {
                     // First check if we have the parent in our map (already created)
                     if (isset($parentMap[$row['parent_kode']])) {
                         $parentId = $parentMap[$row['parent_kode']];
@@ -379,10 +385,10 @@ class UnitController extends Controller
                 ->where('unit_id', $unitId)
                 ->first();
 
-            if (!$existingSetting) {
+            if (! $existingSetting) {
                 // Find akun_id based on kode_akun
                 $akun = null;
-                if (!empty($row['kode_akun'])) {
+                if (! empty($row['kode_akun'])) {
                     $akun = Akun::where('kode_akun', $row['kode_akun'])
                         ->where('unit_id', $unitId)
                         ->first();
@@ -561,7 +567,7 @@ class UnitController extends Controller
                 ->where('unit_id', $unitId)
                 ->first();
 
-            if (!$existingKategori) {
+            if (! $existingKategori) {
                 Kategoritagihan::create([
                     'nama_kategori' => $row['nama_kategori'],
                     'kode_kategori' => $row['kode_kategori'],

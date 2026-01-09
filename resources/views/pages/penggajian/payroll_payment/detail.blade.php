@@ -38,27 +38,31 @@
                         </div>
                     </div>
                     <div class="space-y-1">
-                        <div class="d-flex justify-between">
-                            <strong>NIP:</strong>
-                            <p>
+                        <div class="info-row">
+                            <strong class="info-label">NIP</strong>
+                            <span class="info-sep"></span>
+                            <p class="info-value">
                                 {{ $payment->officer->nip }}
                             </p>
                         </div>
-                        <div class="d-flex justify-between">
-                            <strong>Unit:</strong>
-                            <p>
+                        <div class="info-row">
+                            <strong class="info-label">Unit</strong>
+                            <span class="info-sep">:</span>
+                            <p class="info-value">
                                 {{ $payment->officer->unit->nama_unit }}
                             </p>
                         </div>
-                        <div class="d-flex justify-between">
-                            <strong>No Telp:</strong>
-                            <p>
+                        <div class="info-row">
+                            <strong class="info-label">No Telp</strong>
+                            <span class="info-sep">:</span>
+                            <p class="info-value">
                                 {{ $payment->officer->no_hp ?? "N/A" }}
                             </p>
                         </div>
-                        <div class="d-flex justify-between">
-                            <strong>Alamat:</strong>
-                            <p>
+                        <div class="info-row">
+                            <strong class="info-label">Alamat</strong>
+                            <span class="info-sep">:</span>
+                            <p class="info-value">
                                 {{ $payment->officer->alamat ?? "N/A" }}
                             </p>
                         </div>
@@ -74,53 +78,63 @@
                     <div class="space-y-4">
                         @if ($payment->status == "paid")
                             <div class="flex justify-between">
-                                <span class="text-gray-600">
-                                    Kode Transaksi :
+                                <span class="text-gray-600 info-label">
+                                    Kode Transaksi
                                 </span>
-                                <span class="font-medium">
+                                <span class="info-sep">:</span>
+                                <span class="font-medium info-value">
                                     {{ $payment->transaction_id ?? "TXN123456" }}
                                 </span>
                             </div>
                         @endif
 
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Jumlah Gaji :</span>
-                            <span class="font-medium text-green-600">
+                        <div class="info-row">
+                            <span class="text-gray-600 info-label">Jumlah Gaji</span>
+                            <span class="info-sep">:</span>
+                            <span class="font-medium text-green-600 info-value">
                                 Rp
                                 {{ number_format($net ?? 99.99, 0, ",", ".") }}
                             </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">
-                                Metode Pembayaran :
+                        <div class="info-row">
+                            <span class="text-gray-600 info-label">
+                                Metode Pembayaran
                             </span>
-                            <span class="font-medium">
+                            <span class="info-sep">:</span>
+                            <span class="font-medium info-value">
                                 {{ $payment->method ?? "non-tunai" }}
                             </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tanggal :</span>
-                            <span class="font-medium">
+                        <div class="info-row">
+                            <span class="text-gray-600 info-label">Tanggal</span>
+                            <span class="info-sep">:</span>
+                            <span class="font-medium info-value">
                                 {{ $payment->updated_at ?? "2023-10-01" }}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Status :</span>
+                        <div class="info-row items-center">
+                            <span class="text-gray-600 info-label">Status</span>
+                            <span class="info-sep">:</span>
+                            <div class="info-value">
                             <span
                                 class="px-3 py-1 rounded-full text-sm font-medium {{ $payment->status == "completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800" }}"
                             >
                                 {{ ucfirst($payment->status ?? "pending") }}
                             </span>
+                            </div>
+
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Catatan :</span>
-                            <span class="font-medium">
+                        <div class="info-row items-center">
+                            <span class="text-gray-600 info-label">Catatan</span>
+                            <span class="info-sep">:</span>
+                            <span class="font-medium info-value">
                                 {{ $note ?? "-"}}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Nominal Catatan :</span>
-                            <span class="font-medium">
+                        <div class="info-row items-center">
+                            <span class="text-gray-600 info-label">Nominal Catatan</span>
+                            <span class="info-sep">:</span>
+                            <span class="font-medium info-value">
                                 Rp
                                 {{ number_format($salarynote ??  0, 0, ',', '.') }}
                             </span>
@@ -158,6 +172,7 @@
                                         >
                                             <i>Penerimaan</i>
                                         </th>
+                                        <th colspan="1"></th>
                                         <th><i>Jumlah (IDR)</i></th>
                                     </tr>
                                 </thead>
@@ -167,16 +182,17 @@
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Gaji Pokok (Rp
-                                            {{ number_format($payment->details["salary"]) }}
+                                            {{ number_format($payment->details["salary"] ?? 0) }}
                                             x
                                             {{ (int) ($payment->teaching_hour_week != 0 ? $payment->teaching_hour_week : $payment->teaching_hour_month) }})
                                         </td>
+                                        <td>:</td>
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["salary"] * ($payment->teaching_hour_week != 0 ? $payment->teaching_hour_week : $payment->teaching_hour_month), 0, ",", ".") }}
+                                            {{ number_format(($payment->details["salary"] ?? 0) * ($payment->teaching_hour_week != 0 ? $payment->teaching_hour_week : $payment->teaching_hour_month), 0, ",", ".") }}
                                         </td>
                                     </tr>
 
@@ -186,12 +202,14 @@
                                             <td colspan="2" class="text-start">
                                                 {{ $component["name"] }}
                                             </td>
+                                                                                    <td>:</td>
+
                                             <td
                                                 class="amount"
                                                 style="font-weight: 500"
                                             >
                                                 Rp
-                                                {{ number_format($component["pivot"]["value"], 0, ",", ".") }}
+                                                {{ number_format($component["pivot"]["value"] ?? 0, 0, ",", ".") }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -202,54 +220,62 @@
                                             {{ number_format($payment->details["staff_allowance"] ?? 0, 0, ",", ".") }}
                                             x {{ $staff }} )
                                         </td>
+                                                                                <td>:</td>
+
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["staff_allowance"] ?? 0 * $staff, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["staff_allowance"] ?? 0) * $staff, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Transport (Rp
-                                            {{ number_format($payment->details["transport_allowance"] ?? 0, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["transport_allowance"] ?? 0), 0, ",", ".") }}
                                             x {{ $presence }} )
                                         </td>
+                                                                                <td>:</td>
+
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["transport_allowance"] * $presence, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["transport_allowance"] ?? 0) * $presence ?? 0, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Makan (Rp
-                                            {{ number_format($payment->details["meal_allowance"] ?? 0, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["meal_allowance"] ?? 0), 0, ",", ".") }}
                                             x {{ $presence }} )
                                         </td>
+                                                                                <td>:</td>
+
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["meal_allowance"] * $presence, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["meal_allowance"] ?? 0) * $presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-start">
                                             Lainnya (Rp
-                                            {{ number_format($payment->details["other_allowance"] ?? 0, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["other_allowance"] ?? 0), 0, ",", ".") }}
                                             x {{ $presence }} )
                                         </td>
+                                                                                <td>:</td>
+
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
                                         >
                                             Rp
-                                            {{ number_format($payment->details["other_allowance"] * $presence, 0, ",", ".") }}
+                                            {{ number_format(($payment->details["other_allowance"] ?? 0) * $presence, 0, ",", ".") }}
                                         </td>
                                     </tr>
 
@@ -257,6 +283,8 @@
                                         <td colspan="2" class="text-start">
                                             Nominal Catatan
                                         </td>
+                                                                                <td>:</td>
+
                                         <td
                                             class="amount"
                                             style="font-weight: 500"
@@ -274,9 +302,11 @@
                                         <td colspan="2" class="text-start">
                                             TOTAL PENERIMAAN
                                         </td>
+                                                                                <td>:</td>
+
                                         <td class="amount">
                                             Rp
-                                            {{ number_format($net, 0, ",", ".") }}
+                                            {{ number_format($ear ?? 0, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -291,6 +321,7 @@
                                         <th colspan="2" class="text-start">
                                             <i>Potongan</i>
                                         </th>
+                                        <th colspan="1"></th>
                                         <th><i>Jumlah(IDR)</i></th>
                                     </tr>
                                 </thead>
@@ -305,7 +336,7 @@
                                                         ({{ $deduction["pivot"]["value"] }}%)
                                                 @endif
                                             </td>
-
+                                        <td>:</td>
                                             <td
                                                 class="amount"
                                                 style="font-weight: 500"
@@ -330,9 +361,11 @@
                                         <td colspan="2" class="text-start">
                                             TOTAL POTONGAN
                                         </td>
+                                                                                <td>:</td>
+
                                         <td class="amount">
                                             Rp
-                                            {{ number_format($ded, 0, ",", ".") }}
+                                            {{ number_format($ded ?? 0, 0, ",", ".") }}
                                         </td>
                                     </tr>
                                 </tbody>

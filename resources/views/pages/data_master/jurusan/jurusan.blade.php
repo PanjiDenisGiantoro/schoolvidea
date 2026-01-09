@@ -64,7 +64,7 @@
                     <tbody>
                         @forelse($jurusan as $index => $item)
                             <tr>
-                                <td>{{ $jurusan->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->nama_jurusan }}</td>
                                 <td>{{ $item->kode_jurusan }}</td>
                                 <td>{{ $item->keterangan ?? '' }}</td>

@@ -66,7 +66,7 @@
                     <tbody>
                         @forelse($kelas as $index => $item)
                             <tr>
-                                <td>{{ $kelas->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->unit->nama_unit }}</td>
                                 <td>{{ $item->nama_kelas }}</td>
                                 <td>{{ $item->officer->user->name ?? '' }}</td>

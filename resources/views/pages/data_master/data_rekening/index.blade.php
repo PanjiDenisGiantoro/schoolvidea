@@ -94,7 +94,7 @@
                         @forelse ($datarekening as $index => $item)
                             <tr>
                                 <td>
-                                    {{ $datarekening->firstItem() + $index }}
+                                    {{ $index + 1 }}
                                 </td>
                                 <td>{{ $item->unit->nama_unit }}</td>
                                 <td>{{ $item->account_code }}</td>

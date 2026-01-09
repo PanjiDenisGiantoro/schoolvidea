@@ -46,7 +46,8 @@ class DataRekeningController extends Controller
                   });
             });
         }
-        $datarekening = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        // $datarekening = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $datarekening = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No', 'Unit', 'Kode Rekening', 'Nama Bank', 'Nama Pemilik', 'Akun', 'Status', 'Peruntukan Rekening', 'Aksi'
         ];

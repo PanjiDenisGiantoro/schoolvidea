@@ -508,8 +508,16 @@
                         $buktiBayarUrl = \Illuminate\Support\Facades\Storage::disk("public")->url($buktiBayar);
                     }
                 @endphp
+                @php
+                    $hasBukti = !empty($buktiBayar) && !empty($buktiBayarUrl);
+                    $isPending = $transaksi->status_verifikasi === 'pending';
+                    $allowedJenis = ['setoran_tabungan', 'pembayaran', 'tagihan'];
+                    $isAllowedJenis = in_array($transaksi->jenis_transaksi, $allowedJenis);
+                    $canVerify = $hasBukti && $isPending && $isAllowedJenis;
+               @endphp
 
-                @if ($buktiBayar && $buktiBayarUrl)
+
+                @if ($hasBukti)
                     <hr />
                     <h6 class="fw-bold text-primary mb-2">
                         <i class="bx bx-image"></i>
@@ -551,6 +559,15 @@
                     </div>
                 @endif
 
+                @if (!$hasBukti && $isPending && $isAllowedJenis)
+                <div class="alert alert-warning d-flex align-items-center shadow-sm">
+                    <i class="bx bx-error-circle me-2 fs-5"></i>
+                    <div>
+                        Bukti pembayaran <strong>belum diupload</strong>. <br>
+                        Silahkan menunggu upload bukti terlebih dahulu sebelum melakukan verifikasi.
+                    </div>
+                </div>      
+                @endif
                 {{-- Keterangan dari siswa (untuk pembayaran tagihan) --}}
                 @if (in_array($transaksi->jenis_transaksi, ["pembayaran", "tagihan"]) && $transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->keterangan_siswa)
                     <div class="mb-3">
@@ -601,7 +618,7 @@
                                 data-id="{{ $transaksi->id }}"
                                 data-token="{{ $transaksi->token }}"
                                 data-jumlah="{{ $transaksi->jumlah }}"
-                                title="Verifikasi dengan Token"
+                                title="{{  'Verifikasi dengan Token' }}"
                             >
                                 <i class="bx bx-key"></i>
                                 Verifikasi Token
@@ -624,6 +641,7 @@
                                 data-id="{{ $transaksi->id }}"
                                 data-is-multiple="{{ $isMultiple ? "true" : "false" }}"
                                 @if($isMultiple) data-head-tagihan="{{ $headTagihan }}" @endif
+                                {{ !$canVerify ? 'disabled' : '' }}
                             >
                                 <i class="bx bx-check-circle me-1"></i>
                                 {{ $isMultiple ? "Approve Pembayaran Multiple" : "Approve Transaksi" }}
@@ -1268,3 +1286,4 @@
         }
     </script>
 @endpush
+

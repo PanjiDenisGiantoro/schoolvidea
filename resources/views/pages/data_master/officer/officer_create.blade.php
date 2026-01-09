@@ -28,7 +28,7 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <x-input-field type="email" id="email_top" name="email" label="Email" placeholder="Email"
-                            icon="bx bx-envelope" :value="old('email', $officer->user->email ?? '')" :disabled="!isset($officer) || (isset($show) && $show)" />
+                            icon="bx bx-envelope" :value="old('email', $officer->user->email ?? '')" disabled />
                     </div>
                     <div class="col-md-4">
                         <x-input-field type="text" id="username" name="username" label="Username/NIP"
@@ -195,7 +195,7 @@
                                     <option value="">-- Pilih Role --</option>
                                     @foreach ($roles as $r)
                                         <option value="{{ $r->id }}"
-                                            {{ ($officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
+                                            {{ old('role_id', $officer->role_id ?? '') == $r->id ? 'selected' : '' }}>
                                             {{ $r->name }}
                                         </option>
                                     @endforeach
@@ -258,8 +258,26 @@
 @endsection
 
 {{-- Scripts tetap sama, tinggal perhatikan preload image dan QR dari database --}}
-@push('scripts')
-    {{-- Semua JS Dropzone, QR Code, Swal, dsb seperti Blade sebelumnya --}}
+@push('styles')
+<style>
+    /* Ukuran preview */
+    .dropzone .dz-preview .dz-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    /* Supaya gambar TIDAK terpotong */
+    .dropzone .dz-preview .dz-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* INI KUNCI UTAMA */
+        background-color: transparent;
+    }
+</style>
+
 @endpush
 
 @push('scripts')

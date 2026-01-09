@@ -50,7 +50,7 @@
                     <tbody>
                         @forelse($tahun_ajaran as $index => $item)
                             <tr>
-                                <td>{{ $tahun_ajaran->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->tahun_ajaran ?? '-' }}</td>
                                 <td>{{ $item->tanggal_mulai ?? '-' }}</td>
                                 <td>{{ $item->tanggal_selesai ?? '-' }}</td>

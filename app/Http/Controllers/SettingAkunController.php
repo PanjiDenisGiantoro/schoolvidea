@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Akun;
 use App\Models\setting_akun;
 use App\Models\Unit;
-use App\Models\Akun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,35 +35,37 @@ class SettingAkunController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_setting', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhere('kategori', 'like', "%{$search}%")
-                  ->orWhereHas('akun', function ($q) use ($search) {
-                      $q->where('nama_akun', 'like', "%{$search}%")
-                        ->orWhere('kode_akun', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhere('kategori', 'like', "%{$search}%")
+                    ->orWhereHas('akun', function ($q) use ($search) {
+                        $q->where('nama_akun', 'like', "%{$search}%")
+                            ->orWhere('kode_akun', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $settings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
-
+        //$settings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $settings = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
             'Nama Setting',
             'Akun',
-//            'Debit',
-//            'Kredit',
+            //            'Debit',
+            //            'Kredit',
             'Keterangan',
             'Unit',
             'Kategori',
             'Status',
-            'Action'
+            'Aksi',
         ];
+
         return view('pages.data_master.setting_akun.setting_akun', compact('settings', 'headers', 'units'));
     }
+
     private function buildAkunOptions(
         $akunList,
         $parentId = null,
@@ -79,7 +81,7 @@ class SettingAkunController extends Controller
 
             $options[] = [
                 'id' => $akun->id,
-                'nama' => str_repeat('--', $level) . ' ' . $akun->nama_akun
+                'nama' => str_repeat('--', $level) . ' ' . $akun->nama_akun,
             ];
 
             // recursive untuk children
@@ -114,12 +116,10 @@ class SettingAkunController extends Controller
                 ->get();
         }
 
-
         $akunOptions = $this->buildAkunOptions($akuns, null, 0);
 
         return view('pages.data_master.setting_akun.setting_akun_create', compact('units', 'akuns', 'akunOptions'));
     }
-
 
     public function edit($id)
     {
@@ -151,17 +151,17 @@ class SettingAkunController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_setting'     => 'required|string|max:255',
-            'akun_id'          => 'nullable',
-            'debit'            => 'nullable|in:0,1',
-            'kredit'           => 'nullable|in:0,1',
-//            'akun_debit_id'    => 'required|exists:akuns,id',
-//            'akun_kredit_id'   => 'required|exists:akuns,id',
-            'keterangan'       => 'nullable|string',
-            'unit_id'          => 'nullable|exists:units,id',
-            'status'           => 'required|in:0,1',
-            'kategori'         => 'required|string|max:255',
-            'debit'  => 'required|in:1,0',
+            'nama_setting' => 'required|string|max:255',
+            'akun_id' => 'nullable',
+            'debit' => 'nullable|in:0,1',
+            'kredit' => 'nullable|in:0,1',
+            //            'akun_debit_id'    => 'required|exists:akuns,id',
+            //            'akun_kredit_id'   => 'required|exists:akuns,id',
+            'keterangan' => 'nullable|string',
+            'unit_id' => 'nullable|exists:units,id',
+            'status' => 'required|in:0,1',
+            'kategori' => 'required|string|max:255',
+            'debit' => 'required|in:1,0',
             'kredit' => 'required|in:1,0',
 
         ]);
@@ -172,16 +172,16 @@ class SettingAkunController extends Controller
         //        }
 
         setting_akun::create([
-            'nama_setting'   => $request->nama_setting,
-            'akun_id'        => $request->akun_id,
-            'keterangan'     => $request->keterangan,
-            'debit'          => $request->debit,
-            'kredit'         => $request->kredit,
-            'unit_id'        => $request->unit_id,
-            'status'         => $request->status,
-            'kategori'       => $request->kategori,
+            'nama_setting' => $request->nama_setting,
+            'akun_id' => $request->akun_id,
+            'keterangan' => $request->keterangan,
             'debit' => $request->debit,
-            'kredit' => $request->kredit
+            'kredit' => $request->kredit,
+            'unit_id' => $request->unit_id,
+            'status' => $request->status,
+            'kategori' => $request->kategori,
+            'debit' => $request->debit,
+            'kredit' => $request->kredit,
         ]);
 
         return redirect()->route('setting_akun.index')
@@ -193,16 +193,16 @@ class SettingAkunController extends Controller
         $setting = setting_akun::findOrFail($id);
 
         $request->validate([
-            'nama_setting'     => 'required|string|max:255',
-            'akun_id'          => 'nullable|exists:akuns,id',
-            'keterangan'       => 'nullable|string',
-            'debit'            => 'nullable|in:0,1',
-            'kredit'           => 'nullable|in:0,1',
-            'unit_id'          => 'nullable|exists:units,id',
-            'status'           => 'required|in:0,1',
-            'kategori'         => 'required|string|max:255',
-            'debit'            => 'required|in:1,0',
-            'kredit'           => 'required|in:1,0'
+            'nama_setting' => 'required|string|max:255',
+            'akun_id' => 'nullable|exists:akuns,id',
+            'keterangan' => 'nullable|string',
+            'debit' => 'nullable|in:0,1',
+            'kredit' => 'nullable|in:0,1',
+            'unit_id' => 'nullable|exists:units,id',
+            'status' => 'required|in:0,1',
+            'kategori' => 'required|string|max:255',
+            'debit' => 'required|in:1,0',
+            'kredit' => 'required|in:1,0',
         ]);
 
         // Validasi akun debit dan kredit tidak boleh sama
@@ -211,22 +211,21 @@ class SettingAkunController extends Controller
         //        }
 
         $setting->update([
-            'nama_setting'   => $request->nama_setting,
-            'akun_id'        => $request->akun_id,
-            'keterangan'     => $request->keterangan,
-            'debit'          => $request->debit,
-            'kredit'         => $request->kredit,
-            'unit_id'        => $request->unit_id,
-            'status'         => $request->status,
-            'kategori'       => $request->kategori,
-            'debit'          => $request->debit,
-            'kredit'         => $request->kredit
+            'nama_setting' => $request->nama_setting,
+            'akun_id' => $request->akun_id,
+            'keterangan' => $request->keterangan,
+            'debit' => $request->debit,
+            'kredit' => $request->kredit,
+            'unit_id' => $request->unit_id,
+            'status' => $request->status,
+            'kategori' => $request->kategori,
+            'debit' => $request->debit,
+            'kredit' => $request->kredit,
         ]);
 
         return redirect()->route('setting_akun.index')
             ->with('success', 'Setting Akun berhasil diperbarui');
     }
-
 
     public function destroy($id)
     {

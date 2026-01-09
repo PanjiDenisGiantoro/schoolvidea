@@ -1,30 +1,39 @@
 <div class="main-nav">
-    <!-- Sidebar Logo -->
-    <div class="logo-box">
-        <a href="index.html" class="logo-dark">
-            <img
-                src="{{ asset("assets/images/videa.png") }}"
-                class="logo-sm"
-                alt="logo sm"
-            />
-            <img
-                src="{{ asset("assets/images/videa.png") }}"
-                class="logo-lg"
-                alt="logo dark"
-            />
-        </a>
+    @php
+        $user = auth()->user();
 
-        <a href="index.html" class="logo-light">
+        $logoUrl = asset("assets/images/videa.png");
+        $unitName = "Super Admin";
+
+        if ($user && $user->unit_id) {
+            $unit = \App\Models\Unit::find($user->unit_id);
+            if ($unit) {
+                $unitName = $unit->nama_unit ?? "Super Admin";
+                if (! empty($unit->image)) {
+                    $logoUrl = asset($unit->image);
+                }
+            }
+        }
+    @endphp
+
+    <div class="logo-box">
+        <a
+            href="{{ url("dashboard") }}"
+            class="logo-link d-flex align-items-center gap-2"
+        >
             <img
-                src="{{ asset("assets/images/videa.png") }}"
-                class="logo-sm"
-                alt="logo sm"
+                src="{{ $logoUrl }}"
+                alt="Logo"
+                width="42"
+                height="42"
+                class="logo-img"
             />
-            <img
-                src="{{ asset("assets/images/videa.png") }}"
-                class="logo-lg"
-                alt="logo light"
-            />
+            <span
+                class="logo-text unit-active-text fw-semibold text-white"
+                title="{{ $unitName }}"
+            >
+                {{ $unitName }}
+            </span>
         </a>
     </div>
 
@@ -641,3 +650,59 @@
         </ul>
     </div>
 </div>
+
+@push("styles")
+    <style>
+        .logo-box {
+            padding: 0 16px;
+        }
+
+        .logo-img {
+            object-fit: contain;
+        }
+
+        .unit-active-text {
+            max-width: 180px;
+            font-size: 15px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sinkron dengan class */
+        body.dark-theme .unit-active-text {
+            color: #fff;
+        }
+
+        body:not(.dark-theme) .unit-active-text {
+            color: #fff;
+        }
+
+        /* Default */
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            color: #fff;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        /* Saat sidebar collapse */
+
+        /* Sembunyikan text saat sidebar collapse */
+        html.sidebar-hover .logo-text,
+        html.sidebar-collapsed .logo-text,
+        body.sidebar-enable .logo-text,
+        body.vertical-collapsed .logo-text,
+        body.enlarged .logo-text,
+        body[data-sidebar-size='sm'] .logo-text {
+            display: none !important;
+        }
+    </style>
+@endpush

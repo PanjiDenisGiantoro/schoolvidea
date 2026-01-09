@@ -69,7 +69,7 @@
                     <tbody>
                         @forelse($rekenings as $index => $item)
                             <tr>
-                                <td>{{ $rekenings->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->type_rekening ?? '-' }}</td>
                                 <td>{{ $item->nama_rekening ?? '-' }}</td>
                                 <td>{{ $item->no_rekening ?? '-' }}</td>
