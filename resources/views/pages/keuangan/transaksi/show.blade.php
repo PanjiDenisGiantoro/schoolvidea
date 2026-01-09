@@ -235,7 +235,7 @@
                                                 <span
                                                     class="badge bg-light text-dark"
                                                 >
-                                                    {{ $transaksi->periode }}
+                                                    {{ $detail->tagihanSiswa->tagihan->periode }}
                                                     {{ $tahun }}
                                                 </span>
                                             </td>
@@ -364,7 +364,7 @@
 
                                 <li>
                                     <strong>Periode:</strong>
-                                    {{ $periodeBulan }}
+                                    {{ $transaksi->periode }}
                                     {{ $tagihan->tahun_mulai ?? "" }}
                                 </li>
                                 <li>
