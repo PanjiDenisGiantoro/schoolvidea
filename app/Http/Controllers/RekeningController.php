@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rekening;
-use App\Models\User;
 use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,23 +29,23 @@ class RekeningController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('type_rekening', 'like', "%{$search}%")
-                  ->orWhere('nama_rekening', 'like', "%{$search}%")
-                  ->orWhere('no_rekening', 'like', "%{$search}%")
-                  ->orWhere('bank', 'like', "%{$search}%")
-                  ->orWhere('KCP', 'like', "%{$search}%")
-                  ->orWhere('nama_pemilik_rekening', 'like', "%{$search}%")
-                  ->orWhereHas('unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_rekening', 'like', "%{$search}%")
+                    ->orWhere('no_rekening', 'like', "%{$search}%")
+                    ->orWhere('bank', 'like', "%{$search}%")
+                    ->orWhere('KCP', 'like', "%{$search}%")
+                    ->orWhere('nama_pemilik_rekening', 'like', "%{$search}%")
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $rekenings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
-
+        //$rekenings = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $rekenings = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
-            'Type Rekening',
+            'Tipe Rekening',
             'Nama Rekening',
             'User',
             'Unit',
@@ -53,7 +53,7 @@ class RekeningController extends Controller
             'Bank',
             'KCP',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         return view('pages.data_master.rekening.rekening', compact('rekenings', 'headers', 'units'));
@@ -65,6 +65,7 @@ class RekeningController extends Controller
         $units = Unit::when(Auth::user()->unit_id, function ($query, $unitId) {
             $query->where('unit_id', $unitId);
         })->get();
+
         return view('pages.data_master.rekening.rekening_create', compact('users', 'units'));
     }
 
@@ -73,24 +74,24 @@ class RekeningController extends Controller
         $request->validate([
             'type_rekening' => 'required|string|max:255',
             'nama_rekening' => 'required|string|max:255',
-            'nama_pemilik_rekening'       => 'nullable|string|max:255',
-            'unit_id'       => 'nullable|exists:units,id',
-            'no_rekening'   => 'nullable|string|max:255',
-            'bank'          => 'nullable|string|max:255',
-            'KCP'           => 'nullable|string|max:255',
-            'status'        => 'required|in:1,0',
+            'nama_pemilik_rekening' => 'nullable|string|max:255',
+            'unit_id' => 'nullable|exists:units,id',
+            'no_rekening' => 'nullable|string|max:255',
+            'bank' => 'nullable|string|max:255',
+            'KCP' => 'nullable|string|max:255',
+            'status' => 'required|in:1,0',
         ]);
 
         Rekening::create([
             'type_rekening' => $request->type_rekening,
             'nama_rekening' => $request->nama_rekening,
-            'nama_pemilik_rekening'       => $request->nama_pemilik_rekening,
-            'unit_id'       => $request->unit_id,
-            'no_rekening'   => $request->no_rekening,
-            'bank'          => $request->bank,
-            'KCP'           => $request->KCP,
-            'status'        => $request->status,
-            'data'          => $request->data ? json_encode($request->data) : null,
+            'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
+            'unit_id' => $request->unit_id,
+            'no_rekening' => $request->no_rekening,
+            'bank' => $request->bank,
+            'KCP' => $request->KCP,
+            'status' => $request->status,
+            'data' => $request->data ? json_encode($request->data) : null,
         ]);
 
         return redirect()->route('rekening.index')
@@ -102,6 +103,7 @@ class RekeningController extends Controller
         $rekening = Rekening::findOrFail($id);
         $users = User::all();
         $units = Unit::all();
+
         return view('pages.data_master.rekening.rekening_create', compact('rekening', 'users', 'units'));
     }
 
@@ -112,24 +114,24 @@ class RekeningController extends Controller
         $request->validate([
             'type_rekening' => 'required|string|max:255',
             'nama_rekening' => 'required|string|max:255',
-            'nama_pemilik_rekening'       => 'nullable',
-            'unit_id'       => 'nullable',
-            'no_rekening'   => 'nullable|string|max:255',
-            'bank'          => 'nullable|string|max:255',
-            'KCP'           => 'nullable|string|max:255',
-            'status'        => 'required|in:1,0',
+            'nama_pemilik_rekening' => 'nullable',
+            'unit_id' => 'nullable',
+            'no_rekening' => 'nullable|string|max:255',
+            'bank' => 'nullable|string|max:255',
+            'KCP' => 'nullable|string|max:255',
+            'status' => 'required|in:1,0',
         ]);
 
         $rekening->update([
             'type_rekening' => $request->type_rekening,
             'nama_rekening' => $request->nama_rekening,
-            'nama_pemilik_rekening'       => $request->nama_pemilik_rekening,
-            'unit_id'       => $request->unit_id,
-            'no_rekening'   => $request->no_rekening,
-            'bank'          => $request->bank,
-            'KCP'           => $request->KCP,
-            'status'        => $request->status,
-            'data'          => $request->data ? json_encode($request->data) : null,
+            'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
+            'unit_id' => $request->unit_id,
+            'no_rekening' => $request->no_rekening,
+            'bank' => $request->bank,
+            'KCP' => $request->KCP,
+            'status' => $request->status,
+            'data' => $request->data ? json_encode($request->data) : null,
         ]);
 
         return redirect()->route('rekening.index')
@@ -140,6 +142,7 @@ class RekeningController extends Controller
     {
         $rekening = Rekening::findOrFail($id);
         $rekening->delete();
+
         return redirect()->route('rekening.index')
             ->with('success', 'Data rekening berhasil dihapus');
     }
@@ -151,6 +154,7 @@ class RekeningController extends Controller
             $query->where('unit_id', $unitId);
         })->get();
         $show = true;
+
         return view('pages.data_master.rekening.rekening_create', compact('rekening', 'show', 'units'));
     }
 }

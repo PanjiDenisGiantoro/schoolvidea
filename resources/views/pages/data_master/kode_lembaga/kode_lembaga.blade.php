@@ -65,7 +65,7 @@
                         <tbody>
                             @forelse($lembagaunit as $index => $item)
                                 <tr>
-                                    <td>{{ $lembagaunit->firstItem() + $index }}</td>
+                                    <td>{{ $index + 1 }}</td>
                                     <td>{{ $item->nama_yayasan ?? '-' }}</td>
                                     <td>{{ $item->central_code ?? '-' }}</td>
                                     <td>{{ $item->no_hp ?? '-' }}</td>

@@ -71,7 +71,7 @@
                         <tbody>
                             @forelse($akuns as $index => $akun)
                                 <tr>
-                                    <td>{{ $akuns->firstItem() + $index }}</td>
+                                    <td>{{ $index + 1 }}</td>
                                     <td>{{ $akun->kode_akun }}</td>
                                     <td>{{ $akun->nama_akun }}</td>
                                     <td>{{ $akun->kategori_akun ?? '-' }}</td>

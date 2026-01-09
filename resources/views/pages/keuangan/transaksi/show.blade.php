@@ -1,6 +1,10 @@
 @extends("layouts.app")
 @section("title", "Detail Transaksi")
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset("assets/css/style.css") }}" />
+@endpush
+
 @section("content")
     @include(
         "partials.page-title",
@@ -41,6 +45,7 @@
                                 "setoran_tabungan" => "Setoran Tabungan",
                                 "penarikan_tabungan" => "Penarikan Tabungan",
                                 "pembayaran" => "Pembayaran",
+                                "pembayaran-multiple" => "Pembayaran Multiple",
                                 default => ucwords(str_replace("_", " ", $transaksi->jenis_transaksi)),
                             };
                         @endphp
@@ -87,7 +92,7 @@
                     <li class="mb-2">
                         <strong>Tanggal Transaksi:</strong>
                         <br />
-                        {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->format("d F Y") }}
+                        {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->translatedFormat("d F Y") }}
                     </li>
 
                     @if ($transaksi->referensi_tagihan_id)
@@ -150,6 +155,14 @@
                                 </thead>
                                 <tbody>
                                     @forelse ($pembayaranDetail as $detail)
+                                    {{-- @php
+    dd(
+        $detail->getRelations(),
+        method_exists($detail, 'tagihan'),
+        optional($detail->tagihan)->periode
+    );
+@endphp --}}
+
                                         @php
                                             $bulanIndo = [
                                                 "January" => "Januari",
@@ -192,7 +205,9 @@
                                                 12 => "Desember",
                                             ];
 
-                                            $periode = $detail->periode ?? "-";
+                                            $periode = $detail->tagihanSiswa->tagihan->periode;
+
+
                                             $tahun = $detail->tahun ?? date("Y");
 
                                             // Convert periode: jika angka gunakan mapping angka, jika bahasa Inggris gunakan bulanIndo
@@ -213,7 +228,7 @@
                                             </td>
                                             <td>
                                                 <strong class="text-dark">
-                                                    {{ $detail->tagihanSiswa->tagihan->jenis_tagihan ?? "Tagihan" }}
+                                                    {{ $detail->tagihanSiswa->tagihanItem->kategori->nama_kategori ?? "Tagihan" }}
                                                 </strong>
                                             </td>
                                             <td>
@@ -227,7 +242,7 @@
                                             <td>
                                                 <span class="text-muted">
                                                     Rp
-                                                    {{ number_format($detail->tagihanSiswa->nominal ?? 0, 0, ",", ".") }}
+                                                    {{ number_format($detail->tagihanSiswa->tagihanItem->nominal ?? 0, 0, ",", ".") }}
                                                 </span>
                                             </td>
                                             <td>
@@ -246,7 +261,7 @@
                                                             {{ number_format($totalPotongan, 0, ",", ".") }}
                                                         </small>
                                                     </span>
-                                                @else
+                                                @elseif ($totalPotongan === 0)
                                                     <span class="text-muted">
                                                         -
                                                     </span>
@@ -346,11 +361,10 @@
                                             ? $namaBulan[$tagihan->periode]
                                             : $tagihan->periode;
                                 @endphp
-
                                 <li>
                                     <strong>Periode:</strong>
                                     {{ $periodeBulan }}
-                                    {{ $tagihan->tahun ?? "" }}
+                                    {{ $tagihan->tahun_mulai ?? "" }}
                                 </li>
                                 <li>
                                     <strong>Dibayar:</strong>
@@ -411,21 +425,28 @@
                 @if ($transaksi->penerima)
                     @if ($transaksi->penerima_tipe === "App\Models\Siswa")
                         <ul class="list-unstyled small">
-                            <li>
-                                <strong>Nama:</strong>
-                                {{ $transaksi->penerima->user->name ?? "-" }}
+                            <li class="info-row">
+                                <strong class="info-label">Nama</strong>
+                                <strong class="info-sep">:</strong>
+                                <span class="info-value">
+                                    {{ $transaksi->penerima->user->name ?? "-" }}
+                                </span>
                             </li>
-                            <li>
-                                <strong>NISN:</strong>
-                                {{ $transaksi->penerima->nisn ?? "-" }}
+                            <li class="info-row">
+                                <strong class="info-label">NISN</strong>
+                                <strong class="info-sep">:</strong>
+                                <span class="info-value">{{ $transaksi->penerima->nisn ?? "-" }}</span>
+                                
                             </li>
-                            <li>
-                                <strong>Kelas:</strong>
-                                {{ $transaksi->penerima->kelas->nama_kelas ?? "-" }}
+                            <li class="info-row">
+                                <strong class="info-label">Kelas</strong>
+                                <strong class="info-sep">:</strong>
+                                <span class="info-value">{{ $transaksi->penerima->kelas->nama_kelas ?? "-" }}</span>
                             </li>
-                            <li>
-                                <strong>Unit:</strong>
-                                {{ $transaksi->penerima->unit->nama_unit ?? "-" }}
+                            <li class="info-row">
+                                <strong class="info-label">Unit</strong>
+                                <strong class="info-sep">:</strong>
+                                <span class="info-value">{{ $transaksi->penerima->unit->nama_unit ?? "-" }}</span>      
                             </li>
                         </ul>
                     @else
@@ -508,8 +529,16 @@
                         $buktiBayarUrl = \Illuminate\Support\Facades\Storage::disk("public")->url($buktiBayar);
                     }
                 @endphp
+                @php
+                    $hasBukti = !empty($buktiBayar) && !empty($buktiBayarUrl);
+                    $isPending = $transaksi->status_verifikasi === 'pending';
+                    $allowedJenis = ['setoran_tabungan', 'pembayaran', 'tagihan'];
+                    $isAllowedJenis = in_array($transaksi->jenis_transaksi, $allowedJenis);
+                    $canVerify = $hasBukti && $isPending && $isAllowedJenis;
+               @endphp
 
-                @if ($buktiBayar && $buktiBayarUrl)
+
+                @if ($hasBukti)
                     <hr />
                     <h6 class="fw-bold text-primary mb-2">
                         <i class="bx bx-image"></i>
@@ -551,6 +580,15 @@
                     </div>
                 @endif
 
+                @if (!$hasBukti && $isPending && $isAllowedJenis)
+                <div class="alert alert-warning d-flex align-items-center shadow-sm">
+                    <i class="bx bx-error-circle me-2 fs-5"></i>
+                    <div>
+                        Bukti pembayaran <strong>belum diupload</strong>. <br>
+                        Silahkan menunggu upload bukti terlebih dahulu sebelum melakukan verifikasi.
+                    </div>
+                </div>      
+                @endif
                 {{-- Keterangan dari siswa (untuk pembayaran tagihan) --}}
                 @if (in_array($transaksi->jenis_transaksi, ["pembayaran", "tagihan"]) && $transaksi->pembayaranTagihan && $transaksi->pembayaranTagihan->keterangan_siswa)
                     <div class="mb-3">
@@ -601,7 +639,7 @@
                                 data-id="{{ $transaksi->id }}"
                                 data-token="{{ $transaksi->token }}"
                                 data-jumlah="{{ $transaksi->jumlah }}"
-                                title="Verifikasi dengan Token"
+                                title="{{  'Verifikasi dengan Token' }}"
                             >
                                 <i class="bx bx-key"></i>
                                 Verifikasi Token
@@ -624,6 +662,7 @@
                                 data-id="{{ $transaksi->id }}"
                                 data-is-multiple="{{ $isMultiple ? "true" : "false" }}"
                                 @if($isMultiple) data-head-tagihan="{{ $headTagihan }}" @endif
+                                {{ !$canVerify ? 'disabled' : '' }}
                             >
                                 <i class="bx bx-check-circle me-1"></i>
                                 {{ $isMultiple ? "Approve Pembayaran Multiple" : "Approve Transaksi" }}
@@ -1268,3 +1307,4 @@
         }
     </script>
 @endpush
+

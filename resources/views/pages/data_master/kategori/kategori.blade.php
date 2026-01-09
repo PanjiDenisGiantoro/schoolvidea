@@ -65,7 +65,7 @@
                     <tbody>
                         @forelse($kategoritagihans as $index => $item)
                             <tr>
-                                <td>{{ $kategoritagihans->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->unit->nama_unit ?? '' }}</td>
                                 <td>{{ $item->nama_kategori }}</td>
                                 <td>{{ $item->kode_kategori }}</td>

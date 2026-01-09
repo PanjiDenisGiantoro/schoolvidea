@@ -99,7 +99,7 @@
                     <tbody>
                         @forelse ($settings as $index => $item)
                             <tr>
-                                <td>{{ $settings->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->nama_setting ?? "-" }}</td>
                                 <td>{{ $item->akun->nama_akun ?? "-" }}</td>
                                 <td>{{ $item->keterangan ?? "-" }}</td>

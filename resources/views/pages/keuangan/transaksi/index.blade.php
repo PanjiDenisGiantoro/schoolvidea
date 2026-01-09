@@ -567,6 +567,14 @@
                                 $isMulitple = false;
 
                                 if (in_array($transaksi->jenis_transaksi, ["tagihan", "pembayaran"]) && $transaksi->pembayaranTagihan) {
+                                    if ($transaksi->pembayaranTagihan->is_master === false && $transaksi->pembayaranTagihan->head_tagihan) {
+                                        $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
+                                        $isMulitple = false;
+                                    }
+                                }
+
+
+                                if (in_array($transaksi->jenis_transaksi, ["pembayaran-multiple"]) && $transaksi->pembayaranTagihan) {
                                     if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
                                         $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
                                         $isMulitple = true;
@@ -577,6 +585,8 @@
                                 if ($transaksi->jenis_transaksi === "tagihan-keluar") {
                                     $badgeClass = "bg-warning";
                                 } elseif ($isMulitple) {
+                                    $badgeClass = "bg-secondary";
+                                } elseif ($transaksi->jenis_transaksi === "tagihan") {
                                     $badgeClass = "bg-info";
                                 }
                             @endphp
@@ -625,6 +635,7 @@
                                             "pembayaran" => "Pembayaran",
                                             "tagihan" => "Pembayaran Tagihan",
                                             "tagihan-keluar" => "Penggajian Guru",
+                                            "pembayaran-multiple" => "Pembayaran Multiple",
                                             default => ucwords(str_replace("_", " ", $transaksi->jenis_transaksi)),
                                         };
                                     @endphp
@@ -661,11 +672,17 @@
                                 </td>
 
                                 <td>
-                                    @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan"]))
+                                    @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan", "pembayaran-multiple"]))
+                                        @if ($transaksi->status_verifikasi === 'rejected')
+                                            <span class="text-danger fw-bold">
+                                                + Rp {{ number_format($transaksi->jumlah, 0, ",", ".") }}
+                                            </span>
+                                        @else
                                         <span class="text-success fw-bold">
                                             + Rp
                                             {{ number_format($transaksi->jumlah, 0, ",", ".") }}
                                         </span>
+                                    @endif
                                     @else
                                         <span class="text-danger fw-bold">
                                             - Rp
@@ -683,10 +700,17 @@
                                             "SALDO_TABUNGAN" => "warning",
                                             default => "secondary",
                                         };
+                                        $metodeText = match ($transaksi->metode) {
+                                            "TUNAI" => "TUNAI",
+                                            "CASH" => "TUNAI",
+                                            "TRANSFER" => "NON TUNAI",
+                                            "NONTUNAI" => "NON TUNAI",
+                                            default => "NON TUNAI",
+                                        }
                                     @endphp
 
                                     <span class="badge bg-{{ $metodeBadge }}">
-                                        {{ $transaksi->metode }}
+                                        {{ $metodeText }}
                                     </span>
                                 </td>
                                 <td>
@@ -993,17 +1017,17 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover table-bordered align-middle">
+                        <table class="table table-hover table-bordered text-white align-middle">
                             <thead class="table-warning text-white">
                                 <tr>
-                                    <th class="text-center" style="width:50px;">#</th>
-                                    <th class="text-center" style="width:120px;">Jenis</th>
-                                    <th style="width:150px;">Nomor Transaksi</th>
-                                    <th style="width:200px;">Nama Siswa</th>
-                                    <th class="text-end" style="width:130px;">Jumlah</th>
-                                    <th class="text-center" style="width:150px;">Tanggal</th>
-                                    <th class="text-center" style="width:150px;">Status</th>
-                                    <th class="text-center" style="width:100px;">Aksi</th>
+                                    <th class="text-center text-white" style="width:50px;">#</th>
+                                    <th class="text-center text-white" style="width:120px;">Jenis</th>
+                                    <th class="text-white" style="width:150px;">Nomor Transaksi</th>
+                                    <th class="text-white" style="width:200px;">Nama Siswa</th>
+                                    <th class="text-end text-white" style="width:130px;">Jumlah</th>
+                                    <th class="text-center text-white" style="width:150px;">Tanggal</th>
+                                    <th class="text-center text-white" style="width:150px;">Status</th>
+                                    <th class="text-center text-white" style="width:100px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>
@@ -1158,7 +1182,7 @@ document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
         const transaksiId = this.dataset.id;
         const penerima = this.dataset.penerima;
         console.log( penerima, transaksiId );
-        
+
 
         let url = '';
 

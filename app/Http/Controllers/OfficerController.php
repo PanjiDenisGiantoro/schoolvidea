@@ -7,7 +7,6 @@ use App\Models\Positions;
 use App\Models\Roles_petugas;
 use App\Models\Unit;
 use App\Models\User;
-use App\Models\Tahun_ajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,27 +45,27 @@ class OfficerController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhereHas('officer', function ($q) use ($search) {
-                      $q->where('nip', 'like', "%{$search}%")
-                        ->orWhere('nuptk', 'like', "%{$search}%")
-                        ->orWhere('nik', 'like', "%{$search}%")
-                        ->orWhere('va_guru', 'like', "%{$search}%")
-                        ->orWhere('no_hp', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('officer.unit', function ($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('roles', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhereHas('officer', function ($q) use ($search) {
+                        $q->where('nip', 'like', "%{$search}%")
+                            ->orWhere('nuptk', 'like', "%{$search}%")
+                            ->orWhere('nik', 'like', "%{$search}%")
+                            ->orWhere('va_guru', 'like', "%{$search}%")
+                            ->orWhere('no_hp', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('officer.unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('roles', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $officer = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
-
+        // $officer = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->except('page'));
+        $officer = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
             'Nama Unit',
@@ -75,7 +74,7 @@ class OfficerController extends Controller
             'NIP',
             'Email',
             'VA Petugas',
-            'Action',
+            'Aksi',
         ];
 
         return view('pages.data_master.officer.officer', compact('officer', 'headers', 'units'));
@@ -111,7 +110,6 @@ class OfficerController extends Controller
         ));
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
@@ -125,19 +123,19 @@ class OfficerController extends Controller
             'no_hp' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,14|unique:officers,no_hp',
             'unit_id' => 'required|exists:units,id',
             'rfid_no' => 'nullable|string|max:255',
-            'nip'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nip',
-            'nuptk'           => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nuptk',
-            'nik'             => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nik',
-            'jenis_kelamin'   => 'nullable',
-            'agama'           => 'nullable|string|max:50',
-            'tanggal_lahir'   => 'nullable|date',
-            'alamat'          => 'nullable|string',
-            'bank'            => 'nullable|string|max:100',
-            'no_rekening'     => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:officers,no_rekening',
-            'no_kartu_rfid'   => 'nullable|string|max:100|unique:officers,no_kartu_rfid',
-            'qr_code'         => 'nullable|string|max:100',
-            'va_guru'         => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:officers,va_guru',
-            'position_id'     => 'nullable|',
+            'nip' => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nip',
+            'nuptk' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nuptk',
+            'nik' => 'required|string|regex:/^[0-9]+$/|digits_between:0,20|unique:officers,nik',
+            'jenis_kelamin' => 'nullable',
+            'agama' => 'nullable|string|max:50',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat' => 'nullable|string',
+            'bank' => 'nullable|string|max:100',
+            'no_rekening' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:officers,no_rekening',
+            'no_kartu_rfid' => 'nullable|string|max:100|unique:officers,no_kartu_rfid',
+            'qr_code' => 'nullable|string|max:100',
+            'va_guru' => 'nullable|string|regex:/^[0-9]+$/|digits_between:0,160|unique:officers,va_guru',
+            'position_id' => 'nullable|',
         ]);
 
         DB::beginTransaction();
@@ -167,40 +165,41 @@ class OfficerController extends Controller
             $user->assignRole($roleSpatie->name);
             $tahunAjaran = \App\Models\Tahun_ajaran::where('status', 1)->first();
 
-            $officer =   Officer::create([
-                'nip'             => $request->nip,
-                'image'           => $request->image,
-                'tempat_lahir'    => $request->tempat_lahir,
-                'no_hp'           => $request->no_hp,
-                'unit_id'         => $request->unit_id,
-                'user_id'         => $user->id,
-                'role_id'         => $rolePetugas->id, // ✅ foreign key cocok dengan roles_petugas
-                'nuptk'           => $request->nuptk,
-                'nik'             => $request->nik,
-                'jenis_kelamin'   => $request->jenis_kelamin,
-                'agama'           => $request->agama,
-                'tanggal_lahir'   => $request->tanggal_lahir,
-                'alamat'          => $request->alamat,
-                'bank'            => $request->bank,
-                'no_rekening'     => $request->no_rekening,
-                'no_kartu_rfid'   => $request->no_kartu_rfid,
-                'qr_code'         => $request->qr_code,
-                'va_guru'         => $request->va_guru,
-                'position_id'     => $request->position_id,
-                'name'            => $request->name,
-                'tahun_ajaran_id' => $tahunAjaran->id
+            $officer = Officer::create([
+                'nip' => $request->nip,
+                'image' => $request->image,
+                'tempat_lahir' => $request->tempat_lahir,
+                'no_hp' => $request->no_hp,
+                'unit_id' => $request->unit_id,
+                'user_id' => $user->id,
+                'role_id' => $rolePetugas->id, // ✅ foreign key cocok dengan roles_petugas
+                'nuptk' => $request->nuptk,
+                'nik' => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'agama' => $request->agama,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'bank' => $request->bank,
+                'no_rekening' => $request->no_rekening,
+                'no_kartu_rfid' => $request->no_kartu_rfid,
+                'qr_code' => $request->qr_code,
+                'va_guru' => $request->va_guru,
+                'position_id' => $request->position_id,
+                'name' => $request->name,
+                'tahun_ajaran_id' => $tahunAjaran->id,
             ]);
             DB::commit();
 
             return redirect()->route('officer.index')
                 ->
-with('success', 'Data user berhasil diperbarui.');
-
+            with('success', 'Data user berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
+
     public function edit($id)
     {
         $officer = Officer::with('user')->findOrFail($id);
@@ -248,26 +247,26 @@ with('success', 'Data user berhasil diperbarui.');
             'no_hp' => 'nullable|string|max:20',
             'unit_id' => 'required|exists:units,id',
             'rfid_no' => 'nullable|string|max:255',
-            'nip'             => 'required|string|max:50',
-            'nuptk'           => 'nullable|string|max:50',
-            'nik'             => 'nullable|string|max:50',
-            'jenis_kelamin'   => 'nullable',
-            'agama'           => 'nullable|string|max:50',
-            'tanggal_lahir'   => 'nullable|date',
-            'alamat'          => 'nullable|string',
-            'bank'            => 'nullable|string|max:100',
-            'no_rekening'     => 'nullable|string|max:50',
-            'no_kartu_rfid'   => 'nullable|string|max:100',
-            'qr_code'         => 'nullable|string|max:100',
-            'va_guru'         => 'nullable|string|max:100',
-            'position_id'     => 'nullable|',
-            'akses_yayasan'   => 'nullable|in:ya,tidak'
+            'nip' => 'required|string|max:50',
+            'nuptk' => 'nullable|string|max:50',
+            'nik' => 'nullable|string|max:50',
+            'jenis_kelamin' => 'nullable',
+            'agama' => 'nullable|string|max:50',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat' => 'nullable|string',
+            'bank' => 'nullable|string|max:100',
+            'no_rekening' => 'nullable|string|max:50',
+            'no_kartu_rfid' => 'nullable|string|max:100',
+            'qr_code' => 'nullable|string|max:100',
+            'va_guru' => 'nullable|string|max:100',
+            'position_id' => 'nullable|',
+            'akses_yayasan' => 'nullable|in:ya,tidak',
         ]);
 
         DB::beginTransaction();
         try {
             $officer = Officer::findOrFail($id);
-            $user    = $officer->user;
+            $user = $officer->user;
 
             // Tentukan yayasan_id berdasarkan dropdown akses yayasan
             $yayasanId = null;
@@ -277,7 +276,7 @@ with('success', 'Data user berhasil diperbarui.');
 
             // Update user
             $user->update([
-                'name'  => $request->name,
+                'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => $request->password ? bcrypt($request->password) : $user->password,
@@ -287,7 +286,7 @@ with('success', 'Data user berhasil diperbarui.');
 
             // Update role user
             $rolePetugas = Roles_petugas::findOrFail($request->role_id);
-            $roleSpatie  = \Spatie\Permission\Models\Role::firstOrCreate(
+            $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
                 ['name' => $rolePetugas->name],
                 ['guard_name' => 'web']
             );
@@ -296,31 +295,34 @@ with('success', 'Data user berhasil diperbarui.');
 
             // Update officer
             $officer->update([
-                'nip'             => $request->nip,
-                'image'           => $request->image,
-                'tempat_lahir'    => $request->tempat_lahir,
-                'no_hp'           => $request->no_hp,
-                'unit_id'         => $request->unit_id,
-                'nuptk'           => $request->nuptk,
-                'nik'             => $request->nik,
-                'jenis_kelamin'   => $request->jenis_kelamin,
-                'agama'           => $request->agama,
-                'tanggal_lahir'   => $request->tanggal_lahir,
-                'alamat'          => $request->alamat,
-                'bank'            => $request->bank,
-                'no_rekening'     => $request->no_rekening,
-                'no_kartu_rfid'   => $request->no_kartu_rfid,
-                'qr_code'         => $request->qr_code,
-                'va_guru'         => $request->va_guru,
-                'position_id'     => $request->position_id,
+                'nip' => $request->nip,
+                'image' => $request->image,
+                'tempat_lahir' => $request->tempat_lahir,
+                'no_hp' => $request->no_hp,
+                'unit_id' => $request->unit_id,
+                'nuptk' => $request->nuptk,
+                'nik' => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'agama' => $request->agama,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'bank' => $request->bank,
+                'no_rekening' => $request->no_rekening,
+                'no_kartu_rfid' => $request->no_kartu_rfid,
+                'qr_code' => $request->qr_code,
+                'va_guru' => $request->va_guru,
+                'position_id' => $request->position_id,
                 'name' => $request->name,
+                'role_id' => $request->role_id,
             ]);
 
             DB::commit();
+
             return redirect()->route('officer.index')->with('success', 'Officer berhasil diupdate');
         } catch (\Exception $e) {
             //            dd($e->getMessage());
             DB::rollBack();
+
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -330,7 +332,7 @@ with('success', 'Data user berhasil diperbarui.');
         // $id di sini adalah ID dari tabel officers
         $officer = Officer::find($id);
 
-        if (!$officer) {
+        if (! $officer) {
             return redirect()->back()->with('error', 'Data officer tidak ditemukan.');
         }
 
@@ -348,9 +350,6 @@ with('success', 'Data user berhasil diperbarui.');
 
         return redirect()->back()->with('success', 'Data user dan officer berhasil dihapus.');
     }
-
-
-
 
     public function show($id)
     {
@@ -374,8 +373,10 @@ with('success', 'Data user berhasil diperbarui.');
 
         // Ambil logo dari unit milik officer
         $logoUnit = $officer->unit->image ?? null;
+
         return view('pages.data_master.officer.officer_create', compact('officer', 'show', 'units', 'roles', 'positions', 'logoUnit'));
     }
+
     public function upload(Request $request)
     {
         $request->validate([
@@ -388,15 +389,15 @@ with('success', 'Data user berhasil diperbarui.');
 
         return response()->json([
             'success' => true,
-            'filepath' => 'storage/' . $path
+            'filepath' => 'storage/' . $path,
         ]);
     }
+
     public function getByUnit($unitId)
     {
         $officers = Officer::where('unit_id', $unitId)
             ->with('user:id,name')
             ->get(['id', 'user_id']);
-
 
         return response()->json($officers);
     }

@@ -4,7 +4,34 @@
     <link rel="stylesheet" href="{{ asset("assets/css/detail.css") }}" />
     <link rel="stylesheet" href="{{ asset("assets/css/style.css") }}" />
 @endpush
+@php
+    function terbilang($nilai)
+    {
+        $nilai = abs($nilai);
+        $huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
 
+        if ($nilai < 12) {
+            return " " . $huruf[$nilai];
+        } elseif ($nilai < 20) {
+            return terbilang($nilai - 10) . " belas";
+        } elseif ($nilai < 100) {
+            return terbilang(intval($nilai / 10)) . " puluh" . terbilang($nilai % 10);
+        } elseif ($nilai < 200) {
+            return " seratus" . terbilang($nilai - 100);
+        } elseif ($nilai < 1000) {
+            return terbilang(intval($nilai / 100)) . " ratus" . terbilang($nilai % 100);
+        } elseif ($nilai < 2000) {
+            return " seribu" . terbilang($nilai - 1000);
+        } elseif ($nilai < 1000000) {
+            return terbilang(intval($nilai / 1000)) . " ribu" . terbilang($nilai % 1000);
+        } elseif ($nilai < 1000000000) {
+            return terbilang(intval($nilai / 1000000)) . " juta" . terbilang($nilai % 1000000);
+        } elseif ($nilai < 1000000000000) {
+            return terbilang(intval($nilai / 1000000000)) . " miliar" . terbilang($nilai % 1000000000);
+        }
+        return "nilai terlalu besar";
+    }
+@endphp
 @section("content")
     @include(
         "partials.page-title",
@@ -95,7 +122,7 @@
                                 Metode Pembayaran :
                             </span>
                             <span class="font-medium">
-                                {{ $transaction->metode ?? "Credit Card" }}
+                                {{ $transaction->metode === "NONTUNAI"  ? "NON TUNAI" : "NON TUNAI" }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -260,7 +287,7 @@
                                         "
                                     >
                                         <td colspan="2" class="text-start">
-                                            TOTAL PENERIMAAN
+                                            TOTAL 
                                         </td>
                                         <td class="amount">
                                             Rp
@@ -279,7 +306,7 @@
                                         <th colspan="2" class="text-start">
                                             <i>Potongan</i>
                                         </th>
-                                        <th><i>Jumlah(IDR)</i></th>
+                                        <th><i>Jumlah (IDR)</i></th>
                                     </tr>
                                 </thead>
 
@@ -328,6 +355,65 @@
                         </td>
                     </tr>
                 </table>
+                <table
+                width="100%"
+                style="
+                    border-collapse: collapse;
+                    background: #e6ffed;
+                    border: 1px solid #28a745;
+                    padding: 10px;
+                    margin-top: 6px;
+                    border-radius: 4px;
+                    font-size: 10pt;
+
+                "
+            >
+                <tr>
+                    <!-- KIRI: TOTAL GAJI BERSIH -->
+                    <td
+                        width="45%"
+                        valign="top"
+                        style="padding: 6px; color: #28a745"
+                    >
+                        <div>
+                            <strong style="display: block; margin-bottom: 4px">
+                                TOTAL PENERIMAAN GAJI
+                            </strong>
+                        </div>
+                        <div>
+                            <span
+                                style="
+                                    font-size: 12pt;
+                                    font-weight: 700;
+                                    color: #28a745;
+                                "
+                            >
+                                Rp
+                                {{ number_format($payment->net_payment ?? $net ?? 0, 0, ",", ".") }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- KANAN: TERBILANG -->
+                    <td
+                        width="55%"
+                        valign="top"
+                        style="padding: 6px; color: #28a745"
+                    >
+                        <div>
+                            <strong style="display: block; margin-bottom: 4px">
+                                TERBILANG
+                            </strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 12pt; font-style: italic">
+                                ({{ ucwords(terbilang($payment->net_payment ?? $net)) }}
+                                Rupiah)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
             </div>
             {{--<div class="mt-8 bg-white shadow-lg rounded-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">Notes</h3>

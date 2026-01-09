@@ -48,8 +48,8 @@ class KategoritagihanController extends Controller
         }
 
         // Paginate results
-        $kategoritagihans = $query->paginate(15)->appends($request->except('page'));
-
+        //$kategoritagihans = $query->paginate(15)->appends($request->except('page'));
+        $kategoritagihans = $query->orderBy('created_at', 'desc')->get();
         $headers = [
             'No',
             'Nama Unit',

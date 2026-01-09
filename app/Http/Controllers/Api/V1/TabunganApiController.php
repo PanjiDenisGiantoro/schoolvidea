@@ -303,7 +303,7 @@ class TabunganApiController extends Controller
     public function uploadBukti(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'bukti_transfer' => 'required|image|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_transfer' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         if ($validator->fails()) {

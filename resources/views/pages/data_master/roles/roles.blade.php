@@ -49,7 +49,7 @@
                     <tbody>
                         @forelse($roles as $index => $item)
                             <tr>
-                                <td>{{ $roles->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->name ?? '-' }}</td>
                                 <td>{{ $item->permissions_count ?? 0 }}</td>
                                 <td>

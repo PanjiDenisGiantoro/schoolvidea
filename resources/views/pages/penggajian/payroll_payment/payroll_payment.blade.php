@@ -120,37 +120,45 @@
                     </div>
                 --}}
                 <ul class="list-unstyled small">
-                    <li class="d-flex justify-content-between">
-                        <strong>Nama Lengkap:</strong>
-                        <span id="officer_name">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Nama Lengkap</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_name">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>NIP:</strong>
-                        <span id="officer_nip">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">NIP</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_nip">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Unit Pendidikan:</strong>
-                        <span id="officer_unit">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Unit Pendidikan</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_unit">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Jabatan:</strong>
-                        <span id="officer_jabatan">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Jabatan</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_jabatan">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Nomor Telepon:</strong>
-                        <span id="officer_no_hp">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Nomor Telepon</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_no_hp">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Nama Bank:</strong>
-                        <span id="officer_bank">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Nama Bank</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_bank">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Nomor Rekening:</strong>
-                        <span id="officer_norek">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Nomor Rekening</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_norek">-</span>
                     </li>
-                    <li class="d-flex justify-content-between">
-                        <strong>Nomor Virtual Account:</strong>
-                        <span id="officer_va">-</span>
+                    <li class="info-row mb-0">
+                        <strong class="info-label">Nomor VA</strong>
+                        <strong class="info-sep">:</strong>
+                        <span class="info-value" id="officer_va">-</span>
                     </li>
                 </ul>
             </div>
@@ -477,6 +485,8 @@
                             icon: 'warning',
                             title: 'Perhatian !!',
                             text: 'Mohon Pilih Unit Terlebih Dahulu',
+                            confirmButtonText: 'Oke',
+                            confirmButtonColor: '#0c8f84',
                         });
                         return;
                     }
@@ -596,15 +606,18 @@
                                 //alert('Data presensi berhasil disinkronisasi!\n\nSynced: ' + data.synced_count + '\nError: ' + data.error_count);
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Berhasil Hore Hore Yes!!!',
+                                    title: 'Berhasil!!!',
                                     confirmButtonText: 'Tutup',
                                     customClass: {
                                         confirmButton: 'bg-green',
                                     },
                                     html: `
                                     Data Presensi Berhasil Disinkronisasi<br><br>
-                                    Synced: <b>${data.synced_count}</b> <br>
-                                    Error: <b>${data.error_count}</b>
+                                    {{--
+                                        Synced: <b>${data.synced_count}</b> <br>
+                                        Error: <b>${data.error_count}</b>
+                                    --}}
+
                                     `,
                                 });
                                 console.log('Sync Success:', data);
@@ -1175,11 +1188,13 @@
                     ).map((chk) => chk.closest('tr'));
 
                     if (!rows.length) {
-                        Swal.fire(
-                            'Tidak ada data',
-                            'Pilih minimal satu data untuk bayar',
-                            'warning',
-                        );
+                        Swal.fire({
+                            title: 'Tidak ada data',
+                            text: 'Pilih minimal satu data untuk bayar',
+                            icon: 'warning',
+                            confirmButtonText: 'Oke',
+                            confirmButtonColor: '#0c8f84',
+                        });
                         return;
                     }
 

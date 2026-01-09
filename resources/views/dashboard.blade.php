@@ -109,8 +109,7 @@
                     <div class="card-body">
                         <p class="text-muted mb-2">Total Nominal Tagihan</p>
                         <h3 class="fw-bold text-warning">Rp {{ number_format($tagihanData['nominal_tagihan'], 0, ',', '.') }}</h3>
-                        <div class="mt-3">
-                        </div>
+                        <p class="mt-3">Jumlah transaksi tagihan bulan ini: <b>{{ number_format($jumlahTransaksi, 0, ',', '.') }}</b></p>
                         <a href="{{ url('keuangan-transaksi') }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                     </div>
                 </div>
@@ -121,7 +120,7 @@
         <div class="col-lg-12">
             <div class="card stat-card-green stat-card">
                 <div class="card-header">
-                    <h4 class="card-title">Daftar Pembayaran Tagihan Terbaru</h4>
+                    <h4 class="card-title">5 Daftar Pembayaran Tagihan Terbaru</h4>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -134,7 +133,7 @@
                                 <th>Tagihan Kelas</th>
                                 <th>Item Tagihan</th>
                                 <th>Jumlah Dibayar</th>
-                                <th>Status Approval</th>
+                                <th>Status</th>
                             </tr>
                             </thead>
                             <tbody>

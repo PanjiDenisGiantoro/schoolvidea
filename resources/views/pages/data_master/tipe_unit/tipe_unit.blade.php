@@ -49,7 +49,7 @@
                     <tbody>
                         @forelse($tipe_unit as $index => $item)
                             <tr>
-                                <td>{{ $tipe_unit->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->nama_tipe_unit ?? '-' }}</td>
                                 <td>
                                     <span class="badge {{ $item->status === '1' ? 'bg-success' : 'bg-danger' }}">

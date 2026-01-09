@@ -133,7 +133,7 @@ class KeuanganTransaksiController extends Controller
             'verifier',
             'creator',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-        ]);
+        ])->hidePending();
 
         $transaksis = $this->applyBaseFilters($transaksis, $request);
         $transaksis = $this->applyCommonFilters($transaksis, $request);
@@ -144,37 +144,37 @@ class KeuanganTransaksiController extends Controller
             ->appends($request->except('page'));
 
         // Total Pemasukan - hanya yang sudah verified/approved
-        $totalPemasukanQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
+        $totalPemasukanQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan', 'pembayaran-multiple'])
             ->where('status_verifikasi', 'approved');
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
         $total_pemasukan = $totalPemasukanQuery->sum('jumlah');
 
         // Total Pengeluaran - hanya yang sudah verified/approved
-        $totalPengeluaranQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
+        $totalPengeluaranQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
             ->where('status_verifikasi', 'approved');
         $totalPengeluaranQuery = $this->applyBaseFilters($totalPengeluaranQuery, $request);
         $totalPengeluaranQuery = $this->applyCommonFilters($totalPengeluaranQuery, $request);
         $total_pengeluaran = $totalPengeluaranQuery->sum('jumlah');
 
         // Total Transaksi - hanya yang sudah verified/approved
-        $totalTransaksiQuery = Keuangan_transaksi::where('status_verifikasi', 'approved');
+        $totalTransaksiQuery = Keuangan_transaksi::hidePending()->where('status_verifikasi', 'approved');
         $totalTransaksiQuery = $this->applyBaseFilters($totalTransaksiQuery, $request);
         $totalTransaksiQuery = $this->applyCommonFilters($totalTransaksiQuery, $request);
         $total_transaksi = $totalTransaksiQuery->sum('jumlah');
         $total_data_transaksi = $totalTransaksiQuery->count();
 
         // Summary calculations with proper filtering - hanya yang sudah verified/approved
-        $summaryQuery = Keuangan_transaksi::where('status_verifikasi', 'approved');
+        $summaryQuery = Keuangan_transaksi::hidePending()->where('status_verifikasi', 'approved');
         $summaryQuery = $this->applyBaseFilters($summaryQuery, $request);
         $summaryQuery = $this->applyCommonFilters($summaryQuery, $request);
         $summaryTransaksis = $summaryQuery->get();
 
         // Calculate various metrics for summary cards (case insensitive check)
-        $total_tunai = $summaryTransaksis->filter(function($t) {
+        $total_tunai = $summaryTransaksis->filter(function ($t) {
             return strtoupper($t->metode) === 'CASH' || strtolower($t->metode) === 'tunai';
         })->sum('jumlah');
-        $total_non_tunai = $summaryTransaksis->filter(function($t) {
+        $total_non_tunai = $summaryTransaksis->filter(function ($t) {
             return strtoupper($t->metode) !== 'CASH' && strtolower($t->metode) !== 'tunai';
         })->sum('jumlah');
         $today = \Carbon\Carbon::today()->toDateString();
@@ -214,7 +214,7 @@ class KeuanganTransaksiController extends Controller
                     $q->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
                 });
         };
-        $total_pending = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
+        $total_pending = Keuangan_transaksi::hidePending()->where('jenis_transaksi', 'penarikan_tabungan')
             ->where('status_approval', 'pending')
             ->tap($baseQuery)
             ->count();
@@ -248,7 +248,7 @@ class KeuanganTransaksiController extends Controller
             'verifier',
             'jurnals.akun',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori',
-            'pembayaranTagihan.tagihanSiswa.potonganSiswa.potongan'
+            'pembayaranTagihan.tagihanSiswa.potonganSiswa.potongan',
         ])->findOrFail($id);
 
         // Ambil logs aktivitas
@@ -272,6 +272,7 @@ class KeuanganTransaksiController extends Controller
                     ->with([
                         'tagihanSiswa.siswa.user',
                         'tagihanSiswa.tagihan',
+                        'tagihanSiswa.tagihanItem.kategori',
                         'tagihanSiswa.potonganSiswa.potongan'
                     ])
                     ->orderBy('urutan')
@@ -556,7 +557,7 @@ class KeuanganTransaksiController extends Controller
 
                 $settings = $settings->where('status', '1')->first();
 
-                if(!$settings){
+                if (!$settings) {
                     return back()->with('danger', 'Setting akun tabungan belum diatur.');
                 }
                 $akun_id = $settings->akun_id;
@@ -573,16 +574,16 @@ class KeuanganTransaksiController extends Controller
                 }
 
 
-                if($datarekening->allotment == 'Semua Pembayaran'){
+                if ($datarekening->allotment == 'Semua Pembayaran') {
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment','Semua Pembayaran')
+                        ->where('allotment', 'Semua Pembayaran')
                         ->first();
-                }else{
+                } else {
                     $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                        ->where('allotment','Pembayaran Tagihan')
+                        ->where('allotment', 'Pembayaran Tagihan')
                         ->first();
                 }
-                if($position == 1){
+                if ($position == 1) {
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -600,7 +601,7 @@ class KeuanganTransaksiController extends Controller
                         'keterangan'   => $keterangan,
                         'unit_id' => Auth::user()->unit_id
                     ]);
-                }else{
+                } else {
                     Jurnals::create([
                         'transaksi_id' => $transaksi->id,
                         'akun_id'      => $akun_id,
@@ -661,7 +662,7 @@ class KeuanganTransaksiController extends Controller
 
                     $settings = $settings->where('status', '1')->first();
 
-                    if(!$settings){
+                    if (!$settings) {
                         return back()->with('danger', 'Setting akun tabungan belum diatur.');
                     }
                     $akun_id = $settings->akun_id;
@@ -679,17 +680,17 @@ class KeuanganTransaksiController extends Controller
                     }
 
 
-                    if($datarekening->allotment == 'Semua Pembayaran'){
+                    if ($datarekening->allotment == 'Semua Pembayaran') {
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment','Semua Pembayaran')
+                            ->where('allotment', 'Semua Pembayaran')
                             ->first();
-                    }else{
+                    } else {
                         $datarekening = DataRekening::where('unit_id', Auth::user()->unit_id)
-                            ->where('allotment','Pembayaran Tabungan')
+                            ->where('allotment', 'Pembayaran Tabungan')
                             ->first();
                     }
 
-                    if($position == 1){
+                    if ($position == 1) {
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -707,7 +708,7 @@ class KeuanganTransaksiController extends Controller
                             'keterangan'   => $keterangan,
                             'unit_id' => Auth::user()->unit_id
                         ]);
-                    }else{
+                    } else {
                         Jurnals::create([
                             'transaksi_id' => $transaksi->id,
                             'akun_id'      => $akun_id,
@@ -726,7 +727,6 @@ class KeuanganTransaksiController extends Controller
                             'unit_id' => Auth::user()->unit_id
                         ]);
                     }
-
                 }
             }
 
@@ -800,7 +800,7 @@ class KeuanganTransaksiController extends Controller
                         ->where('status', '1')
                         ->first();
 
-                    if(!$dataRekeningKredit){
+                    if (!$dataRekeningKredit) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -819,7 +819,6 @@ class KeuanganTransaksiController extends Controller
                             'tanggal' => now(),
                             'unit_id' => Auth::user()->unit_id
                         ]);
-
                     }
 
                     // Kredit: Akun dari data_rekenings (lawannya pembayaran)
@@ -852,7 +851,6 @@ class KeuanganTransaksiController extends Controller
                 'success' => true,
                 'message' => 'Transaksi berhasil diapprove'
             ]);
-
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json([
@@ -975,7 +973,6 @@ class KeuanganTransaksiController extends Controller
                 'success' => true,
                 'message' => 'Transaksi berhasil direject'
             ]);
-
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json([
@@ -1040,7 +1037,6 @@ class KeuanganTransaksiController extends Controller
                 'success' => true,
                 'message' => 'Transaksi berhasil dibatalkan'
             ]);
-
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json([
@@ -1056,11 +1052,13 @@ class KeuanganTransaksiController extends Controller
         $draw = $request->input('draw', 1);
         $searchValue = $request->input('search.value');
 
+        $baseQuery = Keuangan_transaksi::hidePendingWithoutBukti();
+
         $query = Keuangan_transaksi::with([
             'penerima.user',
             'creator',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-        ]);
+        ])->hidePending();
 
         // Filter Unit
         if ($request->unit_id) {
@@ -1076,13 +1074,13 @@ class KeuanganTransaksiController extends Controller
 
         // Filter Kode Pembayaran
         if ($request->kode_pembayaran) {
-            $query->where('code_pembayaran', 'LIKE', '%'.$request->kode_pembayaran.'%');
+            $query->where('code_pembayaran', 'LIKE', '%' . $request->kode_pembayaran . '%');
         }
 
         // Filter Nama Siswa
         if ($request->nama_siswa) {
             $query->whereHas('penerima.user', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%'.$request->nama_siswa.'%');
+                $q->where('name', 'LIKE', '%' . $request->nama_siswa . '%');
             });
         }
 
@@ -1109,7 +1107,8 @@ class KeuanganTransaksiController extends Controller
         }
 
         // Hitung total records sebelum pagination
-        $totalRecords = $query->count();
+        $totalRecords = $baseQuery->count();
+        $filteredRecord = $query->count();
 
         // Apply ordering dan pagination
         $results = $query->orderBy('tanggal_transaksi', 'desc')
@@ -1151,12 +1150,12 @@ class KeuanganTransaksiController extends Controller
                     default => ucfirst(str_replace('_', ' ', $trx->jenis_transaksi)),
                 };
 
-                $jenisTransaksiHtml = '<span class="badge bg-'.$badgeColor.' rounded-pill">'.$jenisText.'</span>';
+                $jenisTransaksiHtml = '<span class="badge bg-' . $badgeColor . ' rounded-pill">' . $jenisText . '</span>';
 
                 // Tambahkan info tagihan jika ada
                 if (in_array($trx->jenis_transaksi, ['tagihan', 'pembayaran']) && $trx->pembayaranTagihan) {
                     $tagihanNama = $trx->pembayaranTagihan->tagihanSiswa->tagihan->nama_tagihan ?? '-';
-                    $jenisTransaksiHtml .= '<br><small class="text-muted">'.$tagihanNama.'</small>';
+                    $jenisTransaksiHtml .= '<br><small class="text-muted">' . $tagihanNama . '</small>';
                 }
             }
 
@@ -1164,8 +1163,8 @@ class KeuanganTransaksiController extends Controller
             $jumlahHtml = '-';
             if ($trx->jumlah) {
                 $jumlahHtml = in_array($trx->jenis_transaksi, ['setoran_tabungan', 'pembayaran', 'tagihan'])
-                    ? '<span class="text-success fw-bold">+ Rp '.number_format($trx->jumlah, 0, ',', '.').'</span>'
-                    : '<span class="text-danger fw-bold">- Rp '.number_format($trx->jumlah, 0, ',', '.').'</span>';
+                    ? '<span class="text-success fw-bold">+ Rp ' . number_format($trx->jumlah, 0, ',', '.') . '</span>'
+                    : '<span class="text-danger fw-bold">- Rp ' . number_format($trx->jumlah, 0, ',', '.') . '</span>';
             }
 
             // Format metode - beri "-" jika tidak lengkap
@@ -1177,7 +1176,7 @@ class KeuanganTransaksiController extends Controller
                     'SALDO_TABUNGAN' => 'warning',
                     default => 'secondary',
                 };
-                $metodeHtml = '<span class="badge bg-'.$metodeBadge.'">'.$trx->metode.'</span>';
+                $metodeHtml = '<span class="badge bg-' . $metodeBadge . '">' . $trx->metode . '</span>';
             }
 
             // Format tanggal - beri "-" jika tidak lengkap
@@ -1205,16 +1204,16 @@ class KeuanganTransaksiController extends Controller
             // Format kode pembayaran - beri "-" jika tidak lengkap
             $kodePembayaran = '-';
             if ($trx->code_pembayaran) {
-                $kodePembayaran = '<span class="badge bg-secondary">'.$trx->code_pembayaran.'</span>';
+                $kodePembayaran = '<span class="badge bg-secondary">' . $trx->code_pembayaran . '</span>';
             }
 
             // TOMBOL AKSI - selalu tampilkan meski data tidak lengkap
             $actionHtml = '
             <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="btn btn-sm btn-danger rounded-pill btn-detail-trx" data-id="'.($trx->id ?? '').'" title="Lihat Detail">
+                <button type="button" class="btn btn-sm btn-danger rounded-pill btn-detail-trx" data-id="' . ($trx->id ?? '') . '" title="Lihat Detail">
                     <i class="bx bx-show"></i> Detail
                 </button>
-                <button type="button" class="btn btn-sm btn-warning rounded-pill btn-cetak-trx" data-id="'.($trx->id ?? '').'" title="Cetak">
+                <button type="button" class="btn btn-sm btn-warning rounded-pill btn-cetak-trx" data-id="' . ($trx->id ?? '') . '" title="Cetak">
                     <i class="bx bx-printer"></i> Cetak
                 </button>
             </div>';
@@ -1244,7 +1243,7 @@ class KeuanganTransaksiController extends Controller
         return response()->json([
             'draw' => intval($draw),
             'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $totalRecords,
+            'recordsFiltered' => $filteredRecord,
             'data' => $data
         ]);
     }
@@ -1498,7 +1497,6 @@ class KeuanganTransaksiController extends Controller
                     ]
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('❌ ERROR dalam pembayaran multiple approve');
@@ -1669,7 +1667,6 @@ class KeuanganTransaksiController extends Controller
                     ]
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('❌ ERROR dalam pembayaran multiple reject');
@@ -1730,10 +1727,9 @@ class KeuanganTransaksiController extends Controller
                 'data' => $data,
                 'count' => $data->count()
             ]);
-
         } catch (\Exception $e) {
-            \Log::error('❌ ERROR fetching pending tabungan');
-            \Log::error('Exception: ' . $e->getMessage());
+            // \Log::error('❌ ERROR fetching pending tabungan');
+            // \Log::error('Exception: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -1793,7 +1789,6 @@ class KeuanganTransaksiController extends Controller
                 'data' => $data,
                 'count' => $data->count()
             ]);
-
         } catch (\Exception $e) {
             Log::error('❌ ERROR fetching pending tagihan');
             Log::error('Exception: ' . $e->getMessage());
@@ -1804,5 +1799,7 @@ class KeuanganTransaksiController extends Controller
             ], 500);
         }
     }
+
+
 
 }

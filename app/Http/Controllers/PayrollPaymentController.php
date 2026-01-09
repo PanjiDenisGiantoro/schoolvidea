@@ -11,6 +11,7 @@ use App\Models\Officer;
 use App\Models\PayrollComponents;
 use App\Models\PayrollPayment;
 use App\Models\PayrollSetting;
+use App\Models\Roles;
 use App\Models\setting_akun;
 use App\Models\Unit;
 use Carbon\Carbon;
@@ -223,7 +224,7 @@ class PayrollPaymentController extends Controller
                 'settings' => $settings,
             ]);
         } catch (\Exception $e) {
-            Log::error('GetPaymentList Error: ' . $e->getMessage());
+            Log::error('GetPaymentList Error: '.$e->getMessage());
 
             return response()->json([
                 'settings' => [],
@@ -240,7 +241,7 @@ class PayrollPaymentController extends Controller
             $officerId = $request->officer_id;
             $unitCode = Unit::where('id', $request->unit_id)->value('code');
             $unitId = $unitCode;
-            Log::info('unit code' . $unitCode);
+            Log::info('unit code'.$unitCode);
 
             if (! $officerId || ! $unitId) {
                 return response()->json([
@@ -272,11 +273,11 @@ class PayrollPaymentController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            Log::error('Get Attendance Data Error: ' . $e->getMessage());
+            Log::error('Get Attendance Data Error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -334,7 +335,7 @@ class PayrollPaymentController extends Controller
             $period = $request->start_period || Carbon::now()->startOfMonth();
             $endPeriod = $request->end_period || Carbon::now()->endOfMonth();
 
-            $videaclassApi = new VideaclassApiHelper();
+            $videaclassApi = new VideaclassApiHelper;
             $apiResponse = $videaclassApi->syncAttendanceData($unit->code, $search, $period, $endPeriod);
 
             // Check if API returned error
@@ -420,7 +421,7 @@ class PayrollPaymentController extends Controller
 
                     $syncedCount++;
                 } catch (\Exception $e) {
-                    Log::error('Error processing attendance record: ' . $e->getMessage(), [
+                    Log::error('Error processing attendance record: '.$e->getMessage(), [
                         'record' => $attendanceRecord,
                         'unit_id' => $unitId,
                     ]);
@@ -437,11 +438,11 @@ class PayrollPaymentController extends Controller
 
             ]);
         } catch (\Exception $e) {
-            Log::error('Attendance Sync Error: ' . $e->getMessage());
+            Log::error('Attendance Sync Error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -486,16 +487,16 @@ class PayrollPaymentController extends Controller
             $notes = $request->notes ?? null;
             $salaryNote = $request->salarynote ?? 0;
             $officer = Officer::find($pembayaran->officer_id);
-            $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk " . $officer->user->name;
+            $keterangan = "Pembayaran gaji bulan {$pembayaran->payment_month}/{$pembayaran->payment_year} untuk ".$officer->user->name;
 
             // TRANSAKSI KEUANGAN
             $transaksi = Keuangan_transaksi::create([
-                'code_pembayaran' => 'PG' . date('YmdHis') . rand(1000, 9999),
+                'code_pembayaran' => 'PG'.date('YmdHis').rand(1000, 9999),
                 'penerima_id' => $officer->id,
                 'penerima_tipe' => Officer::class,
                 'jenis_transaksi' => 'tagihan-keluar',
                 'jumlah' => $jumlahBayar,
-                'metode' => $request->metode ?? 'NON-TUNAI',
+                'metode' => $request->metode ?? 'NONTUNAI',
                 'referensi_tagihan_id' => $pembayaran->id,
                 'tanggal_transaksi' => now(),
                 'keterangan' => $keterangan,
@@ -610,7 +611,7 @@ class PayrollPaymentController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'Server error: ' . $e->getMessage(),
+                'message' => 'Server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -674,15 +675,15 @@ class PayrollPaymentController extends Controller
             foreach ($request->items as $item) {
                 $payment = PayrollPayment::findOrFail($item['id']);
                 $officer = Officer::findOrFail($payment->officer_id);
-                $keterangan = "Pembayaran gaji bulan {$payment->payment_month}/{$payment->payment_year} untuk " . $officer->user->name;
+                $keterangan = "Pembayaran gaji bulan {$payment->payment_month}/{$payment->payment_year} untuk ".$officer->user->name;
 
                 $transaksi = Keuangan_transaksi::create([
-                    'code_pembayaran' => 'PG' . date('ymdhis') . rand(1000, 9999),
+                    'code_pembayaran' => 'PG'.date('ymdhis').rand(1000, 9999),
                     'penerima_id' => $officer->id,
                     'penerima_tipe' => Officer::class,
                     'jenis_transaksi' => 'tagihan-keluar',
                     'jumlah' => $item['net_payment'],
-                    'metode' => $request->metode ?? 'non-tunai',
+                    'metode' => $request->metode ?? 'NONTUNAI',
                     'referensi_tagihan_id' => null,
                     'tanggal_transaksi' => now(),
                     'keterangan' => $keterangan,
@@ -761,7 +762,7 @@ class PayrollPaymentController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'server error: ' . $e->getMessage(),
+                'message' => 'server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -771,6 +772,14 @@ class PayrollPaymentController extends Controller
         $payment = PayrollPayment::with(['officer.unit'])->findOrFail($id);
         $unit_image = Unit::where('id', $payment->unit_id)->value('image');
         $unit_image_path = $unit_image ? public_path($unit_image) : null;
+$kepalaSekolahRole = Roles::where('name', 'kepala_sekolah')->first();
+$bendaharaRole = Roles::where('name', 'bendahara')->first();
+
+$kepalaSekolah = Officer::where('role_id', $kepalaSekolahRole->id)->first();
+$bendahara = Officer::where('role_id', $bendaharaRole->id)->first();
+
+
+
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -783,7 +792,7 @@ class PayrollPaymentController extends Controller
             'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
-        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path']))->render();
+        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path', 'kepalaSekolah', 'bendahara']))->render();
 
         $mpdf->WriteHTML($html);
 

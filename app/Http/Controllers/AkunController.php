@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Akun;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AkunController extends Controller
@@ -18,7 +18,7 @@ class AkunController extends Controller
         // Filter berdasarkan prioritas: yayasan_id > unit_id > admin filter
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan akun dari semua unit di yayasan tersebut
-            $query->whereHas('unit', function($q) {
+            $query->whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
             });
         } elseif (Auth::user()->unit_id) {
@@ -32,23 +32,23 @@ class AkunController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode_akun', 'like', "%{$search}%")
-                  ->orWhere('nama_akun', 'like', "%{$search}%")
-                  ->orWhere('kategori_akun', 'like', "%{$search}%")
-                  ->orWhere('tipe', 'like', "%{$search}%")
-                  ->orWhereHas('parent', function($q) use ($search) {
-                      $q->where('nama_akun', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('unit', function($q) use ($search) {
-                      $q->where('nama_unit', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_akun', 'like', "%{$search}%")
+                    ->orWhere('kategori_akun', 'like', "%{$search}%")
+                    ->orWhere('tipe', 'like', "%{$search}%")
+                    ->orWhereHas('parent', function ($q) use ($search) {
+                        $q->where('nama_akun', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('unit', function ($q) use ($search) {
+                        $q->where('nama_unit', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Paginate results
-        $akuns = $query->orderBy('kode_akun')->paginate(15)->appends($request->except('page'));
-
+        // $akuns = $query->orderBy('kode_akun')->paginate(15)->appends($request->except('page'));
+        $akuns = $query->orderBy('kode_akun')->get();
         $headers = [
             'No',
             'Kode Akun',
@@ -58,11 +58,12 @@ class AkunController extends Controller
             'Parent',
             'Unit',
             'Status',
-            'Action'
+            'Aksi',
         ];
 
         return view('pages.data_master.akun.akun', compact('akuns', 'headers', 'units'));
     }
+
     private function buildAkunOptions(
         $akunList,
         $parentId = null,
@@ -72,11 +73,13 @@ class AkunController extends Controller
         $options = [];
 
         foreach ($akunList->where('parent_id', $parentId) as $akun) {
-            if ($akun->id == $excludeId) continue;
+            if ($akun->id == $excludeId) {
+                continue;
+            }
 
             $options[] = [
                 'id' => $akun->id,
-                'nama' => str_repeat('--', $level) . ' ' . $akun->nama_akun
+                'nama' => str_repeat('--', $level) . ' ' . $akun->nama_akun,
             ];
 
             // recursive untuk children
@@ -94,23 +97,23 @@ class AkunController extends Controller
         // Filter berdasarkan user access
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
-            $parents = Akun::whereHas('unit', function($q) {
+            $parents = Akun::whereHas('unit', function ($q) {
                 $q->where('yayasan_id', Auth::user()->yayasan_id);
-            })->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+            })->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
-            $parents = Akun::where('unit_id', Auth::user()->unit_id)->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+            $parents = Akun::where('unit_id', Auth::user()->unit_id)->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('status','1')->get();
+            $parents = Akun::where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('status', '1')->get();
         }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 
-        return view('pages.data_master.akun.akun_create', compact('parents','units','akunOptions'));
+        return view('pages.data_master.akun.akun_create', compact('parents', 'units', 'akunOptions'));
     }
 
     public function store(Request $request)
@@ -146,26 +149,26 @@ class AkunController extends Controller
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $parents = Akun::where('id', '!=', $id)
-                ->whereHas('unit', function($q) {
+                ->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 })
-                ->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+                ->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
             $parents = Akun::where('id', '!=', $id)
                 ->where('unit_id', Auth::user()->unit_id)
-                ->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+                ->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('id', '!=', $id)->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('status','1')->get();
+            $parents = Akun::where('id', '!=', $id)->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('status', '1')->get();
         }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 
-        return view('pages.data_master.akun.akun_create', compact('akun', 'parents', 'units','akunOptions'));
+        return view('pages.data_master.akun.akun_create', compact('akun', 'parents', 'units', 'akunOptions'));
     }
 
     public function update(Request $request, $id)
@@ -211,27 +214,28 @@ class AkunController extends Controller
         if (Auth::user()->yayasan_id) {
             // Jika user punya yayasan_id, tampilkan data dari semua unit di yayasan tersebut
             $parents = Akun::where('id', '!=', $id)
-                ->whereHas('unit', function($q) {
+                ->whereHas('unit', function ($q) {
                     $q->where('yayasan_id', Auth::user()->yayasan_id);
                 })
-                ->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status','1')->get();
+                ->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('yayasan_id', Auth::user()->yayasan_id)->where('status', '1')->get();
         } elseif (Auth::user()->unit_id) {
             // Jika user punya unit_id, tampilkan data dari unit tersebut saja
             $parents = Akun::where('id', '!=', $id)
                 ->where('unit_id', Auth::user()->unit_id)
-                ->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status','1')->get();
+                ->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('id', Auth::user()->unit_id)->where('status', '1')->get();
         } else {
             // Admin bisa melihat semua
-            $parents = Akun::where('id', '!=', $id)->where('status','1')->orderBy('kode_akun')->get();
-            $units = \App\Models\Unit::where('status','1')->get();
+            $parents = Akun::where('id', '!=', $id)->where('status', '1')->orderBy('kode_akun')->get();
+            $units = \App\Models\Unit::where('status', '1')->get();
         }
 
         $akunOptions = $this->buildAkunOptions($parents, null, 0);
 
         $show = true;
-        return view('pages.data_master.akun.akun_create', compact('akun','show','parents','units','akunOptions'));
+
+        return view('pages.data_master.akun.akun_create', compact('akun', 'show', 'parents', 'units', 'akunOptions'));
     }
 
     public function importTemplate()
@@ -242,7 +246,7 @@ class AkunController extends Controller
     public function storeImportTemplate(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv'
+            'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
         try {
@@ -253,7 +257,7 @@ class AkunController extends Controller
             $unitId = Auth::user()->unit_id;
 
             // If user doesn't have unit_id, get it from request
-            if (!$unitId && $request->has('unit_id')) {
+            if (! $unitId && $request->has('unit_id')) {
                 $unitId = $request->unit_id;
             }
 
@@ -276,10 +280,10 @@ class AkunController extends Controller
                     ->where('unit_id', $unitId)
                     ->first();
 
-                if (!$existingAkun) {
+                if (! $existingAkun) {
                     // Find parent_id based on parent kode_akun if exists
                     $parentId = null;
-                    if (!empty($row['parent_kode'])) {
+                    if (! empty($row['parent_kode'])) {
                         $parent = Akun::where('kode_akun', $row['parent_kode'])
                             ->where('unit_id', $unitId)
                             ->first();
@@ -316,10 +320,10 @@ class AkunController extends Controller
         $data = [];
         $file = \Storage::path($path);
 
-        if (($handle = fopen($file, "r")) !== FALSE) {
-            $header = fgetcsv($handle, 1000, ",");
+        if (($handle = fopen($file, 'r')) !== false) {
+            $header = fgetcsv($handle, 1000, ',');
 
-            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 $data[] = array_combine($header, $row);
             }
             fclose($handle);
@@ -344,7 +348,7 @@ class AkunController extends Controller
                 $data[] = array_combine($header, $row);
             }
         } catch (\Exception $e) {
-            throw new \Exception("Gagal membaca file Excel: " . $e->getMessage());
+            throw new \Exception('Gagal membaca file Excel: ' . $e->getMessage());
         }
 
         return $data;
