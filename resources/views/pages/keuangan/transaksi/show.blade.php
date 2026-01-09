@@ -339,6 +339,7 @@
                         <ul class="list-unstyled small">
                             @if ($transaksi->pembayaranTagihan->tagihanSiswa)
                                 @php
+                            
                                     $tagihanSiswa = $transaksi->pembayaranTagihan->tagihanSiswa;
 
                                     $tagihan = $tagihanSiswa->tagihan;
@@ -366,7 +367,7 @@
 
                                 <li>
                                     <strong>Periode:</strong>
-                                    {{ $pembayaranDetail->periode }}
+                                    {{ $pembayaranDetail->first()->periode }}
                                     {{ $tagihan->tahun_mulai ?? "" }}
                                 </li>
                                 <li>
