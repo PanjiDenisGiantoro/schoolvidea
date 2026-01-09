@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Mpdf\Tag\P;
 
 class Keuangan_transaksi extends Model
 {
@@ -58,7 +59,7 @@ class Keuangan_transaksi extends Model
     public function scopeHidePendingWithoutBukti($query)
     {
         return $query->where(function ($q) {
-            $q->where('status_verifikasi', '!=', 'pending')
+            $q->where('status_verifikasi', '=', 'pending')
 
               ->orWhere(function ($sub) {
                   $sub->where('status_verifikasi', 'pending')
@@ -80,6 +81,11 @@ class Keuangan_transaksi extends Model
                       ->whereRaw("TRIM(bukti_transfer) != ''")
                       ->whereRaw("bukti_transfer NOT IN ('null', '[]')");
               });
+        });
+    }
+    public function scopeHidePending($query) {
+        return $query->where(function ($q) {
+            $q->where('status_verifikasi', '=', 'pending');
         });
     }
 }

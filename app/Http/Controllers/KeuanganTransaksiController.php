@@ -133,7 +133,7 @@ class KeuanganTransaksiController extends Controller
             'verifier',
             'creator',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-        ])->hidePendingWithoutBukti();
+        ])->hidePending();
 
         $transaksis = $this->applyBaseFilters($transaksis, $request);
         $transaksis = $this->applyCommonFilters($transaksis, $request);
@@ -144,28 +144,28 @@ class KeuanganTransaksiController extends Controller
             ->appends($request->except('page'));
 
         // Total Pemasukan - hanya yang sudah verified/approved
-        $totalPemasukanQuery = Keuangan_transaksi::hidePendingWithoutBukti()->whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
+        $totalPemasukanQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['setoran_tabungan', 'pembayaran', 'tagihan'])
             ->where('status_verifikasi', 'approved');
         $totalPemasukanQuery = $this->applyBaseFilters($totalPemasukanQuery, $request);
         $totalPemasukanQuery = $this->applyCommonFilters($totalPemasukanQuery, $request);
         $total_pemasukan = $totalPemasukanQuery->sum('jumlah');
 
         // Total Pengeluaran - hanya yang sudah verified/approved
-        $totalPengeluaranQuery = Keuangan_transaksi::hidePendingWithoutBukti()->whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
+        $totalPengeluaranQuery = Keuangan_transaksi::hidePending()->whereIn('jenis_transaksi', ['penarikan_tabungan', 'tagihan-keluar'])
             ->where('status_verifikasi', 'approved');
         $totalPengeluaranQuery = $this->applyBaseFilters($totalPengeluaranQuery, $request);
         $totalPengeluaranQuery = $this->applyCommonFilters($totalPengeluaranQuery, $request);
         $total_pengeluaran = $totalPengeluaranQuery->sum('jumlah');
 
         // Total Transaksi - hanya yang sudah verified/approved
-        $totalTransaksiQuery = Keuangan_transaksi::hidePendingWithoutBukti()->where('status_verifikasi', 'approved');
+        $totalTransaksiQuery = Keuangan_transaksi::hidePending()->where('status_verifikasi', 'approved');
         $totalTransaksiQuery = $this->applyBaseFilters($totalTransaksiQuery, $request);
         $totalTransaksiQuery = $this->applyCommonFilters($totalTransaksiQuery, $request);
         $total_transaksi = $totalTransaksiQuery->sum('jumlah');
         $total_data_transaksi = $totalTransaksiQuery->count();
 
         // Summary calculations with proper filtering - hanya yang sudah verified/approved
-        $summaryQuery = Keuangan_transaksi::hidePendingWithoutBukti()->where('status_verifikasi', 'approved');
+        $summaryQuery = Keuangan_transaksi::hidePending()->where('status_verifikasi', 'approved');
         $summaryQuery = $this->applyBaseFilters($summaryQuery, $request);
         $summaryQuery = $this->applyCommonFilters($summaryQuery, $request);
         $summaryTransaksis = $summaryQuery->get();
@@ -214,7 +214,7 @@ class KeuanganTransaksiController extends Controller
                     $q->whereDate('tanggal_transaksi', '<=', $request->sampai_tanggal);
                 });
         };
-        $total_pending = Keuangan_transaksi::hidePendingWithoutBukti()->where('jenis_transaksi', 'penarikan_tabungan')
+        $total_pending = Keuangan_transaksi::hidePending()->where('jenis_transaksi', 'penarikan_tabungan')
             ->where('status_approval', 'pending')
             ->tap($baseQuery)
             ->count();
@@ -1057,7 +1057,7 @@ class KeuanganTransaksiController extends Controller
             'penerima.user',
             'creator',
             'pembayaranTagihan.tagihanSiswa.tagihan.items.kategori'
-        ])->hidePendingWithoutBukti();
+        ])->hidePending();
 
         // Filter Unit
         if ($request->unit_id) {
