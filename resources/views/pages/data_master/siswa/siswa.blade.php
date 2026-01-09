@@ -51,24 +51,6 @@
                     </form>
                 </div>
 
-                <!-- Entries per page selector -->
-                {{-- <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label class="me-2">Tampilkan</label>
-                        <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
-                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
-                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                        </select>
-                        <label class="ms-2">entri</label>
-                    </div>
-                    <div class="text-muted">
-                        Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
-                    </div>
-                </div> --}}
-
                 <table class="table-bordered table-striped table" id="datatable">
                     <thead class="table-primary">
                         <tr>
@@ -93,7 +75,7 @@
                                         <span class="badge bg-danger">Non Aktif</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td colspan="2">
                                     <div class="d-flex gap-3">
                                         <a href="{{ url('siswa/show', $item->id ?? '') }}" class="link-primary text-muted">
                                             <i class="ri-eye-line fs-20 align-middle"></i>
@@ -119,19 +101,6 @@
                         @endforelse
                     </tbody>
                 </table>
-
-                <!-- Pagination -->
-                {{-- <div class="col-lg-12 mt-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            Menampilkan {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} entri
-                        </div>
-                        <div>
-                            {{ $siswa->links() }}
-                        </div>
-                    </div>
-                </div> --}}
-
             </div>
         </div>
     </div>
@@ -140,40 +109,6 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{-- <script>
-        $(document).ready(function() {
-            // Handle per page dropdown change
-            $('#perPageSelect').on('change', function() {
-                var perPage = $(this).val();
-                var url = new URL(window.location.href);
-                url.searchParams.set('per_page', perPage);
-                url.searchParams.delete('page'); // Reset to page 1 when changing per_page
-                window.location.href = url.toString();
-            });
-
-            // SweetAlert2 untuk hapus
-            $('.link-danger').on('click', function(e) {
-                e.preventDefault(); // cegah link langsung ke href
-                var url = $(this).attr('href');
-
-                Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    text: "Data akan dihapus permanen!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // redirect ke URL hapus
-                        window.location.href = url;
-                    }
-                });
-            });
-        });
-    </script> --}}
 
     @if (session('success'))
         <script>
@@ -195,6 +130,7 @@
                     pageLength: 10,
                     searching: false,
                     scrollX: true,
+                    autoWidth: false,
                     language: {
                         url: '{{ asset("assets/datatables/id.json") }}',
                     },

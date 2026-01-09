@@ -160,10 +160,10 @@ class SiswaImport implements ToModel, WithChunkReading, WithHeadingRow
             Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
 
             // Step 6: Saldo
-            $saldo = Saldo_keuangan::firstOrCreate(
-                ['user_id' => $user->id],
-                ['saldo_akhir' => 0, 'status' => 0]
-            );
+            // $saldo = Saldo_keuangan::firstOrCreate(
+            //     ['user_id' => $user->id],
+            //     ['saldo_akhir' => 0, 'status' => 0]
+            // );
 
             DB::commit();
             Log::info('✓ Transaction committed successfully');

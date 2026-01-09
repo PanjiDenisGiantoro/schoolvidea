@@ -554,7 +554,7 @@
                         <br />
                         <br />
                         <span class="name-line">
-                            (........................................)
+                            ({{ $kepalaSekolah->name ?? "........................................" }})
                         </span>
                         <br />
                         Kepala Sekolah
@@ -567,7 +567,7 @@
                         <br />
                         <br />
                         <span class="name-line">
-                            (........................................)
+                            ( {{ $bendahara->name ?? "........................................" }} )
                         </span>
                         <br />
                         Bendahara
@@ -583,6 +583,7 @@
                             ({{ $payment->officer->name }})
                         </span>
                         <br />
+                        {{ $payment->officer->position }}
                     </td>
                 </tr>
             </table>

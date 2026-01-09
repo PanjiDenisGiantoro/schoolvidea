@@ -94,15 +94,16 @@ class DashboardController extends Controller
             });
         }
 
-        $pembayaranTagihans = $pembayaranTagihansQuery
-            ->orderBy('id', 'desc')
-            ->limit(15)
-            ->get();
+        $pembayaranTagihans = \App\Models\Pembayarantagihan::where('status_approval', '!=', 'pending')->latest()->take(5)->get();
+
 
         $data = $pembayaranTagihans->map(function ($pembayaran) {
             $ts = $pembayaran->tagihanSiswa;
             $tagihan = $ts->tagihan;
-            $itemTagihan = $tagihan->items->pluck('kategori.nama_kategori')->implode(', ');
+            $itemTagihan = $tagihan->items
+            ->where('status_approval', '!=', 'pending')
+            ->pluck('kategori.nama_kategori')
+            ->implode(', ');
 
             return [
                 'nomor_induk'   => $ts->siswa->nisn ?? '-',
@@ -111,7 +112,7 @@ class DashboardController extends Controller
                 'tagihan_kelas' => $tagihan->kelas->nama_kelas ?? '-',
                 'item_tagihan'  => $itemTagihan,
                 'jml_dibayar'   => $pembayaran->jumlah_bayar,
-                'status_approval' => $pembayaran->status_approval ?? 'pending',
+                'status_approval' => $pembayaran->status_approval,
             ];
         });
 

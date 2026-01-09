@@ -272,6 +272,7 @@ class KeuanganTransaksiController extends Controller
                     ->with([
                         'tagihanSiswa.siswa.user',
                         'tagihanSiswa.tagihan',
+                        'tagihanSiswa.tagihanItem.kategori',
                         'tagihanSiswa.potonganSiswa.potongan'
                     ])
                     ->orderBy('urutan')
@@ -1798,4 +1799,7 @@ class KeuanganTransaksiController extends Controller
             ], 500);
         }
     }
+
+
+
 }

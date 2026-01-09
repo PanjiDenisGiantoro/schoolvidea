@@ -81,74 +81,57 @@
                 </div>
 
                 <!-- Notification -->
-                <div class="dropdown topbar-item">
-                    <button
-                        type="button"
-                        class="topbar-button"
-                        id="page-header-notifications-dropdown"
-                        data-bs-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                    >
-                        <span
-                            class="topbar-badge border-info rounded-pill border border-2"
-                        >
-                            <i class="ri-notification-3-line"></i>
-                            <span class="visually-hidden">unread messages</span>
-                        </span>
-                    </button>
-                    <div
-                        class="dropdown-menu dropdown-lg dropdown-menu-end pt-0"
-                        aria-labelledby="page-header-notifications-dropdown"
-                    >
-                        <div
-                            class="border-top-0 border-start-0 border-end-0 border border-dashed p-3"
-                        >
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h6 class="fs-16 fw-semibold m-0">
-                                        Notifikasi
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div data-simplebar style="max-height: 280px">
-                            {{--
-                                <!-- Item -->
-                                <a href="javascript:void(0);" class="dropdown-item border-bottom text-wrap py-3">
-                                <p class="mb-0"><span class="fw-medium">Olivia Bennett</span> mentioned you in a
-                                comment <span>"This update really improves the user experience! 🚀"</span></p>
-                                </a>
-                                <!-- Item -->
-                                <a href="javascript:void(0);" class="dropdown-item border-bottom py-3">
-                                <p class="fw-semibold mb-0">Daniel Roberts</p>
-                                <p class="mb-0 text-wrap">
-                                Just sent over the revised proposal. Let me know your thoughts.
-                                </p>
-                                </a>
-                                <!-- Item -->
-                                <a href="javascript:void(0);" class="dropdown-item border-bottom py-3">
-                                <p class="fw-semibold mb-0">Rachel Green</p>
-                                <p class="mb-0 text-wrap">
-                                Approved your request for the new project timeline. ✅
-                                </p>
-                                </a>
-                                <!-- Item -->
-                                <a href="javascript:void(0);" class="dropdown-item border-bottom py-3">
-                                <p class="fw-semibold mb-0 text-wrap">You have <b>8</b> new project updates awaiting
-                                review.</p>
-                                </a>
-                                <!-- Item -->
-                                <a href="javascript:void(0);" class="dropdown-item border-bottom py-3">
-                                <p class="fw-semibold mb-0">Ethan Williams</p>
-                                <p class="mb-0 text-wrap">
-                                Uploaded the latest marketing report for your review.
-                                </p>
-                                </a>
-                            --}}
-                        </div>
-                    </div>
-                </div>
+                <!-- Notification -->
+<div class="dropdown topbar-item">
+    <button type="button" class="topbar-button position-relative" data-bs-toggle="dropdown">
+        <i class="ri-notification-3-line"></i>
+        @if($totalPending > 0)
+            <span class="topbar-badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
+                {{ $totalPending }}
+            </span>
+        @endif
+    </button>
+
+    <div class="dropdown-menu dropdown-lg dropdown-menu-end pt-0">
+        <div class="border-top-0 border-start-0 border-end-0 border border-dashed p-3">
+            <h6 class="fs-16 fw-semibold m-0">Notifikasi Transaksi</h6>
+        </div>
+
+        <div data-simplebar style="max-height: 280px;">
+
+            {{-- Pending Tabungan --}}
+            @if($pendingTabungan->isNotEmpty())
+                <div class="px-2 py-1 text-muted fw-bold">Pending Tabungan</div>
+                @foreach($pendingTabungan as $trx)
+                    <a href="{{ route('keuangan.transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
+                        <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}
+                        <br><small class="text-muted">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->translatedFormat('d F Y') }}</small>
+                    </a>
+                @endforeach
+            @endif
+
+            {{-- Pending Tagihan --}}
+            @if($pendingTagihan->isNotEmpty())
+                <div class="px-2 py-1 text-muted fw-bold">Pending Tagihan</div>
+                @foreach($pendingTagihan as $trx)
+                    <a href="{{ route('keuangan.transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
+                        <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}
+                        <br><small class="text-muted">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->translatedFormat('d F Y') }}</small>
+                    </a>
+                @endforeach
+            @endif
+
+            @if($totalPending === 0)
+                <div class="text-center p-2 text-muted">Tidak ada transaksi pending</div>
+            @endif
+        </div>
+
+        <div class="p-2 text-center">
+            <a href="{{ route('keuangan_transaksi.index') }}" class="text-primary">Lihat Semua Transaksi</a>
+        </div>
+    </div>
+</div>
+
 
                 <!-- User -->
                 <div class="dropdown topbar-item">

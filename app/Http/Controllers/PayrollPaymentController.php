@@ -11,6 +11,7 @@ use App\Models\Officer;
 use App\Models\PayrollComponents;
 use App\Models\PayrollPayment;
 use App\Models\PayrollSetting;
+use App\Models\Roles;
 use App\Models\setting_akun;
 use App\Models\Unit;
 use Carbon\Carbon;
@@ -771,6 +772,14 @@ class PayrollPaymentController extends Controller
         $payment = PayrollPayment::with(['officer.unit'])->findOrFail($id);
         $unit_image = Unit::where('id', $payment->unit_id)->value('image');
         $unit_image_path = $unit_image ? public_path($unit_image) : null;
+$kepalaSekolahRole = Roles::where('name', 'kepala_sekolah')->first();
+$bendaharaRole = Roles::where('name', 'bendahara')->first();
+
+$kepalaSekolah = Officer::where('role_id', $kepalaSekolahRole->id)->first();
+$bendahara = Officer::where('role_id', $bendaharaRole->id)->first();
+
+
+
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -783,7 +792,7 @@ class PayrollPaymentController extends Controller
             'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
-        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path']))->render();
+        $html = view('pages.penggajian.payroll_payment.slip', compact(['payment', 'unit_image_path', 'kepalaSekolah', 'bendahara']))->render();
 
         $mpdf->WriteHTML($html);
 

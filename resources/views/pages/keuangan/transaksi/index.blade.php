@@ -567,6 +567,14 @@
                                 $isMulitple = false;
 
                                 if (in_array($transaksi->jenis_transaksi, ["tagihan", "pembayaran"]) && $transaksi->pembayaranTagihan) {
+                                    if ($transaksi->pembayaranTagihan->is_master === false && $transaksi->pembayaranTagihan->head_tagihan) {
+                                        $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
+                                        $isMulitple = false;
+                                    }
+                                }
+
+
+                                if (in_array($transaksi->jenis_transaksi, ["pembayaran-multiple"]) && $transaksi->pembayaranTagihan) {
                                     if ($transaksi->pembayaranTagihan->is_master === true && $transaksi->pembayaranTagihan->head_tagihan) {
                                         $displayCode = $transaksi->pembayaranTagihan->head_tagihan;
                                         $isMulitple = true;
@@ -577,6 +585,8 @@
                                 if ($transaksi->jenis_transaksi === "tagihan-keluar") {
                                     $badgeClass = "bg-warning";
                                 } elseif ($isMulitple) {
+                                    $badgeClass = "bg-secondary";
+                                } elseif ($transaksi->jenis_transaksi === "tagihan") {
                                     $badgeClass = "bg-info";
                                 }
                             @endphp
@@ -625,6 +635,7 @@
                                             "pembayaran" => "Pembayaran",
                                             "tagihan" => "Pembayaran Tagihan",
                                             "tagihan-keluar" => "Penggajian Guru",
+                                            "pembayaran-multiple" => "Pembayaran Multiple",
                                             default => ucwords(str_replace("_", " ", $transaksi->jenis_transaksi)),
                                         };
                                     @endphp
@@ -662,10 +673,16 @@
 
                                 <td>
                                     @if (in_array($transaksi->jenis_transaksi, ["setoran_tabungan", "pembayaran", "tagihan", "pembayaran-multiple"]))
+                                        @if ($transaksi->status_verifikasi === 'rejected')
+                                            <span class="text-danger fw-bold">
+                                                + Rp {{ number_format($transaksi->jumlah, 0, ",", ".") }}
+                                            </span>
+                                        @else
                                         <span class="text-success fw-bold">
                                             + Rp
                                             {{ number_format($transaksi->jumlah, 0, ",", ".") }}
                                         </span>
+                                    @endif
                                     @else
                                         <span class="text-danger fw-bold">
                                             - Rp
@@ -686,9 +703,9 @@
                                         $metodeText = match ($transaksi->metode) {
                                             "TUNAI" => "TUNAI",
                                             "CASH" => "TUNAI",
-                                            "TRANSFER" => "NON-TUNAI",
-                                            "NONTUNAI" => "NON-TUNAI",
-                                            default => "NON-TUNAI",
+                                            "TRANSFER" => "NON TUNAI",
+                                            "NONTUNAI" => "NON TUNAI",
+                                            default => "NON TUNAI",
                                         }
                                     @endphp
 
@@ -1165,7 +1182,7 @@ document.querySelectorAll('.btn-cetak-trx').forEach((button) => {
         const transaksiId = this.dataset.id;
         const penerima = this.dataset.penerima;
         console.log( penerima, transaksiId );
-        
+
 
         let url = '';
 
