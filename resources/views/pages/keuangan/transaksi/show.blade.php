@@ -365,11 +365,12 @@
                                             : $tagihanSiswa->bulan_ke;
                                 @endphp
 
-                                <li>
-                                    <strong>Periode:</strong>
-                                    {{ $pembayaranDetail->first()->periode }}
-                                    {{ $tagihan->tahun_mulai ?? "" }}
-                                </li>
+<li>
+    <strong>Periode:</strong>
+    {{ optional($pembayaranDetail->first())->periode ?? '' }}
+    {{ $tagihan->tahun_mulai ?? '' }}
+</li>
+
                                 <li>
                                     <strong>Dibayar:</strong>
                                     Rp
