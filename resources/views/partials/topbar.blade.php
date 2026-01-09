@@ -82,14 +82,20 @@
 
                 <!-- Notification -->
                 <!-- Notification -->
-<div class="dropdown topbar-item">
+<div class="dropdown topbar-item me-3">
     <button type="button" class="topbar-button position-relative" data-bs-toggle="dropdown">
-        <i class="ri-notification-3-line"></i>
-        @if($totalPending > 0)
-            <span class="topbar-badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
-                {{ $totalPending }}
-            </span>
-        @endif
+        <i class="ri-notification-3-line fs-4"></i>
+
+
+@if($totalPending > 0)
+    <span class="topbar-badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle 
+                 shadow animate-bounce text-white d-flex justify-content-center align-items-center"
+          style="font-size: 0.7rem; width: 1rem; height: 1rem; line-height: 0.8rem; padding: 0;">
+        {{ $totalPending }}
+    </span>
+@endif
+
+
     </button>
 
     <div class="dropdown-menu dropdown-lg dropdown-menu-end pt-0">
@@ -101,7 +107,7 @@
 
             {{-- Pending Tabungan --}}
             @if($pendingTabungan->isNotEmpty())
-                <div class="px-2 py-1 text-muted fw-bold">Pending Tabungan</div>
+                <div class="px-2 py-1 text-primary fw-bold">Pending Tabungan</div>
                 @foreach($pendingTabungan as $trx)
                     <a href="{{ route('keuangan_transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
                         <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}
@@ -112,7 +118,7 @@
 
             {{-- Pending Tagihan --}}
             @if($pendingTagihan->isNotEmpty())
-                <div class="px-2 py-1 text-muted fw-bold">Pending Tagihan</div>
+                <div class="px-2 py-1 text-primary fw-bold">Pending Tagihan</div>
                 @foreach($pendingTagihan as $trx)
                     <a href="{{ route('keuangan_transaksi.show', $trx->id) }}" class="dropdown-item border-bottom py-2">
                         <strong>{{ $trx->code_pembayaran }}</strong> - Rp {{ number_format($trx->jumlah,0,',','.') }}

@@ -235,7 +235,7 @@
                                                 <span
                                                     class="badge bg-light text-dark"
                                                 >
-                                                    {{ $periodeIndo }}
+                                                    {{ $transaksi->periode }}
                                                     {{ $tahun }}
                                                 </span>
                                             </td>
