@@ -270,6 +270,15 @@
                                     </a>
                                 </li>
                             @endhasPermission
+
+                            <li class="sub-menu-item">
+                                <a
+                                    class="sub-menu-link"
+                                    href="{{ url("pin-pembatalan") }}"
+                                >
+                                    Set Pin Pembatalan
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

@@ -8,15 +8,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Officer;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-    use Notifiable;
+
     use HasRoles;
+    use Notifiable;
 
     /**
      * Get the officer associated with the user.
@@ -75,6 +75,7 @@ class User extends Authenticatable implements JWTSubject
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
     public function officer()
     {
         return $this->hasOne(Officer::class);
@@ -91,18 +92,22 @@ class User extends Authenticatable implements JWTSubject
             $q->where('name', $role);
         });
     }
+
     public function role()
     {
         return $this->belongsTo(Roles::class);
     }
+
     public function userRole()
     {
         return $this->belongsTo(Roles::class, 'id');
     }
+
     public function userRoles()
     {
         return $this->belongsTo(Roles::class, 'role_id'); // atau sesuai field
     }
+
     public function saldo()
     {
         return $this->hasOne(Saldo_keuangan::class, 'user_id');
@@ -127,9 +132,17 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
     public function units()
     {
         return $this->belongsTo(\App\Models\Unit::class, 'unit_id', 'id');
     }
 
+    // App\Models\User.php
+    public function hasOfficerRole(array $roles): bool
+    {
+        return $this->officer
+            && $this->officer->rolePetugas
+            && in_array($this->officer->rolePetugas->name, $roles);
+    }
 }
