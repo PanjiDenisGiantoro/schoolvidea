@@ -316,21 +316,19 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggleBtn = document.getElementById('light-dark-mode');
-        const savedTheme = localStorage.getItem('theme');
+        const html = document.documentElement; // Ini adalah tag <html>
 
-        if (savedTheme === 'dark') {
-            document.body.classList.add('light-theme');
+        // 1. Set tema awal sesuai sistem OS saat refresh
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        html.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+
+        // 2. Logika klik tombol
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                const current = html.getAttribute('data-bs-theme');
+                // Tukar atribut agar CSS "html[data-bs-theme='dark']" terpanggil
+                html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
+            });
         }
-
-        toggleBtn.addEventListener('click', function () {
-            document.body.classList.toggle('dark-theme');
-
-            localStorage.setItem(
-                'theme',
-                document.body.classList.contains('dark-theme')
-                    ? 'light'
-                    : 'light',
-            );
-        });
     });
 </script>
