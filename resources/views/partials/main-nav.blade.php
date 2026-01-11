@@ -221,7 +221,7 @@
                 </li>
             @endcanViewMenu
 
-            @canViewMenu(["view_akun", "view_setting_akun", "view_kategoritagihan"])
+            @canViewMenu(["view_akun", "view_setting_akun", "view_kategoritagihan", "view_pin_pembatalan"])
                 <li class="menu-item">
                     <a
                         class="menu-link menu-arrow"
@@ -270,7 +270,7 @@
                                     </a>
                                 </li>
                             @endhasPermission
-
+                            @canViewMenu('view_pin_pembatalan')
                             <li class="sub-menu-item">
                                 <a
                                     class="sub-menu-link"
@@ -279,6 +279,7 @@
                                     Set Pin Pembatalan
                                 </a>
                             </li>
+                            @endcanViewMenu
                         </ul>
                     </div>
                 </li>

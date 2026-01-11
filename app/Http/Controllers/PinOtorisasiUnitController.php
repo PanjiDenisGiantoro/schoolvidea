@@ -36,13 +36,13 @@ class PinOtorisasiUnitController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user()->load('officer.role');
-        $role = $user->officer->role->name ?? 'admin';
+        $role = $user->officer->role->name ?? 'super_admin';
 
         /**
          * 🔐 ROLE YANG BOLEH SET PIN
          */
         abort_if(
-            ! in_array($role, ['admin', 'super_admin', 'bendahara', 'kepala_sekolah']),
+            ! in_array($role, ['super_admin', 'kepala_sekolah']),
             403
         );
 

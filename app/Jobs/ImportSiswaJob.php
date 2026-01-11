@@ -15,6 +15,10 @@ class ImportSiswaJob implements ShouldQueue
 {
     use Queueable, InteractsWithQueue, SerializesModels;
 
+     public $tries = 3;
+     public $timeout = 300;
+     public $backoff = 30;
+
     protected $unit_id;
     protected $tahun_ajaran_id;
     protected $filePath;
@@ -61,6 +65,7 @@ public function handle()
         Log::info('IMPORT SISWA BERHASIL');
     } catch (\Exception $e) {
         Log::error('Import siswa gagal', ['error' => $e->getMessage()]);
+        throw $e;
     }
 }
 

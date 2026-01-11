@@ -38,3 +38,9 @@ Schedule::call(function () {
         }
     }
 })->daily()->at($schedule->backup_time ?? '02:00')->name('auto-backup');
+
+//testing schedule
+// Schedule::command('queue:work database --stop-when-empty')
+//     ->everyMinute()
+//     ->withoutOverlapping()
+//     ->runInBackground();
