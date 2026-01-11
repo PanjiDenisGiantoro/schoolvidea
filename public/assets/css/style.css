@@ -667,144 +667,144 @@ table td:first-child {
 
 
 /* Tombol toggle */
-body.dark-theme .custom-btn-outline-primary {
+html[data-bs-theme="dark"] .custom-btn-outline-primary {
     background-color: #282f36;
     color: #0c8f84;
     border-color: #0c8f84;
 }
 
-body.dark-theme .custom-card-header {
+html[data-bs-theme="dark"] .custom-card-header {
     background: linear-gradient(135deg,#282f36 0%,#0c8f84 100%);
     color: #f3f4f6;
 }
 
-body.dark-theme .custom-btn-outline-primary:hover {
+html[data-bs-theme="dark"] .custom-btn-outline-primary:hover {
     background-color: #0c8f84;
     color: #fff !important;
 }
 
-body.dark-theme .custom-active-btn {
+html[data-bs-theme="dark"] .custom-active-btn {
     background-color: #0c8f84;
     color: #fff;
 }
 
 /* Tombol ungu */
-body.dark-theme .custom-btn-purple {
+html[data-bs-theme="dark"] .custom-btn-purple {
     background-color: #3b82f6;
     color: #fff !important;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
-body.dark-theme .custom-btn-purple:hover {
+html[data-bs-theme="dark"] .custom-btn-purple:hover {
     background-color: #2563eb;
 }
 
 /* Tombol info */
-body.dark-theme .custom-btn-info {
+html[data-bs-theme="dark"] .custom-btn-info {
     background-color: #1f2937;
     color: #f3f4f6;
     border: 1px solid #fff;
 }
-body.dark-theme .custom-btn-info:hover {
+html[data-bs-theme="dark"] .custom-btn-info:hover {
     background-color: #10b981;
     color: #fff;
 }
 
 /* Input, dropdown, dan search */
-body.dark-theme .dropdown-input,
-body.dark-theme .dropdown-search-input {
+html[data-bs-theme="dark"] .dropdown-input,
+html[data-bs-theme="dark"] .dropdown-search-input {
     background-color: #111827;
     border-color: #374151;
     color: #e5e7eb;
 }
-body.dark-theme .dropdown-input:focus,
-body.dark-theme .dropdown-search-input:focus {
+html[data-bs-theme="dark"] .dropdown-input:focus,
+html[data-bs-theme="dark"] .dropdown-search-input:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
-body.dark-theme .dropdown-list {
+html[data-bs-theme="dark"] .dropdown-list {
     background-color: #1f2937;
     border-color: #374151;
 }
-body.dark-theme .dropdown-options li:hover {
+html[data-bs-theme="dark"] .dropdown-options li:hover {
     background-color: #2563eb;
     color: #fff;
 }
 
 /* Checkbox */
-body.dark-theme .custom-checkbox {
+html[data-bs-theme="dark"] .custom-checkbox {
     border-color: #fff;
 }
-body.dark-theme .custom-checkbox:checked {
+html[data-bs-theme="dark"] .custom-checkbox:checked {
     background-color: #fff;
     border-color: #fff;
 }
 
 /* Tabel */
-body.dark-theme table {
+html[data-bs-theme="dark"] table {
     color: #e5e7eb;
     background-color: #26363c;
 }
-body.dark-theme table thead {
+html[data-bs-theme="dark"] table thead {
     background-color: #111827;
     color: #93c5fd;
 }
-body.dark-theme table tbody tr:hover {
+html[data-bs-theme="dark"] table tbody tr:hover {
     background-color: #26363c;
 }
-body.dark-theme td,
-body.dark-theme th {
+html[data-bs-theme="dark"] td,
+html[data-bs-theme="dark"] th {
     border-color: #26363c !important;
 }
 
 /* Modal */
-body.dark-theme #modalCatatan .modal-content {
+html[data-bs-theme="dark"] #modalCatatan .modal-content {
     background-color: #1f2937;
     color: #e5e7eb;
     border: 1px solid #374151;
 }
-body.dark-theme .custom-modal-header {
+html[data-bs-theme="dark"] .custom-modal-header {
     color: #93c5fd;
 }
 
 /* Presensi input */
-body.dark-theme .custom-presensi-wrapper input {
+html[data-bs-theme="dark"] .custom-presensi-wrapper input {
     background-color: #111827;
     color: #e5e7eb;
     border-color: #374151;
 }
-body.dark-theme .custom-presensi-wrapper input:focus {
+html[data-bs-theme="dark"] .custom-presensi-wrapper input:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
 }
 
 /* Warna latar belakang presensi */
-body.dark-theme .custom-input-presensi.hadir {
+html[data-bs-theme="dark"] .custom-input-presensi.hadir {
     background-color: #064e3b;
 }
-body.dark-theme .custom-input-presensi.izin {
+html[data-bs-theme="dark"] .custom-input-presensi.izin {
     background-color: #064e3b;
 }
-body.dark-theme .custom-input-presensi.alpha {
+html[data-bs-theme="dark"] .custom-input-presensi.alpha {
     background-color: #064e3b;
 }
-body.dark-theme .custom-input-presensi.hadir_week {
+html[data-bs-theme="dark"] .custom-input-presensi.hadir_week {
     background-color: #064e3b; /* kuning muda */
 }
-body.dark-theme .custom-input-presensi.hadir_month {
+html[data-bs-theme="dark"] .custom-input-presensi.hadir_month {
     background-color: #064e3b; /* kuning muda */
 }
-body.dark-theme .custom-input-presensi.staff {
+html[data-bs-theme="dark"] .custom-input-presensi.staff {
     background-color: #064e3b; /* kuning muda */
 }
 
 /* Scrollbar */
-body.dark-theme ::-webkit-scrollbar-thumb {
+html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
     background-color: #4b5563;
 }
 
 
 /* Dark theme pagination - Border yang jelas di dark mode */
-body.dark-theme .pagination .page-link {
+html[data-bs-theme="dark"] .pagination .page-link {
     background-color: #1f2937;
     border-color: #3b82f6;
     border-width: 2px;
@@ -812,35 +812,35 @@ body.dark-theme .pagination .page-link {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-body.dark-theme .pagination .page-link:hover:not(.disabled) {
+html[data-bs-theme="dark"] .pagination .page-link:hover:not(.disabled) {
     background-color: #3b82f6;
     border-color: #3b82f6;
     color: #ffffff;
     box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
 }
 
-body.dark-theme .pagination .page-item.active .page-link {
+html[data-bs-theme="dark"] .pagination .page-item.active .page-link {
     background-color: #1a1b1e;
     border-color: #2563eb;
     border-width: 2px;
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5);
 }
 
-body.dark-theme .pagination .page-item.disabled .page-link {
+html[data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
     background-color: #111827;
     border-color: #374151;
     border-width: 2px;
     color: #6b7280;
 }
 
-body.dark-theme .pagination-wrapper {
+html[data-bs-theme="dark"] .pagination-wrapper {
     background-color: #1f2937;
     border-color: #374151;
     border-width: 2px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.dark-theme .pagination-info {
+html[data-bs-theme="dark"] .pagination-info {
     background-color: #111827;
     border-color: #374151;
     border-width: 2px;
