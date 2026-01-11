@@ -313,22 +313,25 @@
     </style>
 @endpush
 
-<script>
+{{-- <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggleBtn = document.getElementById('light-dark-mode');
-        const html = document.documentElement; // Ini adalah tag <html>
+        const html = document.documentElement; // Target tag <html> agar CSS Custom aktif
 
-        // 1. Set tema awal sesuai sistem OS saat refresh
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        html.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+        // 1. Logika Simple: Cek setelan sistem OS (Dark/Light)
+        const systemMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        
+        // Terpakan ke html agar "html[data-bs-theme='dark']" di CSS Anda terbaca
+        html.setAttribute('data-bs-theme', systemMode);
 
         // 2. Logika klik tombol
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function () {
                 const current = html.getAttribute('data-bs-theme');
-                // Tukar atribut agar CSS "html[data-bs-theme='dark']" terpanggil
-                html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
+                const nextTheme = current === 'dark' ? 'light' : 'dark';
+                
+                html.setAttribute('data-bs-theme', nextTheme);
             });
         }
     });
-</script>
+</script> --}}
