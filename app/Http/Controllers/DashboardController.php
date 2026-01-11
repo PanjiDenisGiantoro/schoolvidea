@@ -94,7 +94,7 @@ class DashboardController extends Controller
             });
         }
 
-        $pembayaranTagihans = \App\Models\Pembayarantagihan::where('status_approval', '!=', 'pending')->latest()->take(5)->get();
+        $pembayaranTagihans = $pembayaranTagihansQuery->where('status_approval', '!=', 'pending')->latest()->take(5)->get();
 
 
         $data = $pembayaranTagihans->map(function ($pembayaran) {

@@ -20,6 +20,7 @@ use App\Http\Controllers\PayrollDeductionsController;
 use App\Http\Controllers\PayrollPaymentController;
 use App\Http\Controllers\PayrollSettingController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\PinOtorisasiUnitController;
 use App\Http\Controllers\PositionsController;
 use App\Http\Controllers\PotonganController;
 use App\Http\Controllers\ReportController;
@@ -47,9 +48,9 @@ Route::prefix('landing')->group(function () {
 });
 // Serve file bukti pembayaran jika symlink tidak berfungsi
 Route::get('/storage/bukti_pembayaran/{filename}', function ($filename) {
-    $path = storage_path('app/public/bukti_pembayaran/' . $filename);
+    $path = storage_path('app/public/bukti_pembayaran/'.$filename);
 
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         abort(404, 'File not found');
     }
 
@@ -487,7 +488,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/reject/{id}', [MerchantWithdrawalController::class, 'reject'])->name('merchant_withdrawal.reject');
         Route::put('/approve', [MerchantWithdrawalController::class, 'withdraw'])->name('merchant_withdrawal.approve');
     });
-
+    Route::prefix('pin-pembatalan')->group(function () {
+        Route::get('/', [PinOtorisasiUnitController::class, 'index'])->name('pin_pembatalan.index');
+        Route::post('/store', [PinOtorisasiUnitController::class, 'store'])->name('pin_pembatalan.store');
+    });
 });
 
 Route::prefix('merchant')->group(function () {

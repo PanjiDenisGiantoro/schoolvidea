@@ -98,6 +98,9 @@ class RolePermissionSeeder extends Seeder
 
             // Permissions untuk Data Rekening
             'view_data_rekening', 'create_data_rekening', 'edit_data_rekening', 'delete_data_rekening', 'upload_data_rekening',
+
+            // Permissions untuk Pin Pembatalan
+            'view_pin_pembatalan',
         ];
 
         // Buat permission sesuai dengan yang ada di daftar

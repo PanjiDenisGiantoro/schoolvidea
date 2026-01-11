@@ -59,4 +59,12 @@ class Unit extends Model
     {
         return $this->hasMany(DataRekening::class, 'unit_id', 'id');
     }
+
+    public function pinPembatalan()
+    {
+        return $this->hasOne(
+            PinOtorisasiUnit::class,
+            'unit_id'
+        )->where('type', 'pembatalan');
+    }
 }

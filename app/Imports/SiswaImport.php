@@ -4,7 +4,6 @@ namespace App\Imports;
 
 use App\Models\Kelas;
 use App\Models\Roles;
-use App\Models\Saldo_keuangan;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -13,169 +12,152 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class SiswaImport implements ToModel, WithChunkReading, WithHeadingRow
 {
-    protected $unit_id;
+    protected int $unitId;
+    protected int $tahunAjaranId;
 
-    protected $tahun_ajaran_id;
-
-    public function __construct($unit_id, $tahun_ajaran_id)
+    public function __construct($unitId, $tahunAjaranId)
     {
-        $this->unit_id = $unit_id;
-        $this->tahun_ajaran_id = $tahun_ajaran_id;
+        $this->unitId = $unitId;
+        $this->tahunAjaranId = $tahunAjaranId;
     }
 
     public function model(array $row)
     {
-        Log::info('========== SISWA IMPORT STARTED ==========');
-        // Log::info('Incoming row data: ' . json_encode($row));
+        Log::info('========== SISWA IMPORT START ==========');
 
-        // Pastikan semua data string
-        $row = array_map(function ($value) {
-            return is_string($value) ? trim($value) : $value;
-        }, $row);
+        $row = $this->normalizeRow($row);
 
-        // Force kolom besar menjadi string
-        $row['nik'] = isset($row['nik']) ? trim($row['nik']) : null;
-        $row['no_va'] = isset($row['no_va']) ? trim($row['no_va']) : null;
-        $row['no_rekening'] = isset($row['no_rekening']) ? trim($row['no_rekening']) : null;
-        $row['nisn'] = isset($row['nisn']) ? trim($row['nisn']) : null;
-        $row['nis'] = isset($row['nis']) ? trim($row['nis']) : null;
+        if (! $this->hasRequiredFields($row)) {
+            Log::warning('⚠️ Missing required fields, skipped');
+            return null;
+        }
 
         try {
-            // Validasi field required
-            if (
-                empty($row['nama_lengkap']) ||
-                empty($row['email']) ||
-                empty($row['password']) ||
-                empty($row['nisn']) ||
-                empty($row['nis']) ||
-                empty($row['kelas'])
-            ) {
-                Log::warning('⚠️ Missing required fields, skipping...');
-
-                return null;
-            }
-
             DB::beginTransaction();
-            // Step 1: User
-            $user = User::where('email', $row['email'])->first();
-            if (! $user) {
-                $user = User::create([
-                    'name' => $row['nama_lengkap'],
-                    'email' => $row['email'],
-                    'password' => bcrypt($row['password']),
-                    'rfid_no' => $row['no_rfid'] ?? null,
-                    'unit_id' => $this->unit_id,
-                ]);
-            } else {
-                $user->update([
-                    'name' => $row['nama_lengkap'],
-                    'rfid_no' => $row['no_rfid'] ?? null,
-                    'unit_id' => $this->unit_id,
-                ]);
-            }
 
-            // Step 2: Role
-            $rolePetugas = Roles::where('name', 'siswa')->first();
-            if (! $rolePetugas) {
-                DB::rollBack();
+            $user  = $this->upsertUser($row);
+            $this->assignSiswaRole($user);
 
-                return null;
-            }
-            $roleSpatie = \Spatie\Permission\Models\Role::firstOrCreate(
-                ['name' => $rolePetugas->name],
-                ['guard_name' => 'web']
-            );
-            if (! $user->hasRole($roleSpatie->name)) {
-                $user->assignRole($roleSpatie->name);
-            }
+            $kelas = Kelas::where('nama_kelas', $row['kelas'])->firstOrFail();
 
-            // Step 3: Kelas
-            $kelas = Kelas::where('nama_kelas', $row['kelas'])->first();
-            if (! $kelas) {
-                DB::rollBack();
-
-                return null;
-            }
-
-            // Step 4: Convert tanggal lahir
-            $tanggalLahir = null;
-            if (! empty($row['tanggal_lahir_ddmmyyyy'])) {
-                if (is_numeric($row['tanggal_lahir_ddmmyyyy'])) {
-                    // Excel serial number
-                    $tanggalLahir = Date::excelToDateTimeObject($row['tanggal_lahir_ddmmyyyy'])->format('Y-m-d');
-                } else {
-                    $date = \DateTime::createFromFormat('d/m/Y', $row['tanggal_lahir_ddmmyyyy']);
-                    if ($date) {
-                        $tanggalLahir = $date->format('Y-m-d');
-                    }
-                }
-            }
-
-            // Status default 1
-            $status = isset($row['status']) && in_array($row['status'], ['0', '1'])
-                ? (int) $row['status']
-                : 1;
-
-            $jenisKelamin = null;
-            if (! empty($row['jenis_kelamin'])) {
-                $jk = strtolower(trim($row['jenis_kelamin']));
-                if (in_array($jk, ['l', 'laki-laki', 'laki laki'])) {
-                    $jenisKelamin = 'L';
-                } elseif (in_array($jk, ['p', 'perempuan'])) {
-                    $jenisKelamin = 'P';
-                }
-            }
-
-            // Step 5: Update or create siswa
             $siswa = Siswa::updateOrCreate(
                 [
                     'nisn' => $row['nisn'],
-                    'unit_id' => $this->unit_id,
-                    'tahun_ajaran_id' => $this->tahun_ajaran_id,
+                    'unit_id' => $this->unitId,
+                    'tahun_ajaran_id' => $this->tahunAjaranId,
                 ],
                 [
-                    'nis' => $row['nis'],
-                    'kelas_id' => $kelas->id,
-                    'user_id' => $user->id,
-                    'rfid_no' => $row['no_rfid'] ?? null,
-                    'va_siswa' => $row['no_va'] ?? null,
-                    'jenis_kelamin' => $jenisKelamin,
-                    'agama' => $row['agama'] ?? null,
-                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
-                    'tanggal_lahir' => $tanggalLahir,
-                    'no_hp_siswa' => $row['no_hp_siswa'] ?? null,
-                    'no_hp_ortu' => $row['no_hp_ortu'] ?? null,
-                    'nama_ortu' => $row['nama_orang_tua'] ?? null,
-                    'alamat' => $row['alamat'] ?? null,
-                    'bank' => $row['bank'] ?? null,
-                    'no_rekening' => $row['no_rekening'] ?? null,
-                    'nik' => $row['nik'] ?? null,
-                    'status' => $status,
+                    'nis'            => $row['nis'],
+                    'kelas_id'       => $kelas->id,
+                    'user_id'        => $user->id,
+                    'rfid_no'        => $row['no_rfid'],
+                    'va_siswa'       => $row['no_va'],
+                    'jenis_kelamin'  => $this->parseJenisKelamin($row['jenis_kelamin']),
+                    'agama'          => $row['agama'],
+                    'tempat_lahir'   => $row['tempat_lahir'],
+                    'tanggal_lahir'  => $this->parseTanggal($row['tanggal_lahir_ddmmyyyy']),
+                    'no_hp_siswa'    => $row['no_hp_siswa'],
+                    'no_hp_ortu'     => $row['no_hp_ortu'],
+                    'nama_ortu'      => $row['nama_orang_tua'],
+                    'alamat'         => $row['alamat'],
+                    'bank'           => $row['bank'],
+                    'no_rekening'    => $row['no_rekening'],
+                    'nik'            => $row['nik'],
+                    'status'         => in_array($row['status'], ['0', '1']) ? (int) $row['status'] : 1,
                 ]
             );
 
-            Log::info('✓ Siswa created/updated | ID: ' . $siswa->id);
-
-            // Step 6: Saldo
-            // $saldo = Saldo_keuangan::firstOrCreate(
-            //     ['user_id' => $user->id],
-            //     ['saldo_akhir' => 0, 'status' => 0]
-            // );
-
             DB::commit();
-            Log::info('✓ Transaction committed successfully');
+            Log::info("✓ Siswa saved | ID: {$siswa->id}");
 
             return $siswa;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('❌ ERROR during siswa import');
-            Log::error($e->getMessage());
-
+            Log::error('❌ Import failed: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /* ========================= HELPERS ========================= */
+
+    private function normalizeRow(array $row): array
+    {
+        $row = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $row);
+
+        return array_merge([
+            'nik' => null,
+            'no_va' => null,
+            'no_rekening' => null,
+            'no_rfid' => null,
+            'agama' => null,
+            'alamat' => null,
+            'bank' => null,
+            'status' => 1,
+        ], $row);
+    }
+
+    private function hasRequiredFields(array $row): bool
+    {
+        return ! empty($row['nama_lengkap'])
+            && ! empty($row['email'])
+            && ! empty($row['password'])
+            && ! empty($row['nisn'])
+            && ! empty($row['nis'])
+            && ! empty($row['kelas']);
+    }
+
+    private function upsertUser(array $row): User
+    {
+        return User::updateOrCreate(
+            ['email' => $row['email']],
+            [
+                'name'     => $row['nama_lengkap'],
+                'password' => bcrypt($row['password']),
+                'rfid_no'  => $row['no_rfid'],
+                'unit_id'  => $this->unitId,
+            ]
+        );
+    }
+
+    private function assignSiswaRole(User $user): void
+    {
+        $role = Roles::where('name', 'siswa')->firstOrFail();
+
+        $spatieRole = SpatieRole::firstOrCreate(
+            ['name' => $role->name],
+            ['guard_name' => 'web']
+        );
+
+        if (! $user->hasRole($spatieRole->name)) {
+            $user->assignRole($spatieRole->name);
+        }
+    }
+
+    private function parseTanggal($value): ?string
+    {
+        if (! $value) return null;
+
+        if (is_numeric($value)) {
+            return Date::excelToDateTimeObject($value)->format('Y-m-d');
+        }
+
+        $date = \DateTime::createFromFormat('d/m/Y', $value);
+        return $date ? $date->format('Y-m-d') : null;
+    }
+
+    private function parseJenisKelamin($value): ?string
+    {
+        if (! $value) return null;
+
+        return match (strtolower(trim($value))) {
+            'l', 'laki-laki', 'laki laki' => 'L',
+            'p', 'perempuan'             => 'P',
+            default                      => null,
+        };
     }
 
     public function chunkSize(): int
@@ -183,4 +165,3 @@ class SiswaImport implements ToModel, WithChunkReading, WithHeadingRow
         return 100;
     }
 }
-
