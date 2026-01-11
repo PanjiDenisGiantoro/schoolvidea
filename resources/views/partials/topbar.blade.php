@@ -313,7 +313,7 @@
     </style>
 @endpush
 
-{{-- <script>
+<script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggleBtn = document.getElementById('light-dark-mode');
         const savedTheme = localStorage.getItem('theme');
@@ -333,4 +333,4 @@
             );
         });
     });
-</script> --}}
+</script>
