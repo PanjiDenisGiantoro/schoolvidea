@@ -86,11 +86,15 @@
                                             <i class="ri-edit-line fs-20 align-middle"></i>
                                             Edit
                                         </a>
-                                        <a href="{{ route('siswa.destroy', $item->id ?? '') }}"
-                                            class="link-danger text-muted">
-                                            <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
-                                            Hapus
-                                        </a>
+<form action="{{ route('siswa.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
+    @csrf
+    @method('DELETE')
+    <a href="#" class="link-danger text-muted delete-btn">
+        <i class="ri-delete-bin-5-line fs-20 align-middle"></i>
+        Hapus
+    </a>
+</form>
+
                                     </div>
                                 </td>
                             </tr>
@@ -137,24 +141,25 @@
                 });
 
                 // ✅ Konfirmasi hapus data
-                $('.link-danger').on('click', function (e) {
-                    e.preventDefault();
-                    const form = $(this).closest('form');
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: 'Data penggajian ini akan dihapus permanen!',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
+$('.delete-btn').on('click', function (e) {
+    e.preventDefault();
+    const form = $(this).closest('form');
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: 'Data siswa ini akan dihapus permanen!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+});
+
             });
         </script>
     @endif
