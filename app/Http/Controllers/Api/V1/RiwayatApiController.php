@@ -241,6 +241,68 @@ class RiwayatApiController extends Controller
     }
 
     /**
+     * API v1 - Riwayat Tabungan Siswa per ID Tabungan
+     * GET /api/v1/riwayat/tabungan/siswa/{siswaId}/{id}
+     */
+    public function riwayatTabunganSiswaId($siswaId, $id)
+    {
+    try {
+        $trx = Keuangan_transaksi::with(['penerima', 'creator', 'verifier'])->where('penerima_id', $siswaId)->findOrFail($id);
+
+        // Ambil rekening tujuan jika metode TRANSFER
+        $dataRekenings = null;
+        if (strtoupper($trx->metode) === 'TRANSFER') {
+            $rekening = DataRekening::where('status', '1')->first();
+            if ($rekening) {
+                $dataRekenings = [
+                    'id' => $rekening->id,
+                    'nama_rekening' => $rekening->account_name,
+                    'nomor_rekening' => $rekening->account_number,
+                    'nama_pemilik' => $rekening->owner_name,
+                    'bank' => $rekening->account_code,
+                    'kcp_name' => $rekening->kcp_name,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail transaksi tabungan berhasil diambil',
+            'data' => [
+                'id' => $trx->id,
+                'nomor_transaksi' => $trx->code_pembayaran,
+                'code' => $trx->code_pembayaran,
+                'siswa_id' => $trx->penerima_id,
+                'siswa_nama' => $trx->penerima?->nama_lengkap,
+                'jenis' => $trx->jenis_transaksi === 'setoran_tabungan' ? 'Setor' : 'Tarik',
+                'jumlah' => (float)$trx->jumlah,
+                'tanggal_transaksi' => $trx->created_at,
+                'tanggal_bayar' => $trx->verified_at,
+                'metode_pembayaran' => $trx->metode,
+                'metode' => $trx->metode,
+                'keterangan' => $trx->keterangan,
+                'status' => $trx->status_verifikasi,
+                'bukti_transfer' => $trx->bukti_transfer ? url($trx->bukti_transfer) : null,
+                'data_rekening_tujuan' => $dataRekenings,
+                'data_rekenings' => $dataRekenings,
+                'verified_by' => $trx->verifier?->name,
+                'verified_at' => $trx->verified_at,
+                'catatan_verifikasi' => $trx->catatan_verifikasi,
+                'token' => $trx->token,
+                'expired_kode' => $trx->token_expired_at,
+                'created_at' => $trx->created_at,
+                'updated_at' => $trx->updated_at,
+            ]
+        ]);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Data transaksi tabungan tidak ditemukan'
+        ], 404);
+    }
+    }
+
+    /**
      * API v1 - Detail Riwayat Tabungan dengan Audit Trail
      * GET /api/v1/riwayat/tabungan/{id}
      */
@@ -333,7 +395,7 @@ class RiwayatApiController extends Controller
             $tagihans = $query->paginate($perPage, ['*'], 'page', $page);
 
             // Helper function to map status to text
-            $mapStatus = function($status) {
+            $mapStatus = function ($status) {
                 $statusMap = [
                     '0' => 'Belum Lunas',
                     '1' => 'Lunas',
@@ -343,8 +405,10 @@ class RiwayatApiController extends Controller
             };
 
             // Helper function to get month name in Indonesian
-            $getBulanText = function($bulanKe, $tahun) {
-                if (!$bulanKe || !$tahun) return 'N/A';
+            $getBulanText = function ($bulanKe, $tahun) {
+                if (!$bulanKe || !$tahun) {
+                    return 'N/A';
+                }
 
                 $bulanArray = [
                     1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
@@ -757,6 +821,214 @@ class RiwayatApiController extends Controller
     }
 
     /**
+     * API v1 - Riwayat Pemabyaran Tagihan PerId
+     * GET /api/v1/riwayat/tagihan-pembayaran/id
+     */
+public function riwayatPembayaranTagihanId($id)
+{
+    try {
+        $p = Pembayarantagihan::with([
+            'tagihanSiswa.siswa.kelas',
+            'tagihanSiswa.tagihanItem.kategori',
+            'tagihanSiswa.potonganSiswa.potongan',
+            'tagihanSiswa.tagihan.rekening',
+            'keuanganTransaksi',
+            'user',
+            'approvedBy'
+        ])->findOrFail($id);
+
+        // =========================
+        // KATEGORI
+        // =========================
+        $kategoriCode = null;
+        $namaKategori = 'N/A';
+        if ($p->tagihanSiswa?->tagihanItem?->kategori) {
+            $kategoriCode = $p->tagihanSiswa->tagihanItem->kategori->kode_kategori;
+            $namaKategori = $p->tagihanSiswa->tagihanItem->kategori->nama_kategori;
+        }
+
+        // =========================
+        // VERIFIKASI
+        // =========================
+        $statusVerifikasi = $p->keuanganTransaksi->status_verifikasi ?? $p->status_approval ?? 'pending';
+        $catatanVerifikasi = $p->keuanganTransaksi->catatan_verifikasi ?? null;
+
+        // =========================
+        // PERIODE (BULAN & TAHUN)
+        // =========================
+        $bulanText = 'N/A';
+        $tahunTagihan = null;
+        if ($p->tagihanSiswa?->bulan_ke && $p->tagihanSiswa?->tagihan) {
+            $date = \Carbon\Carbon::createFromDate(
+                (int) $p->tagihanSiswa->tagihan->tahun_mulai,
+                (int) $p->tagihanSiswa->tagihan->bulan_mulai,
+                1
+            )->addMonths($p->tagihanSiswa->bulan_ke - 1);
+
+            $bulanText = $date->translatedFormat('F Y');
+            $tahunTagihan = $date->year;
+        }
+
+        // =========================
+        // KELAS
+        // =========================
+        $kelasNama = $p->tagihanSiswa?->siswa?->kelas?->nama_kelas ?? 'N/A';
+
+        // =========================
+        // RINCIAN TAGIHAN
+        // =========================
+        $nominalTagihan = (float) ($p->tagihanSiswa?->tagihanItem?->nominal ?? 0);
+        $sisaNominal = (float) ($p->tagihanSiswa?->sisa_nominal ?? 0);
+
+        // =========================
+        // POTONGAN
+        // =========================
+        $potonganList = [];
+        $totalPotongan = 0;
+        if ($p->tagihanSiswa?->potonganSiswa) {
+            foreach ($p->tagihanSiswa->potonganSiswa as $ptg) {
+                $potonganList[] = [
+                    'id' => $ptg->id,
+                    'nominal' => (float) $ptg->nominal,
+                    'keterangan' => $ptg->keterangan,
+                    'potongan_data' => $ptg->potongan ? [
+                        'id' => $ptg->potongan->id,
+                        'nama' => $ptg->potongan->nama,
+                        'nominal' => (float) $ptg->potongan->nominal,
+                    ] : null,
+                ];
+                $totalPotongan += (float) $ptg->nominal;
+            }
+        }
+
+        // =========================
+        // REKENING
+        // =========================
+        $dataRekenings = null;
+        if ($p->tagihanSiswa?->tagihan?->rekening) {
+            $r = $p->tagihanSiswa->tagihan->rekening;
+            $dataRekenings = [
+                'id' => $r->id,
+                'nama_rekening' => $r->account_name,
+                'nomor_rekening' => $r->account_number,
+                'nama_pemilik' => $r->owner_name,
+                'kcp_name' => $r->kcp_name,
+                'allotment' => $r->allotment,
+            ];
+        }
+
+        // =========================
+        // LIST TAGIHAN (multi-payment)
+        // =========================
+        $listTagihan = null;
+        if ($p->head_tagihan) {
+            $detailPembayaran = PembayaranTagihanDetail::where('head_tagihan', $p->head_tagihan)
+                ->with([
+                    'tagihanSiswa.siswa',
+                    'tagihanSiswa.tagihanItem.kategori',
+                    'tagihanSiswa.tagihan',
+                    'tagihanSiswa.potonganSiswa.potongan'
+                ])->get();
+
+            $listTagihan = $detailPembayaran->map(function ($detail) {
+                $tagihanSiswa = $detail->tagihanSiswa;
+                $kategoriNama = $tagihanSiswa?->tagihanItem?->kategori->nama_kategori ?? 'N/A';
+
+                $bulanKeOriginal = $tagihanSiswa?->bulan_ke;
+                $bulanMulai = $tagihanSiswa?->tagihan?->bulan_mulai;
+                $tahunMulai = $tagihanSiswa?->tagihan?->tahun_mulai;
+
+                if ($bulanKeOriginal && $bulanMulai && $tahunMulai) {
+                    $date = \Carbon\Carbon::createFromDate($tahunMulai, $bulanMulai, 1)
+                        ->addMonths($bulanKeOriginal - 1);
+                    $bulanText = $date->translatedFormat('F Y');
+                    $tahun = $date->year;
+                } else {
+                    $bulanText = 'N/A';
+                    $tahun = null;
+                }
+
+                $nominalTagihan = (float) ($tagihanSiswa?->tagihanItem?->nominal ?? 0);
+
+                $potonganTotal = 0;
+                if ($tagihanSiswa?->potonganSiswa) {
+                    foreach ($tagihanSiswa->potonganSiswa as $ptg) {
+                        $potonganTotal += (float) $ptg->nominal;
+                    }
+                }
+
+                return [
+                    'id' => $detail->id,
+                    'tagihan_siswa_id' => $detail->tagihan_siswa_id,
+                    'nama_tagihan' => $tagihanSiswa?->tagihan?->nama_tagihan ?? 'N/A',
+                    'kategori' => $kategoriNama,
+                    'periode' => $bulanText,
+                    'tahun' => $tahun,
+                    'nominal_tagihan' => $nominalTagihan,
+                    'jumlah_potongan' => $potonganTotal,
+                    'jumlah_tagihan' => $nominalTagihan - $potonganTotal,
+                    'jumlah_bayar_detail' => (float) $detail->jumlah_bayar_detail,
+                    'created_at' => $detail->created_at,
+                ];
+            })->toArray();
+        }
+
+        // =========================
+        // RESPONSE
+        // =========================
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail pembayaran tagihan berhasil diambil',
+            'data' => [
+                'id' => $p->id,
+                'code_pembayaran' => $p->code_pembayaran,
+                'head_tagihan' => $p->head_tagihan,
+                'is_multi_payment' => (bool) $p->head_tagihan,
+                'tagihan_siswa_id' => $p->tagihan_siswa_id,
+                'siswa_id' => $p->tagihanSiswa?->siswa?->id,
+                'siswa_nama' => $p->tagihanSiswa?->siswa?->nama_lengkap,
+                'kategori' => [
+                    'kode' => $kategoriCode,
+                    'nama' => $namaKategori,
+                ],
+                'periode' => $bulanText,
+                'tahun' => $tahunTagihan,
+                'tagihan_kelas' => $kelasNama,
+                'rincian_tagihan' => $nominalTagihan,
+                'jumlah_potongan' => $totalPotongan,
+                'jumlah_tagihan' => $nominalTagihan - $totalPotongan,
+                'jumlah_dibayar' => (float)$p->jumlah_bayar,
+                'jumlah_tunggakan' => $sisaNominal,
+                'nominal_pembayaran' => (float)$p->jumlah_bayar,
+                'tanggal_bayar' => optional($p->tanggal_bayar)->format('Y-m-d'),
+                'metode_bayar' => $p->metode_bayar,
+                'status_approval' => $p->status_approval,
+                'status_verifikasi' => $statusVerifikasi,
+                'file_bukti' => $p->file_bukti ? Storage::disk('public')->url($p->file_bukti) : null,
+                'keterangan' => $p->keterangan,
+                'catatan_verifikasi' => $catatanVerifikasi,
+                'potongan' => $potonganList,
+                'data_rekenings' => $dataRekenings,
+                'list_tagihan' => $listTagihan,
+                'created_by' => $p->user?->name,
+                'approved_by' => $p->approvedBy?->name,
+                'approved_at' => $p->approved_at,
+                'created_at' => $p->created_at,
+                'updated_at' => $p->updated_at,
+            ]
+        ]);
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Data pembayaran tagihan tidak ditemukan'
+        ], 404);
+    }
+}
+
+
+
+    /**
      * API v1 - Riwayat Mutasi Tagihan
      * GET /api/v1/riwayat/tagihan-mutasi
      */
@@ -913,8 +1185,8 @@ class RiwayatApiController extends Controller
             // ===== MONTHLY STATISTICS (within date range) =====
             // Tabungan Statistics for the period
             $tabunganQuery = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved')
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
             if ($siswaId) {
@@ -923,8 +1195,8 @@ class RiwayatApiController extends Controller
 
             // Monthly deposits and withdrawals
             $totalSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved')
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved')
                 ->where('jenis_transaksi', 'setoran_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -934,8 +1206,8 @@ class RiwayatApiController extends Controller
             $totalSetorPerbulan = $totalSetorPerbulan->sum('jumlah');
 
             $totalTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved')
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved')
                 ->where('jenis_transaksi', 'penarikan_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -945,8 +1217,8 @@ class RiwayatApiController extends Controller
             $totalTarikPerbulan = $totalTarikPerbulan->sum('jumlah');
 
             $countSetorPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved')
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved')
                 ->where('jenis_transaksi', 'setoran_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -956,8 +1228,8 @@ class RiwayatApiController extends Controller
             $countSetorPerbulan = $countSetorPerbulan->count();
 
             $countTarikPerbulan = Keuangan_transaksi::whereIn('jenis_transaksi', ['setoran_tabungan', 'penarikan_tabungan'])
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved')
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved')
                 ->where('jenis_transaksi', 'penarikan_tabungan')
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
@@ -969,8 +1241,8 @@ class RiwayatApiController extends Controller
             // ===== OVERALL STATISTICS (all time) =====
             // Total deposits all time
             $totalSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved');
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved');
 
             if ($siswaId) {
                 $totalSetorKeseluruhan->where('penerima_id', $siswaId);
@@ -979,8 +1251,8 @@ class RiwayatApiController extends Controller
 
             // Total withdrawals all time
             $totalTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved');
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved');
 
             if ($siswaId) {
                 $totalTarikKeseluruhan->where('penerima_id', $siswaId);
@@ -988,8 +1260,8 @@ class RiwayatApiController extends Controller
             $totalTarikKeseluruhan = $totalTarikKeseluruhan->sum('jumlah');
 
             // Count of deposits all time
-            $jumlahSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')->where('status_verifikasi','approved')
-                ->where('status_approval','approved');
+            $jumlahSetorKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'setoran_tabungan')->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved');
 
             if ($siswaId) {
                 $jumlahSetorKeseluruhan->where('penerima_id', $siswaId);
@@ -998,8 +1270,8 @@ class RiwayatApiController extends Controller
 
             // Count of withdrawals all time
             $jumlahTarikKeseluruhan = Keuangan_transaksi::where('jenis_transaksi', 'penarikan_tabungan')
-                ->where('status_verifikasi','approved')
-                ->where('status_approval','approved');
+                ->where('status_verifikasi', 'approved')
+                ->where('status_approval', 'approved');
 
             if ($siswaId) {
                 $jumlahTarikKeseluruhan->where('penerima_id', $siswaId);
@@ -1049,7 +1321,7 @@ class RiwayatApiController extends Controller
 
             // Pembayaran Statistics
             $pembayaranQuery = Pembayarantagihan::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status_approval','approved');
+                ->where('status_approval', 'approved');
 
             if ($siswaId) {
                 $pembayaranQuery->whereHas('tagihanSiswa', function ($q) use ($siswaId) {

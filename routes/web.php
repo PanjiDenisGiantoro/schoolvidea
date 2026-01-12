@@ -185,7 +185,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [SiswaController::class, 'store'])->middleware('permission:create_siswa')->name('siswa.store');
         Route::get('/edit/{id}', [SiswaController::class, 'edit'])->middleware('permission:edit_siswa')->name('siswa.edit');
         Route::put('/update/{id}', [SiswaController::class, 'update'])->middleware('permission:edit_siswa')->name('siswa.update');
-        Route::get('/delete/{id}', [SiswaController::class, 'destroy'])->middleware('permission:delete_siswa')->name('siswa.destroy');
+        Route::delete('/delete/{id}', [SiswaController::class, 'destroy'])->middleware('permission:delete_siswa')->name('siswa.destroy');
         Route::get('/show/{id}', [SiswaController::class, 'show'])->name('siswa.show');
         Route::get('/by-kelas/{kelasId}', [App\Http\Controllers\SiswaController::class, 'getByKelas']);
         Route::get('/siswadetail/{id}', [App\Http\Controllers\SiswaController::class, 'showdetail']);

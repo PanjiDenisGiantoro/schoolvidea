@@ -72,7 +72,7 @@ class SiswaController extends Controller
         }
 
         // Paginate results
-        $siswa = $query->orderBy('created_at')->get();
+        $siswa = $query->orderBy('created_at', 'desc')->get();
 
         $headers = [
             'No',

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\DashboardTagihanController;
 use App\Http\Controllers\Api\V1\DataRekeningListController;
 use App\Http\Controllers\Api\V1\JurusanListController;
 use App\Http\Controllers\Api\V1\KelasController;
+use App\Http\Controllers\Api\V1\LogController;
 use App\Http\Controllers\Api\V1\MeDataRekeningController;
 use App\Http\Controllers\Api\V1\OfficerController;
 use App\Http\Controllers\Api\V1\RiwayatApiController;
@@ -15,7 +16,6 @@ use App\Http\Controllers\Api\V1\TipeunitListController;
 use App\Http\Controllers\Api\V1\UnitListController;
 use App\Http\Controllers\Api\V1\YayasanListController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -243,6 +243,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/tabungan/setor', [RiwayatApiController::class, 'riwayatTabunganSetor']);
             Route::get('/tabungan/tarik', [RiwayatApiController::class, 'riwayatTabunganTarik']);
             Route::get('/tabungan/siswa/{siswaId}', [RiwayatApiController::class, 'riwayatTabunganSiswa']);
+            Route::get('/tabungan/siswa/{siswaId}/{id}', [RiwayatApiController::class, 'riwayatTabunganSiswaId']);
             Route::get('/tabungan/{id}', [RiwayatApiController::class, 'detailTabungan']);
 
             // Tagihan history
@@ -252,6 +253,7 @@ Route::prefix('v1')->group(function () {
 
             // Tagihan pembayaran history
             Route::get('/tagihan-pembayaran', [RiwayatApiController::class, 'riwayatPembayaranTagihan']);
+            Route::get('/tagihan-pembayaran/{id}', [RiwayatApiController::class, 'riwayatPembayaranTagihanId']);
 
             // Tagihan mutasi history
             Route::get('/tagihan-mutasi', [RiwayatApiController::class, 'riwayatMutasiTagihan']);
@@ -265,8 +267,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/payroll-payment/{id}', [\App\Http\Controllers\Api\V1\PayrollPaymentController::class, 'show']);
         Route::get('/payroll-payment/', [\App\Http\Controllers\Api\V1\PayrollPaymentController::class, 'index']);
         // Log routes
-        Route::prefix("logs")->group(function () {
-            Route::get("/laravel", [LogController::class, "getLaravelLog"]);
+        Route::prefix('logs')->group(function () {
+            Route::get('/laravel', [LogController::class, 'getLaravelLog']);
         });
     });
 });
